@@ -5,681 +5,207 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
 <meta name="theme-color" content="#0a0a0a">
 <meta name="mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="ForexHub">
-<title>ForexHub — Daily Trading Analysis</title>
-<link rel="preconnect" href="https://fonts.googleapis.com">
+<title>ForexHub</title>
 <link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Syne:wght@400;500;700&display=swap" rel="stylesheet">
 <style>
-  :root {
-    --bg: #0a0a0a;
-    --surface: #131313;
-    --surface2: #1a1a1a;
-    --border: rgba(255,255,255,0.08);
-    --border2: rgba(255,255,255,0.14);
-    --text: #f0ede8;
-    --muted: #6b6b6b;
-    --accent: #c8f135;
-    --accent-dim: rgba(200,241,53,0.12);
-    --accent-dim2: rgba(200,241,53,0.06);
-    --buy: #4ade80;
-    --buy-bg: rgba(74,222,128,0.1);
-    --sell: #f87171;
-    --sell-bg: rgba(248,113,113,0.1);
-    --wait: #fbbf24;
-    --wait-bg: rgba(251,191,36,0.1);
-    --radius: 14px;
-    --radius-sm: 8px;
-  }
-  * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
-  html { font-size: 16px; }
-  body {
-    font-family: 'Syne', sans-serif;
-    background: var(--bg);
-    color: var(--text);
-    min-height: 100vh;
-    min-height: 100dvh;
-    overflow-x: hidden;
-  }
-
-  /* HEADER */
-  .header {
-    position: sticky; top: 0; z-index: 100;
-    background: rgba(10,10,10,0.92);
-    backdrop-filter: blur(16px);
-    -webkit-backdrop-filter: blur(16px);
-    border-bottom: 1px solid var(--border);
-    padding: 14px 20px 12px;
-    display: flex; align-items: center; justify-content: space-between;
-  }
-  .logo { font-size: 17px; font-weight: 700; letter-spacing: -0.02em; }
-  .logo span { color: var(--accent); }
-  .header-date { font-family: 'DM Mono', monospace; font-size: 11px; color: var(--muted); text-align: right; line-height: 1.4; }
-
-  /* NAV */
-  .nav {
-    display: flex; gap: 4px;
-    padding: 12px 20px;
-    border-bottom: 1px solid var(--border);
-    overflow-x: auto;
-    scrollbar-width: none;
-  }
-  .nav::-webkit-scrollbar { display: none; }
-  .nav-btn {
-    white-space: nowrap;
-    padding: 7px 16px;
-    border-radius: 100px;
-    font-family: 'Syne', sans-serif;
-    font-size: 13px;
-    font-weight: 500;
-    border: 1px solid var(--border2);
-    background: transparent;
-    color: var(--muted);
-    cursor: pointer;
-    transition: all 0.2s;
-    flex-shrink: 0;
-  }
-  .nav-btn.active {
-    background: var(--accent);
-    color: #0a0a0a;
-    border-color: var(--accent);
-  }
-
-  /* MAIN */
-  .main { padding: 20px; max-width: 680px; margin: 0 auto; }
-  .section { display: none; }
-  .section.active { display: block; }
-
-  /* PAIR PILLS */
-  .pair-row { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 16px; }
-  .pair-pill {
-    padding: 5px 14px;
-    border-radius: 100px;
-    font-family: 'DM Mono', monospace;
-    font-size: 12px;
-    border: 1px solid var(--border2);
-    background: transparent;
-    color: var(--muted);
-    cursor: pointer;
-    transition: all 0.15s;
-  }
-  .pair-pill.active {
-    background: var(--accent-dim);
-    color: var(--accent);
-    border-color: var(--accent);
-  }
-
-  /* CARDS */
-  .card {
-    background: var(--surface);
-    border: 1px solid var(--border);
-    border-radius: var(--radius);
-    padding: 18px;
-    margin-bottom: 12px;
-  }
-  .card-label {
-    font-family: 'DM Mono', monospace;
-    font-size: 10px;
-    letter-spacing: 0.1em;
-    text-transform: uppercase;
-    color: var(--muted);
-    margin-bottom: 10px;
-  }
-  .card-body {
-    font-size: 14px;
-    line-height: 1.75;
-    color: #c8c4be;
-  }
-  .card-body strong { color: var(--text); font-weight: 500; }
-
-  /* BIAS TAG */
-  .bias-tag {
-    display: inline-block;
-    font-family: 'DM Mono', monospace;
-    font-size: 11px;
-    font-weight: 500;
-    padding: 4px 12px;
-    border-radius: 100px;
-    margin-bottom: 12px;
-    letter-spacing: 0.05em;
-  }
-  .bias-buy { background: var(--buy-bg); color: var(--buy); border: 1px solid rgba(74,222,128,0.25); }
-  .bias-sell { background: var(--sell-bg); color: var(--sell); border: 1px solid rgba(248,113,113,0.25); }
-  .bias-wait { background: var(--wait-bg); color: var(--wait); border: 1px solid rgba(251,191,36,0.25); }
-  .bias-neutral { background: var(--surface2); color: var(--muted); border: 1px solid var(--border2); }
-
-  /* DIVIDER */
-  .divider { border: none; border-top: 1px solid var(--border); margin: 14px 0; }
-
-  /* LOADING */
-  .loading {
-    display: flex; align-items: center; gap: 10px;
-    color: var(--muted); font-size: 13px;
-  }
-  .spinner {
-    width: 16px; height: 16px;
-    border: 2px solid var(--border2);
-    border-top-color: var(--accent);
-    border-radius: 50%;
-    animation: spin 0.8s linear infinite;
-    flex-shrink: 0;
-  }
-  @keyframes spin { to { transform: rotate(360deg); } }
-
-  /* ERROR */
-  .error-box {
-    background: var(--sell-bg);
-    border: 1px solid rgba(248,113,113,0.2);
-    border-radius: var(--radius-sm);
-    padding: 12px 14px;
-    font-size: 13px;
-    color: var(--sell);
-  }
-
-  /* REFRESH BTN */
-  .refresh-btn {
-    display: flex; align-items: center; gap: 6px;
-    padding: 8px 16px;
-    border-radius: 100px;
-    border: 1px solid var(--border2);
-    background: transparent;
-    color: var(--muted);
-    font-family: 'Syne', sans-serif;
-    font-size: 13px;
-    cursor: pointer;
-    transition: all 0.2s;
-    margin-top: 4px;
-  }
-  .refresh-btn:hover { border-color: var(--accent); color: var(--accent); }
-
-  /* META */
-  .meta {
-    font-family: 'DM Mono', monospace;
-    font-size: 10px;
-    color: var(--muted);
-    margin-top: 10px;
-  }
-
-  /* CHECKLIST */
-  .check-item {
-    display: flex; align-items: flex-start; gap: 12px;
-    padding: 10px 0;
-    border-bottom: 1px solid var(--border);
-    cursor: pointer;
-  }
-  .check-item:last-child { border-bottom: none; }
-  .check-box {
-    width: 20px; height: 20px; flex-shrink: 0;
-    border: 1.5px solid var(--border2);
-    border-radius: 5px;
-    margin-top: 1px;
-    display: flex; align-items: center; justify-content: center;
-    font-size: 12px; transition: all 0.15s;
-  }
-  .check-box.done { background: var(--accent); border-color: var(--accent); color: #0a0a0a; }
-  .check-label { font-size: 14px; color: #c8c4be; line-height: 1.5; }
-  .check-item.done .check-label { color: var(--muted); text-decoration: line-through; }
-
-  /* TRADE REVIEW */
-  .trade-textarea {
-    width: 100%;
-    background: var(--surface2);
-    border: 1px solid var(--border2);
-    border-radius: var(--radius-sm);
-    padding: 12px 14px;
-    font-family: 'Syne', sans-serif;
-    font-size: 14px;
-    color: var(--text);
-    resize: vertical;
-    min-height: 90px;
-    outline: none;
-    transition: border-color 0.2s;
-  }
-  .trade-textarea:focus { border-color: var(--accent); }
-  .trade-textarea::placeholder { color: var(--muted); }
-  .submit-btn {
-    display: inline-flex; align-items: center; gap: 6px;
-    margin-top: 10px;
-    padding: 10px 20px;
-    background: var(--accent);
-    color: #0a0a0a;
-    border: none;
-    border-radius: 100px;
-    font-family: 'Syne', sans-serif;
-    font-size: 14px;
-    font-weight: 700;
-    cursor: pointer;
-    transition: opacity 0.2s;
-  }
-  .submit-btn:disabled { opacity: 0.5; cursor: not-allowed; }
-
-  /* INSTALL BANNER */
-  .install-banner {
-    background: var(--accent-dim2);
-    border: 1px solid rgba(200,241,53,0.2);
-    border-radius: var(--radius);
-    padding: 14px 16px;
-    margin-bottom: 16px;
-    display: flex; align-items: flex-start; gap: 12px;
-  }
-  .install-icon { font-size: 20px; flex-shrink: 0; }
-  .install-text { font-size: 13px; color: #c8c4be; line-height: 1.6; }
-  .install-text strong { color: var(--accent); font-weight: 500; }
-  .install-close {
-    background: none; border: none; color: var(--muted);
-    font-size: 18px; cursor: pointer; flex-shrink: 0; padding: 0 4px;
-  }
-
-  /* SECTION TITLE */
-  .section-title {
-    font-size: 22px; font-weight: 700; letter-spacing: -0.02em;
-    margin-bottom: 4px;
-  }
-  .section-sub { font-size: 13px; color: var(--muted); margin-bottom: 18px; }
-
-  /* ABOUT */
-  .about-item { padding: 14px 0; border-bottom: 1px solid var(--border); }
-  .about-item:last-child { border-bottom: none; }
-  .about-q { font-size: 13px; font-weight: 500; color: var(--text); margin-bottom: 4px; }
-  .about-a { font-size: 13px; color: var(--muted); line-height: 1.6; }
-
-  @media (min-width: 640px) {
-    .main { padding: 28px 32px; }
-    .header { padding: 16px 32px 14px; }
-    .nav { padding: 14px 32px; }
-  }
+:root{--bg:#0a0a0a;--surface:#131313;--surface2:#1a1a1a;--border:rgba(255,255,255,0.08);--border2:rgba(255,255,255,0.14);--text:#f0ede8;--muted:#6b6b6b;--accent:#c8f135;--adim:rgba(200,241,53,0.12);--buy:#4ade80;--buybg:rgba(74,222,128,0.1);--sell:#f87171;--sellbg:rgba(248,113,113,0.1);--wait:#fbbf24;--waitbg:rgba(251,191,36,0.1);--r:14px;--rs:8px}
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+body{font-family:'Syne',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;overflow-x:hidden}
+.hdr{position:sticky;top:0;z-index:100;background:rgba(10,10,10,0.92);backdrop-filter:blur(16px);border-bottom:1px solid var(--border);padding:14px 20px 12px;display:flex;align-items:center;justify-content:space-between}
+.logo{font-size:17px;font-weight:700;letter-spacing:-0.02em}.logo span{color:var(--accent)}
+.hdate{font-family:'DM Mono',monospace;font-size:11px;color:var(--muted);text-align:right;line-height:1.4}
+.nav{display:flex;gap:4px;padding:12px 20px;border-bottom:1px solid var(--border);overflow-x:auto;scrollbar-width:none}
+.nav::-webkit-scrollbar{display:none}
+.nb{white-space:nowrap;padding:7px 16px;border-radius:100px;font-family:'Syne',sans-serif;font-size:13px;font-weight:500;border:1px solid var(--border2);background:transparent;color:var(--muted);cursor:pointer;transition:all 0.2s;flex-shrink:0}
+.nb.active{background:var(--accent);color:#0a0a0a;border-color:var(--accent)}
+.main{padding:20px;max-width:680px;margin:0 auto}
+.sec{display:none}.sec.active{display:block}
+.pr{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:16px}
+.pp{padding:5px 14px;border-radius:100px;font-family:'DM Mono',monospace;font-size:12px;border:1px solid var(--border2);background:transparent;color:var(--muted);cursor:pointer;transition:all 0.15s}
+.pp.active{background:var(--adim);color:var(--accent);border-color:var(--accent)}
+.card{background:var(--surface);border:1px solid var(--border);border-radius:var(--r);padding:18px;margin-bottom:12px}
+.cl{font-family:'DM Mono',monospace;font-size:10px;letter-spacing:0.1em;text-transform:uppercase;color:var(--muted);margin-bottom:10px}
+.cb{font-size:14px;line-height:1.75;color:#c8c4be}.cb strong{color:var(--text);font-weight:500}
+.bt{display:inline-block;font-family:'DM Mono',monospace;font-size:11px;font-weight:500;padding:4px 12px;border-radius:100px;margin-bottom:12px;letter-spacing:0.05em}
+.bbuy{background:var(--buybg);color:var(--buy);border:1px solid rgba(74,222,128,0.25)}
+.bsell{background:var(--sellbg);color:var(--sell);border:1px solid rgba(248,113,113,0.25)}
+.bwait{background:var(--waitbg);color:var(--wait);border:1px solid rgba(251,191,36,0.25)}
+.bneut{background:var(--surface2);color:var(--muted);border:1px solid var(--border2)}
+.div{border:none;border-top:1px solid var(--border);margin:14px 0}
+.ld{display:flex;align-items:center;gap:10px;color:var(--muted);font-size:13px}
+.sp{width:16px;height:16px;border:2px solid var(--border2);border-top-color:var(--accent);border-radius:50%;animation:spin 0.8s linear infinite;flex-shrink:0}
+@keyframes spin{to{transform:rotate(360deg)}}
+.eb{background:var(--sellbg);border:1px solid rgba(248,113,113,0.2);border-radius:var(--rs);padding:12px 14px;font-size:13px;color:var(--sell);line-height:1.6}
+.rb{display:flex;align-items:center;gap:6px;padding:8px 16px;border-radius:100px;border:1px solid var(--border2);background:transparent;color:var(--muted);font-family:'Syne',sans-serif;font-size:13px;cursor:pointer;transition:all 0.2s;margin-top:4px}
+.meta{font-family:'DM Mono',monospace;font-size:10px;color:var(--muted);margin-top:10px}
+.ci{display:flex;align-items:flex-start;gap:12px;padding:10px 0;border-bottom:1px solid var(--border);cursor:pointer}
+.ci:last-child{border-bottom:none}
+.cb2{width:20px;height:20px;flex-shrink:0;border:1.5px solid var(--border2);border-radius:5px;margin-top:1px;display:flex;align-items:center;justify-content:center;font-size:12px;transition:all 0.15s}
+.cb2.done{background:var(--accent);border-color:var(--accent);color:#0a0a0a}
+.cl2{font-size:14px;color:#c8c4be;line-height:1.5}
+.ci.done .cl2{color:var(--muted);text-decoration:line-through}
+.ta{width:100%;background:var(--surface2);border:1px solid var(--border2);border-radius:var(--rs);padding:12px 14px;font-family:'Syne',sans-serif;font-size:14px;color:var(--text);resize:vertical;min-height:90px;outline:none}
+.ta:focus{border-color:var(--accent)}
+.ta::placeholder{color:var(--muted)}
+.sb{display:inline-flex;align-items:center;gap:6px;margin-top:10px;padding:10px 20px;background:var(--accent);color:#0a0a0a;border:none;border-radius:100px;font-family:'Syne',sans-serif;font-size:14px;font-weight:700;cursor:pointer}
+.sb:disabled{opacity:0.5;cursor:not-allowed}
+.st{font-size:22px;font-weight:700;letter-spacing:-0.02em;margin-bottom:4px}
+.ss{font-size:13px;color:var(--muted);margin-bottom:18px}
+.ai{padding:14px 0;border-bottom:1px solid var(--border)}.ai:last-child{border-bottom:none}
+.aq{font-size:13px;font-weight:500;color:var(--text);margin-bottom:4px}
+.aa{font-size:13px;color:var(--muted);line-height:1.6}
+.bn{background:rgba(200,241,53,0.06);border:1px solid rgba(200,241,53,0.2);border-radius:var(--r);padding:14px 16px;margin-bottom:16px;display:flex;align-items:flex-start;gap:12px}
+.bnt{font-size:13px;color:#c8c4be;line-height:1.6;flex:1}.bnt strong{color:var(--accent)}
+.bnc{background:none;border:none;color:var(--muted);font-size:18px;cursor:pointer;padding:0 4px}
+@media(min-width:640px){.main{padding:28px 32px}.hdr{padding:16px 32px 14px}.nav{padding:14px 32px}}
 </style>
 </head>
 <body>
-
-<div class="header">
-  <div class="logo">Forex<span>Hub</span></div>
-  <div class="header-date" id="header-date">—</div>
-</div>
-
+<div class="hdr"><div class="logo">Forex<span>Hub</span></div><div class="hdate" id="hdate"></div></div>
 <div class="nav">
-  <button class="nav-btn active" onclick="showSection('daily',this)">Daily</button>
-  <button class="nav-btn" onclick="showSection('weekly',this)">Weekly</button>
-  <button class="nav-btn" onclick="showSection('checklist',this)">Checklist</button>
-  <button class="nav-btn" onclick="showSection('review',this)">Trade review</button>
-  <button class="nav-btn" onclick="showSection('about',this)">About</button>
+<button class="nb active" onclick="showS('daily',this)">Daily</button>
+<button class="nb" onclick="showS('weekly',this)">Weekly</button>
+<button class="nb" onclick="showS('checklist',this)">Checklist</button>
+<button class="nb" onclick="showS('review',this)">Trade review</button>
+<button class="nb" onclick="showS('about',this)">About</button>
 </div>
-
 <div class="main">
-
-  <!-- DAILY -->
-  <div id="daily" class="section active">
-    <div id="install-banner" class="install-banner">
-      <div class="install-icon">📲</div>
-      <div class="install-text">
-        <strong>Add to home screen</strong> — tap the browser menu (⋮) then "Add to Home screen" to use ForexHub like an app on your Android.
-      </div>
-      <button class="install-close" onclick="document.getElementById('install-banner').style.display='none'">×</button>
-    </div>
-
-    <div class="section-title">Daily analysis</div>
-    <div class="section-sub">AI-powered · refreshes each session</div>
-
-    <div class="pair-row" id="daily-pair-row">
-      <button class="pair-pill active" onclick="loadDaily('EURUSD',this)">EUR/USD</button>
-      <button class="pair-pill" onclick="loadDaily('USDJPY',this)">USD/JPY</button>
-      <button class="pair-pill" onclick="loadDaily('GBPUSD',this)">GBP/USD</button>
-      <button class="pair-pill" onclick="loadDaily('AUDUSD',this)">AUD/USD</button>
-      <button class="pair-pill" onclick="loadDaily('USDCHF',this)">USD/CHF</button>
-    </div>
-
-    <div class="card">
-      <div class="card-label">Today's bias</div>
-      <div id="d-bias"><div class="loading"><div class="spinner"></div>Generating analysis…</div></div>
-      <hr class="divider">
-      <div class="card-label">Key levels</div>
-      <div id="d-levels"><div class="loading"><div class="spinner"></div>Fetching levels…</div></div>
-      <hr class="divider">
-      <div class="card-label">Watch today</div>
-      <div id="d-watch"><div class="loading"><div class="spinner"></div>Scanning events…</div></div>
-      <div class="meta" id="d-meta"></div>
-    </div>
-    <button class="refresh-btn" onclick="forceDaily()">↻ Refresh analysis</button>
-  </div>
-
-  <!-- WEEKLY -->
-  <div id="weekly" class="section">
-    <div class="section-title">Weekly outlook</div>
-    <div class="section-sub">Macro theme · trend structure · key events</div>
-
-    <div class="pair-row" id="weekly-pair-row">
-      <button class="pair-pill active" onclick="loadWeekly('EURUSD',this)">EUR/USD</button>
-      <button class="pair-pill" onclick="loadWeekly('USDJPY',this)">USD/JPY</button>
-      <button class="pair-pill" onclick="loadWeekly('GBPUSD',this)">GBP/USD</button>
-      <button class="pair-pill" onclick="loadWeekly('AUDUSD',this)">AUD/USD</button>
-      <button class="pair-pill" onclick="loadWeekly('USDCHF',this)">USD/CHF</button>
-    </div>
-
-    <div class="card">
-      <div class="card-label">Macro theme</div>
-      <div id="w-theme"><div class="loading"><div class="spinner"></div>Generating weekly outlook…</div></div>
-      <hr class="divider">
-      <div class="card-label">Trend & structure</div>
-      <div id="w-trend"><div class="loading"><div class="spinner"></div>Analysing trend…</div></div>
-      <hr class="divider">
-      <div class="card-label">Key events this week</div>
-      <div id="w-events"><div class="loading"><div class="spinner"></div>Loading calendar…</div></div>
-      <div class="meta" id="w-meta"></div>
-    </div>
-    <button class="refresh-btn" onclick="forceWeekly()">↻ Refresh outlook</button>
-  </div>
-
-  <!-- CHECKLIST -->
-  <div id="checklist" class="section">
-    <div class="section-title">Pre-trade checklist</div>
-    <div class="section-sub">Tick off before every entry</div>
-    <div class="card">
-      <div id="checklist-items">
-        <div class="check-item" onclick="toggleCheck(this)">
-          <div class="check-box"></div>
-          <div class="check-label">Checked weekly bias and trend direction</div>
-        </div>
-        <div class="check-item" onclick="toggleCheck(this)">
-          <div class="check-box"></div>
-          <div class="check-label">Identified key support & resistance levels</div>
-        </div>
-        <div class="check-item" onclick="toggleCheck(this)">
-          <div class="check-box"></div>
-          <div class="check-label">Checked economic calendar for today's news</div>
-        </div>
-        <div class="check-item" onclick="toggleCheck(this)">
-          <div class="check-box"></div>
-          <div class="check-label">Risk per trade set to 1–2% of account only</div>
-        </div>
-        <div class="check-item" onclick="toggleCheck(this)">
-          <div class="check-box"></div>
-          <div class="check-label">Stop-loss level defined before entering</div>
-        </div>
-        <div class="check-item" onclick="toggleCheck(this)">
-          <div class="check-box"></div>
-          <div class="check-label">Take-profit target set (minimum 1:2 risk/reward)</div>
-        </div>
-        <div class="check-item" onclick="toggleCheck(this)">
-          <div class="check-box"></div>
-          <div class="check-label">Trade aligns with both daily AND weekly bias</div>
-        </div>
-        <div class="check-item" onclick="toggleCheck(this)">
-          <div class="check-box"></div>
-          <div class="check-label">Not entering within 15 min of major news release</div>
-        </div>
-        <div class="check-item" onclick="toggleCheck(this)">
-          <div class="check-box"></div>
-          <div class="check-label">Emotionally calm — not revenge trading</div>
-        </div>
-      </div>
-    </div>
-    <button class="refresh-btn" onclick="resetChecklist()">↺ Reset all</button>
-  </div>
-
-  <!-- TRADE REVIEW -->
-  <div id="review" class="section">
-    <div class="section-title">Trade idea review</div>
-    <div class="section-sub">Describe your setup — get instant AI feedback</div>
-    <div class="card">
-      <div class="card-label">Your trade idea</div>
-      <textarea class="trade-textarea" id="trade-input" placeholder="e.g. I want to buy EUR/USD because it broke above 1.0950 resistance, weekly trend is bullish, and NFP is tomorrow. Planning SL at 1.0920, TP at 1.1010…"></textarea>
-      <br>
-      <button class="submit-btn" id="review-btn" onclick="reviewTrade()">Review my trade ↗</button>
-      <div id="review-result" style="margin-top:14px;"></div>
-    </div>
-    <div class="card" style="margin-bottom:0;">
-      <div class="card-label">Remember</div>
-      <div class="card-body">
-        AI analysis is a thinking tool, not financial advice. Always confirm on your charts, use your broker's tools, and never risk money you can't afford to lose. Past analysis does not guarantee future results.
-      </div>
-    </div>
-  </div>
-
-  <!-- ABOUT -->
-  <div id="about" class="section">
-    <div class="section-title">About ForexHub</div>
-    <div class="section-sub">Your daily forex companion</div>
-    <div class="card">
-      <div class="about-item">
-        <div class="about-q">How does the analysis work?</div>
-        <div class="about-a">ForexHub uses Claude AI with live web search to generate daily and weekly analysis based on current market conditions, price action, and economic events.</div>
-      </div>
-      <div class="about-item">
-        <div class="about-q">How often should I refresh?</div>
-        <div class="about-a">Daily analysis is best refreshed each morning (AEST). Weekly outlook is best refreshed Monday morning before the week begins.</div>
-      </div>
-      <div class="about-item">
-        <div class="about-q">Is this financial advice?</div>
-        <div class="about-a">No. ForexHub is an AI-powered analysis tool for educational purposes only. Always do your own research and consult a licensed financial adviser before trading.</div>
-      </div>
-      <div class="about-item">
-        <div class="about-q">Best pairs for beginners?</div>
-        <div class="about-a">Start with EUR/USD — it has the highest liquidity, tightest spreads, and the most analysis available. Master one pair before adding others.</div>
-      </div>
-      <div class="about-item">
-        <div class="about-q">What broker should I use in Australia?</div>
-        <div class="about-a">Look for ASIC-regulated brokers. Popular options include Pepperstone, IC Markets, and IG Markets — all regulated in Australia.</div>
-      </div>
-    </div>
-  </div>
-
-</div><!-- /main -->
-
+<div id="daily" class="sec active">
+<div class="bn" id="ibanner"><div class="bnt"><strong>Add to home screen</strong> — tap Chrome menu then "Add to Home screen" to use ForexHub as an app on Android.</div><button class="bnc" onclick="this.parentElement.style.display='none'">x</button></div>
+<div class="st">Daily analysis</div><div class="ss">AI-powered · live web search · Brisbane AEST</div>
+<div class="pr" id="dpr">
+<button class="pp active" onclick="loadD('EURUSD',this)">EUR/USD</button>
+<button class="pp" onclick="loadD('USDJPY',this)">USD/JPY</button>
+<button class="pp" onclick="loadD('GBPUSD',this)">GBP/USD</button>
+<button class="pp" onclick="loadD('AUDUSD',this)">AUD/USD</button>
+<button class="pp" onclick="loadD('USDCHF',this)">USD/CHF</button>
+</div>
+<div class="card">
+<div class="cl">Today's bias</div><div id="db"><div class="ld"><div class="sp"></div>Generating analysis...</div></div>
+<hr class="div">
+<div class="cl">Key levels</div><div id="dl"><div class="ld"><div class="sp"></div>Fetching levels...</div></div>
+<hr class="div">
+<div class="cl">Watch today</div><div id="dw"><div class="ld"><div class="sp"></div>Scanning events...</div></div>
+<div class="meta" id="dm"></div>
+</div>
+<button class="rb" onclick="forceD()">Refresh analysis</button>
+</div>
+<div id="weekly" class="sec">
+<div class="st">Weekly outlook</div><div class="ss">Macro theme - trend - key events</div>
+<div class="pr" id="wpr">
+<button class="pp active" onclick="loadW('EURUSD',this)">EUR/USD</button>
+<button class="pp" onclick="loadW('USDJPY',this)">USD/JPY</button>
+<button class="pp" onclick="loadW('GBPUSD',this)">GBP/USD</button>
+<button class="pp" onclick="loadW('AUDUSD',this)">AUD/USD</button>
+<button class="pp" onclick="loadW('USDCHF',this)">USD/CHF</button>
+</div>
+<div class="card">
+<div class="cl">Macro theme</div><div id="wt"><div class="ld"><div class="sp"></div>Generating weekly outlook...</div></div>
+<hr class="div">
+<div class="cl">Trend and structure</div><div id="wtr"><div class="ld"><div class="sp"></div>Analysing trend...</div></div>
+<hr class="div">
+<div class="cl">Key events this week</div><div id="we"><div class="ld"><div class="sp"></div>Loading calendar...</div></div>
+<div class="meta" id="wm"></div>
+</div>
+<button class="rb" onclick="forceW()">Refresh outlook</button>
+</div>
+<div id="checklist" class="sec">
+<div class="st">Pre-trade checklist</div><div class="ss">Tick off before every entry</div>
+<div class="card">
+<div class="ci" onclick="tc(this)"><div class="cb2"></div><div class="cl2">Checked weekly bias and trend direction</div></div>
+<div class="ci" onclick="tc(this)"><div class="cb2"></div><div class="cl2">Identified key support and resistance levels</div></div>
+<div class="ci" onclick="tc(this)"><div class="cb2"></div><div class="cl2">Checked economic calendar for today's news</div></div>
+<div class="ci" onclick="tc(this)"><div class="cb2"></div><div class="cl2">Risk per trade set to 1-2% of account only</div></div>
+<div class="ci" onclick="tc(this)"><div class="cb2"></div><div class="cl2">Stop-loss level defined before entering</div></div>
+<div class="ci" onclick="tc(this)"><div class="cb2"></div><div class="cl2">Take-profit target set (minimum 1:2 risk/reward)</div></div>
+<div class="ci" onclick="tc(this)"><div class="cb2"></div><div class="cl2">Trade aligns with both daily AND weekly bias</div></div>
+<div class="ci" onclick="tc(this)"><div class="cb2"></div><div class="cl2">Not entering within 15 min of major news release</div></div>
+<div class="ci" onclick="tc(this)"><div class="cb2"></div><div class="cl2">Emotionally calm - not revenge trading</div></div>
+</div>
+<button class="rb" onclick="rc()">Reset all</button>
+</div>
+<div id="review" class="sec">
+<div class="st">Trade idea review</div><div class="ss">Describe your setup - get instant AI feedback</div>
+<div class="card">
+<div class="cl">Your trade idea</div>
+<textarea class="ta" id="ti" placeholder="e.g. I want to buy EUR/USD because it broke above 1.0950 resistance, weekly trend is bullish. SL at 1.0920, TP at 1.1010"></textarea>
+<br><button class="sb" id="rbtn" onclick="revT()">Review my trade</button>
+<div id="rr" style="margin-top:14px;"></div>
+</div>
+<div class="card" style="margin-bottom:0;"><div class="cl">Disclaimer</div><div class="cb">AI analysis is a thinking tool, not financial advice. Always confirm on your charts and never risk money you cannot afford to lose.</div></div>
+</div>
+<div id="about" class="sec">
+<div class="st">About ForexHub</div><div class="ss">Your daily forex companion</div>
+<div class="card">
+<div class="ai"><div class="aq">How does the analysis work?</div><div class="aa">ForexHub uses Claude AI with live web search via your Cloudflare Worker to generate real-time daily and weekly analysis.</div></div>
+<div class="ai"><div class="aq">How often should I refresh?</div><div class="aa">Daily analysis: each morning AEST. Weekly outlook: Monday morning before markets open.</div></div>
+<div class="ai"><div class="aq">Is this financial advice?</div><div class="aa">No. ForexHub is for educational purposes only. Always consult a licensed financial adviser.</div></div>
+<div class="ai"><div class="aq">Best pair for beginners?</div><div class="aa">Start with EUR/USD - highest liquidity, tightest spreads, most analysis available.</div></div>
+<div class="ai"><div class="aq">Recommended brokers in Australia?</div><div class="aa">ASIC-regulated: Pepperstone, IC Markets, and IG Markets.</div></div>
+</div>
+</div>
+</div>
 <script>
-const CLAUDE_API = 'https://api.anthropic.com/v1/messages';
-const MODEL = 'claude-sonnet-4-20250514';
-const cache = {};
-let currentDaily = 'EURUSD';
-let currentWeekly = 'EURUSD';
-
-// Date display
-const now = new Date();
-const days = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
-const months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
-document.getElementById('header-date').innerHTML =
-  days[now.getDay()] + ' ' + now.getDate() + ' ' + months[now.getMonth()] + '<br>' + now.getFullYear();
-
-function showSection(id, btn) {
-  document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
-  document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
-  document.getElementById(id).classList.add('active');
-  btn.classList.add('active');
-}
-
-function setPairActive(rowId, btn) {
-  document.getElementById(rowId).querySelectorAll('.pair-pill').forEach(b => b.classList.remove('active'));
-  btn.classList.add('active');
-}
-
-function fmt(text) {
-  return text
-    .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
-    .replace(/^[-•]\s*/gm, '')
-    .replace(/\n{2,}/g, '<br><br>')
-    .replace(/\n/g, '<br>');
-}
-
-function biasTag(word) {
-  const w = (word||'').toLowerCase();
-  if (w.includes('bull') || w.includes('buy') || w.includes('long')) return '<span class="bias-tag bias-buy">BULLISH / BUY</span>';
-  if (w.includes('bear') || w.includes('sell') || w.includes('short')) return '<span class="bias-tag bias-sell">BEARISH / SELL</span>';
-  if (w.includes('wait') || w.includes('range')) return '<span class="bias-tag bias-wait">WAIT / RANGE</span>';
-  return '<span class="bias-tag bias-neutral">NEUTRAL</span>';
-}
-
-function setEl(id, html) { const el = document.getElementById(id); if (el) el.innerHTML = html; }
-function loading(msg) { return `<div class="loading"><div class="spinner"></div>${msg}</div>`; }
-function errBox(msg) { return `<div class="error-box">${msg}</div>`; }
-
-async function callClaude(userPrompt) {
-  const res = await fetch(CLAUDE_API, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({
-      model: MODEL,
-      max_tokens: 1000,
-      tools: [{ type: 'web_search_20250305', name: 'web_search' }],
-      messages: [{ role: 'user', content: userPrompt }]
-    })
-  });
-  if (!res.ok) {
-    const err = await res.json().catch(() => ({}));
-    throw new Error(err.error?.message || 'API error ' + res.status);
-  }
-  const data = await res.json();
-  return data.content.filter(b => b.type === 'text').map(b => b.text).join('\n').trim();
-}
-
-async function loadDaily(pair, btn) {
-  if (btn) setPairActive('daily-pair-row', btn);
-  currentDaily = pair;
-  const key = 'daily_' + pair + '_' + now.toDateString();
-  setEl('d-bias', loading('Analysing today's bias…'));
-  setEl('d-levels', loading('Fetching key levels…'));
-  setEl('d-watch', loading('Checking events…'));
-  setEl('d-meta', '');
-
-  if (cache[key]) { renderDaily(cache[key]); return; }
-
-  try {
-    const text = await callClaude(
-      `You are a professional forex analyst. Today is ${now.toDateString()}. Search the web for the latest ${pair} price and news right now.
-
-Give a concise daily trading analysis for ${pair}. Use EXACTLY these section headers (all caps, colon, then content):
-
+const WU='https://forexhub.jlivo10.workers.dev';
+const MDL='claude-sonnet-4-20250514';
+const cache={};let cD='EURUSD',cW='EURUSD';
+const now=new Date();
+const days=['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
+const mths=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+document.getElementById('hdate').innerHTML=days[now.getDay()]+' '+now.getDate()+' '+mths[now.getMonth()]+'<br>'+now.getFullYear();
+function showS(id,btn){document.querySelectorAll('.sec').forEach(s=>s.classList.remove('active'));document.querySelectorAll('.nb').forEach(b=>b.classList.remove('active'));document.getElementById(id).classList.add('active');btn.classList.add('active');}
+function spa(rid,btn){document.getElementById(rid).querySelectorAll('.pp').forEach(b=>b.classList.remove('active'));btn.classList.add('active');}
+function fmt(t){return t.replace(/**(.*?)**/g,'<strong>$1</strong>').replace(/^[-]/gm,'').replace(/
+{2,}/g,'<br><br>').replace(/
+/g,'<br>');}
+function btag(w){const v=(w||'').toLowerCase();if(v.includes('bull')||v.includes('buy')||v.includes('long'))return '<span class="bt bbuy">BULLISH / BUY</span>';if(v.includes('bear')||v.includes('sell')||v.includes('short'))return '<span class="bt bsell">BEARISH / SELL</span>';if(v.includes('wait')||v.includes('range'))return '<span class="bt bwait">WAIT / RANGE</span>';return '<span class="bt bneut">NEUTRAL</span>';}
+function se(id,h){const e=document.getElementById(id);if(e)e.innerHTML=h;}
+function ld(m){return '<div class="ld"><div class="sp"></div>'+m+'</div>';}
+function eb(m){return '<div class="eb">'+m+'</div>';}
+async function cc(p){
+const r=await fetch(WU,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({model:MDL,max_tokens:1000,tools:[{type:'web_search_20250305',name:'web_search'}],messages:[{role:'user',content:p}]})});
+if(!r.ok){const e=await r.json().catch(()=>({}));throw new Error(e.error?.message||'Worker error '+r.status);}
+const d=await r.json();if(d.error)throw new Error(d.error.message);
+return d.content.filter(b=>b.type==='text').map(b=>b.text).join('
+').trim();}
+async function loadD(pair,btn){
+if(btn)spa('dpr',btn);cD=pair;
+const k='d_'+pair+'_'+now.toDateString();
+se('db',ld("Generating today's bias..."));se('dl',ld('Fetching key levels...'));se('dw',ld('Scanning events...'));se('dm','');
+if(cache[k]){rdD(cache[k]);return;}
+try{const t=await cc('You are a professional forex analyst. Today is '+now.toDateString()+'. Search the web for the latest '+pair+' price and news.
+Give a concise daily analysis for '+pair+'. Use EXACTLY these headers:
 BIAS: [single word: Bullish, Bearish, or Neutral]
-TODAY_BIAS: [2-3 sentences on today's directional bias from latest price action and sentiment]
-KEY_LEVELS: [2-3 sentences covering today's key support and resistance levels to watch]
-WATCH_TODAY: [2-3 sentences on news events or technical triggers to watch today]
-
-Be specific and current based on real conditions as of ${now.toDateString()}.`
-    );
-    cache[key] = text;
-    renderDaily(text);
-  } catch(e) {
-    setEl('d-bias', errBox('Analysis failed: ' + e.message + '. Check your internet connection and try refreshing.'));
-    setEl('d-levels', ''); setEl('d-watch', '');
-  }
-}
-
-function renderDaily(text) {
-  const bias = (text.match(/^BIAS:\s*(.+)/im) || [])[1] || 'Neutral';
-  const biasBody = (text.match(/TODAY_BIAS:\s*([\s\S]*?)(?=KEY_LEVELS:|$)/i) || [])[1] || '';
-  const levels = (text.match(/KEY_LEVELS:\s*([\s\S]*?)(?=WATCH_TODAY:|$)/i) || [])[1] || '';
-  const watch = (text.match(/WATCH_TODAY:\s*([\s\S]*?)$/i) || [])[1] || '';
-  setEl('d-bias', biasTag(bias) + '<div class="card-body">' + fmt(biasBody.trim()) + '</div>');
-  setEl('d-levels', '<div class="card-body">' + fmt(levels.trim()) + '</div>');
-  setEl('d-watch', '<div class="card-body">' + fmt(watch.trim()) + '</div>');
-  setEl('d-meta', 'Generated ' + new Date().toLocaleTimeString('en-AU',{hour:'2-digit',minute:'2-digit'}) + ' AEST · AI + live web search · Not financial advice');
-}
-
-function forceDaily() {
-  const key = 'daily_' + currentDaily + '_' + now.toDateString();
-  delete cache[key];
-  loadDaily(currentDaily, null);
-}
-
-async function loadWeekly(pair, btn) {
-  if (btn) setPairActive('weekly-pair-row', btn);
-  currentWeekly = pair;
-  const d = new Date(Date.UTC(now.getFullYear(), now.getMonth(), now.getDate()));
-  const dn = d.getUTCDay() || 7; d.setUTCDate(d.getUTCDate() + 4 - dn);
-  const ys = new Date(Date.UTC(d.getUTCFullYear(),0,1));
-  const wk = Math.ceil((((d-ys)/86400000)+1)/7);
-  const key = 'weekly_' + pair + '_' + now.getFullYear() + '_w' + wk;
-
-  setEl('w-theme', loading('Generating weekly outlook…'));
-  setEl('w-trend', loading('Analysing trend…'));
-  setEl('w-events', loading('Loading economic calendar…'));
-  setEl('w-meta', '');
-
-  if (cache[key]) { renderWeekly(cache[key]); return; }
-
-  try {
-    const text = await callClaude(
-      `You are a professional forex analyst. Today is ${now.toDateString()}. Search the web for the latest ${pair} weekly analysis and upcoming economic events this week.
-
-Give a weekly trading analysis for ${pair}. Use EXACTLY these section headers:
-
-WEEKLY_THEME: [2-3 sentences on the dominant macro theme driving this pair this week]
-TREND_STRUCTURE: [2-3 sentences on the weekly trend and where price sits vs. key moving averages or structure]
-WEEKLY_EVENTS: [2-3 sentences listing the most important economic releases this week that could move this pair, with days]
-
-Base this on real current market conditions for the week of ${now.toDateString()}.`
-    );
-    cache[key] = text;
-    renderWeekly(text);
-  } catch(e) {
-    setEl('w-theme', errBox('Weekly outlook failed: ' + e.message));
-    setEl('w-trend', ''); setEl('w-events', '');
-  }
-}
-
-function renderWeekly(text) {
-  const theme = (text.match(/WEEKLY_THEME:\s*([\s\S]*?)(?=TREND_STRUCTURE:|$)/i)||[])[1]||'';
-  const trend = (text.match(/TREND_STRUCTURE:\s*([\s\S]*?)(?=WEEKLY_EVENTS:|$)/i)||[])[1]||'';
-  const events = (text.match(/WEEKLY_EVENTS:\s*([\s\S]*?)$/i)||[])[1]||'';
-  setEl('w-theme', '<div class="card-body">' + fmt(theme.trim()) + '</div>');
-  setEl('w-trend', '<div class="card-body">' + fmt(trend.trim()) + '</div>');
-  setEl('w-events', '<div class="card-body">' + fmt(events.trim()) + '</div>');
-  setEl('w-meta', 'Week of ' + now.toLocaleDateString('en-AU',{day:'numeric',month:'long',year:'numeric'}) + ' · AI + live web search · Not financial advice');
-}
-
-function forceWeekly() {
-  const d = new Date(Date.UTC(now.getFullYear(),now.getMonth(),now.getDate()));
-  const dn = d.getUTCDay()||7; d.setUTCDate(d.getUTCDate()+4-dn);
-  const ys = new Date(Date.UTC(d.getUTCFullYear(),0,1));
-  const wk = Math.ceil((((d-ys)/86400000)+1)/7);
-  const key = 'weekly_' + currentWeekly + '_' + now.getFullYear() + '_w' + wk;
-  delete cache[key];
-  loadWeekly(currentWeekly, null);
-}
-
-function toggleCheck(item) {
-  item.classList.toggle('done');
-  const box = item.querySelector('.check-box');
-  box.classList.toggle('done');
-  box.textContent = box.classList.contains('done') ? '✓' : '';
-}
-
-function resetChecklist() {
-  document.querySelectorAll('.check-item').forEach(i => {
-    i.classList.remove('done');
-    const b = i.querySelector('.check-box');
-    b.classList.remove('done'); b.textContent = '';
-  });
-}
-
-async function reviewTrade() {
-  const idea = document.getElementById('trade-input').value.trim();
-  if (!idea) return;
-  const btn = document.getElementById('review-btn');
-  btn.disabled = true; btn.textContent = 'Reviewing…';
-  setEl('review-result', loading('Analysing your trade idea…'));
-  try {
-    const text = await callClaude(
-      `You are a professional forex risk manager. Today is ${now.toDateString()}. Briefly search the web if needed.
-
-A trader has described this trade idea: "${idea}"
-
-Give a direct, honest 4-5 sentence review covering:
+TODAY_BIAS: [2-3 sentences on directional bias]
+KEY_LEVELS: [2-3 sentences on support and resistance levels]
+WATCH_TODAY: [2-3 sentences on news or triggers to watch today]');cache[k]=t;rdD(t);}
+catch(e){se('db',eb('Could not load: '+e.message+'<br><br>Make sure your Cloudflare Worker is deployed and ANTHROPIC_API_KEY is set as a secret variable.'));se('dl','');se('dw','');}}
+function rdD(t){const bias=(t.match(/^BIAS:s*(.+)/im)||[])[1]||'Neutral';const bb=(t.match(/TODAY_BIAS:s*([sS]*?)(?=KEY_LEVELS:|$)/i)||[])[1]||'';const lv=(t.match(/KEY_LEVELS:s*([sS]*?)(?=WATCH_TODAY:|$)/i)||[])[1]||'';const wt=(t.match(/WATCH_TODAY:s*([sS]*?)$/i)||[])[1]||'';se('db',btag(bias)+'<div class="cb">'+fmt(bb.trim())+'</div>');se('dl','<div class="cb">'+fmt(lv.trim())+'</div>');se('dw','<div class="cb">'+fmt(wt.trim())+'</div>');se('dm','Generated '+new Date().toLocaleTimeString('en-AU',{hour:'2-digit',minute:'2-digit'})+' AEST - AI + live web search - Not financial advice');}
+function forceD(){delete cache['d_'+cD+'_'+now.toDateString()];loadD(cD,null);}
+async function loadW(pair,btn){
+if(btn)spa('wpr',btn);cW=pair;
+const d=new Date(Date.UTC(now.getFullYear(),now.getMonth(),now.getDate()));const dn=d.getUTCDay()||7;d.setUTCDate(d.getUTCDate()+4-dn);const ys=new Date(Date.UTC(d.getUTCFullYear(),0,1));const wk=Math.ceil((((d-ys)/86400000)+1)/7);
+const k='w_'+pair+'_'+now.getFullYear()+'_'+wk;
+se('wt',ld('Generating weekly outlook...'));se('wtr',ld('Analysing trend...'));se('we',ld('Loading calendar...'));se('wm','');
+if(cache[k]){rdW(cache[k]);return;}
+try{const t=await cc('You are a professional forex analyst. Today is '+now.toDateString()+'. Search the web for the latest '+pair+' weekly analysis and upcoming events.
+Give a weekly analysis for '+pair+'. Use EXACTLY these headers:
+WEEKLY_THEME: [2-3 sentences on macro theme this week]
+TREND_STRUCTURE: [2-3 sentences on weekly trend and structure]
+WEEKLY_EVENTS: [2-3 sentences on important releases this week with days]');cache[k]=t;rdW(t);}
+catch(e){se('wt',eb('Could not load: '+e.message));se('wtr','');se('we','');}}
+function rdW(t){const th=(t.match(/WEEKLY_THEME:s*([sS]*?)(?=TREND_STRUCTURE:|$)/i)||[])[1]||'';const tr=(t.match(/TREND_STRUCTURE:s*([sS]*?)(?=WEEKLY_EVENTS:|$)/i)||[])[1]||'';const ev=(t.match(/WEEKLY_EVENTS:s*([sS]*?)$/i)||[])[1]||'';se('wt','<div class="cb">'+fmt(th.trim())+'</div>');se('wtr','<div class="cb">'+fmt(tr.trim())+'</div>');se('we','<div class="cb">'+fmt(ev.trim())+'</div>');se('wm','Week of '+now.toLocaleDateString('en-AU',{day:'numeric',month:'long',year:'numeric'})+' - AI + live web search - Not financial advice');}
+function forceW(){const d=new Date(Date.UTC(now.getFullYear(),now.getMonth(),now.getDate()));const dn=d.getUTCDay()||7;d.setUTCDate(d.getUTCDate()+4-dn);const ys=new Date(Date.UTC(d.getUTCFullYear(),0,1));const wk=Math.ceil((((d-ys)/86400000)+1)/7);delete cache['w_'+cW+'_'+now.getFullYear()+'_'+wk];loadW(cW,null);}
+function tc(item){item.classList.toggle('done');const b=item.querySelector('.cb2');b.classList.toggle('done');b.textContent=b.classList.contains('done')?'v':'';}
+function rc(){document.querySelectorAll('.ci').forEach(i=>{i.classList.remove('done');const b=i.querySelector('.cb2');b.classList.remove('done');b.textContent='';});}
+async function revT(){const idea=document.getElementById('ti').value.trim();if(!idea)return;const btn=document.getElementById('rbtn');btn.disabled=true;btn.textContent='Reviewing...';se('rr',ld('Analysing your trade idea...'));try{const t=await cc('You are a professional forex risk manager. Today is '+now.toDateString()+'.
+A trader has this idea: "'+idea+'"
+Give a direct 4-5 sentence review covering:
 1. Whether this aligns with current market conditions
-2. The main risk to be aware of
-3. One specific improvement to strengthen the setup
-
-Be practical and specific. No fluff.`
-    );
-    setEl('review-result', '<div class="card-body" style="background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.08);border-radius:10px;padding:14px;">' + fmt(text) + '</div>');
-  } catch(e) {
-    setEl('review-result', errBox('Review failed: ' + e.message));
-  }
-  btn.disabled = false; btn.textContent = 'Review my trade ↗';
-}
-
-// Auto-load on start
-loadDaily('EURUSD', null);
-loadWeekly('EURUSD', null);
+2. The main risk
+3. One specific improvement');se('rr','<div class="cb" style="background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.08);border-radius:10px;padding:14px;">'+fmt(t)+'</div>');}catch(e){se('rr',eb('Review failed: '+e.message));}btn.disabled=false;btn.textContent='Review my trade';}
+loadD('EURUSD',null);loadW('EURUSD',null);
 </script>
 </body>
 </html>
