@@ -45,8 +45,19 @@ body{font-family:'Syne',sans-serif;background:var(--bg);color:var(--tx);min-heig
 .pair-sidebar{width:108px;flex-shrink:0;position:sticky;top:114px;max-height:calc(100vh - 130px);overflow-y:auto;scrollbar-width:none;padding-bottom:20px}
 .pair-sidebar::-webkit-scrollbar{display:none}
 .pg{margin-bottom:10px}
-.pgl{font-family:'DM Mono',monospace;font-size:9px;letter-spacing:0.12em;text-transform:uppercase;color:var(--ac);padding:2px 6px 5px;opacity:0.75}
+.pgl{font-family:'DM Mono',monospace;font-size:9px;letter-spacing:0.12em;text-transform:uppercase;color:var(--ccy-col,var(--mt));padding:2px 6px 5px;opacity:0.9}
 .pair-sidebar .pp{display:block;width:100%;text-align:left;border-radius:6px;padding:5px 8px;margin-bottom:2px;font-size:11px;white-space:nowrap;overflow:hidden}
+/* Override active pair colour per currency group */
+.pair-sidebar .pp.active{background:var(--ccy-bg,var(--adm));color:var(--ccy-col,var(--ac));border-color:var(--ccy-col,var(--ac))}
+/* Currency group colours */
+.pg[data-ccy="AUD"]{--ccy-col:#86efac;--ccy-bg:rgba(134,239,172,0.12)}
+.pg[data-ccy="CAD"]{--ccy-col:#fb923c;--ccy-bg:rgba(251,146,60,0.12)}
+.pg[data-ccy="CHF"]{--ccy-col:#cbd5e1;--ccy-bg:rgba(203,213,225,0.10)}
+.pg[data-ccy="EUR"]{--ccy-col:#60a5fa;--ccy-bg:rgba(96,165,250,0.12)}
+.pg[data-ccy="GBP"]{--ccy-col:#f472b6;--ccy-bg:rgba(244,114,182,0.12)}
+.pg[data-ccy="NZD"]{--ccy-col:#2dd4bf;--ccy-bg:rgba(45,212,191,0.12)}
+.pg[data-ccy="USD"]{--ccy-col:#38bdf8;--ccy-bg:rgba(56,189,248,0.12)}
+.pg[data-ccy="XAU"]{--ccy-col:#fbbf24;--ccy-bg:rgba(251,191,36,0.12)}
 .analysis-main{flex:1;min-width:0}
 
 /* Mobile: collapse sidebar to pills */
@@ -230,24 +241,24 @@ body{font-family:'Syne',sans-serif;background:var(--bg);color:var(--tx);min-heig
   <div class="analysis-layout">
     <!-- Left sidebar: pairs grouped by base currency -->
     <div class="pair-sidebar" id="dpr">
-      <div class="pg">
+      <div class="pg" data-ccy="AUD">
         <div class="pgl">AUD</div>
-        <button class="pp active" onclick="loadD('AUDUSD',this)">AUD/USD</button>
-        <button class="pp" onclick="loadD('AUDCAD',this)">AUD/CAD</button>
+        <button class="pp active" onclick="loadD('AUDCAD',this)">AUD/CAD</button>
         <button class="pp" onclick="loadD('AUDCHF',this)">AUD/CHF</button>
         <button class="pp" onclick="loadD('AUDJPY',this)">AUD/JPY</button>
         <button class="pp" onclick="loadD('AUDNZD',this)">AUD/NZD</button>
+        <button class="pp" onclick="loadD('AUDUSD',this)">AUD/USD</button>
       </div>
-      <div class="pg">
+      <div class="pg" data-ccy="CAD">
         <div class="pgl">CAD</div>
         <button class="pp" onclick="loadD('CADCHF',this)">CAD/CHF</button>
         <button class="pp" onclick="loadD('CADJPY',this)">CAD/JPY</button>
       </div>
-      <div class="pg">
+      <div class="pg" data-ccy="CHF">
         <div class="pgl">CHF</div>
         <button class="pp" onclick="loadD('CHFJPY',this)">CHF/JPY</button>
       </div>
-      <div class="pg">
+      <div class="pg" data-ccy="EUR">
         <div class="pgl">EUR</div>
         <button class="pp" onclick="loadD('EURAUD',this)">EUR/AUD</button>
         <button class="pp" onclick="loadD('EURCAD',this)">EUR/CAD</button>
@@ -257,7 +268,7 @@ body{font-family:'Syne',sans-serif;background:var(--bg);color:var(--tx);min-heig
         <button class="pp" onclick="loadD('EURNZD',this)">EUR/NZD</button>
         <button class="pp" onclick="loadD('EURUSD',this)">EUR/USD</button>
       </div>
-      <div class="pg">
+      <div class="pg" data-ccy="GBP">
         <div class="pgl">GBP</div>
         <button class="pp" onclick="loadD('GBPAUD',this)">GBP/AUD</button>
         <button class="pp" onclick="loadD('GBPCAD',this)">GBP/CAD</button>
@@ -266,20 +277,20 @@ body{font-family:'Syne',sans-serif;background:var(--bg);color:var(--tx);min-heig
         <button class="pp" onclick="loadD('GBPNZD',this)">GBP/NZD</button>
         <button class="pp" onclick="loadD('GBPUSD',this)">GBP/USD</button>
       </div>
-      <div class="pg">
+      <div class="pg" data-ccy="NZD">
         <div class="pgl">NZD</div>
         <button class="pp" onclick="loadD('NZDCAD',this)">NZD/CAD</button>
         <button class="pp" onclick="loadD('NZDCHF',this)">NZD/CHF</button>
         <button class="pp" onclick="loadD('NZDJPY',this)">NZD/JPY</button>
         <button class="pp" onclick="loadD('NZDUSD',this)">NZD/USD</button>
       </div>
-      <div class="pg">
+      <div class="pg" data-ccy="USD">
         <div class="pgl">USD</div>
         <button class="pp" onclick="loadD('USDCAD',this)">USD/CAD</button>
         <button class="pp" onclick="loadD('USDCHF',this)">USD/CHF</button>
         <button class="pp" onclick="loadD('USDJPY',this)">USD/JPY</button>
       </div>
-      <div class="pg">
+      <div class="pg" data-ccy="XAU">
         <div class="pgl">XAU</div>
         <button class="pp" onclick="loadD('XAUUSD',this)">XAU/USD</button>
       </div>
@@ -309,24 +320,24 @@ body{font-family:'Syne',sans-serif;background:var(--bg);color:var(--tx);min-heig
   <div class="analysis-layout">
     <!-- Left sidebar: pairs grouped by base currency -->
     <div class="pair-sidebar" id="wpr">
-      <div class="pg">
+      <div class="pg" data-ccy="AUD">
         <div class="pgl">AUD</div>
-        <button class="pp active" onclick="loadW('AUDUSD',this)">AUD/USD</button>
-        <button class="pp" onclick="loadW('AUDCAD',this)">AUD/CAD</button>
+        <button class="pp active" onclick="loadW('AUDCAD',this)">AUD/CAD</button>
         <button class="pp" onclick="loadW('AUDCHF',this)">AUD/CHF</button>
         <button class="pp" onclick="loadW('AUDJPY',this)">AUD/JPY</button>
         <button class="pp" onclick="loadW('AUDNZD',this)">AUD/NZD</button>
+        <button class="pp" onclick="loadW('AUDUSD',this)">AUD/USD</button>
       </div>
-      <div class="pg">
+      <div class="pg" data-ccy="CAD">
         <div class="pgl">CAD</div>
         <button class="pp" onclick="loadW('CADCHF',this)">CAD/CHF</button>
         <button class="pp" onclick="loadW('CADJPY',this)">CAD/JPY</button>
       </div>
-      <div class="pg">
+      <div class="pg" data-ccy="CHF">
         <div class="pgl">CHF</div>
         <button class="pp" onclick="loadW('CHFJPY',this)">CHF/JPY</button>
       </div>
-      <div class="pg">
+      <div class="pg" data-ccy="EUR">
         <div class="pgl">EUR</div>
         <button class="pp" onclick="loadW('EURAUD',this)">EUR/AUD</button>
         <button class="pp" onclick="loadW('EURCAD',this)">EUR/CAD</button>
@@ -336,7 +347,7 @@ body{font-family:'Syne',sans-serif;background:var(--bg);color:var(--tx);min-heig
         <button class="pp" onclick="loadW('EURNZD',this)">EUR/NZD</button>
         <button class="pp" onclick="loadW('EURUSD',this)">EUR/USD</button>
       </div>
-      <div class="pg">
+      <div class="pg" data-ccy="GBP">
         <div class="pgl">GBP</div>
         <button class="pp" onclick="loadW('GBPAUD',this)">GBP/AUD</button>
         <button class="pp" onclick="loadW('GBPCAD',this)">GBP/CAD</button>
@@ -345,20 +356,20 @@ body{font-family:'Syne',sans-serif;background:var(--bg);color:var(--tx);min-heig
         <button class="pp" onclick="loadW('GBPNZD',this)">GBP/NZD</button>
         <button class="pp" onclick="loadW('GBPUSD',this)">GBP/USD</button>
       </div>
-      <div class="pg">
+      <div class="pg" data-ccy="NZD">
         <div class="pgl">NZD</div>
         <button class="pp" onclick="loadW('NZDCAD',this)">NZD/CAD</button>
         <button class="pp" onclick="loadW('NZDCHF',this)">NZD/CHF</button>
         <button class="pp" onclick="loadW('NZDJPY',this)">NZD/JPY</button>
         <button class="pp" onclick="loadW('NZDUSD',this)">NZD/USD</button>
       </div>
-      <div class="pg">
+      <div class="pg" data-ccy="USD">
         <div class="pgl">USD</div>
         <button class="pp" onclick="loadW('USDCAD',this)">USD/CAD</button>
         <button class="pp" onclick="loadW('USDCHF',this)">USD/CHF</button>
         <button class="pp" onclick="loadW('USDJPY',this)">USD/JPY</button>
       </div>
-      <div class="pg">
+      <div class="pg" data-ccy="XAU">
         <div class="pgl">XAU</div>
         <button class="pp" onclick="loadW('XAUUSD',this)">XAU/USD</button>
       </div>
@@ -579,8 +590,8 @@ var cache = {};
 var now  = new Date();
 var DAYS = ["Sun","Mon","Tue","Wed","Thu","Fri","Sat"];
 var MTHS = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
-var cD   = "AUDUSD";
-var cW   = "AUDUSD";
+var cD   = "AUDCAD";
+var cW   = "AUDCAD";
 
 // ══ PAIR LABELS ══
 var PL = {
@@ -962,8 +973,8 @@ async function revT(){
 }
 
 // ══ INIT ══
-loadD("AUDUSD",null);
-loadW("AUDUSD",null);
+loadD("AUDCAD",null);
+loadW("AUDCAD",null);
 renderJournal();
 </script>
 </body>
