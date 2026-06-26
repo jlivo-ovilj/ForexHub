@@ -26,6 +26,7 @@ body[data-sect="calendar"]  {--ac:#fb7185;--adm:rgba(251,113,133,0.12)}
 body[data-sect="journal"]   {--ac:#22d3ee;--adm:rgba(34,211,238,0.12)}
 body[data-sect="checklist"] {--ac:#a3e635;--adm:rgba(163,230,53,0.12)}
 body[data-sect="review"]    {--ac:#f97316;--adm:rgba(249,115,22,0.12)}
+body[data-sect="maps"]      {--ac:#38bdf8;--adm:rgba(56,189,248,0.12)}
 body[data-sect="about"]     {--ac:#94a3b8;--adm:rgba(148,163,184,0.12)}
 
 *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
@@ -45,6 +46,17 @@ body{font-family:'Syne',sans-serif;background:var(--bg);color:var(--tx);min-heig
 /* Main */
 .main{padding:20px;max-width:980px;margin:0 auto}
 .sec{display:none}.sec.active{display:block}
+
+/* ── MAPS TAB ── */
+.map-tabs{display:flex;gap:6px;margin-bottom:16px;flex-wrap:wrap}
+.map-tb{padding:7px 18px;border-radius:100px;font-family:'Syne',sans-serif;font-size:13px;font-weight:500;border:1px solid var(--bd2);background:transparent;color:var(--mt);cursor:pointer;transition:all 0.15s}
+.map-tb.active{background:var(--ac);color:#0a0a0a;border-color:var(--ac)}
+.map-panel{display:none}.map-panel.active{display:block}
+.map-wrap{background:#fff;border-radius:var(--r);overflow:hidden;overflow-x:auto;-webkit-overflow-scrolling:touch}
+.map-frame{border:none;display:block;min-height:660px;width:100%;min-width:700px}
+.map-src{font-family:'DM Mono',monospace;font-size:10px;color:var(--mt);margin-top:8px;text-align:right}
+.map-src a{color:var(--mt);text-decoration:none}
+.map-src a:hover{color:var(--ac)}
 
 /* ── SIDEBAR LAYOUT (Daily + Weekly) ── */
 .analysis-layout{display:flex;gap:18px;align-items:flex-start}
@@ -233,6 +245,7 @@ body{font-family:'Syne',sans-serif;background:var(--bg);color:var(--tx);min-heig
   <button class="nb" onclick="showS('journal',this)">Journal</button>
   <button class="nb" onclick="showS('checklist',this)">Checklist</button>
   <button class="nb" onclick="showS('review',this)">Review</button>
+  <button class="nb" onclick="showS('maps',this)">Maps</button>
   <button class="nb" onclick="showS('about',this)">About</button>
 </div>
 
@@ -572,6 +585,41 @@ body{font-family:'Syne',sans-serif;background:var(--bg);color:var(--tx);min-heig
   </div>
 </div>
 
+<!-- ══ MAPS ══════════════════════════════════════ -->
+<div id="maps" class="sec">
+  <div class="st">Market maps</div>
+  <div class="ss">Heat map · Sentiment · Correlation · live data via myfxbook</div>
+  <div class="map-tabs">
+    <button class="map-tb active" onclick="showMap('heatmap',this)">🌡 Heat Map</button>
+    <button class="map-tb" onclick="showMap('sentiment',this)">📊 Sentiment</button>
+    <button class="map-tb" onclick="showMap('correlation',this)">🔗 Correlation</button>
+  </div>
+
+  <!-- Heat Map -->
+  <div id="heatmap" class="map-panel active">
+    <div class="map-wrap">
+      <iframe class="map-frame" src="https://widgets.myfxbook.com/widgets/heat-map.html" loading="lazy" scrolling="no" title="Forex Heat Map"></iframe>
+    </div>
+    <div class="map-src">Data: <a href="https://www.myfxbook.com/forex-market/heat-map" target="_blank" rel="noopener">myfxbook.com/forex-market/heat-map</a></div>
+  </div>
+
+  <!-- Sentiment -->
+  <div id="sentiment" class="map-panel">
+    <div class="map-wrap">
+      <iframe class="map-frame" src="https://widgets.myfxbook.com/widgets/outlook.html" loading="lazy" scrolling="no" title="Forex Sentiment"></iframe>
+    </div>
+    <div class="map-src">Data: <a href="https://www.myfxbook.com/community/outlook" target="_blank" rel="noopener">myfxbook.com/community/outlook</a></div>
+  </div>
+
+  <!-- Correlation -->
+  <div id="correlation" class="map-panel">
+    <div class="map-wrap">
+      <iframe class="map-frame" style="min-height:780px" src="https://widgets.myfxbook.com/widgets/correlation.html" loading="lazy" scrolling="no" title="Forex Correlation"></iframe>
+    </div>
+    <div class="map-src">Data: <a href="https://www.myfxbook.com/forex-market/correlation" target="_blank" rel="noopener">myfxbook.com/forex-market/correlation</a></div>
+  </div>
+</div>
+
 <!-- ══ ABOUT ══════════════════════════════════════ -->
 <div id="about" class="sec">
   <div class="st">About ForexHub</div>
@@ -624,6 +672,12 @@ function showS(id, btn) {
   if(id==="sessions") startSessions();
   if(id==="journal")  renderJournal();
   if(id==="calendar") loadCal();
+}
+function showMap(id, btn) {
+  document.querySelectorAll(".map-panel").forEach(function(p){p.classList.remove("active");});
+  document.querySelectorAll(".map-tb").forEach(function(b){b.classList.remove("active");});
+  document.getElementById(id).classList.add("active");
+  btn.classList.add("active");
 }
 function spa(rid, btn) {
   document.getElementById(rid).querySelectorAll(".pp").forEach(function(b){b.classList.remove("active");});
