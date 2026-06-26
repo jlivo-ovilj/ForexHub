@@ -9,29 +9,50 @@
 <title>ForexHub</title>
 <link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Syne:wght@400;500;700&display=swap" rel="stylesheet">
 <style>
-:root{--bg:#0a0a0a;--sf:#131313;--sf2:#1a1a1a;--bd:rgba(255,255,255,0.08);--bd2:rgba(255,255,255,0.14);--tx:#f0ede8;--mt:#6b6b6b;--ac:#c8f135;--adm:rgba(200,241,53,0.12);--buy:#4ade80;--bbg:rgba(74,222,128,0.1);--sel:#f87171;--sbg:rgba(248,113,113,0.1);--wt:#fbbf24;--wbg:rgba(251,191,36,0.1);--r:14px;--rs:8px}
+:root{
+  --bg:#0a0a0a;--sf:#131313;--sf2:#1a1a1a;--bd:rgba(255,255,255,0.08);--bd2:rgba(255,255,255,0.14);
+  --tx:#f0ede8;--mt:#6b6b6b;--ac:#c8f135;--adm:rgba(200,241,53,0.12);
+  --buy:#4ade80;--bbg:rgba(74,222,128,0.1);
+  --sel:#f87171;--sbg:rgba(248,113,113,0.1);
+  --wt:#fbbf24;--wbg:rgba(251,191,36,0.1);
+  --r:14px;--rs:8px
+}
 *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
 body{font-family:'Syne',sans-serif;background:var(--bg);color:var(--tx);min-height:100vh;overflow-x:hidden}
+
+/* Header */
 .hdr{position:sticky;top:0;z-index:100;background:rgba(10,10,10,0.92);backdrop-filter:blur(16px);border-bottom:1px solid var(--bd);padding:14px 20px 12px;display:flex;align-items:center;justify-content:space-between}
 .logo{font-size:17px;font-weight:700;letter-spacing:-0.02em}.logo span{color:var(--ac)}
 .hdate{font-family:'DM Mono',monospace;font-size:11px;color:var(--mt);text-align:right;line-height:1.4}
+
+/* Nav */
 .nav{display:flex;gap:4px;padding:12px 20px;border-bottom:1px solid var(--bd);overflow-x:auto;scrollbar-width:none}
 .nav::-webkit-scrollbar{display:none}
 .nb{white-space:nowrap;padding:7px 16px;border-radius:100px;font-family:'Syne',sans-serif;font-size:13px;font-weight:500;border:1px solid var(--bd2);background:transparent;color:var(--mt);cursor:pointer;flex-shrink:0}
 .nb.active{background:var(--ac);color:#0a0a0a;border-color:var(--ac)}
+
+/* Main */
 .main{padding:20px;max-width:680px;margin:0 auto}
 .sec{display:none}.sec.active{display:block}
+
+/* Pair pills */
 .pr{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:16px}
-.pp{padding:5px 14px;border-radius:100px;font-family:'DM Mono',monospace;font-size:12px;border:1px solid var(--bd2);background:transparent;color:var(--mt);cursor:pointer}
+.pp{padding:5px 14px;border-radius:100px;font-family:'DM Mono',monospace;font-size:12px;border:1px solid var(--bd2);background:transparent;color:var(--mt);cursor:pointer;white-space:nowrap}
 .pp.active{background:var(--adm);color:var(--ac);border-color:var(--ac)}
+
+/* Cards */
 .card{background:var(--sf);border:1px solid var(--bd);border-radius:var(--r);padding:18px;margin-bottom:12px}
 .cl{font-family:'DM Mono',monospace;font-size:10px;letter-spacing:0.1em;text-transform:uppercase;color:var(--mt);margin-bottom:10px}
 .cb{font-size:14px;line-height:1.75;color:#c8c4be}.cb strong{color:var(--tx);font-weight:500}
+
+/* Bias tags */
 .bt{display:inline-block;font-family:'DM Mono',monospace;font-size:11px;font-weight:500;padding:4px 12px;border-radius:100px;margin-bottom:12px}
 .bbuy{background:var(--bbg);color:var(--buy);border:1px solid rgba(74,222,128,0.25)}
 .bsel{background:var(--sbg);color:var(--sel);border:1px solid rgba(248,113,113,0.25)}
 .bwt{background:var(--wbg);color:var(--wt);border:1px solid rgba(251,191,36,0.25)}
 .bnt{background:var(--sf2);color:var(--mt);border:1px solid var(--bd2)}
+
+/* Utils */
 .dv{border:none;border-top:1px solid var(--bd);margin:14px 0}
 .ld{display:flex;align-items:center;gap:10px;color:var(--mt);font-size:13px}
 .sp{width:16px;height:16px;border:2px solid var(--bd2);border-top-color:var(--ac);border-radius:50%;animation:spin 0.8s linear infinite;flex-shrink:0}
@@ -39,142 +60,192 @@ body{font-family:'Syne',sans-serif;background:var(--bg);color:var(--tx);min-heig
 .eb{background:var(--sbg);border:1px solid rgba(248,113,113,0.2);border-radius:var(--rs);padding:12px 14px;font-size:13px;color:var(--sel);line-height:1.6}
 .rb{display:flex;align-items:center;gap:6px;padding:8px 16px;border-radius:100px;border:1px solid var(--bd2);background:transparent;color:var(--mt);font-family:'Syne',sans-serif;font-size:13px;cursor:pointer;margin-top:4px}
 .meta{font-family:'DM Mono',monospace;font-size:10px;color:var(--mt);margin-top:10px}
+
+/* Checklist */
 .ci{display:flex;align-items:flex-start;gap:12px;padding:10px 0;border-bottom:1px solid var(--bd);cursor:pointer}
 .ci:last-child{border-bottom:none}
 .ck{width:20px;height:20px;flex-shrink:0;border:1.5px solid var(--bd2);border-radius:5px;margin-top:1px;display:flex;align-items:center;justify-content:center;font-size:12px}
 .ck.done{background:var(--ac);border-color:var(--ac);color:#0a0a0a}
 .clb{font-size:14px;color:#c8c4be;line-height:1.5}
 .ci.done .clb{color:var(--mt);text-decoration:line-through}
+
+/* Forms */
 .ta{width:100%;background:var(--sf2);border:1px solid var(--bd2);border-radius:var(--rs);padding:12px 14px;font-family:'Syne',sans-serif;font-size:14px;color:var(--tx);resize:vertical;min-height:90px;outline:none}
 .ta:focus{border-color:var(--ac)}
 .ta::placeholder{color:var(--mt)}
+.inp{width:100%;background:var(--sf2);border:1px solid var(--bd2);border-radius:var(--rs);padding:10px 14px;font-family:'Syne',sans-serif;font-size:14px;color:var(--tx);outline:none}
+.inp:focus{border-color:var(--ac)}
+.inp::placeholder{color:var(--mt)}
+.sel-i{width:100%;background:var(--sf2);border:1px solid var(--bd2);border-radius:var(--rs);padding:10px 14px;font-family:'Syne',sans-serif;font-size:14px;color:var(--tx);outline:none;cursor:pointer;appearance:none;-webkit-appearance:none}
+.sel-i:focus{border-color:var(--ac)}
+.row2{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px}
+.fld{display:flex;flex-direction:column;gap:5px;margin-bottom:10px}
+.fld label{font-family:'DM Mono',monospace;font-size:10px;letter-spacing:0.1em;text-transform:uppercase;color:var(--mt)}
+
+/* Buttons */
 .sb{display:inline-flex;align-items:center;gap:6px;margin-top:10px;padding:10px 20px;background:var(--ac);color:#0a0a0a;border:none;border-radius:100px;font-family:'Syne',sans-serif;font-size:14px;font-weight:700;cursor:pointer}
 .sb:disabled{opacity:0.5;cursor:not-allowed}
+
+/* About */
 .st{font-size:22px;font-weight:700;letter-spacing:-0.02em;margin-bottom:4px}
 .ss{font-size:13px;color:var(--mt);margin-bottom:18px}
 .ai{padding:14px 0;border-bottom:1px solid var(--bd)}.ai:last-child{border-bottom:none}
 .aq{font-size:13px;font-weight:500;color:var(--tx);margin-bottom:4px}
 .aa{font-size:13px;color:var(--mt);line-height:1.6}
+
+/* Banner */
 .bn{background:rgba(200,241,53,0.06);border:1px solid rgba(200,241,53,0.2);border-radius:var(--r);padding:14px 16px;margin-bottom:16px;display:flex;align-items:flex-start;gap:12px}
 .bnt2{font-size:13px;color:#c8c4be;line-height:1.6;flex:1}.bnt2 strong{color:var(--ac)}
 .bnc{background:none;border:none;color:var(--mt);font-size:18px;cursor:pointer;padding:0 4px}
+
+/* ── SESSIONS ── */
+.sess-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:16px}
+.sess-card{background:var(--sf);border:1px solid var(--bd);border-radius:var(--r);padding:16px;transition:border-color 0.3s}
+.sess-card.s-open{border-color:rgba(74,222,128,0.35);background:rgba(74,222,128,0.03)}
+.sess-card.s-overlap{border-color:rgba(200,241,53,0.4);background:rgba(200,241,53,0.03)}
+.sess-name{font-size:15px;font-weight:700;margin-bottom:3px}
+.sess-time{font-family:'DM Mono',monospace;font-size:11px;color:var(--mt);margin-bottom:10px}
+.sess-badge{display:inline-block;font-family:'DM Mono',monospace;font-size:10px;padding:3px 10px;border-radius:100px;margin-bottom:10px}
+.sess-badge.b-open{background:var(--bbg);color:var(--buy);border:1px solid rgba(74,222,128,0.3)}
+.sess-badge.b-closed{background:var(--sf2);color:var(--mt);border:1px solid var(--bd2)}
+.sess-badge.b-overlap{background:var(--adm);color:var(--ac);border:1px solid rgba(200,241,53,0.3)}
+.sess-lbl{font-family:'DM Mono',monospace;font-size:10px;color:var(--mt);margin-bottom:2px}
+.sess-cd{font-family:'DM Mono',monospace;font-size:13px;color:var(--tx);font-weight:500}
+.clock-big{font-family:'DM Mono',monospace;font-size:32px;font-weight:500;color:var(--ac);text-align:center;margin-bottom:4px;letter-spacing:3px}
+.clock-tz{font-family:'DM Mono',monospace;font-size:11px;color:var(--mt);text-align:center;margin-bottom:20px}
+.bp-card{background:var(--sf);border:1px solid var(--bd);border-radius:var(--r);padding:16px}
+.bp-row{display:flex;justify-content:space-between;align-items:center;padding:9px 0;border-bottom:1px solid var(--bd)}
+.bp-row:last-child{border-bottom:none}
+.bp-name{font-weight:600;font-size:13px}
+.bp-pairs{font-family:'DM Mono',monospace;font-size:11px;color:var(--mt)}
+
+/* ── CALENDAR ── */
+.cal-legend{display:flex;gap:16px;margin-bottom:14px}
+.cal-leg{display:flex;align-items:center;gap:6px;font-family:'DM Mono',monospace;font-size:11px;color:var(--mt)}
+.cal-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0}
+.cal-day-hdr{font-family:'DM Mono',monospace;font-size:11px;letter-spacing:0.08em;text-transform:uppercase;color:var(--ac);padding:6px 0;margin-bottom:8px;border-bottom:1px solid var(--bd)}
+.cal-day{margin-bottom:18px}
+.cal-event{background:var(--sf);border:1px solid var(--bd);border-radius:var(--rs);padding:12px 14px;margin-bottom:6px;display:flex;align-items:flex-start;gap:12px}
+.cal-imp{width:6px;height:6px;border-radius:50%;flex-shrink:0;margin-top:5px}
+.cal-imp.high{background:var(--sel)}
+.cal-imp.med{background:var(--wt)}
+.cal-imp.low{background:var(--mt)}
+.cal-text{flex:1}
+.cal-title{font-size:13px;font-weight:500;color:var(--tx);margin-bottom:3px}
+.cal-detail{font-family:'DM Mono',monospace;font-size:11px;color:var(--mt)}
+
+/* ── JOURNAL ── */
+.jstats{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-bottom:16px}
+.jstat{background:var(--sf);border:1px solid var(--bd);border-radius:var(--rs);padding:12px 8px;text-align:center}
+.jstat-val{font-size:18px;font-weight:700;color:var(--ac);margin-bottom:3px}
+.jstat-lbl{font-family:'DM Mono',monospace;font-size:9px;color:var(--mt);text-transform:uppercase;letter-spacing:0.06em;line-height:1.3}
+.jstat-val.jwin{color:var(--buy)}
+.jstat-val.jloss{color:var(--sel)}
+.jstat-val.jneu{color:var(--tx)}
+
+/* Trade items */
+.ti{background:var(--sf);border:1px solid var(--bd);border-left:3px solid var(--bd2);border-radius:var(--rs);padding:14px;margin-bottom:8px}
+.ti.win{border-left-color:var(--buy)}
+.ti.loss{border-left-color:var(--sel)}
+.ti.be{border-left-color:var(--wt)}
+.ti.open-t{border-left-color:var(--ac)}
+.ti-top{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:6px}
+.ti-pair{font-weight:700;font-size:14px}
+.ti-dir{font-family:'DM Mono',monospace;font-size:11px;padding:2px 8px;border-radius:100px;margin-left:8px}
+.ti-dir.buy{background:var(--bbg);color:var(--buy)}
+.ti-dir.sell{background:var(--sbg);color:var(--sel)}
+.ti-lvl{font-family:'DM Mono',monospace;font-size:11px;color:var(--mt);margin-bottom:7px;display:flex;gap:12px;flex-wrap:wrap}
+.ti-bot{display:flex;justify-content:space-between;align-items:center}
+.ti-res{font-family:'DM Mono',monospace;font-size:11px;padding:2px 8px;border-radius:100px}
+.ti-res.win{background:var(--bbg);color:var(--buy)}
+.ti-res.loss{background:var(--sbg);color:var(--sel)}
+.ti-res.be{background:var(--wbg);color:var(--wt)}
+.ti-res.open-r{background:var(--adm);color:var(--ac)}
+.ti-date{font-family:'DM Mono',monospace;font-size:10px;color:var(--mt)}
+.ti-pips{font-family:'DM Mono',monospace;font-size:12px;margin-left:8px}
+.ti-pips.pos{color:var(--buy)}.ti-pips.neg{color:var(--sel)}
+.ti-notes{font-size:12px;color:var(--mt);line-height:1.5;border-top:1px solid var(--bd);padding-top:8px;margin-top:8px}
+.del-btn{background:none;border:none;color:var(--mt);cursor:pointer;font-size:14px;padding:2px 6px;line-height:1}
+.del-btn:hover{color:var(--sel)}
+.empty-j{text-align:center;padding:40px 20px;color:var(--mt);font-size:14px}
+
+/* Calculator */
+.calc-out{background:rgba(200,241,53,0.05);border:1px solid rgba(200,241,53,0.2);border-radius:var(--rs);padding:14px;margin-top:14px;display:none}
+.cr{display:flex;justify-content:space-between;align-items:center;padding:6px 0;border-bottom:1px solid rgba(200,241,53,0.08)}
+.cr:last-child{border-bottom:none}
+.cr-lbl{font-size:13px;color:#c8c4be}
+.cr-val{font-family:'DM Mono',monospace;font-size:13px;color:var(--ac);font-weight:500}
+.hint{font-family:'DM Mono',monospace;font-size:10px;color:var(--mt);margin-top:6px}
 </style>
 </head>
 <body>
-<div class="hdr"><div class="logo">Forex<span>Hub</span></div><div class="hdate" id="hdate"></div></div>
+
+<div class="hdr">
+  <div class="logo">Forex<span>Hub</span></div>
+  <div class="hdate" id="hdate"></div>
+</div>
+
 <div class="nav">
-<button class="nb active" onclick="showS('daily',this)">Daily</button>
-<button class="nb" onclick="showS('weekly',this)">Weekly</button>
-<button class="nb" onclick="showS('checklist',this)">Checklist</button>
-<button class="nb" onclick="showS('review',this)">Trade review</button>
-<button class="nb" onclick="showS('about',this)">About</button>
+  <button class="nb active" onclick="showS('daily',this)">Daily</button>
+  <button class="nb" onclick="showS('weekly',this)">Weekly</button>
+  <button class="nb" onclick="showS('sessions',this)">Sessions</button>
+  <button class="nb" onclick="showS('calendar',this)">Calendar</button>
+  <button class="nb" onclick="showS('journal',this)">Journal</button>
+  <button class="nb" onclick="showS('checklist',this)">Checklist</button>
+  <button class="nb" onclick="showS('review',this)">Review</button>
+  <button class="nb" onclick="showS('about',this)">About</button>
 </div>
+
 <div class="main">
+
+<!-- ══ DAILY ══════════════════════════════════════ -->
 <div id="daily" class="sec active">
-<div class="bn" id="ibanner"><div class="bnt2"><strong>Add to home screen</strong> - tap Chrome menu then Add to Home screen to use ForexHub as an app on Android.</div><button class="bnc" onclick="document.getElementById('ibanner').style.display='none'">x</button></div>
-<div class="st">Daily analysis</div><div class="ss">AI-powered - live web search - Brisbane AEST</div>
-<div class="pr" id="dpr">
-<button class="pp active" onclick="loadD('EURUSD',this)">EUR/USD</button>
-<button class="pp" onclick="loadD('USDJPY',this)">USD/JPY</button>
-<button class="pp" onclick="loadD('GBPUSD',this)">GBP/USD</button>
-<button class="pp" onclick="loadD('AUDUSD',this)">AUD/USD</button>
-<button class="pp" onclick="loadD('USDCHF',this)">USD/CHF</button>
-</div>
-<div class="card">
-<div class="cl">Todays bias</div><div id="db"><div class="ld"><div class="sp"></div>Generating analysis...</div></div>
-<hr class="dv">
-<div class="cl">Key levels</div><div id="dl"><div class="ld"><div class="sp"></div>Fetching levels...</div></div>
-<hr class="dv">
-<div class="cl">Watch today</div><div id="dw"><div class="ld"><div class="sp"></div>Scanning events...</div></div>
-<div class="meta" id="dm"></div>
-</div>
-<button class="rb" onclick="forceD()">Refresh analysis</button>
-</div>
-<div id="weekly" class="sec">
-<div class="st">Weekly outlook</div><div class="ss">Macro theme - trend - key events</div>
-<div class="pr" id="wpr">
-<button class="pp active" onclick="loadW('EURUSD',this)">EUR/USD</button>
-<button class="pp" onclick="loadW('USDJPY',this)">USD/JPY</button>
-<button class="pp" onclick="loadW('GBPUSD',this)">GBP/USD</button>
-<button class="pp" onclick="loadW('AUDUSD',this)">AUD/USD</button>
-<button class="pp" onclick="loadW('USDCHF',this)">USD/CHF</button>
-</div>
-<div class="card">
-<div class="cl">Macro theme</div><div id="wt"><div class="ld"><div class="sp"></div>Generating weekly outlook...</div></div>
-<hr class="dv">
-<div class="cl">Trend and structure</div><div id="wtr"><div class="ld"><div class="sp"></div>Analysing trend...</div></div>
-<hr class="dv">
-<div class="cl">Key events this week</div><div id="we"><div class="ld"><div class="sp"></div>Loading calendar...</div></div>
-<div class="meta" id="wm"></div>
-</div>
-<button class="rb" onclick="forceW()">Refresh outlook</button>
-</div>
-<div id="checklist" class="sec">
-<div class="st">Pre-trade checklist</div><div class="ss">Tick off before every entry</div>
-<div class="card">
-<div class="ci" onclick="tc(this)"><div class="ck"></div><div class="clb">Checked weekly bias and trend direction</div></div>
-<div class="ci" onclick="tc(this)"><div class="ck"></div><div class="clb">Identified key support and resistance levels</div></div>
-<div class="ci" onclick="tc(this)"><div class="ck"></div><div class="clb">Checked economic calendar for todays news</div></div>
-<div class="ci" onclick="tc(this)"><div class="ck"></div><div class="clb">Risk per trade set to 1-2 percent of account only</div></div>
-<div class="ci" onclick="tc(this)"><div class="ck"></div><div class="clb">Stop-loss level defined before entering</div></div>
-<div class="ci" onclick="tc(this)"><div class="ck"></div><div class="clb">Take-profit target set minimum 1 to 2 risk reward</div></div>
-<div class="ci" onclick="tc(this)"><div class="ck"></div><div class="clb">Trade aligns with both daily AND weekly bias</div></div>
-<div class="ci" onclick="tc(this)"><div class="ck"></div><div class="clb">Not entering within 15 min of major news release</div></div>
-<div class="ci" onclick="tc(this)"><div class="ck"></div><div class="clb">Emotionally calm - not revenge trading</div></div>
-</div>
-<button class="rb" onclick="rc()">Reset all</button>
-</div>
-<div id="review" class="sec">
-<div class="st">Trade idea review</div><div class="ss">Describe your setup - get instant AI feedback</div>
-<div class="card">
-<div class="cl">Your trade idea</div>
-<textarea class="ta" id="ti" placeholder="e.g. I want to buy EUR/USD at 1.0950 SL 1.0920 TP 1.1010"></textarea>
-<br><button class="sb" id="rbtn" onclick="revT()">Review my trade</button>
-<div id="rr" style="margin-top:14px;"></div>
-</div>
-<div class="card" style="margin-bottom:0;"><div class="cl">Disclaimer</div><div class="cb">AI analysis is a thinking tool not financial advice. Always confirm on your charts.</div></div>
-</div>
-<div id="about" class="sec">
-<div class="st">About ForexHub</div><div class="ss">Your daily forex companion</div>
-<div class="card">
-<div class="ai"><div class="aq">How does the analysis work?</div><div class="aa">ForexHub uses Claude AI with live web search via your Cloudflare Worker.</div></div>
-<div class="ai"><div class="aq">How often should I refresh?</div><div class="aa">Daily: each morning AEST. Weekly: Monday morning before markets open.</div></div>
-<div class="ai"><div class="aq">Is this financial advice?</div><div class="aa">No. For educational purposes only. Always consult a licensed financial adviser.</div></div>
-<div class="ai"><div class="aq">Best pair for beginners?</div><div class="aa">Start with EUR/USD - highest liquidity and tightest spreads.</div></div>
-<div class="ai"><div class="aq">Recommended brokers in Australia?</div><div class="aa">ASIC-regulated: Pepperstone, IC Markets, and IG Markets.</div></div>
-</div>
-</div>
-</div>
-<script>
-var WU="https://forexproxy.jlivo10.workers.dev/api";
-var MDL="claude-sonnet-4-20250514";
-var cache={};
-var cD="EURUSD";
-var cW="EURUSD";
-var now=new Date();
-var days=["Sun","Mon","Tue","Wed","Thu","Fri","Sat"];
-var mths=["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
-document.getElementById("hdate").innerHTML=days[now.getDay()]+" "+now.getDate()+" "+mths[now.getMonth()]+"<br>"+now.getFullYear();
-function showS(id,btn){document.querySelectorAll(".sec").forEach(function(s){s.classList.remove("active");});document.querySelectorAll(".nb").forEach(function(b){b.classList.remove("active");});document.getElementById(id).classList.add("active");btn.classList.add("active");}
-function spa(rid,btn){document.getElementById(rid).querySelectorAll(".pp").forEach(function(b){b.classList.remove("active");});btn.classList.add("active");}
-function fmt(t){return t.replace(/\*\*(.*?)\*\*/g,"<strong>$1</strong>").replace(/\n\n/g,"<br><br>").replace(/\n/g,"<br>");}
-function btag(w){var v=(w||"").toLowerCase();if(v.indexOf("bull")>=0||v.indexOf("buy")>=0||v.indexOf("long")>=0)return "<span class=\"bt bbuy\">BULLISH / BUY</span>";if(v.indexOf("bear")>=0||v.indexOf("sell")>=0||v.indexOf("short")>=0)return "<span class=\"bt bsel\">BEARISH / SELL</span>";if(v.indexOf("wait")>=0||v.indexOf("range")>=0)return "<span class=\"bt bwt\">WAIT / RANGE</span>";return "<span class=\"bt bnt\">NEUTRAL</span>";}
-function se(id,h){var e=document.getElementById(id);if(e)e.innerHTML=h;}
-function ld(m){return "<div class=\"ld\"><div class=\"sp\"></div>"+m+"</div>";}
-function eb(m){return "<div class=\"eb\">"+m+"</div>";}
-function extract(text,start,end){var si=text.indexOf(start);if(si<0)return "";si+=start.length;var ei=end?text.indexOf(end,si):-1;return ei<0?text.substring(si).trim():text.substring(si,ei).trim();}
-async function cc(p){var r=await fetch(WU,{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({prompt:p})});var d=await r.json();if(!d||typeof d.text==='undefined')throw new Error(JSON.stringify(d));if(d.error)throw new Error(d.error);return d.text||""}
-async function loadD(pair,btn){if(btn)spa("dpr",btn);cD=pair;var k="daily_"+pair+"_"+now.toDateString();se("db",ld("Generating analysis..."));se("dl",ld("Fetching key levels..."));se("dw",ld("Scanning events..."));se("dm","");if(cache[k]){rdD(cache[k]);return;}try{var t=await cc("You are a professional forex analyst. Today is "+now.toDateString()+". Search the web for the latest "+pair+" price and news.\nGive a concise daily analysis. Use EXACTLY these headers:\nBIAS: [single word Bullish Bearish or Neutral]\nTODAY_BIAS: [2-3 sentences on directional bias]\nKEY_LEVELS: [2-3 sentences on support and resistance]\nWATCH_TODAY: [2-3 sentences on events to watch]");cache[k]=t;rdD(t);}catch(e){se("db",eb("Could not load: "+e.message));se("dl","");se("dw","");}}
-function rdD(t){var bias=extract(t,"BIAS:","TODAY_BIAS:")||"Neutral";if(bias.indexOf("\n")>=0)bias=bias.split("\n")[0];var bb=extract(t,"TODAY_BIAS:","KEY_LEVELS:");var lv=extract(t,"KEY_LEVELS:","WATCH_TODAY:");var wt=extract(t,"WATCH_TODAY:","");se("db",btag(bias)+"<div class=\"cb\">"+fmt(bb)+"</div>");se("dl","<div class=\"cb\">"+fmt(lv)+"</div>");se("dw","<div class=\"cb\">"+fmt(wt)+"</div>");se("dm","Generated "+new Date().toLocaleTimeString("en-AU",{hour:"2-digit",minute:"2-digit"})+" AEST - Not financial advice");}
-function forceD(){delete cache["daily_"+cD+"_"+now.toDateString()];loadD(cD,null);}
-async function loadW(pair,btn){if(btn)spa("wpr",btn);cW=pair;var d=new Date(Date.UTC(now.getFullYear(),now.getMonth(),now.getDate()));var dn=d.getUTCDay()||7;d.setUTCDate(d.getUTCDate()+4-dn);var ys=new Date(Date.UTC(d.getUTCFullYear(),0,1));var wk=Math.ceil((((d-ys)/86400000)+1)/7);var k="weekly_"+pair+"_"+now.getFullYear()+"_"+wk;se("wt",ld("Generating weekly outlook..."));se("wtr",ld("Analysing trend..."));se("we",ld("Loading calendar..."));se("wm","");if(cache[k]){rdW(cache[k]);return;}try{var t=await cc("You are a professional forex analyst. Today is "+now.toDateString()+". Search the web for the latest "+pair+" weekly analysis.\nGive a weekly analysis. Use EXACTLY these headers:\nWEEKLY_THEME: [2-3 sentences on macro theme]\nTREND_STRUCTURE: [2-3 sentences on weekly trend]\nWEEKLY_EVENTS: [2-3 sentences on key releases this week]");cache[k]=t;rdW(t);}catch(e){se("wt",eb("Could not load: "+e.message));se("wtr","");se("we","");}}
-function rdW(t){var th=extract(t,"WEEKLY_THEME:","TREND_STRUCTURE:");var tr=extract(t,"TREND_STRUCTURE:","WEEKLY_EVENTS:");var ev=extract(t,"WEEKLY_EVENTS:","");se("wt","<div class=\"cb\">"+fmt(th)+"</div>");se("wtr","<div class=\"cb\">"+fmt(tr)+"</div>");se("we","<div class=\"cb\">"+fmt(ev)+"</div>");se("wm","Week of "+now.toLocaleDateString("en-AU",{day:"numeric",month:"long",year:"numeric"})+" - Not financial advice");}
-function forceW(){var d=new Date(Date.UTC(now.getFullYear(),now.getMonth(),now.getDate()));var dn=d.getUTCDay()||7;d.setUTCDate(d.getUTCDate()+4-dn);var ys=new Date(Date.UTC(d.getUTCFullYear(),0,1));var wk=Math.ceil((((d-ys)/86400000)+1)/7);delete cache["weekly_"+cW+"_"+now.getFullYear()+"_"+wk];loadW(cW,null);}
-function tc(item){item.classList.toggle("done");var b=item.querySelector(".ck");b.classList.toggle("done");b.textContent=b.classList.contains("done")?"v":"";}
-function rc(){document.querySelectorAll(".ci").forEach(function(i){i.classList.remove("done");var b=i.querySelector(".ck");b.classList.remove("done");b.textContent="";});}
-async function revT(){var idea=document.getElementById("ti").value.trim();if(!idea)return;var btn=document.getElementById("rbtn");btn.disabled=true;btn.textContent="Reviewing...";se("rr",ld("Analysing your trade idea..."));try{var t=await cc("You are a forex risk manager. Today is "+now.toDateString()+". Trader idea: "+idea+". Give a 4-5 sentence review: 1. Does it align with current conditions 2. Main risk 3. One improvement");se("rr","<div class=\"cb\" style=\"background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.08);border-radius:10px;padding:14px;\">"+fmt(t)+"</div>");}catch(e){se("rr",eb("Review failed: "+e.message));}btn.disabled=false;btn.textContent="Review my trade";}
-loadD("EURUSD",null);
-loadW("EURUSD",null);
-</script>
-</body>
-</html>
+  <div class="bn" id="ibanner">
+    <div class="bnt2"><strong>Add to home screen</strong> – tap Chrome menu then Add to Home screen to use ForexHub as an app on Android.</div>
+    <button class="bnc" onclick="document.getElementById('ibanner').style.display='none'">×</button>
+  </div>
+  <div class="st">Daily analysis</div>
+  <div class="ss">AI-powered · live web search · Brisbane AEST</div>
+  <div class="pr" id="dpr">
+    <button class="pp active" onclick="loadD('AUDUSD',this)">AUD/USD</button>
+    <button class="pp" onclick="loadD('AUDCAD',this)">AUD/CAD</button>
+    <button class="pp" onclick="loadD('AUDCHF',this)">AUD/CHF</button>
+    <button class="pp" onclick="loadD('AUDJPY',this)">AUD/JPY</button>
+    <button class="pp" onclick="loadD('AUDNZD',this)">AUD/NZD</button>
+    <button class="pp" onclick="loadD('CADCHF',this)">CAD/CHF</button>
+    <button class="pp" onclick="loadD('CADJPY',this)">CAD/JPY</button>
+    <button class="pp" onclick="loadD('CHFJPY',this)">CHF/JPY</button>
+    <button class="pp" onclick="loadD('EURAUD',this)">EUR/AUD</button>
+    <button class="pp" onclick="loadD('EURCAD',this)">EUR/CAD</button>
+    <button class="pp" onclick="loadD('EURCHF',this)">EUR/CHF</button>
+    <button class="pp" onclick="loadD('EURGBP',this)">EUR/GBP</button>
+    <button class="pp" onclick="loadD('EURJPY',this)">EUR/JPY</button>
+    <button class="pp" onclick="loadD('EURNZD',this)">EUR/NZD</button>
+    <button class="pp" onclick="loadD('EURUSD',this)">EUR/USD</button>
+    <button class="pp" onclick="loadD('GBPAUD',this)">GBP/AUD</button>
+    <button class="pp" onclick="loadD('GBPCAD',this)">GBP/CAD</button>
+    <button class="pp" onclick="loadD('GBPCHF',this)">GBP/CHF</button>
+    <button class="pp" onclick="loadD('GBPJPY',this)">GBP/JPY</button>
+    <button class="pp" onclick="loadD('GBPNZD',this)">GBP/NZD</button>
+    <button class="pp" onclick="loadD('GBPUSD',this)">GBP/USD</button>
+    <button class="pp" onclick="loadD('NZDCAD',this)">NZD/CAD</button>
+    <button class="pp" onclick="loadD('NZDCHF',this)">NZD/CHF</button>
+    <button class="pp" onclick="loadD('NZDJPY',this)">NZD/JPY</button>
+    <button class="pp" onclick="loadD('NZDUSD',this)">NZD/USD</button>
+    <button class="pp" onclick="loadD('USDCAD',this)">USD/CAD</button>
+    <button class="pp" onclick="loadD('USDCHF',this)">USD/CHF</button>
+    <button class="pp" onclick="loadD('USDJPY',this)">USD/JPY</button>
+    <button class="pp" onclick="loadD('XAUUSD',this)">XAU/USD</button>
+  </div>
+  <div class="card">
+    <div class="cl">Todays bias</div>
+    <div id="db"><div class="ld"><div class="sp"></div>Generating analysis...</div></div>
+    <hr class="dv">
+    <div class="cl">Key levels</div>
+    <div id="dl"><div class="ld"><div class="sp"></div>Fetching levels...</div></div>
+    <hr class="dv">
+    <div class="cl">Watch today</div>
+    <div id="dw"><div class="ld"><div class="sp"></div>Scanning events...</div></div>
+    <div class="meta" id="dm"></div>
+  </div>
+  <butto
