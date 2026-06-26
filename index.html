@@ -73,6 +73,22 @@ body{font-family:'Syne',sans-serif;background:var(--bg);color:var(--tx);min-heig
 .hm-cell{font-family:'DM Mono',monospace;font-size:12px;text-align:center;padding:8px 12px;border-bottom:1px solid var(--bd);font-weight:500}
 .hm-pos{color:#4ade80}.hm-neg{color:#f87171}.hm-neu{color:var(--mt)}
 .hm-pos.hi{background:rgba(74,222,128,0.12)}.hm-neg.hi{background:rgba(248,113,113,0.12)}
+/* HM view toggle */
+.hm-view{display:none}.hm-view.active{display:block}
+.hm-vtab{padding:5px 14px;border-radius:100px;font-family:'Syne',sans-serif;font-size:12px;font-weight:500;border:1px solid rgba(249,115,22,0.25);background:transparent;color:rgba(249,115,22,0.65);cursor:pointer;transition:all 0.15s}
+.hm-vtab.active{background:#f97316;color:#0a0a0a;border-color:#f97316}
+/* Majors matrix */
+.majors-wrap{overflow-x:auto;-webkit-overflow-scrolling:touch}
+.majors-table{border-collapse:collapse;white-space:nowrap;width:100%}
+.majors-table th{font-family:'Syne',sans-serif;font-size:12px;font-weight:600;text-align:center;padding:10px 8px;border:1px solid var(--bd);color:var(--tx);background:var(--sf2)}
+.majors-table th:first-child{text-align:left;padding-left:12px}
+.majors-table td{text-align:center;padding:10px 8px;border:1px solid var(--bd);font-family:'DM Mono',monospace;font-size:12px;font-weight:600}
+.majors-table .row-hdr{text-align:left;padding-left:12px;background:var(--sf2);font-family:'Syne',sans-serif;font-size:12px;font-weight:600;color:var(--tx)}
+.majors-table .diag{background:rgba(255,255,255,0.03);color:var(--mt)}
+.mat-pos{background:rgba(74,222,128,0.12);color:#4ade80}
+.mat-pos.hi{background:rgba(74,222,128,0.25);color:#22c55e}
+.mat-neg{background:rgba(248,113,113,0.12);color:#f87171}
+.mat-neg.hi{background:rgba(248,113,113,0.25);color:#ef4444}
 /* Correlation matrix */
 .corr-wrap{overflow-x:auto;-webkit-overflow-scrolling:touch}
 .corr-table{border-collapse:collapse;font-family:'DM Mono',monospace;font-size:11px;white-space:nowrap;min-width:100%}
@@ -619,8 +635,20 @@ body{font-family:'Syne',sans-serif;background:var(--bg);color:var(--tx);min-heig
 
   <!-- Heat Map -->
   <div id="heatmap" class="map-panel active">
-    <div class="card" style="padding:0;overflow:hidden;box-shadow:0 0 0 1px var(--bd2),0 8px 32px rgba(0,0,0,0.45)">
-      <div id="hm-body"><div class="ld"><div class="sp"></div>Loading heat map...</div></div>
+    <div style="display:flex;gap:6px;margin-bottom:12px">
+      <button class="hm-vtab active" onclick="showHMView('hm-pips',this)">Pip Changes</button>
+      <button class="hm-vtab" onclick="showHMView('hm-matrix',this)">Majors Matrix</button>
+    </div>
+    <div id="hm-pips" class="hm-view active">
+      <div class="card" style="padding:0;overflow:hidden;box-shadow:0 0 0 1px var(--bd2),0 8px 32px rgba(0,0,0,0.45)">
+        <div id="hm-body"><div class="ld"><div class="sp"></div>Loading pip changes...</div></div>
+      </div>
+    </div>
+    <div id="hm-matrix" class="hm-view">
+      <div class="card" style="padding:0;overflow:hidden;box-shadow:0 0 0 1px var(--bd2),0 8px 32px rgba(0,0,0,0.45)">
+        <div id="hm-mat-body"><div class="ld"><div class="sp"></div>Building matrix...</div></div>
+      </div>
+      <div class="meta" style="margin-top:8px">Daily % change · each row currency vs each column currency</div>
     </div>
     <div class="map-src">Rates: <a href="https://frankfurter.dev" target="_blank" rel="noopener">Frankfurter API (ECB)</a> · daily, weekly, monthly pip changes</div>
   </div>
@@ -701,6 +729,12 @@ function showS(id, btn) {
   if(id==="journal")  renderJournal();
   if(id==="calendar") loadCal();
   if(id==="maps" && !hmLoaded) { hmLoaded=true; loadHeatMap(); }
+}
+function showHMView(id,btn){
+  document.querySelectorAll('.hm-view').forEach(function(v){v.classList.remove('active');});
+  document.querySelectorAll('.hm-vtab').forEach(function(b){b.classList.remove('active');});
+  document.getElementById(id).classList.add('active');
+  btn.classList.add('active');
 }
 function showMap(id, btn) {
   document.querySelectorAll(".map-panel").forEach(function(p){p.classList.remove("active");});
@@ -1125,6 +1159,29 @@ async function loadHeatMap(){
     html+='</tbody></table>';
     html+='<div class="meta" style="padding:8px 12px">ECB rates as of '+r0.date+' · Daily = vs prev close · Weekly = vs 7d · Monthly = vs 30d</div>';
     el.innerHTML=html;
+
+    // Build Majors Matrix
+    var mel=document.getElementById('hm-mat-body');
+    var ccys=[['EUR','🇪🇺'],['USD','🇺🇸'],['AUD','🇦🇺'],['GBP','🇬🇧'],['NZD','🇳🇿'],['CAD','🇨🇦'],['CHF','🇨🇭'],['JPY','🇯🇵']];
+    var mh='<div class="majors-wrap"><table class="majors-table"><thead><tr><th></th>';
+    ccys.forEach(function(c){mh+='<th>'+c[1]+'<br>'+c[0]+'</th>';});
+    mh+='</tr></thead><tbody>';
+    ccys.forEach(function(row){
+      mh+='<tr><td class="row-hdr">'+row[1]+' '+row[0]+'</td>';
+      ccys.forEach(function(col){
+        if(row[0]===col[0]){mh+='<td class="diag">—</td>';return;}
+        var cur=getXR(r0.rates,row[0],col[0]);
+        var prev=getXR(r1.rates,row[0],col[0]);
+        var pct=(cur-prev)/prev*100;
+        var pstr=(pct>=0?'+':'')+pct.toFixed(2)+'%';
+        var cls=pct>0.2?'mat-pos hi':pct>0?'mat-pos':pct<-0.2?'mat-neg hi':'mat-neg';
+        mh+='<td class="'+cls+'">'+pstr+'</td>';
+      });
+      mh+='</tr>';
+    });
+    mh+='</tbody></table></div>';
+    mh+='<div class="meta" style="padding:8px 12px">'+r0.date+' vs '+r1.date+' · row currency strength vs each column currency</div>';
+    mel.innerHTML=mh;
   }catch(e){
     el.innerHTML='<div class="cb" style="padding:16px">Unable to load heat map. Check your connection and try again.<br><br><button class="rb" onclick="hmLoaded=false;loadHeatMap()">↺ Retry</button></div>';
   }
