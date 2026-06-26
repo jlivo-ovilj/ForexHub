@@ -17,6 +17,11 @@
   --wt:#fbbf24;--wbg:rgba(251,191,36,0.1);
   --r:14px;--rs:8px
 }
+
+/* ── SECTION ACCENT COLOURS ── */
+body[data-sect="daily"]  {--ac:#a78bfa;--adm:rgba(167,139,250,0.12)}
+body[data-sect="weekly"] {--ac:#4ade80;--adm:rgba(74,222,128,0.10)}
+
 *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
 body{font-family:'Syne',sans-serif;background:var(--bg);color:var(--tx);min-height:100vh;overflow-x:hidden}
 
@@ -32,10 +37,28 @@ body{font-family:'Syne',sans-serif;background:var(--bg);color:var(--tx);min-heig
 .nb.active{background:var(--ac);color:#0a0a0a;border-color:var(--ac)}
 
 /* Main */
-.main{padding:20px;max-width:680px;margin:0 auto}
+.main{padding:20px;max-width:980px;margin:0 auto}
 .sec{display:none}.sec.active{display:block}
 
-/* Pair pills */
+/* ── SIDEBAR LAYOUT (Daily + Weekly) ── */
+.analysis-layout{display:flex;gap:18px;align-items:flex-start}
+.pair-sidebar{width:108px;flex-shrink:0;position:sticky;top:114px;max-height:calc(100vh - 130px);overflow-y:auto;scrollbar-width:none;padding-bottom:20px}
+.pair-sidebar::-webkit-scrollbar{display:none}
+.pg{margin-bottom:10px}
+.pgl{font-family:'DM Mono',monospace;font-size:9px;letter-spacing:0.12em;text-transform:uppercase;color:var(--ac);padding:2px 6px 5px;opacity:0.75}
+.pair-sidebar .pp{display:block;width:100%;text-align:left;border-radius:6px;padding:5px 8px;margin-bottom:2px;font-size:11px;white-space:nowrap;overflow:hidden}
+.analysis-main{flex:1;min-width:0}
+
+/* Mobile: collapse sidebar to pills */
+@media(max-width:620px){
+  .analysis-layout{flex-direction:column}
+  .pair-sidebar{width:100%;position:static;max-height:none;display:flex;flex-wrap:wrap;gap:4px;padding-bottom:4px}
+  .pair-sidebar .pp{display:inline-block;width:auto;border-radius:100px;font-size:12px;padding:5px 14px}
+  .pg{display:contents}
+  .pgl{display:none}
+}
+
+/* Pair pills (original, used in sidebar and mobile) */
 .pr{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:16px}
 .pp{padding:5px 14px;border-radius:100px;font-family:'DM Mono',monospace;font-size:12px;border:1px solid var(--bd2);background:transparent;color:var(--mt);cursor:pointer;white-space:nowrap}
 .pp.active{background:var(--adm);color:var(--ac);border-color:var(--ac)}
@@ -108,10 +131,10 @@ body{font-family:'Syne',sans-serif;background:var(--bg);color:var(--tx);min-heig
 .sess-badge{display:inline-block;font-family:'DM Mono',monospace;font-size:10px;padding:3px 10px;border-radius:100px;margin-bottom:10px}
 .sess-badge.b-open{background:var(--bbg);color:var(--buy);border:1px solid rgba(74,222,128,0.3)}
 .sess-badge.b-closed{background:var(--sf2);color:var(--mt);border:1px solid var(--bd2)}
-.sess-badge.b-overlap{background:var(--adm);color:var(--ac);border:1px solid rgba(200,241,53,0.3)}
+.sess-badge.b-overlap{background:rgba(200,241,53,0.12);color:#c8f135;border:1px solid rgba(200,241,53,0.3)}
 .sess-lbl{font-family:'DM Mono',monospace;font-size:10px;color:var(--mt);margin-bottom:2px}
 .sess-cd{font-family:'DM Mono',monospace;font-size:13px;color:var(--tx);font-weight:500}
-.clock-big{font-family:'DM Mono',monospace;font-size:32px;font-weight:500;color:var(--ac);text-align:center;margin-bottom:4px;letter-spacing:3px}
+.clock-big{font-family:'DM Mono',monospace;font-size:32px;font-weight:500;color:#c8f135;text-align:center;margin-bottom:4px;letter-spacing:3px}
 .clock-tz{font-family:'DM Mono',monospace;font-size:11px;color:var(--mt);text-align:center;margin-bottom:20px}
 .bp-card{background:var(--sf);border:1px solid var(--bd);border-radius:var(--r);padding:16px}
 .bp-row{display:flex;justify-content:space-between;align-items:center;padding:9px 0;border-bottom:1px solid var(--bd)}
@@ -123,7 +146,7 @@ body{font-family:'Syne',sans-serif;background:var(--bg);color:var(--tx);min-heig
 .cal-legend{display:flex;gap:16px;margin-bottom:14px}
 .cal-leg{display:flex;align-items:center;gap:6px;font-family:'DM Mono',monospace;font-size:11px;color:var(--mt)}
 .cal-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0}
-.cal-day-hdr{font-family:'DM Mono',monospace;font-size:11px;letter-spacing:0.08em;text-transform:uppercase;color:var(--ac);padding:6px 0;margin-bottom:8px;border-bottom:1px solid var(--bd)}
+.cal-day-hdr{font-family:'DM Mono',monospace;font-size:11px;letter-spacing:0.08em;text-transform:uppercase;color:#c8f135;padding:6px 0;margin-bottom:8px;border-bottom:1px solid var(--bd)}
 .cal-day{margin-bottom:18px}
 .cal-event{background:var(--sf);border:1px solid var(--bd);border-radius:var(--rs);padding:12px 14px;margin-bottom:6px;display:flex;align-items:flex-start;gap:12px}
 .cal-imp{width:6px;height:6px;border-radius:50%;flex-shrink:0;margin-top:5px}
@@ -137,7 +160,7 @@ body{font-family:'Syne',sans-serif;background:var(--bg);color:var(--tx);min-heig
 /* ── JOURNAL ── */
 .jstats{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-bottom:16px}
 .jstat{background:var(--sf);border:1px solid var(--bd);border-radius:var(--rs);padding:12px 8px;text-align:center}
-.jstat-val{font-size:18px;font-weight:700;color:var(--ac);margin-bottom:3px}
+.jstat-val{font-size:18px;font-weight:700;color:#c8f135;margin-bottom:3px}
 .jstat-lbl{font-family:'DM Mono',monospace;font-size:9px;color:var(--mt);text-transform:uppercase;letter-spacing:0.06em;line-height:1.3}
 .jstat-val.jwin{color:var(--buy)}
 .jstat-val.jloss{color:var(--sel)}
@@ -148,7 +171,7 @@ body{font-family:'Syne',sans-serif;background:var(--bg);color:var(--tx);min-heig
 .ti.win{border-left-color:var(--buy)}
 .ti.loss{border-left-color:var(--sel)}
 .ti.be{border-left-color:var(--wt)}
-.ti.open-t{border-left-color:var(--ac)}
+.ti.open-t{border-left-color:#c8f135}
 .ti-top{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:6px}
 .ti-pair{font-weight:700;font-size:14px}
 .ti-dir{font-family:'DM Mono',monospace;font-size:11px;padding:2px 8px;border-radius:100px;margin-left:8px}
@@ -160,7 +183,7 @@ body{font-family:'Syne',sans-serif;background:var(--bg);color:var(--tx);min-heig
 .ti-res.win{background:var(--bbg);color:var(--buy)}
 .ti-res.loss{background:var(--sbg);color:var(--sel)}
 .ti-res.be{background:var(--wbg);color:var(--wt)}
-.ti-res.open-r{background:var(--adm);color:var(--ac)}
+.ti-res.open-r{background:rgba(200,241,53,0.12);color:#c8f135}
 .ti-date{font-family:'DM Mono',monospace;font-size:10px;color:var(--mt)}
 .ti-pips{font-family:'DM Mono',monospace;font-size:12px;margin-left:8px}
 .ti-pips.pos{color:var(--buy)}.ti-pips.neg{color:var(--sel)}
@@ -174,11 +197,11 @@ body{font-family:'Syne',sans-serif;background:var(--bg);color:var(--tx);min-heig
 .cr{display:flex;justify-content:space-between;align-items:center;padding:6px 0;border-bottom:1px solid rgba(200,241,53,0.08)}
 .cr:last-child{border-bottom:none}
 .cr-lbl{font-size:13px;color:#c8c4be}
-.cr-val{font-family:'DM Mono',monospace;font-size:13px;color:var(--ac);font-weight:500}
+.cr-val{font-family:'DM Mono',monospace;font-size:13px;color:#c8f135;font-weight:500}
 .hint{font-family:'DM Mono',monospace;font-size:10px;color:var(--mt);margin-top:6px}
 </style>
 </head>
-<body>
+<body data-sect="daily">
 
 <div class="hdr">
   <div class="logo">Forex<span>Hub</span></div>
@@ -204,100 +227,160 @@ body{font-family:'Syne',sans-serif;background:var(--bg);color:var(--tx);min-heig
     <div class="bnt2"><strong>Add to home screen</strong> – tap Chrome menu then Add to Home screen to use ForexHub as an app on Android.</div>
     <button class="bnc" onclick="document.getElementById('ibanner').style.display='none'">×</button>
   </div>
-  <div class="st">Daily analysis</div>
-  <div class="ss">AI-powered · live web search · Brisbane AEST</div>
-  <div class="pr" id="dpr">
-    <button class="pp active" onclick="loadD('AUDUSD',this)">AUD/USD</button>
-    <button class="pp" onclick="loadD('AUDCAD',this)">AUD/CAD</button>
-    <button class="pp" onclick="loadD('AUDCHF',this)">AUD/CHF</button>
-    <button class="pp" onclick="loadD('AUDJPY',this)">AUD/JPY</button>
-    <button class="pp" onclick="loadD('AUDNZD',this)">AUD/NZD</button>
-    <button class="pp" onclick="loadD('CADCHF',this)">CAD/CHF</button>
-    <button class="pp" onclick="loadD('CADJPY',this)">CAD/JPY</button>
-    <button class="pp" onclick="loadD('CHFJPY',this)">CHF/JPY</button>
-    <button class="pp" onclick="loadD('EURAUD',this)">EUR/AUD</button>
-    <button class="pp" onclick="loadD('EURCAD',this)">EUR/CAD</button>
-    <button class="pp" onclick="loadD('EURCHF',this)">EUR/CHF</button>
-    <button class="pp" onclick="loadD('EURGBP',this)">EUR/GBP</button>
-    <button class="pp" onclick="loadD('EURJPY',this)">EUR/JPY</button>
-    <button class="pp" onclick="loadD('EURNZD',this)">EUR/NZD</button>
-    <button class="pp" onclick="loadD('EURUSD',this)">EUR/USD</button>
-    <button class="pp" onclick="loadD('GBPAUD',this)">GBP/AUD</button>
-    <button class="pp" onclick="loadD('GBPCAD',this)">GBP/CAD</button>
-    <button class="pp" onclick="loadD('GBPCHF',this)">GBP/CHF</button>
-    <button class="pp" onclick="loadD('GBPJPY',this)">GBP/JPY</button>
-    <button class="pp" onclick="loadD('GBPNZD',this)">GBP/NZD</button>
-    <button class="pp" onclick="loadD('GBPUSD',this)">GBP/USD</button>
-    <button class="pp" onclick="loadD('NZDCAD',this)">NZD/CAD</button>
-    <button class="pp" onclick="loadD('NZDCHF',this)">NZD/CHF</button>
-    <button class="pp" onclick="loadD('NZDJPY',this)">NZD/JPY</button>
-    <button class="pp" onclick="loadD('NZDUSD',this)">NZD/USD</button>
-    <button class="pp" onclick="loadD('USDCAD',this)">USD/CAD</button>
-    <button class="pp" onclick="loadD('USDCHF',this)">USD/CHF</button>
-    <button class="pp" onclick="loadD('USDJPY',this)">USD/JPY</button>
-    <button class="pp" onclick="loadD('XAUUSD',this)">XAU/USD</button>
+  <div class="analysis-layout">
+    <!-- Left sidebar: pairs grouped by base currency -->
+    <div class="pair-sidebar" id="dpr">
+      <div class="pg">
+        <div class="pgl">AUD</div>
+        <button class="pp active" onclick="loadD('AUDUSD',this)">AUD/USD</button>
+        <button class="pp" onclick="loadD('AUDCAD',this)">AUD/CAD</button>
+        <button class="pp" onclick="loadD('AUDCHF',this)">AUD/CHF</button>
+        <button class="pp" onclick="loadD('AUDJPY',this)">AUD/JPY</button>
+        <button class="pp" onclick="loadD('AUDNZD',this)">AUD/NZD</button>
+      </div>
+      <div class="pg">
+        <div class="pgl">CAD</div>
+        <button class="pp" onclick="loadD('CADCHF',this)">CAD/CHF</button>
+        <button class="pp" onclick="loadD('CADJPY',this)">CAD/JPY</button>
+      </div>
+      <div class="pg">
+        <div class="pgl">CHF</div>
+        <button class="pp" onclick="loadD('CHFJPY',this)">CHF/JPY</button>
+      </div>
+      <div class="pg">
+        <div class="pgl">EUR</div>
+        <button class="pp" onclick="loadD('EURAUD',this)">EUR/AUD</button>
+        <button class="pp" onclick="loadD('EURCAD',this)">EUR/CAD</button>
+        <button class="pp" onclick="loadD('EURCHF',this)">EUR/CHF</button>
+        <button class="pp" onclick="loadD('EURGBP',this)">EUR/GBP</button>
+        <button class="pp" onclick="loadD('EURJPY',this)">EUR/JPY</button>
+        <button class="pp" onclick="loadD('EURNZD',this)">EUR/NZD</button>
+        <button class="pp" onclick="loadD('EURUSD',this)">EUR/USD</button>
+      </div>
+      <div class="pg">
+        <div class="pgl">GBP</div>
+        <button class="pp" onclick="loadD('GBPAUD',this)">GBP/AUD</button>
+        <button class="pp" onclick="loadD('GBPCAD',this)">GBP/CAD</button>
+        <button class="pp" onclick="loadD('GBPCHF',this)">GBP/CHF</button>
+        <button class="pp" onclick="loadD('GBPJPY',this)">GBP/JPY</button>
+        <button class="pp" onclick="loadD('GBPNZD',this)">GBP/NZD</button>
+        <button class="pp" onclick="loadD('GBPUSD',this)">GBP/USD</button>
+      </div>
+      <div class="pg">
+        <div class="pgl">NZD</div>
+        <button class="pp" onclick="loadD('NZDCAD',this)">NZD/CAD</button>
+        <button class="pp" onclick="loadD('NZDCHF',this)">NZD/CHF</button>
+        <button class="pp" onclick="loadD('NZDJPY',this)">NZD/JPY</button>
+        <button class="pp" onclick="loadD('NZDUSD',this)">NZD/USD</button>
+      </div>
+      <div class="pg">
+        <div class="pgl">USD</div>
+        <button class="pp" onclick="loadD('USDCAD',this)">USD/CAD</button>
+        <button class="pp" onclick="loadD('USDCHF',this)">USD/CHF</button>
+        <button class="pp" onclick="loadD('USDJPY',this)">USD/JPY</button>
+      </div>
+      <div class="pg">
+        <div class="pgl">XAU</div>
+        <button class="pp" onclick="loadD('XAUUSD',this)">XAU/USD</button>
+      </div>
+    </div>
+    <!-- Right: analysis -->
+    <div class="analysis-main">
+      <div class="st">Daily analysis</div>
+      <div class="ss">AI-powered · live web search · Brisbane AEST</div>
+      <div class="card">
+        <div class="cl">Todays bias</div>
+        <div id="db"><div class="ld"><div class="sp"></div>Generating analysis...</div></div>
+        <hr class="dv">
+        <div class="cl">Key levels</div>
+        <div id="dl"><div class="ld"><div class="sp"></div>Fetching levels...</div></div>
+        <hr class="dv">
+        <div class="cl">Watch today</div>
+        <div id="dw"><div class="ld"><div class="sp"></div>Scanning events...</div></div>
+        <div class="meta" id="dm"></div>
+      </div>
+      <button class="rb" onclick="forceD()">↺ Refresh analysis</button>
+    </div>
   </div>
-  <div class="card">
-    <div class="cl">Todays bias</div>
-    <div id="db"><div class="ld"><div class="sp"></div>Generating analysis...</div></div>
-    <hr class="dv">
-    <div class="cl">Key levels</div>
-    <div id="dl"><div class="ld"><div class="sp"></div>Fetching levels...</div></div>
-    <hr class="dv">
-    <div class="cl">Watch today</div>
-    <div id="dw"><div class="ld"><div class="sp"></div>Scanning events...</div></div>
-    <div class="meta" id="dm"></div>
-  </div>
-  <button class="rb" onclick="forceD()">↺ Refresh analysis</button>
 </div>
 
 <!-- ══ WEEKLY ══════════════════════════════════════ -->
 <div id="weekly" class="sec">
-  <div class="st">Weekly outlook</div>
-  <div class="ss">Macro theme · trend · key events</div>
-  <div class="pr" id="wpr">
-    <button class="pp active" onclick="loadW('AUDUSD',this)">AUD/USD</button>
-    <button class="pp" onclick="loadW('AUDCAD',this)">AUD/CAD</button>
-    <button class="pp" onclick="loadW('AUDCHF',this)">AUD/CHF</button>
-    <button class="pp" onclick="loadW('AUDJPY',this)">AUD/JPY</button>
-    <button class="pp" onclick="loadW('AUDNZD',this)">AUD/NZD</button>
-    <button class="pp" onclick="loadW('CADCHF',this)">CAD/CHF</button>
-    <button class="pp" onclick="loadW('CADJPY',this)">CAD/JPY</button>
-    <button class="pp" onclick="loadW('CHFJPY',this)">CHF/JPY</button>
-    <button class="pp" onclick="loadW('EURAUD',this)">EUR/AUD</button>
-    <button class="pp" onclick="loadW('EURCAD',this)">EUR/CAD</button>
-    <button class="pp" onclick="loadW('EURCHF',this)">EUR/CHF</button>
-    <button class="pp" onclick="loadW('EURGBP',this)">EUR/GBP</button>
-    <button class="pp" onclick="loadW('EURJPY',this)">EUR/JPY</button>
-    <button class="pp" onclick="loadW('EURNZD',this)">EUR/NZD</button>
-    <button class="pp" onclick="loadW('EURUSD',this)">EUR/USD</button>
-    <button class="pp" onclick="loadW('GBPAUD',this)">GBP/AUD</button>
-    <button class="pp" onclick="loadW('GBPCAD',this)">GBP/CAD</button>
-    <button class="pp" onclick="loadW('GBPCHF',this)">GBP/CHF</button>
-    <button class="pp" onclick="loadW('GBPJPY',this)">GBP/JPY</button>
-    <button class="pp" onclick="loadW('GBPNZD',this)">GBP/NZD</button>
-    <button class="pp" onclick="loadW('GBPUSD',this)">GBP/USD</button>
-    <button class="pp" onclick="loadW('NZDCAD',this)">NZD/CAD</button>
-    <button class="pp" onclick="loadW('NZDCHF',this)">NZD/CHF</button>
-    <button class="pp" onclick="loadW('NZDJPY',this)">NZD/JPY</button>
-    <button class="pp" onclick="loadW('NZDUSD',this)">NZD/USD</button>
-    <button class="pp" onclick="loadW('USDCAD',this)">USD/CAD</button>
-    <button class="pp" onclick="loadW('USDCHF',this)">USD/CHF</button>
-    <button class="pp" onclick="loadW('USDJPY',this)">USD/JPY</button>
-    <button class="pp" onclick="loadW('XAUUSD',this)">XAU/USD</button>
+  <div class="analysis-layout">
+    <!-- Left sidebar: pairs grouped by base currency -->
+    <div class="pair-sidebar" id="wpr">
+      <div class="pg">
+        <div class="pgl">AUD</div>
+        <button class="pp active" onclick="loadW('AUDUSD',this)">AUD/USD</button>
+        <button class="pp" onclick="loadW('AUDCAD',this)">AUD/CAD</button>
+        <button class="pp" onclick="loadW('AUDCHF',this)">AUD/CHF</button>
+        <button class="pp" onclick="loadW('AUDJPY',this)">AUD/JPY</button>
+        <button class="pp" onclick="loadW('AUDNZD',this)">AUD/NZD</button>
+      </div>
+      <div class="pg">
+        <div class="pgl">CAD</div>
+        <button class="pp" onclick="loadW('CADCHF',this)">CAD/CHF</button>
+        <button class="pp" onclick="loadW('CADJPY',this)">CAD/JPY</button>
+      </div>
+      <div class="pg">
+        <div class="pgl">CHF</div>
+        <button class="pp" onclick="loadW('CHFJPY',this)">CHF/JPY</button>
+      </div>
+      <div class="pg">
+        <div class="pgl">EUR</div>
+        <button class="pp" onclick="loadW('EURAUD',this)">EUR/AUD</button>
+        <button class="pp" onclick="loadW('EURCAD',this)">EUR/CAD</button>
+        <button class="pp" onclick="loadW('EURCHF',this)">EUR/CHF</button>
+        <button class="pp" onclick="loadW('EURGBP',this)">EUR/GBP</button>
+        <button class="pp" onclick="loadW('EURJPY',this)">EUR/JPY</button>
+        <button class="pp" onclick="loadW('EURNZD',this)">EUR/NZD</button>
+        <button class="pp" onclick="loadW('EURUSD',this)">EUR/USD</button>
+      </div>
+      <div class="pg">
+        <div class="pgl">GBP</div>
+        <button class="pp" onclick="loadW('GBPAUD',this)">GBP/AUD</button>
+        <button class="pp" onclick="loadW('GBPCAD',this)">GBP/CAD</button>
+        <button class="pp" onclick="loadW('GBPCHF',this)">GBP/CHF</button>
+        <button class="pp" onclick="loadW('GBPJPY',this)">GBP/JPY</button>
+        <button class="pp" onclick="loadW('GBPNZD',this)">GBP/NZD</button>
+        <button class="pp" onclick="loadW('GBPUSD',this)">GBP/USD</button>
+      </div>
+      <div class="pg">
+        <div class="pgl">NZD</div>
+        <button class="pp" onclick="loadW('NZDCAD',this)">NZD/CAD</button>
+        <button class="pp" onclick="loadW('NZDCHF',this)">NZD/CHF</button>
+        <button class="pp" onclick="loadW('NZDJPY',this)">NZD/JPY</button>
+        <button class="pp" onclick="loadW('NZDUSD',this)">NZD/USD</button>
+      </div>
+      <div class="pg">
+        <div class="pgl">USD</div>
+        <button class="pp" onclick="loadW('USDCAD',this)">USD/CAD</button>
+        <button class="pp" onclick="loadW('USDCHF',this)">USD/CHF</button>
+        <button class="pp" onclick="loadW('USDJPY',this)">USD/JPY</button>
+      </div>
+      <div class="pg">
+        <div class="pgl">XAU</div>
+        <button class="pp" onclick="loadW('XAUUSD',this)">XAU/USD</button>
+      </div>
+    </div>
+    <!-- Right: analysis -->
+    <div class="analysis-main">
+      <div class="st">Weekly outlook</div>
+      <div class="ss">Macro theme · trend · key events</div>
+      <div class="card">
+        <div class="cl">Macro theme</div>
+        <div id="wt"><div class="ld"><div class="sp"></div>Generating weekly outlook...</div></div>
+        <hr class="dv">
+        <div class="cl">Trend and structure</div>
+        <div id="wtr"><div class="ld"><div class="sp"></div>Analysing trend...</div></div>
+        <hr class="dv">
+        <div class="cl">Key events this week</div>
+        <div id="we"><div class="ld"><div class="sp"></div>Loading calendar...</div></div>
+        <div class="meta" id="wm"></div>
+      </div>
+      <button class="rb" onclick="forceW()">↺ Refresh outlook</button>
+    </div>
   </div>
-  <div class="card">
-    <div class="cl">Macro theme</div>
-    <div id="wt"><div class="ld"><div class="sp"></div>Generating weekly outlook...</div></div>
-    <hr class="dv">
-    <div class="cl">Trend and structure</div>
-    <div id="wtr"><div class="ld"><div class="sp"></div>Analysing trend...</div></div>
-    <hr class="dv">
-    <div class="cl">Key events this week</div>
-    <div id="we"><div class="ld"><div class="sp"></div>Loading calendar...</div></div>
-    <div class="meta" id="wm"></div>
-  </div>
-  <button class="rb" onclick="forceW()">↺ Refresh outlook</button>
 </div>
 
 <!-- ══ SESSIONS ══════════════════════════════════════ -->
@@ -520,6 +603,7 @@ function showS(id, btn) {
   document.querySelectorAll(".nb").forEach(function(b){b.classList.remove("active");});
   document.getElementById(id).classList.add("active");
   btn.classList.add("active");
+  document.body.setAttribute("data-sect", id);
   if(id==="sessions") startSessions();
   if(id==="journal")  renderJournal();
   if(id==="calendar") loadCal();
@@ -611,12 +695,11 @@ function rdW(t){
 function forceW(){delete cache["W_"+cW+"_"+now.getFullYear()+"_"+getWeekNum()];loadW(cW,null);}
 
 // ══ SESSIONS ══
-// All times in AEST (UTC+10). Sessions spanning midnight use end > 1440.
 var SESS=[
   {name:"Sydney",  flag:"🇦🇺", label:"08:00 – 17:00", start:8*60,  end:17*60},
   {name:"Tokyo",   flag:"🇯🇵", label:"10:00 – 19:00", start:10*60, end:19*60},
-  {name:"London",  flag:"🇬🇧", label:"18:00 – 03:00", start:18*60, end:27*60},   // 27*60 = next-day 03:00
-  {name:"New York",flag:"🇺🇸", label:"23:00 – 08:00", start:23*60, end:32*60}    // 32*60 = next-day 08:00
+  {name:"London",  flag:"🇬🇧", label:"18:00 – 03:00", start:18*60, end:27*60},
+  {name:"New York",flag:"🇺🇸", label:"23:00 – 08:00", start:23*60, end:32*60}
 ];
 var sessTimer=null;
 function startSessions(){
@@ -633,24 +716,18 @@ function renderSessions(){
   document.getElementById("sess-clock").textContent=hh+":"+mm+":"+ss;
   var cur=aest.getHours()*60+aest.getMinutes();
   var sec=aest.getSeconds();
-
-  // Is London/NY overlap active? (23:00 – 03:00 AEST)
   var lnActive=(cur>=23*60||cur<3*60);
-
   var html="";
   SESS.forEach(function(s){
     var open=s.end>24*60
       ? (cur>=s.start||cur<(s.end-24*60))
       : (cur>=s.start&&cur<s.end);
-
     var isOverlap=open&&lnActive&&(s.name==="London"||s.name==="New York");
     var cardCls=isOverlap?"s-overlap":open?"s-open":"";
     var badge=isOverlap
       ?"<span class='sess-badge b-overlap'>OVERLAP</span>"
       :open?"<span class='sess-badge b-open'>OPEN</span>"
       :"<span class='sess-badge b-closed'>CLOSED</span>";
-
-    // Countdown
     var diff;
     if(open){
       var endM=s.end>24*60?s.end-24*60:s.end;
@@ -666,7 +743,6 @@ function renderSessions(){
     var cs=diff%60;
     var cdLabel=open?"Closes in":"Opens in";
     var cdStr=ch+"h "+cm.toString().padStart(2,"0")+"m "+cs.toString().padStart(2,"0")+"s";
-
     html+="<div class='sess-card "+cardCls+"'>";
     html+="<div class='sess-name'>"+s.flag+" "+s.name+"</div>";
     html+="<div class='sess-time'>"+s.label+" AEST</div>";
@@ -718,7 +794,7 @@ function renderCal(t){
     days[day].forEach(function(ev){
       var ic=ev.imp.indexOf("high")>=0?"high":ev.imp.indexOf("med")>=0?"med":"low";
       html+="<div class='cal-event'><div class='cal-imp "+ic+"'></div><div class='cal-text'>";
-      html+="<div class='cal-title'>"+ev.name+(ev.ccy?" <span style='color:var(--ac)'>"+ev.ccy+"</span>":"")+"</div>";
+      html+="<div class='cal-title'>"+ev.name+(ev.ccy?" <span style='color:#c8f135'>"+ev.ccy+"</span>":"")+"</div>";
       html+="<div class='cal-detail'>"+(ev.time?ev.time+" UTC":"")+(ev.time&&ev.desc?" · ":"")+(ev.desc||"")+"</div>";
       html+="</div></div>";
     });
@@ -750,16 +826,12 @@ function addTrade(){
   var result=document.getElementById("j-result").value;
   var manPips=document.getElementById("j-pips").value;
   var notes=document.getElementById("j-notes").value.trim();
-
   var pips=manPips!=""?parseInt(manPips):autoPips(pair,entry,sl,tp,result);
   if(result==="loss"&&pips>0) pips=-pips;
-
   var trade={id:Date.now(),date:new Date().toLocaleDateString("en-AU"),pair,dir,entry,sl,tp,result,pips,notes};
   var trades=getTrades();
   trades.unshift(trade);
   saveTrades(trades);
-
-  // Clear form
   ["j-entry","j-sl","j-tp","j-pips","j-notes"].forEach(function(id){document.getElementById(id).value="";});
   document.getElementById("j-result").value="open";
   renderJournal();
@@ -776,8 +848,6 @@ function renderJournal(){
   var wins=closed.filter(function(t){return t.result==="win";});
   var totalPips=trades.reduce(function(s,t){return s+(t.pips||0);},0);
   var wr=closed.length>0?Math.round(wins.length/closed.length*100):null;
-
-  // Streak
   var streak=0,sType="";
   for(var i=0;i<trades.length;i++){
     var r=trades[i].result;
@@ -786,8 +856,6 @@ function renderJournal(){
     else if(r===sType) streak++;
     else break;
   }
-
-  // Stats
   se("js-total",trades.length);
   var wrEl=document.getElementById("js-wr");
   wrEl.textContent=wr!==null?wr+"%":"—";
@@ -798,9 +866,7 @@ function renderJournal(){
   var stEl=document.getElementById("js-streak");
   stEl.textContent=streak>0?(sType==="win"?"W":"L")+streak:"—";
   stEl.className="jstat-val "+(sType==="win"?"jwin":sType==="loss"?"jloss":"jneu");
-
   if(!trades.length){se("trade-log","<div class='empty-j'>No trades logged yet.<br>Log your first trade above.</div>");return;}
-
   var html="";
   trades.forEach(function(t){
     var r=t.result;
@@ -813,7 +879,6 @@ function renderJournal(){
     if(t.entry) lvl.push("Entry: "+t.entry);
     if(t.sl) lvl.push("SL: "+t.sl);
     if(t.tp) lvl.push("TP: "+t.tp);
-
     html+="<div class='ti "+ic+"'>";
     html+="<div class='ti-top'>";
     html+="<div><span class='ti-pair'>"+t.pair+"</span><span class='ti-dir "+(t.dir.toLowerCase())+"'>"+t.dir.toUpperCase()+"</span></div>";
@@ -831,11 +896,7 @@ function renderJournal(){
 }
 
 // ══ POSITION SIZE CALCULATOR ══
-// Approximate pip value in USD per standard lot, by quote currency
-var PIP_USD={
-  USD:10, JPY:7, AUD:6.5, GBP:13, CAD:7.6, CHF:9.2, NZD:5.6, EUR:10.8, NZD:5.6
-};
-// Special case: XAU/USD — pip = $0.01/oz, 1 lot = 100oz → $1 per pip
+var PIP_USD={USD:10,JPY:7,AUD:6.5,GBP:13,CAD:7.6,CHF:9.2,NZD:5.6,EUR:10.8};
 function getPipVal(pair){
   if(pair==="XAU/USD") return 1;
   var q=pair.split("/")[1];
@@ -855,17 +916,14 @@ function calcPos(){
   var pair=document.getElementById("c-pair").value;
   var slPips=parseFloat(document.getElementById("c-sl").value)||20;
   var audUsd=parseFloat(document.getElementById("c-audusd").value)||0.645;
-
   var riskAUD=bal*(rPct/100);
   var riskUSD=riskAUD*audUsd;
   var pv=getPipVal(pair);
   var lots=riskUSD/(slPips*pv);
-
   var lotStr;
   if(lots>=1)        lotStr=lots.toFixed(2)+" standard lots";
   else if(lots>=0.1) lotStr=(lots*10).toFixed(2)+" mini lots ("+lots.toFixed(2)+" lots)";
   else               lotStr=(lots*100).toFixed(2)+" micro lots ("+lots.toFixed(4)+" lots)";
-
   document.getElementById("cr-aud").textContent="A$"+riskAUD.toFixed(2);
   document.getElementById("cr-usd").textContent="$"+riskUSD.toFixed(2)+" (at AUD/USD "+audUsd+")";
   document.getElementById("cr-lot").textContent=lotStr;
