@@ -622,7 +622,7 @@ body{font-family:'Syne',sans-serif;background:var(--bg);color:var(--tx);min-heig
     <div class="card" style="padding:0;overflow:hidden;box-shadow:0 0 0 1px var(--bd2),0 8px 32px rgba(0,0,0,0.45)">
       <div id="hm-body"><div class="ld"><div class="sp"></div>Loading heat map...</div></div>
     </div>
-    <div class="map-src">Rates: <a href="https://frankfurter.app" target="_blank" rel="noopener">Frankfurter API (ECB)</a> · daily, weekly, monthly pip changes</div>
+    <div class="map-src">Rates: <a href="https://frankfurter.dev" target="_blank" rel="noopener">Frankfurter API (ECB)</a> · daily, weekly, monthly pip changes</div>
   </div>
 
   <!-- Sentiment -->
@@ -643,7 +643,7 @@ body{font-family:'Syne',sans-serif;background:var(--bg);color:var(--tx);min-heig
       </div>
       <div id="corr-body" style="padding:16px"><div class="ld"><div class="sp"></div>Calculating correlations...</div></div>
     </div>
-    <div class="map-src">Rates: <a href="https://frankfurter.app" target="_blank" rel="noopener">Frankfurter API (ECB)</a> · 60-day rolling window</div>
+    <div class="map-src">Rates: <a href="https://frankfurter.dev" target="_blank" rel="noopener">Frankfurter API (ECB)</a> · 60-day rolling window</div>
   </div>
 </div>
 
@@ -1093,7 +1093,7 @@ async function loadHeatMap(){
     var d7=hmDate(new Date(t-7*864e5));
     var d30=hmDate(new Date(t-30*864e5));
     var sym='USD,GBP,AUD,CAD,CHF,NZD,JPY';
-    var api='https://api.frankfurter.app';
+    var api='https://api.frankfurter.dev/v1';
     var [r0,r1,r7,r30]=await Promise.all([
       fetch(api+'/latest?from=EUR&to='+sym).then(r=>r.json()),
       fetch(api+'/'+d1+'?from=EUR&to='+sym).then(r=>r.json()),
@@ -1160,7 +1160,7 @@ async function loadCorrelation(){
     var t=new Date();
     var d60=hmDate(new Date(t-60*864e5));
     var today=hmDate(t);
-    var res=await fetch('https://api.frankfurter.app/'+d60+'..'+today+'?from=EUR&to=USD,GBP,AUD,CAD,CHF,NZD,JPY');
+    var res=await fetch('https://api.frankfurter.dev/v1/'+d60+'..'+today+'?from=EUR&to=USD,GBP,AUD,CAD,CHF,NZD,JPY');
     var data=await res.json();
     var dates=Object.keys(data.rates).sort();
     var pairDef={
