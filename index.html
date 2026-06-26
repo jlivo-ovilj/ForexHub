@@ -63,6 +63,22 @@ body{font-family:'Syne',sans-serif;background:var(--bg);color:var(--tx);min-heig
 .map-src{font-family:'DM Mono',monospace;font-size:10px;color:var(--mt);margin-top:8px;text-align:right}
 .map-src a{color:var(--mt);text-decoration:none}
 .map-src a:hover{color:var(--ac)}
+/* Heat map table */
+.hm-table{width:100%;border-collapse:collapse}
+.hm-table thead th{font-family:'DM Mono',monospace;font-size:10px;text-transform:uppercase;letter-spacing:0.08em;color:var(--mt);padding:10px 12px;text-align:center;border-bottom:1px solid var(--bd2);position:sticky;top:0;background:var(--sf)}
+.hm-table thead th:first-child{text-align:left}
+.hm-group-lbl{font-family:'DM Mono',monospace;font-size:9px;letter-spacing:0.14em;text-transform:uppercase;color:var(--mt);padding:10px 12px 4px;background:var(--sf2)}
+.hm-row:hover{background:rgba(255,255,255,0.025)}
+.hm-pair{font-family:'DM Mono',monospace;font-size:12px;font-weight:500;color:var(--tx);padding:8px 12px;border-bottom:1px solid var(--bd)}
+.hm-cell{font-family:'DM Mono',monospace;font-size:12px;text-align:center;padding:8px 12px;border-bottom:1px solid var(--bd);font-weight:500}
+.hm-pos{color:#4ade80}.hm-neg{color:#f87171}.hm-neu{color:var(--mt)}
+.hm-pos.hi{background:rgba(74,222,128,0.12)}.hm-neg.hi{background:rgba(248,113,113,0.12)}
+/* Correlation matrix */
+.corr-wrap{overflow-x:auto;-webkit-overflow-scrolling:touch}
+.corr-table{border-collapse:collapse;font-family:'DM Mono',monospace;font-size:11px;white-space:nowrap;min-width:100%}
+.corr-table thead th{padding:6px 10px;text-align:center;color:var(--mt);font-size:10px;letter-spacing:0.05em;border-bottom:1px solid var(--bd2);background:var(--sf)}
+.corr-table td{padding:7px 10px;text-align:center;font-size:11px;font-weight:500;border:1px solid var(--bd)}
+.corr-lbl{color:var(--tx);text-align:left!important;padding:7px 16px 7px 0!important;border:none!important;white-space:nowrap;font-size:12px}
 
 /* ── SIDEBAR LAYOUT (Daily + Weekly) ── */
 .analysis-layout{display:flex;gap:18px;align-items:flex-start}
@@ -594,7 +610,7 @@ body{font-family:'Syne',sans-serif;background:var(--bg);color:var(--tx);min-heig
 <!-- ══ MAPS ══════════════════════════════════════ -->
 <div id="maps" class="sec">
   <div class="st">Market maps</div>
-  <div class="ss">Heat map · Sentiment · Correlation · live data via myfxbook</div>
+  <div class="ss">Heat map · Sentiment · Correlation · live market data</div>
   <div class="map-tabs">
     <button class="map-tb mt-heat active" onclick="showMap('heatmap',this)">🌡 Heat Map</button>
     <button class="map-tb mt-sent" onclick="showMap('sentiment',this)">📊 Sentiment</button>
@@ -603,26 +619,31 @@ body{font-family:'Syne',sans-serif;background:var(--bg);color:var(--tx);min-heig
 
   <!-- Heat Map -->
   <div id="heatmap" class="map-panel active">
-    <div class="map-wrap">
-      <iframe class="map-frame" src="https://widgets.myfxbook.com/widgets/heat-map.html" loading="lazy" scrolling="no" title="Forex Heat Map"></iframe>
+    <div class="card" style="padding:0;overflow:hidden;box-shadow:0 0 0 1px var(--bd2),0 8px 32px rgba(0,0,0,0.45)">
+      <div id="hm-body"><div class="ld"><div class="sp"></div>Loading heat map...</div></div>
     </div>
-    <div class="map-src">Data: <a href="https://www.myfxbook.com/forex-market/heat-map" target="_blank" rel="noopener">myfxbook.com/forex-market/heat-map</a></div>
+    <div class="map-src">Rates: <a href="https://frankfurter.app" target="_blank" rel="noopener">Frankfurter API (ECB)</a> · daily, weekly, monthly pip changes</div>
   </div>
 
   <!-- Sentiment -->
   <div id="sentiment" class="map-panel">
-    <div class="map-wrap">
-      <iframe class="map-frame" src="https://widgets.myfxbook.com/widgets/outlook.html" loading="lazy" scrolling="no" title="Forex Sentiment"></iframe>
+    <div class="card" style="box-shadow:0 0 0 1px var(--bd2),0 8px 32px rgba(0,0,0,0.45)">
+      <div class="cl">AI Market Sentiment</div>
+      <div id="sent-body"><div class="ld"><div class="sp"></div>Analysing sentiment...</div></div>
     </div>
-    <div class="map-src">Data: <a href="https://www.myfxbook.com/community/outlook" target="_blank" rel="noopener">myfxbook.com/community/outlook</a></div>
+    <div class="map-src">Analysis: Claude AI via proxy · not financial advice · educational only</div>
   </div>
 
   <!-- Correlation -->
   <div id="correlation" class="map-panel">
-    <div class="map-wrap">
-      <iframe class="map-frame" style="min-height:780px" src="https://widgets.myfxbook.com/widgets/correlation.html" loading="lazy" scrolling="no" title="Forex Correlation"></iframe>
+    <div class="card" style="padding:0;overflow:hidden;box-shadow:0 0 0 1px var(--bd2),0 8px 32px rgba(0,0,0,0.45)">
+      <div style="padding:14px 16px 10px;border-bottom:1px solid var(--bd)">
+        <div class="cl" style="margin-bottom:2px">Correlation Matrix</div>
+        <div style="font-size:12px;color:var(--mt)">60-day rolling · −100% = opposite · +100% = same direction</div>
+      </div>
+      <div id="corr-body" style="padding:16px"><div class="ld"><div class="sp"></div>Calculating correlations...</div></div>
     </div>
-    <div class="map-src">Data: <a href="https://www.myfxbook.com/forex-market/correlation" target="_blank" rel="noopener">myfxbook.com/forex-market/correlation</a></div>
+    <div class="map-src">Rates: <a href="https://frankfurter.app" target="_blank" rel="noopener">Frankfurter API (ECB)</a> · 60-day rolling window</div>
   </div>
 </div>
 
@@ -652,6 +673,7 @@ var DAYS = ["Sun","Mon","Tue","Wed","Thu","Fri","Sat"];
 var MTHS = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
 var cD   = "AUDCAD";
 var cW   = "AUDCAD";
+var hmLoaded=false, sentLoaded=false, corrLoaded=false;
 
 // ══ PAIR LABELS ══
 var PL = {
@@ -678,12 +700,16 @@ function showS(id, btn) {
   if(id==="sessions") startSessions();
   if(id==="journal")  renderJournal();
   if(id==="calendar") loadCal();
+  if(id==="maps" && !hmLoaded) { hmLoaded=true; loadHeatMap(); }
 }
 function showMap(id, btn) {
   document.querySelectorAll(".map-panel").forEach(function(p){p.classList.remove("active");});
   document.querySelectorAll(".map-tb").forEach(function(b){b.classList.remove("active");});
   document.getElementById(id).classList.add("active");
   btn.classList.add("active");
+  if(id==="heatmap"     && !hmLoaded)   { hmLoaded=true;   loadHeatMap(); }
+  if(id==="sentiment"   && !sentLoaded) { sentLoaded=true;  loadSentiment(); }
+  if(id==="correlation" && !corrLoaded) { corrLoaded=true;  loadCorrelation(); }
 }
 function spa(rid, btn) {
   document.getElementById(rid).querySelectorAll(".pp").forEach(function(b){b.classList.remove("active");});
@@ -1036,6 +1062,151 @@ async function revT(){
     se("rr","<div class='cb' style='background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.08);border-radius:10px;padding:14px;'>"+fmt(t)+"</div>");
   }catch(e){se("rr",eb("Review failed: "+e.message));}
   btn.disabled=false;btn.textContent="Review my trade";
+}
+
+// ══ MAPS ══
+function hmDate(d){return d.toISOString().slice(0,10);}
+
+function getXR(rates,base,quote){
+  if(base==='EUR') return rates[quote];
+  if(quote==='EUR') return 1/rates[base];
+  return rates[quote]/rates[base];
+}
+
+function calcPips(base,quote,r0,r1){
+  var cur=getXR(r0,base,quote), prev=getXR(r1,base,quote);
+  var mult=(quote==='JPY')?100:10000;
+  return Math.round((cur-prev)*mult*10)/10;
+}
+
+function hmCell(v){
+  var cls=v>0?'hm-pos':v<0?'hm-neg':'hm-neu';
+  var hi=(Math.abs(v)>30)?' hi':'';
+  return '<td class="hm-cell '+cls+hi+'">'+(v>0?'+':'')+v+'</td>';
+}
+
+async function loadHeatMap(){
+  var el=document.getElementById('hm-body');
+  try{
+    var t=new Date();
+    var d1=hmDate(new Date(t-1*864e5));
+    var d7=hmDate(new Date(t-7*864e5));
+    var d30=hmDate(new Date(t-30*864e5));
+    var sym='USD,GBP,AUD,CAD,CHF,NZD,JPY';
+    var api='https://api.frankfurter.app';
+    var [r0,r1,r7,r30]=await Promise.all([
+      fetch(api+'/latest?from=EUR&to='+sym).then(r=>r.json()),
+      fetch(api+'/'+d1+'?from=EUR&to='+sym).then(r=>r.json()),
+      fetch(api+'/'+d7+'?from=EUR&to='+sym).then(r=>r.json()),
+      fetch(api+'/'+d30+'?from=EUR&to='+sym).then(r=>r.json()),
+    ]);
+    [r0,r1,r7,r30].forEach(function(r){if(r.rates)r.rates.EUR=1;});
+    var pairs=[
+      ['AUD','CAD'],['AUD','CHF'],['AUD','JPY'],['AUD','NZD'],['AUD','USD'],
+      ['CAD','CHF'],['CAD','JPY'],['CHF','JPY'],
+      ['EUR','AUD'],['EUR','CAD'],['EUR','CHF'],['EUR','GBP'],['EUR','JPY'],['EUR','NZD'],['EUR','USD'],
+      ['GBP','AUD'],['GBP','CAD'],['GBP','CHF'],['GBP','JPY'],['GBP','NZD'],['GBP','USD'],
+      ['NZD','CAD'],['NZD','CHF'],['NZD','JPY'],['NZD','USD'],
+      ['USD','CAD'],['USD','CHF'],['USD','JPY']
+    ];
+    var html='<table class="hm-table"><thead><tr><th>Pair</th><th>Daily</th><th>Weekly</th><th>Monthly</th></tr></thead><tbody>';
+    var lastB='';
+    pairs.forEach(function(p){
+      var b=p[0],q=p[1];
+      if(b!==lastB){
+        html+='<tr><td class="hm-group-lbl" colspan="4">'+b+'</td></tr>';
+        lastB=b;
+      }
+      var d=calcPips(b,q,r0.rates,r1.rates);
+      var w=calcPips(b,q,r0.rates,r7.rates);
+      var m=calcPips(b,q,r0.rates,r30.rates);
+      html+='<tr class="hm-row"><td class="hm-pair">'+b+'/'+q+'</td>'+hmCell(d)+hmCell(w)+hmCell(m)+'</tr>';
+    });
+    html+='</tbody></table>';
+    html+='<div class="meta" style="padding:8px 12px">ECB rates as of '+r0.date+' · Daily = vs prev close · Weekly = vs 7d · Monthly = vs 30d</div>';
+    el.innerHTML=html;
+  }catch(e){
+    el.innerHTML='<div class="cb" style="padding:16px">Unable to load heat map. Check your connection and try again.<br><br><button class="rb" onclick="hmLoaded=false;loadHeatMap()">↺ Retry</button></div>';
+  }
+}
+
+async function loadSentiment(){
+  var el=document.getElementById('sent-body');
+  try{
+    var prompt='Give a concise forex market sentiment summary. For each pair — EURUSD, GBPUSD, AUDUSD, NZDUSD, USDJPY, USDCAD, XAUUSD — state: direction (Bullish / Bearish / Neutral) and one key driver sentence. Lead with a single overall market theme sentence. Under 220 words total. Plain text, no markdown.';
+    var res=await fetch(WU,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({prompt:prompt})});
+    var data=await res.json();
+    var txt=(data.text||'No data returned.').replace(/\n\n/g,'</p><p>').replace(/\n/g,'<br>');
+    el.innerHTML='<p>'+txt+'</p><div class="meta" style="margin-top:10px">Generated by Claude AI · <button class="rb" style="display:inline;padding:4px 10px;font-size:11px" onclick="sentLoaded=false;document.getElementById(\'sent-body\').innerHTML=\'<div class=\\\'ld\\\'><div class=\\\'sp\\\'></div>Refreshing...</div>\';sentLoaded=true;loadSentiment()">↺ Refresh</button></div>';
+  }catch(e){
+    el.innerHTML='<div class="cb">Unable to load sentiment. <button class="rb" onclick="sentLoaded=false;loadSentiment()">↺ Retry</button></div>';
+  }
+}
+
+function pearson(a,b){
+  var n=Math.min(a.length,b.length);
+  if(n<2)return 0;
+  var ma=0,mb=0;
+  for(var i=0;i<n;i++){ma+=a[i];mb+=b[i];}
+  ma/=n;mb/=n;
+  var num=0,da=0,db=0;
+  for(var i=0;i<n;i++){var xa=a[i]-ma,xb=b[i]-mb;num+=xa*xb;da+=xa*xa;db+=xb*xb;}
+  return (da&&db)?Math.round(num/Math.sqrt(da*db)*100):0;
+}
+
+async function loadCorrelation(){
+  var el=document.getElementById('corr-body');
+  try{
+    var t=new Date();
+    var d60=hmDate(new Date(t-60*864e5));
+    var today=hmDate(t);
+    var res=await fetch('https://api.frankfurter.app/'+d60+'..'+today+'?from=EUR&to=USD,GBP,AUD,CAD,CHF,NZD,JPY');
+    var data=await res.json();
+    var dates=Object.keys(data.rates).sort();
+    var pairDef={
+      'EUR/USD':['EUR','USD'],'GBP/USD':['GBP','USD'],'AUD/USD':['AUD','USD'],
+      'NZD/USD':['NZD','USD'],'USD/CAD':['USD','CAD'],'USD/CHF':['USD','CHF'],
+      'USD/JPY':['USD','JPY'],'EUR/JPY':['EUR','JPY'],'GBP/JPY':['GBP','JPY'],
+      'AUD/JPY':['AUD','JPY'],'EUR/GBP':['EUR','GBP'],'AUD/NZD':['AUD','NZD']
+    };
+    var labels=Object.keys(pairDef);
+    function pairReturns(base,quote){
+      var series=dates.map(function(d){
+        var r=data.rates[d]; if(!r)return null; r.EUR=1;
+        if(base==='EUR')return r[quote];
+        if(quote==='EUR')return 1/r[base];
+        return r[quote]/r[base];
+      }).filter(function(v){return v!==null;});
+      var ret=[];
+      for(var i=1;i<series.length;i++)ret.push((series[i]-series[i-1])/series[i-1]);
+      return ret;
+    }
+    var retMap={};
+    labels.forEach(function(l){var d=pairDef[l];retMap[l]=pairReturns(d[0],d[1]);});
+    var html='<div class="corr-wrap"><table class="corr-table"><thead><tr><th></th>';
+    labels.forEach(function(l){html+='<th>'+l+'</th>';});
+    html+='</tr></thead><tbody>';
+    labels.forEach(function(l1){
+      html+='<tr><td class="corr-lbl">'+l1+'</td>';
+      labels.forEach(function(l2){
+        var c=pearson(retMap[l1],retMap[l2]);
+        var bg='',col='';
+        if(l1===l2){bg='background:rgba(255,255,255,0.06)';col='color:var(--mt)';}
+        else if(c>=70){bg='background:rgba(74,222,128,0.15)';col='color:#4ade80';}
+        else if(c>=40){bg='background:rgba(74,222,128,0.07)';col='color:#86efac';}
+        else if(c<=-70){bg='background:rgba(248,113,113,0.15)';col='color:#f87171';}
+        else if(c<=-40){bg='background:rgba(248,113,113,0.07)';col='color:#fca5a5';}
+        else{col='color:var(--mt)';}
+        html+='<td style="'+bg+';'+col+'">'+(l1===l2?'—':(c>0?'+':'')+c+'%')+'</td>';
+      });
+      html+='</tr>';
+    });
+    html+='</tbody></table></div>';
+    html+='<div class="meta" style="margin-top:10px">'+dates.length+' trading days · '+dates[0]+' → '+dates[dates.length-1]+'</div>';
+    el.innerHTML=html;
+  }catch(e){
+    el.innerHTML='<div class="cb">Unable to calculate correlations. <button class="rb" onclick="corrLoaded=false;loadCorrelation()">↺ Retry</button></div>';
+  }
 }
 
 // ══ INIT ══
