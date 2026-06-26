@@ -35,7 +35,7 @@ body{font-family:'Syne',sans-serif;background:var(--bg);color:var(--tx);min-heig
 /* Header */
 .hdr{position:sticky;top:0;z-index:100;background:rgba(10,10,10,0.92);backdrop-filter:blur(16px);border-bottom:1px solid var(--bd);padding:14px 20px 12px;display:flex;align-items:center;justify-content:space-between}
 .logo{font-size:17px;font-weight:700;letter-spacing:-0.02em}.logo span{color:var(--ac)}
-.hdate{font-family:'DM Mono',monospace;font-size:11px;color:var(--mt);text-align:right;line-height:1.4}
+.hdate{font-family:'DM Mono',monospace;font-size:12px;color:var(--tx);text-align:right;letter-spacing:0.04em;opacity:0.75}
 
 /* Nav */
 .nav{display:flex;gap:4px;padding:12px 20px;border-bottom:1px solid var(--bd);overflow-x:auto;scrollbar-width:none;justify-content:center}
@@ -688,7 +688,7 @@ var PL = {
 
 // ══ HEADER DATE ══
 document.getElementById("hdate").innerHTML =
-  DAYS[now.getDay()]+" "+now.getDate()+" "+MTHS[now.getMonth()]+"<br>"+now.getFullYear();
+  DAYS[now.getDay()]+" "+now.getDate()+" "+MTHS[now.getMonth()]+" "+now.getFullYear();
 
 // ══ NAV ══
 function showS(id, btn) {
