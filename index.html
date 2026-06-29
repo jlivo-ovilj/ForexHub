@@ -52,7 +52,7 @@ body{font-family:'Syne',sans-serif;background:var(--bg);color:var(--tx);min-heig
 .nb.active{background:var(--ac);color:#0a0a0a;border-color:var(--ac)}
 
 /* ── MAIN ── */
-.main{padding:20px;max-width:980px;margin:0 auto}
+.main{padding:20px;padding-bottom:80px;max-width:980px;margin:0 auto}
 .sec{display:none}.sec.active{display:block}
 
 /* ── ANALYSIS SUB-TABS ── */
@@ -365,13 +365,13 @@ body{font-family:'Syne',sans-serif;background:var(--bg);color:var(--tx);min-heig
 <!-- ══ ANALYSIS ══ -->
 <div id="analysis" class="sec active">
   <div class="analysis-subtabs">
-    <button class="asub active" onclick="showAnalysisSub('analysis-daily',this)">Daily</button>
-    <button class="asub" onclick="showAnalysisSub('analysis-weekly',this)">Weekly</button>
+    <button class="asub active" onclick="showAnalysisSub('analysis-weekly',this)">Weekly</button>
+    <button class="asub" onclick="showAnalysisSub('analysis-daily',this)">Daily</button>
     <button class="asub asub-4hr" onclick="showAnalysisSub('analysis-4hr',this)">4 Hour</button>
   </div>
 
   <!-- Daily -->
-  <div id="analysis-daily" class="analysis-sub active">
+  <div id="analysis-daily" class="analysis-sub">
     <div class="analysis-layout">
       <div class="pair-sidebar" id="dpr">
         <div class="pg" data-ccy="AUD"><div class="pgl">AUD</div>
@@ -443,7 +443,7 @@ body{font-family:'Syne',sans-serif;background:var(--bg);color:var(--tx);min-heig
   </div>
 
   <!-- Weekly -->
-  <div id="analysis-weekly" class="analysis-sub">
+  <div id="analysis-weekly" class="analysis-sub active">
     <div class="analysis-layout">
       <div class="pair-sidebar" id="wpr">
         <div class="pg" data-ccy="AUD"><div class="pgl">AUD</div>
@@ -563,18 +563,18 @@ body{font-family:'Syne',sans-serif;background:var(--bg);color:var(--tx);min-heig
       </div>
       <div class="analysis-main">
         <div class="st" style="color:#60a5fa">4-Hour analysis</div>
-        <div class="ss">Intraday structure · entry timing · 4H chart perspective</div>
+        <div class="ss">Short-term bias · intraday structure · entry trigger for the current 4H candle</div>
         <div class="card" style="border-color:rgba(96,165,250,0.2)">
-          <div class="cl h4-accent">4H bias</div>
+          <div class="cl h4-accent">4H bias <span style="font-weight:400;font-size:11px;color:var(--mt)">(current direction on 4H chart)</span></div>
           <div id="h4b"></div>
           <hr class="dv">
-          <div class="cl h4-accent">4H setup</div>
+          <div class="cl h4-accent">4H setup <span style="font-weight:400;font-size:11px;color:var(--mt)">(pattern &amp; structure)</span></div>
           <div id="h4s"></div>
           <hr class="dv">
-          <div class="cl h4-accent">Key 4H levels</div>
+          <div class="cl h4-accent">Key 4H levels <span style="font-weight:400;font-size:11px;color:var(--mt)">(resistance · entry zone · support)</span></div>
           <div id="h4l"></div>
           <hr class="dv">
-          <div class="cl h4-accent">Entry trigger</div>
+          <div class="cl h4-accent">Entry trigger <span style="font-weight:400;font-size:11px;color:var(--mt)">(price action signal to watch for)</span></div>
           <div id="h4t"></div>
           <div class="meta" id="h4m"></div>
         </div>
@@ -991,6 +991,10 @@ function showAnalysisSub(id,btn){
   var el=document.getElementById(id);
   if(el) el.classList.add('active');
   if(btn) btn.classList.add('active');
+  // Auto-load the active pair for the selected sub-tab
+  if(id==='analysis-daily') loadD(cD, document.querySelector('#dpr .pp.active'));
+  if(id==='analysis-weekly') loadW(cW, document.querySelector('#wpr .pp.active'));
+  if(id==='analysis-4hr') load4hr(c4, document.querySelector('#hpr .pp.active'));
 }
 /* Review sub-tabs (Amendment 9) */
 function showReviewSub(id,btn){
@@ -1093,17 +1097,19 @@ async function loadD(pair,btn){
     var prompt='You are a professional forex analyst. Provide a concise DAILY analysis for '+p+' as of today '+new Date().toISOString().split('T')[0]+' AEST. Format exactly:\nBIAS: [BULLISH/BEARISH/NEUTRAL]\n\nKEY LEVELS:\n- Resistance 1: [price]\n- Resistance 2: [price]\n- Entry zone: [price range]\n- Support 1: [price]\n- Support 2: [price]\n\nWATCH TODAY:\n[2-3 bullet points on what to watch, catalysts, and specific entry triggers. Use **bold** for key terms.]\n\nBe specific with price levels. Keep it concise.';
     var txt=await ai(prompt,'d:'+pair+':'+new Date().toDateString());
     var lines=txt.split('\n');
-    var biasLine=lines.find(function(l){return l.startsWith('BIAS:')}) || '';
-    bias=biasLine.replace('BIAS:','').trim();
+    function stripMd(s){return s.replace(/\*\*/g,'').replace(/\*/g,'').replace(/^#+\s*/,'').trim();}
+    var biasLine=lines.find(function(l){return stripMd(l).toUpperCase().startsWith('BIAS:')}) || '';
+    bias=stripMd(biasLine).replace(/^BIAS:\s*/i,'').trim();
     var bc=bias.toUpperCase().includes('BULL')?'bbuy':bias.toUpperCase().includes('BEAR')?'bsel':'bwt';
     document.getElementById('db').innerHTML='<span class="bt '+bc+'">'+bias+'</span>';
     // Levels section
     var inLevels=false,inWatch=false,lvls=[],wch=[];
     lines.forEach(function(l){
-      if(l.startsWith('KEY LEVELS:')){inLevels=true;inWatch=false;return}
-      if(l.startsWith('WATCH TODAY:')){inWatch=true;inLevels=false;return}
-      if(inLevels && l.trim().startsWith('-')) lvls.push(l.trim().replace(/^-\s*/,''));
-      if(inWatch && l.trim()) wch.push(l.trim().replace(/^-\s*/,''));
+      var bare=stripMd(l).toUpperCase();
+      if(bare.startsWith('KEY LEVELS')){inLevels=true;inWatch=false;return}
+      if(bare.startsWith('WATCH TODAY')){inWatch=true;inLevels=false;return}
+      if(inLevels && l.trim().replace(/^\*\*/,'').startsWith('-')) lvls.push(stripMd(l).replace(/^-\s*/,''));
+      if(inWatch && l.trim()&&l.trim()!=='---') wch.push(stripMd(l).replace(/^-\s*/,''));
     });
     var lvlHtml=lvls.length?lvls.map(function(l){return '<div style="font-family:\'DM Mono\',monospace;font-size:12px;padding:5px 0;border-bottom:1px solid var(--bd);color:#d4d0ca;">'+l+'</div>'}).join(''):'<div class="cb">'+md(lines.filter(function(l){return l.trim()&&!l.startsWith('BIAS')&&!l.startsWith('KEY')&&!l.startsWith('WATCH')}).join('\n'))+'</div>';
     document.getElementById('dl').innerHTML=lvlHtml;
@@ -1144,15 +1150,21 @@ async function loadW(pair,btn){
     var sections={macro:[],trend:[],events:[]};
     var cur='';
     lines.forEach(function(l){
-      if(l.startsWith('MACRO THEME:')) cur='macro';
-      else if(l.startsWith('TREND AND STRUCTURE:')) cur='trend';
-      else if(l.startsWith('KEY EVENTS THIS WEEK:')) cur='events';
-      else if(cur&&l.trim()) sections[cur].push(l.trim());
+      // strip markdown bold/italic and heading # so "**MACRO THEME:**" matches too
+      var bare=l.replace(/\*\*/g,'').replace(/\*/g,'').replace(/^#+\s*/,'').trim().toUpperCase();
+      if(bare.startsWith('MACRO THEME')) cur='macro';
+      else if(bare.startsWith('TREND AND STRUCTURE')) cur='trend';
+      else if(bare.startsWith('KEY EVENTS')) cur='events';
+      else if(cur&&l.trim()&&l.trim()!=='---'&&!l.trim().startsWith('#')) sections[cur].push(l.trim());
     });
-    document.getElementById('wt').innerHTML='<div class="cb">'+md(sections.macro.join(' '))+'</div>';
-    document.getElementById('wtr').innerHTML='<div class="cb">'+md(sections.trend.join(' '))+'</div>';
+    document.getElementById('wt').innerHTML=sections.macro.length
+      ?'<div class="cb">'+md(sections.macro.join('\n'))+'</div>'
+      :'<div class="cb">'+md(txt.split(/macro theme:?/i).slice(1)[0]||txt)+'</div>';
+    document.getElementById('wtr').innerHTML=sections.trend.length
+      ?'<div class="cb">'+md(sections.trend.join('\n'))+'</div>'
+      :'';
     var evHtml=sections.events.map(function(e){return '<div class="cb" style="padding:4px 0;border-bottom:1px solid var(--bd)">'+md(e.replace(/^-\s*/,''))+'</div>'}).join('');
-    document.getElementById('we').innerHTML=evHtml||'<div class="cb">'+md(txt)+'</div>';
+    document.getElementById('we').innerHTML=evHtml||'';
     document.getElementById('wm').textContent='Updated '+new Date().toLocaleTimeString('en-AU',{timeZone:'Australia/Brisbane',hour:'2-digit',minute:'2-digit'})+' AEST';
   } catch(e){
     document.getElementById('wt').innerHTML='<div class="eb">'+e.message+'</div>';
@@ -1179,17 +1191,19 @@ async function load4hr(pair,btn){
     var prompt='You are a professional forex analyst. Provide a 4-HOUR intraday analysis for '+p+' right now '+new Date().toISOString().split('T')[0]+'. Format exactly:\n4H BIAS: [BULLISH/BEARISH/NEUTRAL]\n\n4H SETUP:\n[2-3 sentences on the 4H chart structure, pattern, and context. Use **bold** for key terms.]\n\nKEY 4H LEVELS:\n- 4H Resistance: [price]\n- 4H Entry zone: [price range]\n- 4H Support: [price]\n\nENTRY TRIGGER:\n[1-2 sentences on the specific price action signal or candle pattern to watch for entry. Use **bold** for the trigger.]\n\nKeep it tight and specific.';
     var txt=await ai(prompt,'4h:'+pair+':'+hr4key);
     var lines=txt.split('\n');
-    var biasL=lines.find(function(l){return l.startsWith('4H BIAS:')}) || '';
-    var bias=biasL.replace('4H BIAS:','').trim();
+    function strip4(s){return s.replace(/\*\*/g,'').replace(/\*/g,'').replace(/^#+\s*/,'').trim();}
+    var biasL=lines.find(function(l){return strip4(l).toUpperCase().startsWith('4H BIAS')}) || '';
+    var bias=strip4(biasL).replace(/^4H BIAS:\s*/i,'').trim();
     var bc=bias.toUpperCase().includes('BULL')?'bbuy':bias.toUpperCase().includes('BEAR')?'bsel':'bwt';
     document.getElementById('h4b').innerHTML='<span class="bt '+bc+'">'+bias+'</span>';
     var sections={setup:[],levels:[],trigger:[]};
     var cur='';
     lines.forEach(function(l){
-      if(l.startsWith('4H SETUP:')) cur='setup';
-      else if(l.startsWith('KEY 4H LEVELS:')) cur='levels';
-      else if(l.startsWith('ENTRY TRIGGER:')) cur='trigger';
-      else if(cur&&l.trim()) sections[cur].push(l.trim());
+      var bare=strip4(l).toUpperCase();
+      if(bare.startsWith('4H SETUP')) cur='setup';
+      else if(bare.startsWith('KEY 4H LEVEL')) cur='levels';
+      else if(bare.startsWith('ENTRY TRIGGER')) cur='trigger';
+      else if(cur&&l.trim()&&l.trim()!=='---') sections[cur].push(strip4(l));
     });
     document.getElementById('h4s').innerHTML='<div class="cb">'+md(sections.setup.join(' '))+'</div>';
     document.getElementById('h4l').innerHTML=sections.levels.map(function(l){return '<div style="font-family:\'DM Mono\',monospace;font-size:12px;padding:5px 0;border-bottom:1px solid var(--bd);color:#d4d0ca;">'+l.replace(/^-\s*/,'')+'</div>'}).join('');
@@ -1249,11 +1263,21 @@ function renderTimeline(nowMin){
   var html='<div class="tl-bg"></div>';
   SESS.forEach(function(s,i){
     var pStart=pctOfDay(s.start)*100;
-    var dur=(s.end-s.start)/1440*100;
-    var alpha=isOpen(s,nowMin)?'0.7':'0.35';
-    html+='<div class="tl-seg" style="left:'+pStart+'%;width:'+dur+'%;background:'+s.color+';opacity:'+alpha+';top:22px;height:24px;border-radius:4px;position:absolute"></div>';
-    // Session label at start
-    html+='<div class="tl-slabel" style="left:'+pStart+'%;color:'+s.color+';top:2px">'+s.flag+'</div>';
+    var alpha=isOpen(s,nowMin)?'0.8':'0.4';
+    var seg='top:22px;height:24px;border-radius:4px;position:absolute;background:'+s.color+';opacity:'+alpha;
+    if(s.end>1440){
+      // Session crosses midnight: draw two segments
+      var dur1=(1440-s.start)/1440*100;  // start → midnight
+      var dur2=(s.end-1440)/1440*100;    // midnight → end next day
+      html+='<div class="tl-seg" style="left:'+pStart+'%;width:'+dur1+'%;'+seg+'"></div>';
+      html+='<div class="tl-seg" style="left:0%;width:'+dur2+'%;'+seg+'"></div>';
+      // Label at start of first segment
+      html+='<div class="tl-slabel" style="left:'+pStart+'%;color:'+s.color+';top:2px">'+s.flag+'</div>';
+    } else {
+      var dur=(s.end-s.start)/1440*100;
+      html+='<div class="tl-seg" style="left:'+pStart+'%;width:'+dur+'%;'+seg+'"></div>';
+      html+='<div class="tl-slabel" style="left:'+pStart+'%;color:'+s.color+';top:2px">'+s.flag+'</div>';
+    }
   });
   // Hour marks
   [0,3,6,9,12,15,18,21].forEach(function(h){
@@ -1618,26 +1642,31 @@ async function loadHeatMap(){
     var yd= r3.rates[dates3[Math.max(0,dates3.length-2)]]||tod;yd.EUR=1;
     var wk= r10.rates[dates10[0]]||tod;wk.EUR=1;
     var mo= r35.rates[dates35[0]]||tod;mo.EUR=1;
-    function pips(a,b,sym){
-      var v=((a/b)/(a/b)-1); // will use rates below
-      return v;
+    // cross(rates, A, B) → A/B price using EUR as bridge
+    function cross(rates,a,b){
+      var ra=a==='EUR'?1:(rates[a]||1);
+      var rb=b==='EUR'?1:(rates[b]||1);
+      return rb/ra;
     }
-    function buildRows(base,comp,sym){
-      // base rates are EUR-based, need to derive pair rate
-      function rate(r,s){if(s==='EUR')return 1;return r[s]||1;}
-      var tRaw=rate(tod,sym),yRaw=rate(yd,sym),wRaw=rate(wk,sym),mRaw=rate(mo,sym);
-      // pair = EUR/SYM if no base conversion; for non-EUR pairs cross
-      var dD=(tRaw-yRaw)/yRaw*10000;
-      var dW=(tRaw-wRaw)/wRaw*10000;
-      var dM=(tRaw-mRaw)/mRaw*10000;
-      return {d:dD,w:dW,m:dM};
+    function pipsForPair(a,b){
+      var mult=(b==='JPY'||a==='JPY')?100:10000;
+      var tR=cross(tod,a,b),yR=cross(yd,a,b),wR=cross(wk,a,b),mR=cross(mo,a,b);
+      return {sym:a+'/'+b,d:(tR-yR)*mult,w:(tR-wR)*mult,m:(tR-mR)*mult};
     }
-    var rows=[];
-    var SYMS=['USD','GBP','JPY','CHF','AUD','NZD','CAD'];
-    SYMS.forEach(function(sym){
-      var r=buildRows(tod,yd,sym);
-      rows.push({sym:'EUR/'+sym,d:r.d,w:r.w,m:r.m});
-    });
+    var ALLPAIRS=[
+      // Majors
+      ['EUR','USD'],['GBP','USD'],['AUD','USD'],['NZD','USD'],
+      ['USD','JPY'],['USD','CHF'],['USD','CAD'],
+      // EUR crosses
+      ['EUR','GBP'],['EUR','JPY'],['EUR','CHF'],['EUR','AUD'],['EUR','NZD'],['EUR','CAD'],
+      // GBP crosses
+      ['GBP','JPY'],['GBP','CHF'],['GBP','AUD'],['GBP','NZD'],['GBP','CAD'],
+      // Other crosses
+      ['AUD','JPY'],['AUD','NZD'],['AUD','CAD'],['AUD','CHF'],
+      ['NZD','JPY'],['NZD','CAD'],['NZD','CHF'],
+      ['CAD','JPY'],['CHF','JPY']
+    ];
+    var rows=ALLPAIRS.map(function(p){return pipsForPair(p[0],p[1]);});
     renderHeatPips(rows);
     buildMajorsMatrix(tod,yd);
   } catch(e){
@@ -1680,7 +1709,7 @@ function buildMajorsMatrix(tod,yd){
     return (now-prv)/prv*100;
   }
   var html='<div class="majors-wrap"><table class="majors-table"><thead><tr><th></th>';
-  CCYS.forEach(function(c){html+='<th>'+c+'</th>';});
+  CCYS.forEach(function(c){html+='<th style="color:'+(CCY_COLORS[c]||'#cbd5e1')+'">'+c+'</th>';});
   html+='</tr></thead><tbody>';
   CCYS.forEach(function(r){
     html+='<tr><td class="row-hdr" style="color:'+(CCY_COLORS[r]||'#cbd5e1')+'">'+r+'</td>';
@@ -1845,9 +1874,9 @@ document.addEventListener('DOMContentLoaded',function(){
   initBanner();
   updateDate();
   setInterval(updateDate,30000);
-  // Pre-load default pair for daily & weekly
-  loadD('AUDUSD',document.querySelector('#dpr .pp.active'));
+  // Pre-load default pair — Weekly is default active tab
   loadW('AUDUSD',document.querySelector('#wpr .pp.active'));
+  loadD('AUDUSD',document.querySelector('#dpr .pp.active'));
   renderJournal();
 });
 </script>
