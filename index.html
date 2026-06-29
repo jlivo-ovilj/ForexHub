@@ -59,6 +59,8 @@ body{font-family:'Syne',sans-serif;background:var(--bg);color:var(--tx);min-heig
 .analysis-subtabs{display:flex;gap:6px;margin-bottom:18px;border-bottom:1px solid var(--bd);padding-bottom:12px}
 .asub{padding:7px 18px;border-radius:100px;font-family:'Syne',sans-serif;font-size:13px;font-weight:500;border:1px solid var(--bd2);background:transparent;color:var(--mt);cursor:pointer}
 .asub.active{background:var(--adm);color:var(--ac);border-color:var(--ac)}
+.asub-weekly.active{background:rgba(74,222,128,0.12);color:#4ade80;border-color:#4ade80}
+.asub-daily.active{background:rgba(167,139,250,0.12);color:#a78bfa;border-color:#a78bfa}
 .asub-4hr.active{background:rgba(96,165,250,0.12);color:#60a5fa;border-color:#60a5fa}
 .analysis-sub{display:none}.analysis-sub.active{display:block}
 /* 4hr accent overrides */
@@ -369,8 +371,8 @@ body{font-family:'Syne',sans-serif;background:var(--bg);color:var(--tx);min-heig
 <!-- ══ ANALYSIS ══ -->
 <div id="analysis" class="sec active">
   <div class="analysis-subtabs">
-    <button class="asub active" onclick="showAnalysisSub('analysis-weekly',this)">Weekly</button>
-    <button class="asub" onclick="showAnalysisSub('analysis-daily',this)">Daily</button>
+    <button class="asub asub-weekly active" onclick="showAnalysisSub('analysis-weekly',this)">Weekly</button>
+    <button class="asub asub-daily" onclick="showAnalysisSub('analysis-daily',this)">Daily</button>
     <button class="asub asub-4hr" onclick="showAnalysisSub('analysis-4hr',this)">4 Hour</button>
   </div>
 
