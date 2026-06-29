@@ -106,7 +106,7 @@ body{font-family:'Syne',sans-serif;background:var(--bg);color:var(--tx);min-heig
 
 /* Key levels inline chart */
 .levels-layout{display:flex;gap:14px;align-items:flex-start}
-.levels-chart{flex-shrink:0;width:72px}
+.levels-chart{flex-shrink:0;width:190px}
 
 /* Bias tags */
 .bt{display:inline-block;font-family:'DM Mono',monospace;font-size:11px;font-weight:500;padding:4px 12px;border-radius:100px;margin-bottom:12px}
@@ -1043,34 +1043,61 @@ function md(t){
 /* ══════════════════════════════════════
    KEY LEVELS MINI-CHART  (Amendment 7)
 ══════════════════════════════════════ */
-function buildMiniChart(pair,bias){
-  // Simple SVG price-level illustration
+function buildMiniChart(pair,bias,lvls){
+  var W=188,H=220;
   var c=document.createElement('canvas');
-  c.width=68;c.height=120;c.style.cssText='border-radius:6px;background:#1a1a1a;display:block';
+  c.width=W;c.height=H;
+  c.style.cssText='border-radius:8px;background:#111827;display:block;width:100%';
   var ctx=c.getContext('2d');
-  ctx.fillStyle='#1a1a1a';
-  ctx.fillRect(0,0,68,120);
-  // Draw notional resistance/support lines
-  var isLong=bias.toLowerCase().includes('buy')||bias.toLowerCase().includes('bull');
-  var res_y=25,ent_y=60,sup_y=95;
-  ctx.strokeStyle='rgba(248,113,113,0.5)';ctx.lineWidth=1;ctx.setLineDash([3,3]);
-  ctx.beginPath();ctx.moveTo(8,res_y);ctx.lineTo(60,res_y);ctx.stroke();
-  ctx.setLineDash([]);
-  ctx.strokeStyle='rgba(200,241,53,0.8)';ctx.lineWidth=1.5;
-  ctx.beginPath();ctx.moveTo(8,ent_y);ctx.lineTo(60,ent_y);ctx.stroke();
-  ctx.strokeStyle='rgba(74,222,128,0.5)';ctx.lineWidth=1;ctx.setLineDash([3,3]);
-  ctx.beginPath();ctx.moveTo(8,sup_y);ctx.lineTo(60,sup_y);ctx.stroke();
-  ctx.setLineDash([]);
-  // Arrow
-  var col=isLong?'#4ade80':'#f87171';
-  ctx.fillStyle=col;
-  if(isLong){ctx.beginPath();ctx.moveTo(34,sup_y-6);ctx.lineTo(30,sup_y-2);ctx.lineTo(38,sup_y-2);ctx.fill();}
-  else{ctx.beginPath();ctx.moveTo(34,res_y+6);ctx.lineTo(30,res_y+2);ctx.lineTo(38,res_y+2);ctx.fill();}
-  // Labels
-  ctx.font='7px DM Mono,monospace';
-  ctx.fillStyle='rgba(248,113,113,0.8)';ctx.textAlign='right';ctx.fillText('R',62,res_y-2);
-  ctx.fillStyle='rgba(200,241,53,0.9)';ctx.fillText('E',62,ent_y-2);
-  ctx.fillStyle='rgba(74,222,128,0.8)';ctx.fillText('S',62,sup_y-2);
+  ctx.fillStyle='#111827';ctx.fillRect(0,0,W,H);
+  var isLong=bias.toLowerCase().includes('bull')||bias.toLowerCase().includes('buy');
+  // Extract prices from level lines
+  var px={};
+  (lvls||[]).forEach(function(l){
+    var nums=l.match(/\d+\.\d+/g);var last=nums&&parseFloat(nums[nums.length-1]);
+    if(!last) return;
+    if(/resist.*2|r2/i.test(l)) px.r2=last;
+    else if(/resist|r1/i.test(l)) px.r1=last;
+    else if(/entry/i.test(l)) px.en=last;
+    else if(/support.*2|s2/i.test(l)) px.s2=last;
+    else if(/support|s1/i.test(l)) px.s1=last;
+  });
+  // Grid
+  ctx.strokeStyle='rgba(255,255,255,0.04)';ctx.lineWidth=1;
+  for(var g=0;g<5;g++){var gy=30+g*38;ctx.beginPath();ctx.moveTo(0,gy);ctx.lineTo(W,gy);ctx.stroke();}
+  // Level rows: [label, y, color, lineW, dash, price]
+  var rows=[
+    {lbl:'R2', y:28,  col:'rgba(248,113,113,0.45)', lw:1, dash:[4,4], p:px.r2},
+    {lbl:'R1', y:66,  col:'rgba(248,113,113,0.85)', lw:1.5,dash:[3,3],p:px.r1},
+    {lbl:'ENTRY',y:110,col:'rgba(200,241,53,1)',    lw:2.5,dash:[],    p:px.en},
+    {lbl:'S1', y:154, col:'rgba(74,222,128,0.85)', lw:1.5,dash:[3,3], p:px.s1},
+    {lbl:'S2', y:192, col:'rgba(74,222,128,0.45)', lw:1, dash:[4,4],  p:px.s2},
+  ];
+  rows.forEach(function(r){
+    // Horizontal level line
+    ctx.strokeStyle=r.col;ctx.lineWidth=r.lw;ctx.setLineDash(r.dash);
+    ctx.beginPath();ctx.moveTo(6,r.y);ctx.lineTo(W-6,r.y);ctx.stroke();
+    ctx.setLineDash([]);
+    // Label (left)
+    ctx.font='bold 10px "DM Mono",monospace';
+    ctx.fillStyle=r.col;ctx.textAlign='left';
+    ctx.fillText(r.lbl,8,r.y-4);
+    // Price (right)
+    if(r.p){
+      ctx.font='10px "DM Mono",monospace';
+      ctx.fillStyle=r.col;ctx.textAlign='right';
+      ctx.fillText(r.p.toFixed(4),W-6,r.y-4);
+    }
+  });
+  // Direction arrow between entry and nearest level
+  var arrowY=isLong?132:88;
+  ctx.fillStyle=isLong?'#4ade80':'#f87171';
+  if(isLong){ctx.beginPath();ctx.moveTo(W/2,arrowY-14);ctx.lineTo(W/2-9,arrowY);ctx.lineTo(W/2+9,arrowY);ctx.closePath();ctx.fill();}
+  else{ctx.beginPath();ctx.moveTo(W/2,arrowY+14);ctx.lineTo(W/2-9,arrowY);ctx.lineTo(W/2+9,arrowY);ctx.closePath();ctx.fill();}
+  // Pair + bias label at bottom
+  ctx.font='bold 11px "Syne",sans-serif';
+  ctx.fillStyle='rgba(255,255,255,0.35)';ctx.textAlign='center';
+  ctx.fillText(pair.slice(0,3)+'/'+pair.slice(3)+'  ·  '+(isLong?'▲ BULL':'▼ BEAR'),W/2,H-5);
   return c;
 }
 
@@ -1116,7 +1143,7 @@ async function loadD(pair,btn){
     // Mini chart
     var chartDiv=document.getElementById('dl-chart');
     chartDiv.innerHTML='';
-    chartDiv.appendChild(buildMiniChart(pair,bias));
+    chartDiv.appendChild(buildMiniChart(pair,bias,lvls));
     var wHtml=wch.length?wch.map(function(l){return '<div class="cb" style="padding:4px 0;border-bottom:1px solid var(--bd);last-child:border-none">'+md(l)+'</div>'}).join(''):'<div class="cb">'+md(lines.slice(-3).join(' '))+'</div>';
     document.getElementById('dw').innerHTML=wHtml;
     document.getElementById('dm').textContent='Updated '+new Date().toLocaleTimeString('en-AU',{timeZone:'Australia/Brisbane',hour:'2-digit',minute:'2-digit'})+' AEST';
