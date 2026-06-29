@@ -5,9 +5,10 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
 <meta name="theme-color" content="#0a0a0a">
 <meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-title" content="ForexHub">
 <title>ForexHub</title>
-<link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Syne:wght@400;500;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Syne:wght@400;500;600;700&display=swap" rel="stylesheet">
 <style>
 :root{
   --bg:#0a0a0a;--sf:#131313;--sf2:#1a1a1a;--bd:rgba(255,255,255,0.08);--bd2:rgba(255,255,255,0.14);
@@ -17,123 +18,95 @@
   --wt:#fbbf24;--wbg:rgba(251,191,36,0.1);
   --r:14px;--rs:8px
 }
-
-/* ── SECTION ACCENT COLOURS ── */
-body[data-sect="daily"]     {--ac:#a78bfa;--adm:rgba(167,139,250,0.12)}
-body[data-sect="weekly"]    {--ac:#4ade80;--adm:rgba(74,222,128,0.10)}
+body[data-sect="analysis"]  {--ac:#a78bfa;--adm:rgba(167,139,250,0.12)}
 body[data-sect="sessions"]  {--ac:#f59e0b;--adm:rgba(245,158,11,0.12)}
 body[data-sect="calendar"]  {--ac:#fb7185;--adm:rgba(251,113,133,0.12)}
 body[data-sect="journal"]   {--ac:#22d3ee;--adm:rgba(34,211,238,0.12)}
 body[data-sect="checklist"] {--ac:#a3e635;--adm:rgba(163,230,53,0.12)}
 body[data-sect="review"]    {--ac:#f97316;--adm:rgba(249,115,22,0.12)}
 body[data-sect="maps"]      {--ac:#38bdf8;--adm:rgba(56,189,248,0.12)}
+body[data-sect="scanner"]   {--ac:#e879f9;--adm:rgba(232,121,249,0.12)}
 body[data-sect="about"]     {--ac:#94a3b8;--adm:rgba(148,163,184,0.12)}
-
 *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
 body{font-family:'Syne',sans-serif;background:var(--bg);color:var(--tx);min-height:100vh;overflow-x:hidden}
 
-/* Header */
+/* ── PIN GATE ── */
+#pin-gate{position:fixed;inset:0;background:#0a0a0a;z-index:9999;display:flex;align-items:center;justify-content:center}
+.pin-box{background:var(--sf);border:1px solid var(--bd2);border-radius:var(--r);padding:32px 28px;width:100%;max-width:360px;text-align:center}
+.pin-logo{font-size:24px;font-weight:700;margin-bottom:6px}.pin-logo span{color:var(--ac)}
+.pin-sub{font-size:13px;color:var(--mt);margin-bottom:24px}
+.pin-inp{width:100%;background:var(--sf2);border:1px solid var(--bd2);border-radius:var(--rs);padding:12px 16px;font-family:'DM Mono',monospace;font-size:20px;letter-spacing:8px;color:var(--tx);outline:none;text-align:center;margin-bottom:12px}
+.pin-inp:focus{border-color:var(--ac)}
+.pin-btn{width:100%;padding:12px;background:var(--ac);color:#0a0a0a;border:none;border-radius:100px;font-family:'Syne',sans-serif;font-size:15px;font-weight:700;cursor:pointer}
+.pin-err{font-size:12px;color:var(--sel);margin-top:8px;min-height:18px}
+
+/* ── HEADER ── */
 .hdr{position:sticky;top:0;z-index:100;background:rgba(10,10,10,0.92);backdrop-filter:blur(16px);border-bottom:1px solid var(--bd);padding:14px 20px 12px;display:flex;align-items:center;justify-content:space-between}
 .logo{font-size:20px;font-weight:700;letter-spacing:0.01em}.logo span{color:var(--ac)}
 .hdate{font-family:'DM Mono',monospace;font-size:12px;color:var(--tx);text-align:right;letter-spacing:0.04em;opacity:0.75}
 
-/* Nav */
+/* ── NAV ── */
 .nav{display:flex;gap:4px;padding:12px 20px;border-bottom:1px solid var(--bd);overflow-x:auto;scrollbar-width:none;justify-content:center}
 .nav::-webkit-scrollbar{display:none}
 .nb{white-space:nowrap;padding:7px 16px;border-radius:100px;font-family:'Syne',sans-serif;font-size:13px;font-weight:500;border:1px solid var(--bd2);background:transparent;color:var(--mt);cursor:pointer;flex-shrink:0}
 .nb.active{background:var(--ac);color:#0a0a0a;border-color:var(--ac)}
 
-/* Main */
+/* ── MAIN ── */
 .main{padding:20px;max-width:980px;margin:0 auto}
 .sec{display:none}.sec.active{display:block}
 
-/* ── MAPS TAB ── */
-.map-tabs{display:flex;gap:6px;margin-bottom:16px;flex-wrap:wrap}
-.map-tb{padding:7px 18px;border-radius:100px;font-family:'Syne',sans-serif;font-size:13px;font-weight:500;border:1px solid var(--bd2);background:transparent;color:var(--mt);cursor:pointer;transition:all 0.15s}
-/* Per-map-tab colours */
-.map-tb.mt-heat{color:rgba(249,115,22,0.65);border-color:rgba(249,115,22,0.25)}
-.map-tb.mt-heat.active{background:#f97316;color:#0a0a0a;border-color:#f97316}
-.map-tb.mt-sent{color:rgba(34,211,238,0.65);border-color:rgba(34,211,238,0.25)}
-.map-tb.mt-sent.active{background:#22d3ee;color:#0a0a0a;border-color:#22d3ee}
-.map-tb.mt-corr{color:rgba(167,139,250,0.65);border-color:rgba(167,139,250,0.25)}
-.map-tb.mt-corr.active{background:#a78bfa;color:#0a0a0a;border-color:#a78bfa}
-.map-panel{display:none}.map-panel.active{display:block}
-.map-wrap{background:#fff;border-radius:var(--r);overflow:hidden;overflow-x:auto;-webkit-overflow-scrolling:touch;box-shadow:0 0 0 1px var(--bd2),0 8px 32px rgba(0,0,0,0.45)}
-.map-frame{border:none;display:block;min-height:660px;width:100%;min-width:700px}
-.map-src{font-family:'DM Mono',monospace;font-size:10px;color:var(--mt);margin-top:8px;text-align:right}
-.map-src a{color:var(--mt);text-decoration:none}
-.map-src a:hover{color:var(--ac)}
-/* Heat map table */
-.hm-table{width:100%;border-collapse:collapse}
-.hm-table thead th{font-family:'DM Mono',monospace;font-size:10px;text-transform:uppercase;letter-spacing:0.08em;color:var(--mt);padding:10px 12px;text-align:center;border-bottom:1px solid var(--bd2);position:sticky;top:0;background:var(--sf)}
-.hm-table thead th:first-child{text-align:left}
-.hm-group-lbl{font-family:'DM Mono',monospace;font-size:9px;letter-spacing:0.14em;text-transform:uppercase;color:var(--mt);padding:10px 12px 4px;background:var(--sf2)}
-.hm-row:hover{background:rgba(255,255,255,0.025)}
-.hm-pair{font-family:'DM Mono',monospace;font-size:12px;font-weight:500;color:var(--tx);padding:8px 12px;border-bottom:1px solid var(--bd)}
-.hm-cell{font-family:'DM Mono',monospace;font-size:12px;text-align:center;padding:8px 12px;border-bottom:1px solid var(--bd);font-weight:500}
-.hm-pos{color:#4ade80}.hm-neg{color:#f87171}.hm-neu{color:var(--mt)}
-.hm-pos.hi{background:rgba(74,222,128,0.12)}.hm-neg.hi{background:rgba(248,113,113,0.12)}
-/* HM view toggle */
-.hm-view{display:none}.hm-view.active{display:block}
-.hm-vtab{padding:5px 14px;border-radius:100px;font-family:'Syne',sans-serif;font-size:12px;font-weight:500;border:1px solid rgba(249,115,22,0.25);background:transparent;color:rgba(249,115,22,0.65);cursor:pointer;transition:all 0.15s}
-.hm-vtab.active{background:#f97316;color:#0a0a0a;border-color:#f97316}
-/* Majors matrix */
-.majors-wrap{overflow-x:auto;-webkit-overflow-scrolling:touch}
-.majors-table{border-collapse:collapse;white-space:nowrap;width:100%}
-.majors-table th{font-family:'Syne',sans-serif;font-size:12px;font-weight:600;text-align:center;padding:10px 8px;border:1px solid var(--bd);color:var(--tx);background:var(--sf2)}
-.majors-table th:first-child{text-align:left;padding-left:12px}
-.majors-table td{text-align:center;padding:10px 8px;border:1px solid var(--bd);font-family:'DM Mono',monospace;font-size:12px;font-weight:600}
-.majors-table .row-hdr{text-align:left;padding-left:12px;background:var(--sf2);font-family:'Syne',sans-serif;font-size:12px;font-weight:600;color:var(--tx)}
-.majors-table .diag{background:rgba(255,255,255,0.03);color:var(--mt)}
-.mat-pos{background:rgba(74,222,128,0.12);color:#4ade80}
-.mat-pos.hi{background:rgba(74,222,128,0.25);color:#22c55e}
-.mat-neg{background:rgba(248,113,113,0.12);color:#f87171}
-.mat-neg.hi{background:rgba(248,113,113,0.25);color:#ef4444}
-/* Correlation matrix */
-.corr-wrap{overflow-x:auto;-webkit-overflow-scrolling:touch}
-.corr-table{border-collapse:collapse;font-family:'DM Mono',monospace;font-size:11px;white-space:nowrap;min-width:100%}
-.corr-table thead th{padding:6px 10px;text-align:center;color:var(--mt);font-size:10px;letter-spacing:0.05em;border-bottom:1px solid var(--bd2);background:var(--sf)}
-.corr-table td{padding:7px 10px;text-align:center;font-size:11px;font-weight:500;border:1px solid var(--bd)}
-.corr-lbl{color:var(--tx);text-align:left!important;padding:7px 16px 7px 0!important;border:none!important;white-space:nowrap;font-size:12px}
+/* ── ANALYSIS SUB-TABS ── */
+.analysis-subtabs{display:flex;gap:6px;margin-bottom:18px;border-bottom:1px solid var(--bd);padding-bottom:12px}
+.asub{padding:7px 18px;border-radius:100px;font-family:'Syne',sans-serif;font-size:13px;font-weight:500;border:1px solid var(--bd2);background:transparent;color:var(--mt);cursor:pointer}
+.asub.active{background:var(--adm);color:var(--ac);border-color:var(--ac)}
+.asub-4hr.active{background:rgba(96,165,250,0.12);color:#60a5fa;border-color:#60a5fa}
+.analysis-sub{display:none}.analysis-sub.active{display:block}
+/* 4hr accent overrides */
+.h4-accent{color:#60a5fa}
+.h4-accent-bg{background:rgba(96,165,250,0.08);border-color:rgba(96,165,250,0.25)}
 
-/* ── SIDEBAR LAYOUT (Daily + Weekly) ── */
+/* ── SIDEBAR LAYOUT ── */
 .analysis-layout{display:flex;gap:18px;align-items:flex-start}
 .pair-sidebar{width:108px;flex-shrink:0;position:sticky;top:114px;max-height:calc(100vh - 130px);overflow-y:auto;scrollbar-width:none;padding-bottom:20px}
 .pair-sidebar::-webkit-scrollbar{display:none}
 .pg{margin-bottom:10px}
 .pgl{font-family:'DM Mono',monospace;font-size:9px;letter-spacing:0.12em;text-transform:uppercase;color:var(--ccy-col,var(--mt));padding:2px 6px 5px;opacity:0.9}
 .pair-sidebar .pp{display:block;width:100%;text-align:left;border-radius:6px;padding:5px 8px;margin-bottom:2px;font-size:11px;white-space:nowrap;overflow:hidden}
-/* Override active pair colour per currency group */
 .pair-sidebar .pp.active{background:var(--ccy-bg,var(--adm));color:var(--ccy-col,var(--ac));border-color:var(--ccy-col,var(--ac))}
 /* Currency group colours */
 .pg[data-ccy="AUD"]{--ccy-col:#86efac;--ccy-bg:rgba(134,239,172,0.12)}
 .pg[data-ccy="CAD"]{--ccy-col:#fb923c;--ccy-bg:rgba(251,146,60,0.12)}
 .pg[data-ccy="CHF"]{--ccy-col:#cbd5e1;--ccy-bg:rgba(203,213,225,0.10)}
 .pg[data-ccy="EUR"]{--ccy-col:#60a5fa;--ccy-bg:rgba(96,165,250,0.12)}
-.pg[data-ccy="GBP"]{--ccy-col:#3b82f6;--ccy-bg:rgba(59,130,246,0.12)}
+.pg[data-ccy="GBP"]{--ccy-col:#818cf8;--ccy-bg:rgba(129,140,248,0.12)}
 .pg[data-ccy="NZD"]{--ccy-col:#2dd4bf;--ccy-bg:rgba(45,212,191,0.12)}
 .pg[data-ccy="USD"]{--ccy-col:#ef4444;--ccy-bg:rgba(239,68,68,0.12)}
 .pg[data-ccy="XAU"]{--ccy-col:#fbbf24;--ccy-bg:rgba(251,191,36,0.12)}
 .analysis-main{flex:1;min-width:0}
-
-/* Mobile: collapse sidebar to pills */
 @media(max-width:620px){
   .analysis-layout{flex-direction:column}
   .pair-sidebar{width:100%;position:static;max-height:none;display:flex;flex-wrap:wrap;gap:4px;padding-bottom:4px}
   .pair-sidebar .pp{display:inline-block;width:auto;border-radius:100px;font-size:12px;padding:5px 14px}
-  .pg{display:contents}
-  .pgl{display:none}
+  .pg{display:contents}.pgl{display:none}
 }
 
-/* Pair pills (original, used in sidebar and mobile) */
+/* Pair pills */
 .pr{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:16px}
 .pp{padding:5px 14px;border-radius:100px;font-family:'DM Mono',monospace;font-size:12px;border:1px solid var(--bd2);background:transparent;color:var(--mt);cursor:pointer;white-space:nowrap}
 .pp.active{background:var(--adm);color:var(--ac);border-color:var(--ac)}
 
 /* Cards */
 .card{background:var(--sf);border:1px solid var(--bd);border-radius:var(--r);padding:18px;margin-bottom:12px}
-.cl{font-family:'DM Mono',monospace;font-size:10px;letter-spacing:0.1em;text-transform:uppercase;color:var(--mt);margin-bottom:10px}
-.cb{font-size:14px;line-height:1.75;color:#c8c4be}.cb strong{color:var(--tx);font-weight:500}
+.cl{font-family:'DM Mono',monospace;font-size:10px;letter-spacing:0.1em;text-transform:uppercase;color:var(--ac);margin-bottom:10px;font-weight:600}
+/* Bolder analysis text (Amendment 3) */
+.cb{font-size:14px;line-height:1.8;color:#cac6c0}
+.cb strong{color:var(--tx);font-weight:600}
+.analysis-main .cb{color:#d4d0ca;font-size:14px;line-height:1.85}
+.analysis-main .cb strong{color:#f0ede8;font-weight:600}
+
+/* Key levels inline chart */
+.levels-layout{display:flex;gap:14px;align-items:flex-start}
+.levels-chart{flex-shrink:0;width:72px}
 
 /* Bias tags */
 .bt{display:inline-block;font-family:'DM Mono',monospace;font-size:11px;font-weight:500;padding:4px 12px;border-radius:100px;margin-bottom:12px}
@@ -150,107 +123,90 @@ body{font-family:'Syne',sans-serif;background:var(--bg);color:var(--tx);min-heig
 .eb{background:var(--sbg);border:1px solid rgba(248,113,113,0.2);border-radius:var(--rs);padding:12px 14px;font-size:13px;color:var(--sel);line-height:1.6}
 .rb{display:flex;align-items:center;gap:6px;padding:8px 16px;border-radius:100px;border:1px solid var(--bd2);background:transparent;color:var(--mt);font-family:'Syne',sans-serif;font-size:13px;cursor:pointer;margin-top:4px}
 .meta{font-family:'DM Mono',monospace;font-size:10px;color:var(--mt);margin-top:10px}
-
-/* Checklist */
-.ci{display:flex;align-items:flex-start;gap:12px;padding:10px 0;border-bottom:1px solid var(--bd);cursor:pointer}
-.ci:last-child{border-bottom:none}
-.ck{width:20px;height:20px;flex-shrink:0;border:1.5px solid var(--bd2);border-radius:5px;margin-top:1px;display:flex;align-items:center;justify-content:center;font-size:12px}
-.ck.done{background:var(--ac);border-color:var(--ac);color:#0a0a0a}
-.clb{font-size:14px;color:#c8c4be;line-height:1.5}
-.ci.done .clb{color:var(--mt);text-decoration:line-through}
-
-/* Forms */
-.ta{width:100%;background:var(--sf2);border:1px solid var(--bd2);border-radius:var(--rs);padding:12px 14px;font-family:'Syne',sans-serif;font-size:14px;color:var(--tx);resize:vertical;min-height:90px;outline:none}
-.ta:focus{border-color:var(--ac)}
-.ta::placeholder{color:var(--mt)}
-.inp{width:100%;background:var(--sf2);border:1px solid var(--bd2);border-radius:var(--rs);padding:10px 14px;font-family:'Syne',sans-serif;font-size:14px;color:var(--tx);outline:none}
-.inp:focus{border-color:var(--ac)}
-.inp::placeholder{color:var(--mt)}
-.sel-i{width:100%;background:var(--sf2);border:1px solid var(--bd2);border-radius:var(--rs);padding:10px 14px;font-family:'Syne',sans-serif;font-size:14px;color:var(--tx);outline:none;cursor:pointer;appearance:none;-webkit-appearance:none}
-.sel-i:focus{border-color:var(--ac)}
-.row2{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px}
-.fld{display:flex;flex-direction:column;gap:5px;margin-bottom:10px}
-.fld label{font-family:'DM Mono',monospace;font-size:10px;letter-spacing:0.1em;text-transform:uppercase;color:var(--mt)}
-
-/* Buttons */
-.sb{display:inline-flex;align-items:center;gap:6px;margin-top:10px;padding:10px 20px;background:var(--ac);color:#0a0a0a;border:none;border-radius:100px;font-family:'Syne',sans-serif;font-size:14px;font-weight:700;cursor:pointer}
-.sb:disabled{opacity:0.5;cursor:not-allowed}
-
-/* About */
 .st{font-size:22px;font-weight:700;letter-spacing:-0.02em;margin-bottom:4px}
 .ss{font-size:13px;color:var(--mt);margin-bottom:18px}
-.ai{padding:14px 0;border-bottom:1px solid var(--bd)}.ai:last-child{border-bottom:none}
-.aq{font-size:13px;font-weight:500;color:var(--tx);margin-bottom:4px}
-.aa{font-size:13px;color:var(--mt);line-height:1.6}
-
-/* Banner */
-.bn{background:rgba(200,241,53,0.06);border:1px solid rgba(200,241,53,0.2);border-radius:var(--r);padding:14px 16px;margin-bottom:16px;display:flex;align-items:flex-start;gap:12px}
-.bnt2{font-size:13px;color:#c8c4be;line-height:1.6;flex:1}.bnt2 strong{color:var(--ac)}
-.bnc{background:none;border:none;color:var(--mt);font-size:18px;cursor:pointer;padding:0 4px}
 
 /* ── SESSIONS ── */
-.sess-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:16px}
-.sess-card{background:var(--sf);border:1px solid var(--bd);border-radius:var(--r);padding:16px;transition:border-color 0.3s}
-.sess-card.s-open{border-color:rgba(74,222,128,0.35);background:rgba(74,222,128,0.03)}
-.sess-card.s-overlap{border-color:rgba(200,241,53,0.4);background:rgba(200,241,53,0.03)}
-.sess-name{font-size:15px;font-weight:700;margin-bottom:3px}
-.sess-time{font-family:'DM Mono',monospace;font-size:11px;color:var(--mt);margin-bottom:10px}
-.sess-badge{display:inline-block;font-family:'DM Mono',monospace;font-size:10px;padding:3px 10px;border-radius:100px;margin-bottom:10px}
+.sess-timeline{background:var(--sf);border:1px solid var(--bd);border-radius:var(--r);padding:16px 16px 22px;margin-bottom:14px}
+.tl-title{font-family:'DM Mono',monospace;font-size:10px;letter-spacing:0.1em;text-transform:uppercase;color:var(--mt);margin-bottom:12px}
+.tl-outer{position:relative;height:72px;margin-bottom:4px}
+.tl-bg{position:absolute;left:0;right:0;top:22px;height:24px;background:var(--sf2);border-radius:4px}
+.tl-seg{position:absolute;top:22px;height:24px;border-radius:4px;transition:opacity 0.2s}
+.tl-now-line{position:absolute;top:14px;height:40px;width:2px;border-radius:1px;transform:translateX(-50%);z-index:2}
+.tl-now-tri{position:absolute;top:10px;width:0;height:0;border-left:5px solid transparent;border-right:5px solid transparent;border-top:6px solid var(--ac);transform:translateX(-50%);z-index:3}
+.tl-slabel{position:absolute;top:2px;font-family:'DM Mono',monospace;font-size:9px;font-weight:500;transform:translateX(-50%);white-space:nowrap}
+.tl-hlabel{position:absolute;bottom:0;font-family:'DM Mono',monospace;font-size:9px;color:var(--mt);transform:translateX(-50%)}
+.tl-hline{position:absolute;top:22px;bottom:0;width:1px;background:rgba(255,255,255,0.05)}
+/* Compact session cards */
+.sess-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:14px}
+.sess-card{background:var(--sf);border:2px solid var(--bd);border-radius:var(--r);padding:14px 14px 12px;transition:border-color 0.3s,background 0.3s}
+.sess-card.s-open{border-color:rgba(74,222,128,0.5);background:rgba(74,222,128,0.04)}
+.sess-card.s-active-main{border-color:rgba(74,222,128,0.7);box-shadow:0 0 0 1px rgba(74,222,128,0.3),0 4px 20px rgba(74,222,128,0.1)}
+.sess-card.s-overlap{border-color:rgba(200,241,53,0.5);background:rgba(200,241,53,0.03)}
+.sess-name{font-size:14px;font-weight:700;margin-bottom:2px}
+.sess-time{font-family:'DM Mono',monospace;font-size:10px;color:var(--mt);margin-bottom:8px}
+.sess-badge{display:inline-block;font-family:'DM Mono',monospace;font-size:10px;padding:3px 10px;border-radius:100px;margin-bottom:8px}
 .sess-badge.b-open{background:var(--bbg);color:var(--buy);border:1px solid rgba(74,222,128,0.3)}
 .sess-badge.b-closed{background:var(--sf2);color:var(--mt);border:1px solid var(--bd2)}
 .sess-badge.b-overlap{background:rgba(200,241,53,0.12);color:#c8f135;border:1px solid rgba(200,241,53,0.3)}
-.sess-lbl{font-family:'DM Mono',monospace;font-size:10px;color:var(--mt);margin-bottom:2px}
-.sess-cd{font-family:'DM Mono',monospace;font-size:13px;color:var(--tx);font-weight:500}
+.sess-lbl{font-family:'DM Mono',monospace;font-size:9px;color:var(--mt);margin-bottom:2px}
+.sess-cd{font-family:'DM Mono',monospace;font-size:12px;color:var(--tx);font-weight:600}
 .clock-big{font-family:'DM Mono',monospace;font-size:32px;font-weight:500;color:var(--ac);text-align:center;margin-bottom:4px;letter-spacing:3px}
-.clock-tz{font-family:'DM Mono',monospace;font-size:11px;color:var(--mt);text-align:center;margin-bottom:20px}
+.clock-tz{font-family:'DM Mono',monospace;font-size:11px;color:var(--mt);text-align:center;margin-bottom:16px}
+/* Best pairs card with colour-coded pairs */
 .bp-card{background:var(--sf);border:1px solid var(--bd);border-radius:var(--r);padding:16px}
 .bp-row{display:flex;justify-content:space-between;align-items:center;padding:9px 0;border-bottom:1px solid var(--bd)}
 .bp-row:last-child{border-bottom:none}
-.bp-name{font-weight:600;font-size:13px}
-.bp-pairs{font-family:'DM Mono',monospace;font-size:11px;color:var(--mt)}
+.bp-name{font-weight:700;font-size:13px}
+.bp-pairs{font-family:'DM Mono',monospace;font-size:11px;display:flex;flex-wrap:wrap;gap:6px;align-items:center}
+.bp-pair-tag{display:inline-flex;padding:2px 8px;border-radius:100px;font-size:10px;font-family:'DM Mono',monospace;font-weight:500}
 
 /* ── CALENDAR ── */
-.cal-legend{display:flex;gap:16px;margin-bottom:14px}
+.cal-legend{display:flex;gap:16px;margin-bottom:14px;flex-wrap:wrap}
 .cal-leg{display:flex;align-items:center;gap:6px;font-family:'DM Mono',monospace;font-size:11px;color:var(--mt)}
 .cal-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0}
 .cal-day-hdr{font-family:'DM Mono',monospace;font-size:11px;letter-spacing:0.08em;text-transform:uppercase;color:var(--ac);padding:6px 0;margin-bottom:8px;border-bottom:1px solid var(--bd)}
 .cal-day{margin-bottom:18px}
-.cal-event{background:var(--sf);border:1px solid var(--bd);border-radius:var(--rs);padding:12px 14px;margin-bottom:6px;display:flex;align-items:flex-start;gap:12px}
-.cal-imp{width:6px;height:6px;border-radius:50%;flex-shrink:0;margin-top:5px}
-.cal-imp.high{background:var(--sel)}
-.cal-imp.med{background:var(--wt)}
-.cal-imp.low{background:var(--mt)}
+.cal-event{background:var(--sf);border:1px solid var(--bd);border-radius:var(--rs);padding:12px 14px;margin-bottom:6px;display:flex;align-items:flex-start;gap:10px;cursor:pointer;transition:border-color 0.15s}
+.cal-event:hover{border-color:var(--ac)}
+.cal-imp-badge{display:inline-block;font-family:'DM Mono',monospace;font-size:9px;font-weight:700;padding:2px 7px;border-radius:100px;flex-shrink:0;margin-top:1px;letter-spacing:0.05em}
+.cal-imp-badge.high{background:rgba(248,113,113,0.15);color:#f87171;border:1px solid rgba(248,113,113,0.3)}
+.cal-imp-badge.med{background:rgba(251,191,36,0.15);color:#fbbf24;border:1px solid rgba(251,191,36,0.3)}
+.cal-imp-badge.low{background:rgba(107,107,107,0.15);color:var(--mt);border:1px solid rgba(107,107,107,0.2)}
 .cal-text{flex:1}
-.cal-title{font-size:13px;font-weight:500;color:var(--tx);margin-bottom:3px}
-.cal-detail{font-family:'DM Mono',monospace;font-size:11px;color:var(--mt)}
+.cal-title{font-size:13px;font-weight:600;color:var(--tx);margin-bottom:4px;display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.cal-detail{font-family:'DM Mono',monospace;font-size:11px;color:var(--mt);line-height:1.5}
+.cal-ccy-tag{display:inline-block;font-family:'DM Mono',monospace;font-size:10px;font-weight:700;padding:1px 7px;border-radius:100px}
+/* Calendar popup */
+.cal-popup-overlay{position:fixed;inset:0;background:rgba(0,0,0,0.7);z-index:500;display:flex;align-items:center;justify-content:center;padding:20px}
+.cal-popup{background:var(--sf);border:1px solid var(--bd2);border-radius:var(--r);padding:24px;width:100%;max-width:480px;max-height:80vh;overflow-y:auto}
+.cpop-hdr{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:16px}
+.cpop-title{font-size:16px;font-weight:700;line-height:1.3;flex:1;margin-right:12px}
+.cpop-close{background:none;border:none;color:var(--mt);font-size:20px;cursor:pointer;padding:0 4px;line-height:1}
+.cpop-close:hover{color:var(--tx)}
+.cpop-row{display:flex;align-items:center;gap:10px;margin-bottom:10px;font-family:'DM Mono',monospace;font-size:12px;color:var(--mt)}
+.cpop-desc{font-size:13px;line-height:1.7;color:var(--tx);margin-bottom:14px}
+.cpop-explain{background:var(--sf2);border-radius:var(--rs);padding:12px;font-size:12px;line-height:1.7;color:#c8c4be}
+.cpop-explain strong{color:var(--ac)}
+/* Eco term highlight */
+.eco-term{color:var(--ac);font-weight:600;cursor:help;border-bottom:1px dotted var(--ac)}
 
 /* ── JOURNAL ── */
 .jstats{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-bottom:16px}
 .jstat{background:var(--sf);border:1px solid var(--bd);border-radius:var(--rs);padding:12px 8px;text-align:center}
 .jstat-val{font-size:18px;font-weight:700;color:var(--ac);margin-bottom:3px}
 .jstat-lbl{font-family:'DM Mono',monospace;font-size:9px;color:var(--mt);text-transform:uppercase;letter-spacing:0.06em;line-height:1.3}
-.jstat-val.jwin{color:var(--buy)}
-.jstat-val.jloss{color:var(--sel)}
-.jstat-val.jneu{color:var(--tx)}
-
-/* Trade items */
+.jstat-val.jwin{color:var(--buy)}.jstat-val.jloss{color:var(--sel)}.jstat-val.jneu{color:var(--tx)}
 .ti{background:var(--sf);border:1px solid var(--bd);border-left:3px solid var(--bd2);border-radius:var(--rs);padding:14px;margin-bottom:8px}
-.ti.win{border-left-color:var(--buy)}
-.ti.loss{border-left-color:var(--sel)}
-.ti.be{border-left-color:var(--wt)}
-.ti.open-t{border-left-color:var(--ac)}
+.ti.win{border-left-color:var(--buy)}.ti.loss{border-left-color:var(--sel)}.ti.be{border-left-color:var(--wt)}.ti.open-t{border-left-color:var(--ac)}
 .ti-top{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:6px}
 .ti-pair{font-weight:700;font-size:14px}
 .ti-dir{font-family:'DM Mono',monospace;font-size:11px;padding:2px 8px;border-radius:100px;margin-left:8px}
-.ti-dir.buy{background:var(--bbg);color:var(--buy)}
-.ti-dir.sell{background:var(--sbg);color:var(--sel)}
+.ti-dir.buy{background:var(--bbg);color:var(--buy)}.ti-dir.sell{background:var(--sbg);color:var(--sel)}
 .ti-lvl{font-family:'DM Mono',monospace;font-size:11px;color:var(--mt);margin-bottom:7px;display:flex;gap:12px;flex-wrap:wrap}
 .ti-bot{display:flex;justify-content:space-between;align-items:center}
 .ti-res{font-family:'DM Mono',monospace;font-size:11px;padding:2px 8px;border-radius:100px}
-.ti-res.win{background:var(--bbg);color:var(--buy)}
-.ti-res.loss{background:var(--sbg);color:var(--sel)}
-.ti-res.be{background:var(--wbg);color:var(--wt)}
-.ti-res.open-r{background:var(--adm);color:var(--ac)}
+.ti-res.win{background:var(--bbg);color:var(--buy)}.ti-res.loss{background:var(--sbg);color:var(--sel)}.ti-res.be{background:var(--wbg);color:var(--wt)}.ti-res.open-r{background:var(--adm);color:var(--ac)}
 .ti-date{font-family:'DM Mono',monospace;font-size:10px;color:var(--mt)}
 .ti-pips{font-family:'DM Mono',monospace;font-size:12px;margin-left:8px}
 .ti-pips.pos{color:var(--buy)}.ti-pips.neg{color:var(--sel)}
@@ -259,261 +215,452 @@ body{font-family:'Syne',sans-serif;background:var(--bg);color:var(--tx);min-heig
 .del-btn:hover{color:var(--sel)}
 .empty-j{text-align:center;padding:40px 20px;color:var(--mt);font-size:14px}
 
-/* Calculator */
+/* Forms */
+.ta{width:100%;background:var(--sf2);border:1px solid var(--bd2);border-radius:var(--rs);padding:12px 14px;font-family:'Syne',sans-serif;font-size:14px;color:var(--tx);resize:vertical;min-height:90px;outline:none}
+.ta:focus{border-color:var(--ac)}.ta::placeholder{color:var(--mt)}
+.inp{width:100%;background:var(--sf2);border:1px solid var(--bd2);border-radius:var(--rs);padding:10px 14px;font-family:'Syne',sans-serif;font-size:14px;color:var(--tx);outline:none}
+.inp:focus{border-color:var(--ac)}.inp::placeholder{color:var(--mt)}
+.sel-i{width:100%;background:var(--sf2);border:1px solid var(--bd2);border-radius:var(--rs);padding:10px 14px;font-family:'Syne',sans-serif;font-size:14px;color:var(--tx);outline:none;cursor:pointer;appearance:none;-webkit-appearance:none}
+.sel-i:focus{border-color:var(--ac)}
+.row2{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px}
+.fld{display:flex;flex-direction:column;gap:5px;margin-bottom:10px}
+.fld label{font-family:'DM Mono',monospace;font-size:10px;letter-spacing:0.1em;text-transform:uppercase;color:var(--mt)}
+.sb{display:inline-flex;align-items:center;gap:6px;margin-top:10px;padding:10px 20px;background:var(--ac);color:#0a0a0a;border:none;border-radius:100px;font-family:'Syne',sans-serif;font-size:14px;font-weight:700;cursor:pointer}
+.sb:disabled{opacity:0.5;cursor:not-allowed}
+
+/* Checklist */
+.ci{display:flex;align-items:flex-start;gap:12px;padding:10px 0;border-bottom:1px solid var(--bd);cursor:pointer}
+.ci:last-child{border-bottom:none}
+.ck{width:20px;height:20px;flex-shrink:0;border:1.5px solid var(--bd2);border-radius:5px;margin-top:1px;display:flex;align-items:center;justify-content:center;font-size:12px}
+.ck.done{background:var(--ac);border-color:var(--ac);color:#0a0a0a}
+.clb{font-size:14px;color:#c8c4be;line-height:1.5}
+.ci.done .clb{color:var(--mt);text-decoration:line-through}
 .calc-out{background:rgba(200,241,53,0.05);border:1px solid rgba(200,241,53,0.2);border-radius:var(--rs);padding:14px;margin-top:14px;display:none}
 .cr{display:flex;justify-content:space-between;align-items:center;padding:6px 0;border-bottom:1px solid rgba(200,241,53,0.08)}
 .cr:last-child{border-bottom:none}
-.cr-lbl{font-size:13px;color:#c8c4be}
-.cr-val{font-family:'DM Mono',monospace;font-size:13px;color:var(--ac);font-weight:500}
+.cr-lbl{font-size:13px;color:#c8c4be}.cr-val{font-family:'DM Mono',monospace;font-size:13px;color:var(--ac);font-weight:500}
 .hint{font-family:'DM Mono',monospace;font-size:10px;color:var(--mt);margin-top:6px}
+
+/* ── REVIEW ── */
+.review-subtabs{display:flex;gap:6px;margin-bottom:18px}
+.rsub{padding:7px 18px;border-radius:100px;font-family:'Syne',sans-serif;font-size:13px;font-weight:500;border:1px solid var(--bd2);background:transparent;color:var(--mt);cursor:pointer}
+.rsub.active{background:var(--adm);color:var(--ac);border-color:var(--ac)}
+.review-sub{display:none}.review-sub.active{display:block}
+/* Image upload */
+.img-drop{border:2px dashed var(--bd2);border-radius:var(--r);padding:28px;text-align:center;cursor:pointer;transition:border-color 0.15s;margin-bottom:12px;background:var(--sf2)}
+.img-drop:hover,.img-drop.dragover{border-color:var(--ac)}
+.img-drop-icon{font-size:28px;margin-bottom:8px}
+.img-drop-lbl{font-size:13px;color:var(--mt);margin-bottom:4px}
+.img-drop-sub{font-size:11px;color:var(--mt);font-family:'DM Mono',monospace}
+.img-preview{max-width:100%;border-radius:var(--rs);margin-bottom:12px;display:none;border:1px solid var(--bd2)}
+#ptr-img{display:none}
+
+/* ── MAPS ── */
+.map-tabs{display:flex;gap:6px;margin-bottom:16px;flex-wrap:wrap}
+.map-tb{padding:7px 18px;border-radius:100px;font-family:'Syne',sans-serif;font-size:13px;font-weight:500;border:1px solid var(--bd2);background:transparent;color:var(--mt);cursor:pointer;transition:all 0.15s}
+.map-tb.mt-heat{color:rgba(249,115,22,0.65);border-color:rgba(249,115,22,0.25)}
+.map-tb.mt-heat.active{background:#f97316;color:#0a0a0a;border-color:#f97316}
+.map-tb.mt-sent{color:rgba(34,211,238,0.65);border-color:rgba(34,211,238,0.25)}
+.map-tb.mt-sent.active{background:#22d3ee;color:#0a0a0a;border-color:#22d3ee}
+.map-tb.mt-corr{color:rgba(167,139,250,0.65);border-color:rgba(167,139,250,0.25)}
+.map-tb.mt-corr.active{background:#a78bfa;color:#0a0a0a;border-color:#a78bfa}
+.map-panel{display:none}.map-panel.active{display:block}
+.hm-view{display:none}.hm-view.active{display:block}
+.hm-vtab{padding:5px 14px;border-radius:100px;font-family:'Syne',sans-serif;font-size:12px;font-weight:500;border:1px solid rgba(249,115,22,0.25);background:transparent;color:rgba(249,115,22,0.65);cursor:pointer;transition:all 0.15s}
+.hm-vtab.active{background:#f97316;color:#0a0a0a;border-color:#f97316}
+.hm-table{width:100%;border-collapse:collapse}
+.hm-table thead th{font-family:'DM Mono',monospace;font-size:10px;text-transform:uppercase;letter-spacing:0.08em;color:var(--mt);padding:10px 12px;text-align:center;border-bottom:1px solid var(--bd2);position:sticky;top:0;background:var(--sf)}
+.hm-table thead th:first-child{text-align:left}
+.hm-group-lbl{font-family:'DM Mono',monospace;font-size:9px;letter-spacing:0.14em;text-transform:uppercase;color:var(--mt);padding:10px 12px 4px;background:var(--sf2)}
+.hm-row:hover{background:rgba(255,255,255,0.025)}
+.hm-pair{font-family:'DM Mono',monospace;font-size:12px;font-weight:600;padding:8px 12px;border-bottom:1px solid var(--bd)}
+.hm-cell{font-family:'DM Mono',monospace;font-size:12px;text-align:center;padding:8px 12px;border-bottom:1px solid var(--bd);font-weight:500}
+.hm-pos{color:#4ade80}.hm-neg{color:#f87171}.hm-neu{color:var(--mt)}
+.hm-pos.hi{background:rgba(74,222,128,0.12)}.hm-neg.hi{background:rgba(248,113,113,0.12)}
+.majors-wrap{overflow-x:auto;-webkit-overflow-scrolling:touch}
+.majors-table{border-collapse:collapse;white-space:nowrap;width:100%}
+.majors-table th{font-family:'Syne',sans-serif;font-size:12px;font-weight:600;text-align:center;padding:10px 8px;border:1px solid var(--bd);color:var(--tx);background:var(--sf2)}
+.majors-table th:first-child{text-align:left;padding-left:12px}
+.majors-table td{text-align:center;padding:10px 8px;border:1px solid var(--bd);font-family:'DM Mono',monospace;font-size:12px;font-weight:600}
+.majors-table .row-hdr{text-align:left;padding-left:12px;background:var(--sf2);font-family:'Syne',sans-serif;font-size:12px;font-weight:600;color:var(--tx)}
+.majors-table .diag{background:rgba(255,255,255,0.03);color:var(--mt)}
+.mat-pos{background:rgba(74,222,128,0.12);color:#4ade80}.mat-pos.hi{background:rgba(74,222,128,0.25);color:#22c55e}
+.mat-neg{background:rgba(248,113,113,0.12);color:#f87171}.mat-neg.hi{background:rgba(248,113,113,0.25);color:#ef4444}
+.corr-wrap{overflow-x:auto;-webkit-overflow-scrolling:touch}
+.corr-table{border-collapse:collapse;font-family:'DM Mono',monospace;font-size:11px;white-space:nowrap;min-width:100%}
+.corr-table thead th{padding:6px 10px;text-align:center;color:var(--mt);font-size:10px;letter-spacing:0.05em;border-bottom:1px solid var(--bd2);background:var(--sf)}
+.corr-table td{padding:7px 10px;text-align:center;font-size:11px;font-weight:500;border:1px solid var(--bd)}
+.corr-lbl{color:var(--tx);text-align:left!important;padding:7px 16px 7px 0!important;border:none!important;white-space:nowrap;font-size:12px}
+.map-src{font-family:'DM Mono',monospace;font-size:10px;color:var(--mt);margin-top:8px;text-align:right}
+.map-src a{color:var(--mt);text-decoration:none}.map-src a:hover{color:var(--ac)}
+
+/* ── SCANNER ── */
+.scanner-intro{background:var(--sf);border:1px solid var(--bd);border-radius:var(--r);padding:20px;margin-bottom:16px}
+.scan-controls{display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-top:14px}
+.scan-card{background:var(--sf);border:1px solid var(--bd);border-radius:var(--r);padding:18px;margin-bottom:10px}
+.scan-card.prob-high{border-color:rgba(74,222,128,0.4);background:rgba(74,222,128,0.03)}
+.scan-card.prob-med{border-color:rgba(251,191,36,0.35);background:rgba(251,191,36,0.02)}
+.scan-hdr{display:flex;align-items:center;gap:10px;margin-bottom:12px;flex-wrap:wrap}
+.scan-pair{font-size:18px;font-weight:700;letter-spacing:0.02em}
+.scan-dir{font-family:'DM Mono',monospace;font-size:12px;font-weight:600;padding:4px 12px;border-radius:100px}
+.scan-dir.long{background:var(--bbg);color:var(--buy);border:1px solid rgba(74,222,128,0.3)}
+.scan-dir.short{background:var(--sbg);color:var(--sel);border:1px solid rgba(248,113,113,0.3)}
+.scan-prob{font-family:'DM Mono',monospace;font-size:10px;padding:3px 10px;border-radius:100px;border:1px solid;margin-left:auto}
+.scan-prob.high{color:#4ade80;border-color:rgba(74,222,128,0.4);background:rgba(74,222,128,0.08)}
+.scan-prob.med{color:#fbbf24;border-color:rgba(251,191,36,0.4);background:rgba(251,191,36,0.08)}
+.scan-reason{font-size:13px;line-height:1.7;color:#d4d0ca;margin-bottom:12px}
+.scan-levels{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px}
+.scan-level{background:var(--sf2);border-radius:var(--rs);padding:10px;text-align:center}
+.scan-level-lbl{font-family:'DM Mono',monospace;font-size:9px;text-transform:uppercase;letter-spacing:0.08em;color:var(--mt);margin-bottom:4px}
+.scan-level-val{font-family:'DM Mono',monospace;font-size:13px;font-weight:600;color:var(--tx)}
+.scan-rr{font-family:'DM Mono',monospace;font-size:11px;color:var(--ac);margin-top:8px}
+.scan-empty{text-align:center;padding:50px 20px;color:var(--mt)}
+.scan-empty .scan-icon{font-size:40px;margin-bottom:12px}
+
+/* ── ABOUT ── */
+.ai{padding:14px 0;border-bottom:1px solid var(--bd)}.ai:last-child{border-bottom:none}
+.aq{font-size:13px;font-weight:500;color:var(--tx);margin-bottom:4px}
+.aa{font-size:13px;color:var(--mt);line-height:1.6}
+
+/* ── BOTTOM BANNER (A2HS) ── */
+.bn-bottom{position:fixed;bottom:0;left:0;right:0;z-index:200;background:rgba(15,15,15,0.97);backdrop-filter:blur(12px);border-top:1px solid rgba(200,241,53,0.25);padding:14px 20px;display:flex;align-items:center;gap:12px}
+.bn-bottom .bnt2{font-size:13px;color:#c8c4be;line-height:1.5;flex:1}.bn-bottom .bnt2 strong{color:#c8f135}
+.bn-bottom .bnc{background:none;border:none;color:var(--mt);font-size:20px;cursor:pointer;padding:0 4px;flex-shrink:0}
 </style>
 </head>
-<body data-sect="daily">
+<body data-sect="analysis">
 
+<!-- ══ PIN GATE ══ -->
+<div id="pin-gate">
+  <div class="pin-box">
+    <div class="pin-logo">Forex<span>Hub</span></div>
+    <div class="pin-sub">Enter access PIN to continue</div>
+    <input class="pin-inp" id="pin-input" type="password" maxlength="8" placeholder="••••" autocomplete="off" onkeydown="if(event.key==='Enter')checkPin()">
+    <button class="pin-btn" onclick="checkPin()">Enter</button>
+    <div class="pin-err" id="pin-err"></div>
+  </div>
+</div>
+
+<!-- ══ HEADER ══ -->
 <div class="hdr">
   <div class="logo">Forex<span>Hub</span></div>
   <div class="hdate" id="hdate"></div>
 </div>
 
+<!-- ══ NAV ══ -->
 <div class="nav">
-  <button class="nb active" onclick="showS('daily',this)">Daily</button>
-  <button class="nb" onclick="showS('weekly',this)">Weekly</button>
+  <button class="nb active" onclick="showS('analysis',this)">Analysis</button>
   <button class="nb" onclick="showS('sessions',this)">Sessions</button>
   <button class="nb" onclick="showS('calendar',this)">Calendar</button>
   <button class="nb" onclick="showS('journal',this)">Journal</button>
   <button class="nb" onclick="showS('checklist',this)">Checklist</button>
   <button class="nb" onclick="showS('review',this)">Review</button>
   <button class="nb" onclick="showS('maps',this)">Maps</button>
+  <button class="nb" onclick="showS('scanner',this)">Scanner</button>
   <button class="nb" onclick="showS('about',this)">About</button>
 </div>
 
 <div class="main">
 
-<!-- ══ DAILY ══════════════════════════════════════ -->
-<div id="daily" class="sec active">
-  <div class="bn" id="ibanner">
-    <div class="bnt2"><strong>Add to home screen</strong> – tap Chrome menu then Add to Home screen to use ForexHub as an app on Android.</div>
-    <button class="bnc" onclick="document.getElementById('ibanner').style.display='none'">×</button>
+<!-- ══ ANALYSIS ══ -->
+<div id="analysis" class="sec active">
+  <div class="analysis-subtabs">
+    <button class="asub active" onclick="showAnalysisSub('analysis-daily',this)">Daily</button>
+    <button class="asub" onclick="showAnalysisSub('analysis-weekly',this)">Weekly</button>
+    <button class="asub asub-4hr" onclick="showAnalysisSub('analysis-4hr',this)">4 Hour</button>
   </div>
-  <div class="analysis-layout">
-    <!-- Left sidebar: pairs grouped by base currency -->
-    <div class="pair-sidebar" id="dpr">
-      <div class="pg" data-ccy="AUD">
-        <div class="pgl">AUD</div>
-        <button class="pp active" onclick="loadD('AUDCAD',this)">AUD/CAD</button>
-        <button class="pp" onclick="loadD('AUDCHF',this)">AUD/CHF</button>
-        <button class="pp" onclick="loadD('AUDJPY',this)">AUD/JPY</button>
-        <button class="pp" onclick="loadD('AUDNZD',this)">AUD/NZD</button>
-        <button class="pp" onclick="loadD('AUDUSD',this)">AUD/USD</button>
+
+  <!-- Daily -->
+  <div id="analysis-daily" class="analysis-sub active">
+    <div class="analysis-layout">
+      <div class="pair-sidebar" id="dpr">
+        <div class="pg" data-ccy="AUD"><div class="pgl">AUD</div>
+          <button class="pp" onclick="loadD('AUDCAD',this)">AUD/CAD</button>
+          <button class="pp" onclick="loadD('AUDCHF',this)">AUD/CHF</button>
+          <button class="pp" onclick="loadD('AUDJPY',this)">AUD/JPY</button>
+          <button class="pp" onclick="loadD('AUDNZD',this)">AUD/NZD</button>
+          <button class="pp active" onclick="loadD('AUDUSD',this)">AUD/USD</button>
+        </div>
+        <div class="pg" data-ccy="CAD"><div class="pgl">CAD</div>
+          <button class="pp" onclick="loadD('CADCHF',this)">CAD/CHF</button>
+          <button class="pp" onclick="loadD('CADJPY',this)">CAD/JPY</button>
+        </div>
+        <div class="pg" data-ccy="CHF"><div class="pgl">CHF</div>
+          <button class="pp" onclick="loadD('CHFJPY',this)">CHF/JPY</button>
+        </div>
+        <div class="pg" data-ccy="EUR"><div class="pgl">EUR</div>
+          <button class="pp" onclick="loadD('EURAUD',this)">EUR/AUD</button>
+          <button class="pp" onclick="loadD('EURCAD',this)">EUR/CAD</button>
+          <button class="pp" onclick="loadD('EURCHF',this)">EUR/CHF</button>
+          <button class="pp" onclick="loadD('EURGBP',this)">EUR/GBP</button>
+          <button class="pp" onclick="loadD('EURJPY',this)">EUR/JPY</button>
+          <button class="pp" onclick="loadD('EURNZD',this)">EUR/NZD</button>
+          <button class="pp" onclick="loadD('EURUSD',this)">EUR/USD</button>
+        </div>
+        <div class="pg" data-ccy="GBP"><div class="pgl">GBP</div>
+          <button class="pp" onclick="loadD('GBPAUD',this)">GBP/AUD</button>
+          <button class="pp" onclick="loadD('GBPCAD',this)">GBP/CAD</button>
+          <button class="pp" onclick="loadD('GBPCHF',this)">GBP/CHF</button>
+          <button class="pp" onclick="loadD('GBPJPY',this)">GBP/JPY</button>
+          <button class="pp" onclick="loadD('GBPNZD',this)">GBP/NZD</button>
+          <button class="pp" onclick="loadD('GBPUSD',this)">GBP/USD</button>
+        </div>
+        <div class="pg" data-ccy="NZD"><div class="pgl">NZD</div>
+          <button class="pp" onclick="loadD('NZDCAD',this)">NZD/CAD</button>
+          <button class="pp" onclick="loadD('NZDCHF',this)">NZD/CHF</button>
+          <button class="pp" onclick="loadD('NZDJPY',this)">NZD/JPY</button>
+          <button class="pp" onclick="loadD('NZDUSD',this)">NZD/USD</button>
+        </div>
+        <div class="pg" data-ccy="USD"><div class="pgl">USD</div>
+          <button class="pp" onclick="loadD('USDCAD',this)">USD/CAD</button>
+          <button class="pp" onclick="loadD('USDCHF',this)">USD/CHF</button>
+          <button class="pp" onclick="loadD('USDJPY',this)">USD/JPY</button>
+        </div>
+        <div class="pg" data-ccy="XAU"><div class="pgl">XAU</div>
+          <button class="pp" onclick="loadD('XAUUSD',this)">XAU/USD</button>
+        </div>
       </div>
-      <div class="pg" data-ccy="CAD">
-        <div class="pgl">CAD</div>
-        <button class="pp" onclick="loadD('CADCHF',this)">CAD/CHF</button>
-        <button class="pp" onclick="loadD('CADJPY',this)">CAD/JPY</button>
-      </div>
-      <div class="pg" data-ccy="CHF">
-        <div class="pgl">CHF</div>
-        <button class="pp" onclick="loadD('CHFJPY',this)">CHF/JPY</button>
-      </div>
-      <div class="pg" data-ccy="EUR">
-        <div class="pgl">EUR</div>
-        <button class="pp" onclick="loadD('EURAUD',this)">EUR/AUD</button>
-        <button class="pp" onclick="loadD('EURCAD',this)">EUR/CAD</button>
-        <button class="pp" onclick="loadD('EURCHF',this)">EUR/CHF</button>
-        <button class="pp" onclick="loadD('EURGBP',this)">EUR/GBP</button>
-        <button class="pp" onclick="loadD('EURJPY',this)">EUR/JPY</button>
-        <button class="pp" onclick="loadD('EURNZD',this)">EUR/NZD</button>
-        <button class="pp" onclick="loadD('EURUSD',this)">EUR/USD</button>
-      </div>
-      <div class="pg" data-ccy="GBP">
-        <div class="pgl">GBP</div>
-        <button class="pp" onclick="loadD('GBPAUD',this)">GBP/AUD</button>
-        <button class="pp" onclick="loadD('GBPCAD',this)">GBP/CAD</button>
-        <button class="pp" onclick="loadD('GBPCHF',this)">GBP/CHF</button>
-        <button class="pp" onclick="loadD('GBPJPY',this)">GBP/JPY</button>
-        <button class="pp" onclick="loadD('GBPNZD',this)">GBP/NZD</button>
-        <button class="pp" onclick="loadD('GBPUSD',this)">GBP/USD</button>
-      </div>
-      <div class="pg" data-ccy="NZD">
-        <div class="pgl">NZD</div>
-        <button class="pp" onclick="loadD('NZDCAD',this)">NZD/CAD</button>
-        <button class="pp" onclick="loadD('NZDCHF',this)">NZD/CHF</button>
-        <button class="pp" onclick="loadD('NZDJPY',this)">NZD/JPY</button>
-        <button class="pp" onclick="loadD('NZDUSD',this)">NZD/USD</button>
-      </div>
-      <div class="pg" data-ccy="USD">
-        <div class="pgl">USD</div>
-        <button class="pp" onclick="loadD('USDCAD',this)">USD/CAD</button>
-        <button class="pp" onclick="loadD('USDCHF',this)">USD/CHF</button>
-        <button class="pp" onclick="loadD('USDJPY',this)">USD/JPY</button>
-      </div>
-      <div class="pg" data-ccy="XAU">
-        <div class="pgl">XAU</div>
-        <button class="pp" onclick="loadD('XAUUSD',this)">XAU/USD</button>
+      <div class="analysis-main">
+        <div class="st">Daily analysis</div>
+        <div class="ss">AI-powered · live web search · Brisbane AEST</div>
+        <div class="card">
+          <div class="cl">Today's bias</div>
+          <div id="db"></div>
+          <hr class="dv">
+          <div class="cl">Key levels</div>
+          <div class="levels-layout">
+            <div id="dl" style="flex:1"></div>
+            <div id="dl-chart" class="levels-chart"></div>
+          </div>
+          <hr class="dv">
+          <div class="cl">Watch today</div>
+          <div id="dw"></div>
+          <div class="meta" id="dm"></div>
+        </div>
+        <button class="rb" onclick="forceD()">↺ Refresh analysis</button>
       </div>
     </div>
-    <!-- Right: analysis -->
-    <div class="analysis-main">
-      <div class="st">Daily analysis</div>
-      <div class="ss">AI-powered · live web search · Brisbane AEST</div>
-      <div class="card">
-        <div class="cl">Todays bias</div>
-        <div id="db"><div class="ld"><div class="sp"></div>Generating analysis...</div></div>
-        <hr class="dv">
-        <div class="cl">Key levels</div>
-        <div id="dl"><div class="ld"><div class="sp"></div>Fetching levels...</div></div>
-        <hr class="dv">
-        <div class="cl">Watch today</div>
-        <div id="dw"><div class="ld"><div class="sp"></div>Scanning events...</div></div>
-        <div class="meta" id="dm"></div>
+  </div>
+
+  <!-- Weekly -->
+  <div id="analysis-weekly" class="analysis-sub">
+    <div class="analysis-layout">
+      <div class="pair-sidebar" id="wpr">
+        <div class="pg" data-ccy="AUD"><div class="pgl">AUD</div>
+          <button class="pp" onclick="loadW('AUDCAD',this)">AUD/CAD</button>
+          <button class="pp" onclick="loadW('AUDCHF',this)">AUD/CHF</button>
+          <button class="pp" onclick="loadW('AUDJPY',this)">AUD/JPY</button>
+          <button class="pp" onclick="loadW('AUDNZD',this)">AUD/NZD</button>
+          <button class="pp active" onclick="loadW('AUDUSD',this)">AUD/USD</button>
+        </div>
+        <div class="pg" data-ccy="CAD"><div class="pgl">CAD</div>
+          <button class="pp" onclick="loadW('CADCHF',this)">CAD/CHF</button>
+          <button class="pp" onclick="loadW('CADJPY',this)">CAD/JPY</button>
+        </div>
+        <div class="pg" data-ccy="CHF"><div class="pgl">CHF</div>
+          <button class="pp" onclick="loadW('CHFJPY',this)">CHF/JPY</button>
+        </div>
+        <div class="pg" data-ccy="EUR"><div class="pgl">EUR</div>
+          <button class="pp" onclick="loadW('EURAUD',this)">EUR/AUD</button>
+          <button class="pp" onclick="loadW('EURCAD',this)">EUR/CAD</button>
+          <button class="pp" onclick="loadW('EURCHF',this)">EUR/CHF</button>
+          <button class="pp" onclick="loadW('EURGBP',this)">EUR/GBP</button>
+          <button class="pp" onclick="loadW('EURJPY',this)">EUR/JPY</button>
+          <button class="pp" onclick="loadW('EURNZD',this)">EUR/NZD</button>
+          <button class="pp" onclick="loadW('EURUSD',this)">EUR/USD</button>
+        </div>
+        <div class="pg" data-ccy="GBP"><div class="pgl">GBP</div>
+          <button class="pp" onclick="loadW('GBPAUD',this)">GBP/AUD</button>
+          <button class="pp" onclick="loadW('GBPCAD',this)">GBP/CAD</button>
+          <button class="pp" onclick="loadW('GBPCHF',this)">GBP/CHF</button>
+          <button class="pp" onclick="loadW('GBPJPY',this)">GBP/JPY</button>
+          <button class="pp" onclick="loadW('GBPNZD',this)">GBP/NZD</button>
+          <button class="pp" onclick="loadW('GBPUSD',this)">GBP/USD</button>
+        </div>
+        <div class="pg" data-ccy="NZD"><div class="pgl">NZD</div>
+          <button class="pp" onclick="loadW('NZDCAD',this)">NZD/CAD</button>
+          <button class="pp" onclick="loadW('NZDCHF',this)">NZD/CHF</button>
+          <button class="pp" onclick="loadW('NZDJPY',this)">NZD/JPY</button>
+          <button class="pp" onclick="loadW('NZDUSD',this)">NZD/USD</button>
+        </div>
+        <div class="pg" data-ccy="USD"><div class="pgl">USD</div>
+          <button class="pp" onclick="loadW('USDCAD',this)">USD/CAD</button>
+          <button class="pp" onclick="loadW('USDCHF',this)">USD/CHF</button>
+          <button class="pp" onclick="loadW('USDJPY',this)">USD/JPY</button>
+        </div>
+        <div class="pg" data-ccy="XAU"><div class="pgl">XAU</div>
+          <button class="pp" onclick="loadW('XAUUSD',this)">XAU/USD</button>
+        </div>
       </div>
-      <button class="rb" onclick="forceD()">↺ Refresh analysis</button>
+      <div class="analysis-main">
+        <div class="st">Weekly outlook</div>
+        <div class="ss">Macro theme · trend · key events</div>
+        <div class="card">
+          <div class="cl">Macro theme</div>
+          <div id="wt"></div>
+          <hr class="dv">
+          <div class="cl">Trend and structure</div>
+          <div id="wtr"></div>
+          <hr class="dv">
+          <div class="cl">Key events this week</div>
+          <div id="we"></div>
+          <div class="meta" id="wm"></div>
+        </div>
+        <button class="rb" onclick="forceW()">↺ Refresh outlook</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 4 Hour -->
+  <div id="analysis-4hr" class="analysis-sub">
+    <div class="analysis-layout">
+      <div class="pair-sidebar" id="hpr">
+        <div class="pg" data-ccy="AUD"><div class="pgl">AUD</div>
+          <button class="pp" onclick="load4hr('AUDCAD',this)">AUD/CAD</button>
+          <button class="pp" onclick="load4hr('AUDCHF',this)">AUD/CHF</button>
+          <button class="pp" onclick="load4hr('AUDJPY',this)">AUD/JPY</button>
+          <button class="pp" onclick="load4hr('AUDNZD',this)">AUD/NZD</button>
+          <button class="pp" onclick="load4hr('AUDUSD',this)">AUD/USD</button>
+        </div>
+        <div class="pg" data-ccy="CAD"><div class="pgl">CAD</div>
+          <button class="pp" onclick="load4hr('CADCHF',this)">CAD/CHF</button>
+          <button class="pp" onclick="load4hr('CADJPY',this)">CAD/JPY</button>
+        </div>
+        <div class="pg" data-ccy="CHF"><div class="pgl">CHF</div>
+          <button class="pp" onclick="load4hr('CHFJPY',this)">CHF/JPY</button>
+        </div>
+        <div class="pg" data-ccy="EUR"><div class="pgl">EUR</div>
+          <button class="pp" onclick="load4hr('EURAUD',this)">EUR/AUD</button>
+          <button class="pp" onclick="load4hr('EURCAD',this)">EUR/CAD</button>
+          <button class="pp" onclick="load4hr('EURCHF',this)">EUR/CHF</button>
+          <button class="pp" onclick="load4hr('EURGBP',this)">EUR/GBP</button>
+          <button class="pp active" onclick="load4hr('EURJPY',this)">EUR/JPY</button>
+          <button class="pp" onclick="load4hr('EURNZD',this)">EUR/NZD</button>
+          <button class="pp" onclick="load4hr('EURUSD',this)">EUR/USD</button>
+        </div>
+        <div class="pg" data-ccy="GBP"><div class="pgl">GBP</div>
+          <button class="pp" onclick="load4hr('GBPAUD',this)">GBP/AUD</button>
+          <button class="pp" onclick="load4hr('GBPCAD',this)">GBP/CAD</button>
+          <button class="pp" onclick="load4hr('GBPCHF',this)">GBP/CHF</button>
+          <button class="pp" onclick="load4hr('GBPJPY',this)">GBP/JPY</button>
+          <button class="pp" onclick="load4hr('GBPNZD',this)">GBP/NZD</button>
+          <button class="pp" onclick="load4hr('GBPUSD',this)">GBP/USD</button>
+        </div>
+        <div class="pg" data-ccy="NZD"><div class="pgl">NZD</div>
+          <button class="pp" onclick="load4hr('NZDCAD',this)">NZD/CAD</button>
+          <button class="pp" onclick="load4hr('NZDCHF',this)">NZD/CHF</button>
+          <button class="pp" onclick="load4hr('NZDJPY',this)">NZD/JPY</button>
+          <button class="pp" onclick="load4hr('NZDUSD',this)">NZD/USD</button>
+        </div>
+        <div class="pg" data-ccy="USD"><div class="pgl">USD</div>
+          <button class="pp" onclick="load4hr('USDCAD',this)">USD/CAD</button>
+          <button class="pp" onclick="load4hr('USDCHF',this)">USD/CHF</button>
+          <button class="pp" onclick="load4hr('USDJPY',this)">USD/JPY</button>
+        </div>
+        <div class="pg" data-ccy="XAU"><div class="pgl">XAU</div>
+          <button class="pp" onclick="load4hr('XAUUSD',this)">XAU/USD</button>
+        </div>
+      </div>
+      <div class="analysis-main">
+        <div class="st" style="color:#60a5fa">4-Hour analysis</div>
+        <div class="ss">Intraday structure · entry timing · 4H chart perspective</div>
+        <div class="card" style="border-color:rgba(96,165,250,0.2)">
+          <div class="cl h4-accent">4H bias</div>
+          <div id="h4b"></div>
+          <hr class="dv">
+          <div class="cl h4-accent">4H setup</div>
+          <div id="h4s"></div>
+          <hr class="dv">
+          <div class="cl h4-accent">Key 4H levels</div>
+          <div id="h4l"></div>
+          <hr class="dv">
+          <div class="cl h4-accent">Entry trigger</div>
+          <div id="h4t"></div>
+          <div class="meta" id="h4m"></div>
+        </div>
+        <button class="rb" onclick="force4hr()">↺ Refresh 4H analysis</button>
+      </div>
     </div>
   </div>
 </div>
 
-<!-- ══ WEEKLY ══════════════════════════════════════ -->
-<div id="weekly" class="sec">
-  <div class="analysis-layout">
-    <!-- Left sidebar: pairs grouped by base currency -->
-    <div class="pair-sidebar" id="wpr">
-      <div class="pg" data-ccy="AUD">
-        <div class="pgl">AUD</div>
-        <button class="pp active" onclick="loadW('AUDCAD',this)">AUD/CAD</button>
-        <button class="pp" onclick="loadW('AUDCHF',this)">AUD/CHF</button>
-        <button class="pp" onclick="loadW('AUDJPY',this)">AUD/JPY</button>
-        <button class="pp" onclick="loadW('AUDNZD',this)">AUD/NZD</button>
-        <button class="pp" onclick="loadW('AUDUSD',this)">AUD/USD</button>
-      </div>
-      <div class="pg" data-ccy="CAD">
-        <div class="pgl">CAD</div>
-        <button class="pp" onclick="loadW('CADCHF',this)">CAD/CHF</button>
-        <button class="pp" onclick="loadW('CADJPY',this)">CAD/JPY</button>
-      </div>
-      <div class="pg" data-ccy="CHF">
-        <div class="pgl">CHF</div>
-        <button class="pp" onclick="loadW('CHFJPY',this)">CHF/JPY</button>
-      </div>
-      <div class="pg" data-ccy="EUR">
-        <div class="pgl">EUR</div>
-        <button class="pp" onclick="loadW('EURAUD',this)">EUR/AUD</button>
-        <button class="pp" onclick="loadW('EURCAD',this)">EUR/CAD</button>
-        <button class="pp" onclick="loadW('EURCHF',this)">EUR/CHF</button>
-        <button class="pp" onclick="loadW('EURGBP',this)">EUR/GBP</button>
-        <button class="pp" onclick="loadW('EURJPY',this)">EUR/JPY</button>
-        <button class="pp" onclick="loadW('EURNZD',this)">EUR/NZD</button>
-        <button class="pp" onclick="loadW('EURUSD',this)">EUR/USD</button>
-      </div>
-      <div class="pg" data-ccy="GBP">
-        <div class="pgl">GBP</div>
-        <button class="pp" onclick="loadW('GBPAUD',this)">GBP/AUD</button>
-        <button class="pp" onclick="loadW('GBPCAD',this)">GBP/CAD</button>
-        <button class="pp" onclick="loadW('GBPCHF',this)">GBP/CHF</button>
-        <button class="pp" onclick="loadW('GBPJPY',this)">GBP/JPY</button>
-        <button class="pp" onclick="loadW('GBPNZD',this)">GBP/NZD</button>
-        <button class="pp" onclick="loadW('GBPUSD',this)">GBP/USD</button>
-      </div>
-      <div class="pg" data-ccy="NZD">
-        <div class="pgl">NZD</div>
-        <button class="pp" onclick="loadW('NZDCAD',this)">NZD/CAD</button>
-        <button class="pp" onclick="loadW('NZDCHF',this)">NZD/CHF</button>
-        <button class="pp" onclick="loadW('NZDJPY',this)">NZD/JPY</button>
-        <button class="pp" onclick="loadW('NZDUSD',this)">NZD/USD</button>
-      </div>
-      <div class="pg" data-ccy="USD">
-        <div class="pgl">USD</div>
-        <button class="pp" onclick="loadW('USDCAD',this)">USD/CAD</button>
-        <button class="pp" onclick="loadW('USDCHF',this)">USD/CHF</button>
-        <button class="pp" onclick="loadW('USDJPY',this)">USD/JPY</button>
-      </div>
-      <div class="pg" data-ccy="XAU">
-        <div class="pgl">XAU</div>
-        <button class="pp" onclick="loadW('XAUUSD',this)">XAU/USD</button>
-      </div>
-    </div>
-    <!-- Right: analysis -->
-    <div class="analysis-main">
-      <div class="st">Weekly outlook</div>
-      <div class="ss">Macro theme · trend · key events</div>
-      <div class="card">
-        <div class="cl">Macro theme</div>
-        <div id="wt"><div class="ld"><div class="sp"></div>Generating weekly outlook...</div></div>
-        <hr class="dv">
-        <div class="cl">Trend and structure</div>
-        <div id="wtr"><div class="ld"><div class="sp"></div>Analysing trend...</div></div>
-        <hr class="dv">
-        <div class="cl">Key events this week</div>
-        <div id="we"><div class="ld"><div class="sp"></div>Loading calendar...</div></div>
-        <div class="meta" id="wm"></div>
-      </div>
-      <button class="rb" onclick="forceW()">↺ Refresh outlook</button>
-    </div>
-  </div>
-</div>
-
-<!-- ══ SESSIONS ══════════════════════════════════════ -->
+<!-- ══ SESSIONS ══ -->
 <div id="sessions" class="sec">
   <div class="st">Market sessions</div>
-  <div class="ss">Live session status · Brisbane AEST</div>
+  <div class="ss">Live session status · Brisbane AEST · no daylight saving</div>
   <div class="clock-big" id="sess-clock">--:--:--</div>
-  <div class="clock-tz">Brisbane AEST (UTC+10) · no daylight saving</div>
+  <div class="clock-tz">Brisbane AEST (UTC+10)</div>
+  <!-- Timeline -->
+  <div class="sess-timeline">
+    <div class="tl-title">24-Hour session timeline (AEST)</div>
+    <div class="tl-outer" id="sess-timeline"></div>
+  </div>
+  <!-- Session cards -->
   <div class="sess-grid" id="sess-grid"></div>
+  <!-- Best pairs -->
   <div class="bp-card">
     <div class="cl">Best pairs by session</div>
-    <div class="bp-row"><div class="bp-name">🇦🇺 Sydney</div><div class="bp-pairs">AUD/USD · AUD/JPY · AUD/NZD · NZD/USD</div></div>
-    <div class="bp-row"><div class="bp-name">🇯🇵 Tokyo</div><div class="bp-pairs">USD/JPY · EUR/JPY · AUD/JPY · GBP/JPY</div></div>
-    <div class="bp-row"><div class="bp-name">🇬🇧 London</div><div class="bp-pairs">EUR/USD · GBP/USD · EUR/GBP · GBP/JPY</div></div>
-    <div class="bp-row"><div class="bp-name">🇺🇸 New York</div><div class="bp-pairs">EUR/USD · GBP/USD · USD/CAD · USD/CHF</div></div>
-    <div class="bp-row"><div class="bp-name">⚡ London/NY overlap</div><div class="bp-pairs">EUR/USD · GBP/USD · highest volume of the day</div></div>
+    <div class="bp-row">
+      <div class="bp-name">🇦🇺 Sydney</div>
+      <div class="bp-pairs" id="bp-sydney"></div>
+    </div>
+    <div class="bp-row">
+      <div class="bp-name">🇯🇵 Tokyo</div>
+      <div class="bp-pairs" id="bp-tokyo"></div>
+    </div>
+    <div class="bp-row">
+      <div class="bp-name">🇬🇧 London</div>
+      <div class="bp-pairs" id="bp-london"></div>
+    </div>
+    <div class="bp-row">
+      <div class="bp-name">🇺🇸 New York</div>
+      <div class="bp-pairs" id="bp-ny"></div>
+    </div>
+    <div class="bp-row">
+      <div class="bp-name">⚡ Overlap</div>
+      <div class="bp-pairs" id="bp-overlap"></div>
+    </div>
   </div>
 </div>
 
-<!-- ══ CALENDAR ══════════════════════════════════════ -->
+<!-- ══ CALENDAR ══ -->
 <div id="calendar" class="sec">
   <div class="st">Economic calendar</div>
-  <div class="ss">Key events this week · AI-generated · verify at forexfactory.com</div>
+  <div class="ss">Key events this week · click any event for detail · verify at forexfactory.com</div>
   <div class="cal-legend">
-    <div class="cal-leg"><div class="cal-dot" style="background:var(--sel)"></div>High impact</div>
-    <div class="cal-leg"><div class="cal-dot" style="background:var(--wt)"></div>Medium</div>
-    <div class="cal-leg"><div class="cal-dot" style="background:var(--mt)"></div>Low</div>
+    <div class="cal-leg"><span class="cal-imp-badge high">HIGH</span> High impact</div>
+    <div class="cal-leg"><span class="cal-imp-badge med">MED</span> Medium</div>
+    <div class="cal-leg"><span class="cal-imp-badge low">LOW</span> Low</div>
   </div>
-  <div id="cal-body"><div class="ld"><div class="sp"></div>Loading economic calendar...</div></div>
+  <div id="cal-body"></div>
   <div class="meta" id="cal-meta" style="margin-top:10px"></div>
   <button class="rb" style="margin-top:12px" onclick="forceCal()">↺ Refresh calendar</button>
 </div>
 
-<!-- ══ JOURNAL ══════════════════════════════════════ -->
+<!-- ══ JOURNAL ══ -->
 <div id="journal" class="sec">
   <div class="st">Trade journal</div>
   <div class="ss">Log every trade · track your performance</div>
-
   <div class="jstats">
     <div class="jstat"><div class="jstat-val jneu" id="js-total">0</div><div class="jstat-lbl">Trades</div></div>
-    <div class="jstat"><div class="jstat-val" id="js-wr">—</div><div class="jstat-lbl">Win rate</div></div>
-    <div class="jstat"><div class="jstat-val" id="js-pips">0</div><div class="jstat-lbl">Total pips</div></div>
-    <div class="jstat"><div class="jstat-val" id="js-streak">—</div><div class="jstat-lbl">Streak</div></div>
+    <div class="jstat"><div class="jstat-val jneu" id="js-wr">—</div><div class="jstat-lbl">Win rate</div></div>
+    <div class="jstat"><div class="jstat-val jneu" id="js-pips">0</div><div class="jstat-lbl">Total pips</div></div>
+    <div class="jstat"><div class="jstat-val jneu" id="js-streak">—</div><div class="jstat-lbl">Streak</div></div>
   </div>
-
   <div class="card">
     <div class="cl">Log new trade</div>
     <div class="row2">
-      <div class="fld">
-        <label>Pair</label>
+      <div class="fld"><label>Pair</label>
         <select class="sel-i" id="j-pair">
-          <option>AUD/USD</option><option>AUD/CAD</option><option>AUD/CHF</option>
-          <option>AUD/JPY</option><option>AUD/NZD</option><option>CAD/CHF</option>
-          <option>CAD/JPY</option><option>CHF/JPY</option><option>EUR/AUD</option>
-          <option>EUR/CAD</option><option>EUR/CHF</option><option>EUR/GBP</option>
-          <option>EUR/JPY</option><option>EUR/NZD</option><option>EUR/USD</option>
-          <option>GBP/AUD</option><option>GBP/CAD</option><option>GBP/CHF</option>
-          <option>GBP/JPY</option><option>GBP/NZD</option><option>GBP/USD</option>
-          <option>NZD/CAD</option><option>NZD/CHF</option><option>NZD/JPY</option>
-          <option>NZD/USD</option><option>USD/CAD</option><option>USD/CHF</option>
-          <option>USD/JPY</option><option>XAU/USD</option>
+          <option>AUD/USD</option><option>AUD/CAD</option><option>AUD/CHF</option><option>AUD/JPY</option><option>AUD/NZD</option>
+          <option>CAD/CHF</option><option>CAD/JPY</option><option>CHF/JPY</option>
+          <option>EUR/AUD</option><option>EUR/CAD</option><option>EUR/CHF</option><option>EUR/GBP</option><option>EUR/JPY</option><option>EUR/NZD</option><option>EUR/USD</option>
+          <option>GBP/AUD</option><option>GBP/CAD</option><option>GBP/CHF</option><option>GBP/JPY</option><option>GBP/NZD</option><option>GBP/USD</option>
+          <option>NZD/CAD</option><option>NZD/CHF</option><option>NZD/JPY</option><option>NZD/USD</option>
+          <option>USD/CAD</option><option>USD/CHF</option><option>USD/JPY</option><option>XAU/USD</option>
         </select>
       </div>
-      <div class="fld">
-        <label>Direction</label>
+      <div class="fld"><label>Direction</label>
         <select class="sel-i" id="j-dir"><option>Buy</option><option>Sell</option></select>
       </div>
     </div>
@@ -523,13 +670,9 @@ body{font-family:'Syne',sans-serif;background:var(--bg);color:var(--tx);min-heig
     </div>
     <div class="row2">
       <div class="fld"><label>Take profit</label><input class="inp" id="j-tp" type="number" step="any" placeholder="e.g. 1.09100"></div>
-      <div class="fld">
-        <label>Result</label>
+      <div class="fld"><label>Result</label>
         <select class="sel-i" id="j-result">
-          <option value="open">Open</option>
-          <option value="win">Win</option>
-          <option value="loss">Loss</option>
-          <option value="be">Breakeven</option>
+          <option value="open">Open</option><option value="win">Win</option><option value="loss">Loss</option><option value="be">Breakeven</option>
         </select>
       </div>
     </div>
@@ -537,19 +680,18 @@ body{font-family:'Syne',sans-serif;background:var(--bg);color:var(--tx);min-heig
     <div class="fld"><label>Notes</label><textarea class="ta" id="j-notes" placeholder="Setup, what worked, what to improve..." style="min-height:70px"></textarea></div>
     <button class="sb" onclick="addTrade()">+ Log trade</button>
   </div>
-
   <div class="cl" style="margin-bottom:10px">Trade history</div>
-  <div id="trade-log"></div>
+  <div id="trade-log"><div class="empty-j">No trades logged yet.<br>Log your first trade above.</div></div>
 </div>
 
-<!-- ══ CHECKLIST ══════════════════════════════════════ -->
+<!-- ══ CHECKLIST ══ -->
 <div id="checklist" class="sec">
   <div class="st">Pre-trade checklist</div>
   <div class="ss">Tick off before every entry</div>
   <div class="card">
     <div class="ci" onclick="tc(this)"><div class="ck"></div><div class="clb">Checked weekly bias and trend direction</div></div>
     <div class="ci" onclick="tc(this)"><div class="ck"></div><div class="clb">Identified key support and resistance levels</div></div>
-    <div class="ci" onclick="tc(this)"><div class="ck"></div><div class="clb">Checked economic calendar for todays news</div></div>
+    <div class="ci" onclick="tc(this)"><div class="ck"></div><div class="clb">Checked economic calendar for today's news</div></div>
     <div class="ci" onclick="tc(this)"><div class="ck"></div><div class="clb">Risk per trade set to 1–2% of account only</div></div>
     <div class="ci" onclick="tc(this)"><div class="ck"></div><div class="clb">Stop-loss level defined before entering</div></div>
     <div class="ci" onclick="tc(this)"><div class="ck"></div><div class="clb">Take-profit target set – minimum 1:2 risk/reward</div></div>
@@ -560,7 +702,6 @@ body{font-family:'Syne',sans-serif;background:var(--bg);color:var(--tx);min-heig
     <div class="ci" onclick="tc(this)"><div class="ck"></div><div class="clb">Trade logged in journal before entering</div></div>
   </div>
   <button class="rb" onclick="rc()">↺ Reset all</button>
-
   <div style="margin-top:28px">
     <div class="st" style="font-size:18px">Position size calculator</div>
     <div class="ss" style="margin-bottom:14px">AUD account · approximate only</div>
@@ -570,30 +711,19 @@ body{font-family:'Syne',sans-serif;background:var(--bg);color:var(--tx);min-heig
         <div class="fld"><label>Risk % per trade</label><input class="inp" id="c-risk" type="number" value="1" step="0.1" min="0.1" max="10" placeholder="1"></div>
       </div>
       <div class="row2">
-        <div class="fld">
-          <label>Pair</label>
+        <div class="fld"><label>Pair</label>
           <select class="sel-i" id="c-pair" onchange="updateCalcHint()">
-            <option>AUD/USD</option><option>AUD/CAD</option><option>AUD/CHF</option>
-            <option>AUD/JPY</option><option>AUD/NZD</option><option>CAD/CHF</option>
-            <option>CAD/JPY</option><option>CHF/JPY</option><option>EUR/AUD</option>
-            <option>EUR/CAD</option><option>EUR/CHF</option><option>EUR/GBP</option>
-            <option>EUR/JPY</option><option>EUR/NZD</option><option>EUR/USD</option>
-            <option>GBP/AUD</option><option>GBP/CAD</option><option>GBP/CHF</option>
-            <option>GBP/JPY</option><option>GBP/NZD</option><option>GBP/USD</option>
-            <option>NZD/CAD</option><option>NZD/CHF</option><option>NZD/JPY</option>
-            <option>NZD/USD</option><option>USD/CAD</option><option>USD/CHF</option>
-            <option>USD/JPY</option><option>XAU/USD</option>
+            <option>AUD/USD</option><option>AUD/CAD</option><option>AUD/CHF</option><option>AUD/JPY</option><option>AUD/NZD</option>
+            <option>CAD/CHF</option><option>CAD/JPY</option><option>CHF/JPY</option>
+            <option>EUR/AUD</option><option>EUR/CAD</option><option>EUR/CHF</option><option>EUR/GBP</option><option>EUR/JPY</option><option>EUR/NZD</option><option>EUR/USD</option>
+            <option>GBP/AUD</option><option>GBP/CAD</option><option>GBP/CHF</option><option>GBP/JPY</option><option>GBP/NZD</option><option>GBP/USD</option>
+            <option>NZD/CAD</option><option>NZD/CHF</option><option>NZD/JPY</option><option>NZD/USD</option>
+            <option>USD/CAD</option><option>USD/CHF</option><option>USD/JPY</option><option>XAU/USD</option>
           </select>
         </div>
-        <div class="fld">
-          <label>Stop loss (pips)</label>
-          <input class="inp" id="c-sl" type="number" value="20" placeholder="20">
-        </div>
+        <div class="fld"><label>Stop loss (pips)</label><input class="inp" id="c-sl" type="number" value="20" placeholder="20"></div>
       </div>
-      <div class="fld">
-        <label>AUD/USD rate (approx)</label>
-        <input class="inp" id="c-audusd" type="number" value="0.645" step="0.001" placeholder="0.645">
-      </div>
+      <div class="fld"><label>AUD/USD rate (approx)</label><input class="inp" id="c-audusd" type="number" value="0.645" step="0.001" placeholder="0.645"></div>
       <div class="hint" id="c-hint">For most pairs: 1 pip = 0.0001 price move. For JPY pairs: 1 pip = 0.01.</div>
       <button class="sb" onclick="calcPos()">Calculate lot size</button>
       <div class="calc-out" id="calc-out">
@@ -607,32 +737,62 @@ body{font-family:'Syne',sans-serif;background:var(--bg);color:var(--tx);min-heig
   </div>
 </div>
 
-<!-- ══ REVIEW ══════════════════════════════════════ -->
+<!-- ══ REVIEW ══ -->
 <div id="review" class="sec">
-  <div class="st">Trade idea review</div>
-  <div class="ss">Describe your setup · get instant AI feedback</div>
-  <div class="card">
-    <div class="cl">Your trade idea</div>
-    <textarea class="ta" id="ti" placeholder="e.g. I want to buy AUD/USD at 0.6900 SL 0.6870 TP 0.6960 — daily trend bullish, price just bounced off key support"></textarea>
-    <br><button class="sb" id="rbtn" onclick="revT()">Review my trade</button>
-    <div id="rr" style="margin-top:14px"></div>
+  <div class="st">Trade review</div>
+  <div class="ss">AI-powered feedback on your trades</div>
+  <div class="review-subtabs">
+    <button class="rsub active" onclick="showReviewSub('review-idea',this)">Trade idea review</button>
+    <button class="rsub" onclick="showReviewSub('review-past',this)">Past trade review</button>
   </div>
-  <div class="card" style="margin-bottom:0">
-    <div class="cl">Disclaimer</div>
-    <div class="cb">AI analysis is a thinking tool, not financial advice. Always confirm setups on your own charts before trading.</div>
+  <!-- Trade idea -->
+  <div id="review-idea" class="review-sub active">
+    <div class="card">
+      <div class="cl">Your trade idea</div>
+      <textarea class="ta" id="ti" placeholder="e.g. I want to buy AUD/USD at 0.6900 SL 0.6870 TP 0.6960 — daily trend bullish, price just bounced off key support"></textarea>
+      <br><button class="sb" id="rbtn" onclick="revT()">Review my trade</button>
+      <div id="rr" style="margin-top:14px"></div>
+    </div>
+    <div class="card" style="margin-bottom:0">
+      <div class="cl">Disclaimer</div>
+      <div class="cb">AI analysis is a thinking tool, not financial advice. Always confirm setups on your own charts before trading.</div>
+    </div>
+  </div>
+  <!-- Past trade review -->
+  <div id="review-past" class="review-sub">
+    <div class="card">
+      <div class="cl">Upload a past trade chart</div>
+      <div class="cb" style="margin-bottom:16px">Upload a screenshot of a completed trade. AI will analyse why it went well or poorly and what to improve.</div>
+      <div class="img-drop" id="ptr-dropzone" onclick="document.getElementById('ptr-img').click()" ondragover="event.preventDefault();this.classList.add('dragover')" ondragleave="this.classList.remove('dragover')" ondrop="handlePtrDrop(event)">
+        <div class="img-drop-icon">📈</div>
+        <div class="img-drop-lbl">Tap to upload chart screenshot</div>
+        <div class="img-drop-sub">PNG, JPG or GIF · max 5MB</div>
+      </div>
+      <input type="file" id="ptr-img" accept="image/*" onchange="handlePtrFile(this)">
+      <img id="ptr-preview" class="img-preview" alt="Chart preview">
+      <div class="fld" style="margin-top:4px">
+        <label>Trade notes (optional)</label>
+        <textarea class="ta" id="ptr-notes" placeholder="e.g. Bought GBP/USD at 1.2750, SL 1.2700, hit TP at 1.2850. Entered on 4H breakout." style="min-height:70px"></textarea>
+      </div>
+      <button class="sb" id="ptr-btn" onclick="revPastTrade()">Analyse this trade</button>
+      <div id="ptr-result" style="margin-top:14px"></div>
+    </div>
+    <div class="card" style="margin-bottom:0">
+      <div class="cl">Disclaimer</div>
+      <div class="cb">AI analysis is educational only. Past performance does not guarantee future results.</div>
+    </div>
   </div>
 </div>
 
-<!-- ══ MAPS ══════════════════════════════════════ -->
+<!-- ══ MAPS ══ -->
 <div id="maps" class="sec">
   <div class="st">Market maps</div>
-  <div class="ss">Heat map · Sentiment · Correlation · live market data</div>
+  <div class="ss">Heat map · Sentiment · Correlation · live data</div>
   <div class="map-tabs">
     <button class="map-tb mt-heat active" onclick="showMap('heatmap',this)">🌡 Heat Map</button>
     <button class="map-tb mt-sent" onclick="showMap('sentiment',this)">📊 Sentiment</button>
     <button class="map-tb mt-corr" onclick="showMap('correlation',this)">🔗 Correlation</button>
   </div>
-
   <!-- Heat Map -->
   <div id="heatmap" class="map-panel active">
     <div style="display:flex;gap:6px;margin-bottom:12px">
@@ -640,51 +800,68 @@ body{font-family:'Syne',sans-serif;background:var(--bg);color:var(--tx);min-heig
       <button class="hm-vtab" onclick="showHMView('hm-matrix',this)">Majors Matrix</button>
     </div>
     <div id="hm-pips" class="hm-view active">
-      <div class="card" style="padding:0;overflow:hidden;box-shadow:0 0 0 1px var(--bd2),0 8px 32px rgba(0,0,0,0.45)">
-        <div id="hm-body"><div class="ld"><div class="sp"></div>Loading pip changes...</div></div>
+      <div class="card" style="padding:0;overflow:hidden">
+        <div id="hm-body"><div class="ld" style="padding:20px"><div class="sp"></div>Loading pip data…</div></div>
       </div>
     </div>
     <div id="hm-matrix" class="hm-view">
-      <div class="card" style="padding:0;overflow:hidden;box-shadow:0 0 0 1px var(--bd2),0 8px 32px rgba(0,0,0,0.45)">
-        <div id="hm-mat-body"><div class="ld"><div class="sp"></div>Building matrix...</div></div>
+      <div class="card" style="padding:0;overflow:hidden">
+        <div id="hm-mat-body"><div class="ld" style="padding:20px"><div class="sp"></div>Loading matrix…</div></div>
       </div>
       <div class="meta" style="margin-top:8px">Daily % change · each row currency vs each column currency</div>
     </div>
-    <div class="map-src">Rates: <a href="https://frankfurter.dev" target="_blank" rel="noopener">Frankfurter API (ECB)</a> · daily, weekly, monthly pip changes</div>
+    <div class="map-src">Rates: <a href="https://frankfurter.dev/" target="_blank" rel="noopener">Frankfurter API (ECB)</a></div>
   </div>
-
   <!-- Sentiment -->
   <div id="sentiment" class="map-panel">
-    <div class="card" style="box-shadow:0 0 0 1px var(--bd2),0 8px 32px rgba(0,0,0,0.45)">
+    <div class="card">
       <div class="cl">AI Market Sentiment</div>
-      <div id="sent-body"><div class="ld"><div class="sp"></div>Analysing sentiment...</div></div>
+      <div id="sent-body"><div class="ld"><div class="sp"></div>Loading sentiment…</div></div>
     </div>
     <div class="map-src">Analysis: Claude AI via proxy · not financial advice · educational only</div>
   </div>
-
   <!-- Correlation -->
   <div id="correlation" class="map-panel">
-    <div class="card" style="padding:0;overflow:hidden;box-shadow:0 0 0 1px var(--bd2),0 8px 32px rgba(0,0,0,0.45)">
+    <div class="card" style="padding:0;overflow:hidden">
       <div style="padding:14px 16px 10px;border-bottom:1px solid var(--bd)">
         <div class="cl" style="margin-bottom:2px">Correlation Matrix</div>
         <div style="font-size:12px;color:var(--mt)">60-day rolling · −100% = opposite · +100% = same direction</div>
       </div>
-      <div id="corr-body" style="padding:16px"><div class="ld"><div class="sp"></div>Calculating correlations...</div></div>
+      <div id="corr-body" style="padding:16px"><div class="ld"><div class="sp"></div>Loading correlations…</div></div>
     </div>
-    <div class="map-src">Rates: <a href="https://frankfurter.dev" target="_blank" rel="noopener">Frankfurter API (ECB)</a> · 60-day rolling window</div>
+    <div class="map-src">Rates: <a href="https://frankfurter.dev/" target="_blank" rel="noopener">Frankfurter API (ECB)</a></div>
   </div>
 </div>
 
-<!-- ══ ABOUT ══════════════════════════════════════ -->
+<!-- ══ SCANNER ══ -->
+<div id="scanner" class="sec">
+  <div class="st">Trade scanner</div>
+  <div class="ss">AI cross-references sentiment, correlation, weekly &amp; daily analysis to surface high-probability setups</div>
+  <div class="scanner-intro">
+    <div class="cb">The scanner analyses all major pairs using current market sentiment, technical structure, and inter-market correlations to identify the highest-probability setups right now.</div>
+    <div class="scan-controls">
+      <button class="sb" id="scan-btn" onclick="runScanner()">🔍 Run scanner</button>
+      <span class="meta" id="scan-meta"></span>
+    </div>
+  </div>
+  <div id="scan-results">
+    <div class="scan-empty">
+      <div class="scan-icon">🔍</div>
+      <div>Tap <strong>Run scanner</strong> to find high-probability setups across all major pairs.</div>
+    </div>
+  </div>
+</div>
+
+<!-- ══ ABOUT ══ -->
 <div id="about" class="sec">
   <div class="st">About ForexHub</div>
   <div class="ss">Your daily forex companion</div>
   <div class="card">
-    <div class="ai"><div class="aq">How does the analysis work?</div><div class="aa">ForexHub sends prompts to Claude AI via a Cloudflare Worker with live web search. All 29 pairs are available across Daily and Weekly tabs.</div></div>
-    <div class="ai"><div class="aq">How often should I refresh?</div><div class="aa">Daily tab: each morning AEST. Weekly tab: Monday before markets open. Calendar: once per week on Monday.</div></div>
+    <div class="ai"><div class="aq">How does the analysis work?</div><div class="aa">ForexHub sends prompts to Claude AI via a Cloudflare Worker with live web search. All 29 pairs are available across Daily, Weekly, and 4-Hour tabs.</div></div>
+    <div class="ai"><div class="aq">How do I remove the PIN gate?</div><div class="aa">The PIN is "2025". To remove it permanently for public access, delete the pin-gate div and the checkPin() / initPin() functions from the HTML source.</div></div>
+    <div class="ai"><div class="aq">How often should I refresh?</div><div class="aa">Daily tab: each morning AEST. Weekly tab: Monday before markets open. 4H tab: before intraday sessions. Calendar: once per week on Monday.</div></div>
     <div class="ai"><div class="aq">Where is my journal stored?</div><div class="aa">Your trade journal is saved in your browser's localStorage. It never leaves your device and persists across sessions.</div></div>
-    <div class="ai"><div class="aq">What session should I trade from Brisbane?</div><div class="aa">London (6pm–3am AEST) and the London/NY overlap (11pm–3am AEST) offer the highest volume for most pairs. Sydney session (8am–5pm) is best for AUD and NZD pairs.</div></div>
-    <div class="ai"><div class="aq">How accurate is the position size calculator?</div><div class="aa">It uses approximate pip values per pair type. Always confirm the final lot size with your broker's own calculator before trading.</div></div>
+    <div class="ai"><div class="aq">What session should I trade from Brisbane?</div><div class="aa">London (6pm–3am AEST) and the London/NY overlap (11pm–3am AEST) offer the highest volume. Sydney session (8am–5pm) is best for AUD and NZD pairs.</div></div>
     <div class="ai"><div class="aq">Is this financial advice?</div><div class="aa">No. ForexHub is an educational tool only. Always consult a licensed financial adviser before trading.</div></div>
     <div class="ai"><div class="aq">Recommended ASIC-regulated brokers?</div><div class="aa">Pepperstone, IC Markets, and IG Markets are popular choices for Australian forex traders.</div></div>
   </div>
@@ -692,584 +869,987 @@ body{font-family:'Syne',sans-serif;background:var(--bg);color:var(--tx);min-heig
 
 </div><!-- /.main -->
 
+<!-- ══ BOTTOM A2HS BANNER ══ -->
+<div id="ibanner" class="bn-bottom" style="display:none">
+  <div class="bnt2"><strong>Add to home screen</strong> – tap your browser menu → Add to Home Screen to use ForexHub as an app.</div>
+  <button class="bnc" onclick="dismissBanner()">×</button>
+</div>
+
+<!-- ══ CALENDAR DETAIL POPUP ══ -->
+<div id="cal-popup" class="cal-popup-overlay" style="display:none" onclick="if(event.target===this)closeCalPopup()">
+  <div class="cal-popup">
+    <div class="cpop-hdr">
+      <div class="cpop-title" id="cpop-title"></div>
+      <button class="cpop-close" onclick="closeCalPopup()">×</button>
+    </div>
+    <div class="cpop-row">
+      <span id="cpop-badge"></span>
+      <span id="cpop-ccy-tag"></span>
+      <span id="cpop-time" style="margin-left:auto"></span>
+    </div>
+    <div class="cpop-desc" id="cpop-desc"></div>
+    <div class="cpop-explain" id="cpop-explain" style="display:none"></div>
+  </div>
+</div>
 <script>
-// ══ CONFIG ══
-var WU  = "https://forexproxy.jlivo10.workers.dev/api";
+/* ══════════════════════════════════════
+   CONFIG
+══════════════════════════════════════ */
+var WU   = "https://forexproxy.jlivo10.workers.dev/api";
 var cache = {};
 var now  = new Date();
-var DAYS = ["Sun","Mon","Tue","Wed","Thu","Fri","Sat"];
-var MTHS = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
-var cD   = "AUDCAD";
-var cW   = "AUDCAD";
+var cD   = "AUDUSD";
+var cW   = "AUDUSD";
+var c4   = "EURJPY";
 var hmLoaded=false, sentLoaded=false, corrLoaded=false;
 
-// ══ PAIR LABELS ══
-var PL = {
-  AUDUSD:"AUD/USD",AUDCAD:"AUD/CAD",AUDCHF:"AUD/CHF",AUDJPY:"AUD/JPY",AUDNZD:"AUD/NZD",
-  CADCHF:"CAD/CHF",CADJPY:"CAD/JPY",CHFJPY:"CHF/JPY",
-  EURAUD:"EUR/AUD",EURCAD:"EUR/CAD",EURCHF:"EUR/CHF",EURGBP:"EUR/GBP",EURJPY:"EUR/JPY",EURNZD:"EUR/NZD",EURUSD:"EUR/USD",
-  GBPAUD:"GBP/AUD",GBPCAD:"GBP/CAD",GBPCHF:"GBP/CHF",GBPJPY:"GBP/JPY",GBPNZD:"GBP/NZD",GBPUSD:"GBP/USD",
-  NZDCAD:"NZD/CAD",NZDCHF:"NZD/CHF",NZDJPY:"NZD/JPY",NZDUSD:"NZD/USD",
-  USDCAD:"USD/CAD",USDCHF:"USD/CHF",USDJPY:"USD/JPY",
-  XAUUSD:"XAU/USD (Gold)"
+var CCY_COLORS = {
+  'USD':'#ef4444','EUR':'#60a5fa','GBP':'#818cf8',
+  'AUD':'#86efac','NZD':'#2dd4bf','CAD':'#fb923c',
+  'CHF':'#cbd5e1','JPY':'#fbbf24','CNH':'#f472b6','XAU':'#fbbf24'
 };
 
-// ══ HEADER DATE ══
-document.getElementById("hdate").innerHTML =
-  DAYS[now.getDay()]+" "+now.getDate()+" "+MTHS[now.getMonth()]+" "+now.getFullYear();
+var PAIR_SESSIONS = {
+  sydney:  ['AUD/USD','AUD/JPY','AUD/NZD','AUD/CAD','AUD/CHF','NZD/USD','NZD/JPY','NZD/CHF'],
+  tokyo:   ['USD/JPY','EUR/JPY','GBP/JPY','AUD/JPY','CAD/JPY','CHF/JPY','NZD/JPY','XAU/USD'],
+  london:  ['EUR/USD','GBP/USD','EUR/GBP','EUR/CHF','GBP/CHF','EUR/JPY','GBP/JPY','USD/CHF'],
+  ny:      ['EUR/USD','GBP/USD','USD/CAD','USD/CHF','USD/JPY','EUR/CAD','GBP/CAD','XAU/USD'],
+  overlap: ['EUR/USD','GBP/USD','EUR/JPY','GBP/JPY','USD/JPY','EUR/GBP','GBP/CHF','XAU/USD']
+};
 
-// ══ NAV ══
-function showS(id, btn) {
-  document.querySelectorAll(".sec").forEach(function(s){s.classList.remove("active");});
-  document.querySelectorAll(".nb").forEach(function(b){b.classList.remove("active");});
-  document.getElementById(id).classList.add("active");
-  btn.classList.add("active");
-  document.body.setAttribute("data-sect", id);
-  if(id==="sessions") startSessions();
-  if(id==="journal")  renderJournal();
-  if(id==="calendar") loadCal();
-  if(id==="maps" && !hmLoaded) { hmLoaded=true; loadHeatMap(); }
+/* ══════════════════════════════════════
+   PIN GATE  (Amendment 2)
+══════════════════════════════════════ */
+var CORRECT_PIN = "2025";
+function initPin(){
+  if(sessionStorage.getItem('fh_pin')==='ok'){
+    document.getElementById('pin-gate').style.display='none';
+  }
 }
-function showHMView(id,btn){
-  document.querySelectorAll('.hm-view').forEach(function(v){v.classList.remove('active');});
-  document.querySelectorAll('.hm-vtab').forEach(function(b){b.classList.remove('active');});
-  document.getElementById(id).classList.add('active');
-  btn.classList.add('active');
-}
-function showMap(id, btn) {
-  document.querySelectorAll(".map-panel").forEach(function(p){p.classList.remove("active");});
-  document.querySelectorAll(".map-tb").forEach(function(b){b.classList.remove("active");});
-  document.getElementById(id).classList.add("active");
-  btn.classList.add("active");
-  if(id==="heatmap"     && !hmLoaded)   { hmLoaded=true;   loadHeatMap(); }
-  if(id==="sentiment"   && !sentLoaded) { sentLoaded=true;  loadSentiment(); }
-  if(id==="correlation" && !corrLoaded) { corrLoaded=true;  loadCorrelation(); }
-}
-function spa(rid, btn) {
-  document.getElementById(rid).querySelectorAll(".pp").forEach(function(b){b.classList.remove("active");});
-  btn.classList.add("active");
+function checkPin(){
+  var v=document.getElementById('pin-input').value.trim();
+  if(v===CORRECT_PIN){
+    sessionStorage.setItem('fh_pin','ok');
+    document.getElementById('pin-gate').style.display='none';
+  } else {
+    document.getElementById('pin-err').textContent='Incorrect PIN. Try again.';
+    document.getElementById('pin-input').value='';
+    document.getElementById('pin-input').focus();
+  }
 }
 
-// ══ HELPERS ══
-function fmt(t) {
-  return t.replace(/\*\*(.*?)\*\*/g,"<strong>$1</strong>")
-          .replace(/\n\n/g,"<br><br>").replace(/\n/g,"<br>");
+/* ══════════════════════════════════════
+   A2HS BANNER – bottom, localStorage  (Amendment 1)
+══════════════════════════════════════ */
+function initBanner(){
+  if(localStorage.getItem('fh_banner_dismissed')==='1') return;
+  var bn=document.getElementById('ibanner');
+  if(bn) bn.style.display='flex';
 }
-function btag(w) {
-  var v=(w||"").toLowerCase();
-  if(v.indexOf("bull")>=0||v.indexOf("buy")>=0||v.indexOf("long")>=0)  return "<span class='bt bbuy'>BULLISH / BUY</span>";
-  if(v.indexOf("bear")>=0||v.indexOf("sell")>=0||v.indexOf("short")>=0) return "<span class='bt bsel'>BEARISH / SELL</span>";
-  if(v.indexOf("wait")>=0||v.indexOf("range")>=0)                       return "<span class='bt bwt'>WAIT / RANGE</span>";
-  return "<span class='bt bnt'>NEUTRAL</span>";
-}
-function se(id,h){var e=document.getElementById(id);if(e)e.innerHTML=h;}
-function ld(m){return "<div class='ld'><div class='sp'></div>"+m+"</div>";}
-function eb(m){return "<div class='eb'>"+m+"</div>";}
-function extract(t,a,b){var si=t.indexOf(a);if(si<0)return "";si+=a.length;var ei=b?t.indexOf(b,si):-1;return ei<0?t.substring(si).trim():t.substring(si,ei).trim();}
-async function cc(p){
-  var r=await fetch(WU,{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({prompt:p})});
-  var d=await r.json();
-  if(!d||typeof d.text==="undefined") throw new Error(JSON.stringify(d));
-  if(d.error) throw new Error(d.error);
-  return d.text||"";
-}
-function getWeekNum(){
-  var d=new Date(Date.UTC(now.getFullYear(),now.getMonth(),now.getDate()));
-  var dn=d.getUTCDay()||7;d.setUTCDate(d.getUTCDate()+4-dn);
-  var ys=new Date(Date.UTC(d.getUTCFullYear(),0,1));
-  return Math.ceil((((d-ys)/86400000)+1)/7);
+function dismissBanner(){
+  localStorage.setItem('fh_banner_dismissed','1');
+  var bn=document.getElementById('ibanner');
+  if(bn) bn.style.display='none';
 }
 
-// ══ DAILY ══
-async function loadD(pair, btn) {
-  if(btn) spa("dpr",btn); else cD=pair;
+/* ══════════════════════════════════════
+   HEADER DATE
+══════════════════════════════════════ */
+function updateDate(){
+  var d=new Date();
+  var opts={weekday:'short',year:'numeric',month:'short',day:'numeric',timeZone:'Australia/Brisbane'};
+  var ds=d.toLocaleDateString('en-AU',opts);
+  var ts=d.toLocaleTimeString('en-AU',{hour:'2-digit',minute:'2-digit',timeZone:'Australia/Brisbane',hour12:false});
+  var el=document.getElementById('hdate');
+  if(el) el.textContent=ds+' · '+ts+' AEST';
+}
+
+/* ══════════════════════════════════════
+   SECTION NAV
+══════════════════════════════════════ */
+function showS(id,btn){
+  document.querySelectorAll('.sec').forEach(function(s){s.classList.remove('active')});
+  document.querySelectorAll('.nb').forEach(function(b){b.classList.remove('active')});
+  var el=document.getElementById(id);
+  if(el) el.classList.add('active');
+  if(btn) btn.classList.add('active');
+  document.body.setAttribute('data-sect',id);
+  // lazy-load on first visit
+  if(id==='sessions') renderSessions();
+  if(id==='calendar' && !calLoaded) loadCalendar();
+  if(id==='maps'){
+    if(!hmLoaded) loadHeatMap();
+    if(!sentLoaded) loadSentiment();
+    if(!corrLoaded) loadCorrelation();
+  }
+}
+
+/* Analysis sub-tabs  (Amendment 7) */
+function showAnalysisSub(id,btn){
+  document.querySelectorAll('.analysis-sub').forEach(function(s){s.classList.remove('active')});
+  document.querySelectorAll('.asub').forEach(function(b){b.classList.remove('active')});
+  var el=document.getElementById(id);
+  if(el) el.classList.add('active');
+  if(btn) btn.classList.add('active');
+}
+/* Review sub-tabs (Amendment 9) */
+function showReviewSub(id,btn){
+  document.querySelectorAll('.review-sub').forEach(function(s){s.classList.remove('active')});
+  document.querySelectorAll('.rsub').forEach(function(b){b.classList.remove('active')});
+  var el=document.getElementById(id);
+  if(el) el.classList.add('active');
+  if(btn) btn.classList.add('active');
+}
+
+/* ══════════════════════════════════════
+   AI CALL HELPER
+══════════════════════════════════════ */
+async function ai(prompt,cacheKey){
+  if(cacheKey && cache[cacheKey]) return cache[cacheKey];
+  var res=await fetch(WU,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({prompt:prompt})});
+  if(!res.ok) throw new Error('API '+res.status);
+  var d=await res.json();
+  var txt=d.text||d.content&&d.content[0]&&d.content[0].text||'No response';
+  if(cacheKey) cache[cacheKey]=txt;
+  return txt;
+}
+async function aiImage(prompt,imageB64,mimeType){
+  var res=await fetch(WU,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({prompt:prompt,image:imageB64,mimeType:mimeType||'image/png'})});
+  if(!res.ok) throw new Error('API '+res.status);
+  var d=await res.json();
+  return d.text||d.content&&d.content[0]&&d.content[0].text||'No response';
+}
+
+/* ══════════════════════════════════════
+   MARKDOWN → HTML
+══════════════════════════════════════ */
+function md(t){
+  return t
+    .replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')
+    .replace(/\*\*(.+?)\*\*/g,'<strong>$1</strong>')
+    .replace(/\*(.+?)\*/g,'<em>$1</em>')
+    .replace(/^### (.+)$/gm,'<div style="font-size:13px;font-weight:700;color:var(--ac);margin:14px 0 6px;letter-spacing:0.04em;text-transform:uppercase;">$1</div>')
+    .replace(/^## (.+)$/gm,'<div style="font-size:14px;font-weight:700;color:var(--tx);margin:14px 0 6px;">$1</div>')
+    .replace(/^# (.+)$/gm,'<div style="font-size:15px;font-weight:700;color:var(--tx);margin:14px 0 8px;">$1</div>')
+    .replace(/^[-•] (.+)$/gm,'<div style="padding:3px 0 3px 12px;border-left:2px solid var(--bd2);">$1</div>')
+    .replace(/\n\n/g,'<br>')
+    .replace(/\n/g,'<br>');
+}
+
+/* ══════════════════════════════════════
+   KEY LEVELS MINI-CHART  (Amendment 7)
+══════════════════════════════════════ */
+function buildMiniChart(pair,bias){
+  // Simple SVG price-level illustration
+  var c=document.createElement('canvas');
+  c.width=68;c.height=120;c.style.cssText='border-radius:6px;background:#1a1a1a;display:block';
+  var ctx=c.getContext('2d');
+  ctx.fillStyle='#1a1a1a';
+  ctx.fillRect(0,0,68,120);
+  // Draw notional resistance/support lines
+  var isLong=bias.toLowerCase().includes('buy')||bias.toLowerCase().includes('bull');
+  var res_y=25,ent_y=60,sup_y=95;
+  ctx.strokeStyle='rgba(248,113,113,0.5)';ctx.lineWidth=1;ctx.setLineDash([3,3]);
+  ctx.beginPath();ctx.moveTo(8,res_y);ctx.lineTo(60,res_y);ctx.stroke();
+  ctx.setLineDash([]);
+  ctx.strokeStyle='rgba(200,241,53,0.8)';ctx.lineWidth=1.5;
+  ctx.beginPath();ctx.moveTo(8,ent_y);ctx.lineTo(60,ent_y);ctx.stroke();
+  ctx.strokeStyle='rgba(74,222,128,0.5)';ctx.lineWidth=1;ctx.setLineDash([3,3]);
+  ctx.beginPath();ctx.moveTo(8,sup_y);ctx.lineTo(60,sup_y);ctx.stroke();
+  ctx.setLineDash([]);
+  // Arrow
+  var col=isLong?'#4ade80':'#f87171';
+  ctx.fillStyle=col;
+  if(isLong){ctx.beginPath();ctx.moveTo(34,sup_y-6);ctx.lineTo(30,sup_y-2);ctx.lineTo(38,sup_y-2);ctx.fill();}
+  else{ctx.beginPath();ctx.moveTo(34,res_y+6);ctx.lineTo(30,res_y+2);ctx.lineTo(38,res_y+2);ctx.fill();}
+  // Labels
+  ctx.font='7px DM Mono,monospace';
+  ctx.fillStyle='rgba(248,113,113,0.8)';ctx.textAlign='right';ctx.fillText('R',62,res_y-2);
+  ctx.fillStyle='rgba(200,241,53,0.9)';ctx.fillText('E',62,ent_y-2);
+  ctx.fillStyle='rgba(74,222,128,0.8)';ctx.fillText('S',62,sup_y-2);
+  return c;
+}
+
+/* ══════════════════════════════════════
+   DAILY ANALYSIS  (Amendment 3 – bolder text)
+══════════════════════════════════════ */
+function setDLoading(){
+  document.getElementById('db').innerHTML='<div class="ld"><div class="sp"></div>Fetching bias…</div>';
+  document.getElementById('dl').innerHTML='<div class="ld"><div class="sp"></div></div>';
+  document.getElementById('dw').innerHTML='';
+  document.getElementById('dm').textContent='';
+  document.getElementById('dl-chart').innerHTML='';
+}
+async function loadD(pair,btn){
   cD=pair;
-  var k="D_"+pair+"_"+now.toDateString();
-  se("db",ld("Generating analysis..."));
-  se("dl",ld("Fetching key levels..."));
-  se("dw",ld("Scanning events..."));
-  se("dm","");
-  if(cache[k]){rdD(cache[k]);return;}
+  if(btn){
+    document.querySelectorAll('#dpr .pp').forEach(function(b){b.classList.remove('active')});
+    btn.classList.add('active');
+  }
+  setDLoading();
+  var p=pair.slice(0,3)+'/'+pair.slice(3);
+  var bias='';
   try{
-    var lbl=PL[pair]||pair;
-    var t=await cc("You are a professional forex analyst. Today is "+now.toDateString()+" (Brisbane AEST). Search the web for the latest "+lbl+" price and market news.\nProvide a concise daily analysis using EXACTLY these section headers:\nBIAS: [single word only: Bullish, Bearish, or Neutral]\nTODAY_BIAS: [2-3 sentences on directional bias for today]\nKEY_LEVELS: [2-3 sentences on key support and resistance]\nWATCH_TODAY: [2-3 sentences on events or catalysts to watch today]");
-    cache[k]=t; rdD(t);
-  }catch(e){se("db",eb("Could not load: "+e.message));se("dl","");se("dw","");}
-}
-function rdD(t){
-  var bias=extract(t,"BIAS:","TODAY_BIAS:")||"Neutral";
-  if(bias.indexOf("\n")>=0) bias=bias.split("\n")[0];
-  se("db",btag(bias)+"<div class='cb'>"+fmt(extract(t,"TODAY_BIAS:","KEY_LEVELS:"))+"</div>");
-  se("dl","<div class='cb'>"+fmt(extract(t,"KEY_LEVELS:","WATCH_TODAY:"))+"</div>");
-  se("dw","<div class='cb'>"+fmt(extract(t,"WATCH_TODAY:",""))+"</div>");
-  se("dm","Generated "+new Date().toLocaleTimeString("en-AU",{hour:"2-digit",minute:"2-digit"})+" AEST · Not financial advice");
-}
-function forceD(){delete cache["D_"+cD+"_"+now.toDateString()];loadD(cD,null);}
-
-// ══ WEEKLY ══
-async function loadW(pair, btn) {
-  if(btn) spa("wpr",btn); else cW=pair;
-  cW=pair;
-  var wk=getWeekNum();
-  var k="W_"+pair+"_"+now.getFullYear()+"_"+wk;
-  se("wt",ld("Generating weekly outlook..."));
-  se("wtr",ld("Analysing trend..."));
-  se("we",ld("Loading events..."));
-  se("wm","");
-  if(cache[k]){rdW(cache[k]);return;}
-  try{
-    var lbl=PL[pair]||pair;
-    var t=await cc("You are a professional forex analyst. Today is "+now.toDateString()+". Search the web for the latest "+lbl+" weekly outlook.\nProvide a weekly analysis using EXACTLY these headers:\nWEEKLY_THEME: [2-3 sentences on the macro theme driving this pair this week]\nTREND_STRUCTURE: [2-3 sentences on the weekly trend and chart structure]\nWEEKLY_EVENTS: [2-3 sentences on key economic releases this week for this pair]");
-    cache[k]=t; rdW(t);
-  }catch(e){se("wt",eb("Could not load: "+e.message));se("wtr","");se("we","");}
-}
-function rdW(t){
-  se("wt","<div class='cb'>"+fmt(extract(t,"WEEKLY_THEME:","TREND_STRUCTURE:"))+"</div>");
-  se("wtr","<div class='cb'>"+fmt(extract(t,"TREND_STRUCTURE:","WEEKLY_EVENTS:"))+"</div>");
-  se("we","<div class='cb'>"+fmt(extract(t,"WEEKLY_EVENTS:",""))+"</div>");
-  se("wm","Week of "+now.toLocaleDateString("en-AU",{day:"numeric",month:"long",year:"numeric"})+" · Not financial advice");
-}
-function forceW(){delete cache["W_"+cW+"_"+now.getFullYear()+"_"+getWeekNum()];loadW(cW,null);}
-
-// ══ SESSIONS ══
-var SESS=[
-  {name:"Sydney",  flag:"🇦🇺", label:"08:00 – 17:00", start:8*60,  end:17*60},
-  {name:"Tokyo",   flag:"🇯🇵", label:"10:00 – 19:00", start:10*60, end:19*60},
-  {name:"London",  flag:"🇬🇧", label:"18:00 – 03:00", start:18*60, end:27*60},
-  {name:"New York",flag:"🇺🇸", label:"23:00 – 08:00", start:23*60, end:32*60}
-];
-var sessTimer=null;
-function startSessions(){
-  if(sessTimer) return;
-  renderSessions();
-  sessTimer=setInterval(renderSessions,1000);
-}
-function renderSessions(){
-  var n=new Date();
-  var aest=new Date(n.toLocaleString("en-US",{timeZone:"Australia/Brisbane"}));
-  var hh=aest.getHours().toString().padStart(2,"0");
-  var mm=aest.getMinutes().toString().padStart(2,"0");
-  var ss=aest.getSeconds().toString().padStart(2,"0");
-  document.getElementById("sess-clock").textContent=hh+":"+mm+":"+ss;
-  var cur=aest.getHours()*60+aest.getMinutes();
-  var sec=aest.getSeconds();
-  var lnActive=(cur>=23*60||cur<3*60);
-  var html="";
-  SESS.forEach(function(s){
-    var open=s.end>24*60
-      ? (cur>=s.start||cur<(s.end-24*60))
-      : (cur>=s.start&&cur<s.end);
-    var isOverlap=open&&lnActive&&(s.name==="London"||s.name==="New York");
-    var cardCls=isOverlap?"s-overlap":open?"s-open":"";
-    var badge=isOverlap
-      ?"<span class='sess-badge b-overlap'>OVERLAP</span>"
-      :open?"<span class='sess-badge b-open'>OPEN</span>"
-      :"<span class='sess-badge b-closed'>CLOSED</span>";
-    var diff;
-    if(open){
-      var endM=s.end>24*60?s.end-24*60:s.end;
-      if(s.end>24*60&&cur>=s.start) diff=(24*60-cur+endM)*60-sec;
-      else diff=(endM-cur)*60-sec;
-      if(diff<0) diff+=86400;
-    } else {
-      diff=(s.start-cur)*60-sec;
-      if(diff<0) diff+=86400;
-    }
-    var ch=Math.floor(diff/3600);
-    var cm=Math.floor((diff%3600)/60);
-    var cs=diff%60;
-    var cdLabel=open?"Closes in":"Opens in";
-    var cdStr=ch+"h "+cm.toString().padStart(2,"0")+"m "+cs.toString().padStart(2,"0")+"s";
-    html+="<div class='sess-card "+cardCls+"'>";
-    html+="<div class='sess-name'>"+s.flag+" "+s.name+"</div>";
-    html+="<div class='sess-time'>"+s.label+" AEST</div>";
-    html+=badge;
-    html+="<div class='sess-lbl'>"+cdLabel+"</div>";
-    html+="<div class='sess-cd'>"+cdStr+"</div>";
-    html+="</div>";
-  });
-  document.getElementById("sess-grid").innerHTML=html;
-}
-
-// ══ ECONOMIC CALENDAR ══
-async function loadCal(){
-  var wk=getWeekNum();
-  var k="CAL_"+now.getFullYear()+"_"+wk;
-  if(cache[k]){renderCal(cache[k]);return;}
-  se("cal-body",ld("Loading economic calendar..."));
-  se("cal-meta","");
-  try{
-    var weekStr=now.toLocaleDateString("en-AU",{day:"numeric",month:"long",year:"numeric"});
-    var t=await cc("You are a forex economic calendar expert. Today is "+now.toDateString()+". Search the web for confirmed economic events and data releases this week (week of "+weekStr+") that impact forex markets.\n\nList events day by day. Use EXACTLY this format for each event:\nDAY: [full day name e.g. Monday]\nEVENT: [Event Name] | [HH:MM UTC] | [Currency] | [HIGH or MED or LOW] | [one sentence description]\n\nInclude at least 12 events. Prioritise HIGH impact events for USD, EUR, GBP, AUD, NZD, CAD, JPY.");
-    cache[k]=t;
-    renderCal(t);
-    se("cal-meta","Generated "+new Date().toLocaleTimeString("en-AU",{hour:"2-digit",minute:"2-digit"})+" AEST · AI-generated · verify at forexfactory.com");
-  }catch(e){se("cal-body",eb("Could not load calendar: "+e.message));}
-}
-function forceCal(){
-  var wk=getWeekNum();
-  delete cache["CAL_"+now.getFullYear()+"_"+wk];
-  loadCal();
-}
-function renderCal(t){
-  var lines=t.split("\n");
-  var days={},order=[],cur=null;
-  lines.forEach(function(ln){
-    ln=ln.trim();
-    if(ln.startsWith("DAY:")){
-      cur=ln.substring(4).trim();
-      if(!days[cur]){days[cur]=[];order.push(cur);}
-    } else if(ln.startsWith("EVENT:")&&cur){
-      var p=ln.substring(6).trim().split("|");
-      if(p.length>=4) days[cur].push({name:p[0].trim(),time:p[1]?p[1].trim():"",ccy:p[2]?p[2].trim():"",imp:p[3]?p[3].trim().toLowerCase():"low",desc:p[4]?p[4].trim():""});
-    }
-  });
-  if(!order.length){se("cal-body","<div class='card'><div class='cb'>"+fmt(t)+"</div></div>");return;}
-  var html="";
-  order.forEach(function(day){
-    html+="<div class='cal-day'><div class='cal-day-hdr'>"+day+"</div>";
-    days[day].forEach(function(ev){
-      var ic=ev.imp.indexOf("high")>=0?"high":ev.imp.indexOf("med")>=0?"med":"low";
-      html+="<div class='cal-event'><div class='cal-imp "+ic+"'></div><div class='cal-text'>";
-      html+="<div class='cal-title'>"+ev.name+(ev.ccy?" <span style='color:var(--ac)'>"+ev.ccy+"</span>":"")+"</div>";
-      html+="<div class='cal-detail'>"+(ev.time?ev.time+" UTC":"")+(ev.time&&ev.desc?" · ":"")+(ev.desc||"")+"</div>";
-      html+="</div></div>";
+    var prompt='You are a professional forex analyst. Provide a concise DAILY analysis for '+p+' as of today '+new Date().toISOString().split('T')[0]+' AEST. Format exactly:\nBIAS: [BULLISH/BEARISH/NEUTRAL]\n\nKEY LEVELS:\n- Resistance 1: [price]\n- Resistance 2: [price]\n- Entry zone: [price range]\n- Support 1: [price]\n- Support 2: [price]\n\nWATCH TODAY:\n[2-3 bullet points on what to watch, catalysts, and specific entry triggers. Use **bold** for key terms.]\n\nBe specific with price levels. Keep it concise.';
+    var txt=await ai(prompt,'d:'+pair+':'+new Date().toDateString());
+    var lines=txt.split('\n');
+    var biasLine=lines.find(function(l){return l.startsWith('BIAS:')}) || '';
+    bias=biasLine.replace('BIAS:','').trim();
+    var bc=bias.toUpperCase().includes('BULL')?'bbuy':bias.toUpperCase().includes('BEAR')?'bsel':'bwt';
+    document.getElementById('db').innerHTML='<span class="bt '+bc+'">'+bias+'</span>';
+    // Levels section
+    var inLevels=false,inWatch=false,lvls=[],wch=[];
+    lines.forEach(function(l){
+      if(l.startsWith('KEY LEVELS:')){inLevels=true;inWatch=false;return}
+      if(l.startsWith('WATCH TODAY:')){inWatch=true;inLevels=false;return}
+      if(inLevels && l.trim().startsWith('-')) lvls.push(l.trim().replace(/^-\s*/,''));
+      if(inWatch && l.trim()) wch.push(l.trim().replace(/^-\s*/,''));
     });
-    html+="</div>";
+    var lvlHtml=lvls.length?lvls.map(function(l){return '<div style="font-family:\'DM Mono\',monospace;font-size:12px;padding:5px 0;border-bottom:1px solid var(--bd);color:#d4d0ca;">'+l+'</div>'}).join(''):'<div class="cb">'+md(lines.filter(function(l){return l.trim()&&!l.startsWith('BIAS')&&!l.startsWith('KEY')&&!l.startsWith('WATCH')}).join('\n'))+'</div>';
+    document.getElementById('dl').innerHTML=lvlHtml;
+    // Mini chart
+    var chartDiv=document.getElementById('dl-chart');
+    chartDiv.innerHTML='';
+    chartDiv.appendChild(buildMiniChart(pair,bias));
+    var wHtml=wch.length?wch.map(function(l){return '<div class="cb" style="padding:4px 0;border-bottom:1px solid var(--bd);last-child:border-none">'+md(l)+'</div>'}).join(''):'<div class="cb">'+md(lines.slice(-3).join(' '))+'</div>';
+    document.getElementById('dw').innerHTML=wHtml;
+    document.getElementById('dm').textContent='Updated '+new Date().toLocaleTimeString('en-AU',{timeZone:'Australia/Brisbane',hour:'2-digit',minute:'2-digit'})+' AEST';
+  } catch(e){
+    document.getElementById('db').innerHTML='<div class="eb">'+e.message+'</div>';
+  }
+}
+function forceD(){delete cache['d:'+cD+':'+new Date().toDateString()];loadD(cD,null);}
+
+/* ══════════════════════════════════════
+   WEEKLY ANALYSIS
+══════════════════════════════════════ */
+function setWLoading(){
+  document.getElementById('wt').innerHTML='<div class="ld"><div class="sp"></div>Fetching weekly outlook…</div>';
+  document.getElementById('wtr').innerHTML='';
+  document.getElementById('we').innerHTML='';
+  document.getElementById('wm').textContent='';
+}
+async function loadW(pair,btn){
+  cW=pair;
+  if(btn){
+    document.querySelectorAll('#wpr .pp').forEach(function(b){b.classList.remove('active')});
+    btn.classList.add('active');
+  }
+  setWLoading();
+  var p=pair.slice(0,3)+'/'+pair.slice(3);
+  try{
+    var prompt='You are a professional forex analyst. Provide a concise WEEKLY analysis for '+p+' for the week of '+new Date().toISOString().split('T')[0]+'. Format exactly:\nMACRO THEME:\n[2-3 sentences on the macro backdrop driving this pair. Use **bold** for key themes.]\n\nTREND AND STRUCTURE:\n[2-3 sentences on the weekly trend, structure, key levels. Use **bold** for level prices.]\n\nKEY EVENTS THIS WEEK:\n- [Event 1: day and what to watch]\n- [Event 2]\n- [Event 3]\n\nKeep each section tight and actionable.';
+    var txt=await ai(prompt,'w:'+pair+':'+weekKey());
+    var lines=txt.split('\n');
+    var sections={macro:[],trend:[],events:[]};
+    var cur='';
+    lines.forEach(function(l){
+      if(l.startsWith('MACRO THEME:')) cur='macro';
+      else if(l.startsWith('TREND AND STRUCTURE:')) cur='trend';
+      else if(l.startsWith('KEY EVENTS THIS WEEK:')) cur='events';
+      else if(cur&&l.trim()) sections[cur].push(l.trim());
+    });
+    document.getElementById('wt').innerHTML='<div class="cb">'+md(sections.macro.join(' '))+'</div>';
+    document.getElementById('wtr').innerHTML='<div class="cb">'+md(sections.trend.join(' '))+'</div>';
+    var evHtml=sections.events.map(function(e){return '<div class="cb" style="padding:4px 0;border-bottom:1px solid var(--bd)">'+md(e.replace(/^-\s*/,''))+'</div>'}).join('');
+    document.getElementById('we').innerHTML=evHtml||'<div class="cb">'+md(txt)+'</div>';
+    document.getElementById('wm').textContent='Updated '+new Date().toLocaleTimeString('en-AU',{timeZone:'Australia/Brisbane',hour:'2-digit',minute:'2-digit'})+' AEST';
+  } catch(e){
+    document.getElementById('wt').innerHTML='<div class="eb">'+e.message+'</div>';
+  }
+}
+function forceW(){delete cache['w:'+cW+':'+weekKey()];loadW(cW,null);}
+function weekKey(){var d=new Date();d.setDate(d.getDate()-d.getDay());return d.toISOString().split('T')[0];}
+
+/* ══════════════════════════════════════
+   4-HOUR ANALYSIS  (Amendment 7)
+══════════════════════════════════════ */
+async function load4hr(pair,btn){
+  c4=pair;
+  if(btn){
+    document.querySelectorAll('#hpr .pp').forEach(function(b){b.classList.remove('active')});
+    btn.classList.add('active');
+  }
+  document.getElementById('h4b').innerHTML='<div class="ld"><div class="sp"></div>Fetching 4H analysis…</div>';
+  document.getElementById('h4s').innerHTML='';document.getElementById('h4l').innerHTML='';
+  document.getElementById('h4t').innerHTML='';document.getElementById('h4m').textContent='';
+  var p=pair.slice(0,3)+'/'+pair.slice(3);
+  var hr4key=Math.floor(new Date()/14400000);
+  try{
+    var prompt='You are a professional forex analyst. Provide a 4-HOUR intraday analysis for '+p+' right now '+new Date().toISOString().split('T')[0]+'. Format exactly:\n4H BIAS: [BULLISH/BEARISH/NEUTRAL]\n\n4H SETUP:\n[2-3 sentences on the 4H chart structure, pattern, and context. Use **bold** for key terms.]\n\nKEY 4H LEVELS:\n- 4H Resistance: [price]\n- 4H Entry zone: [price range]\n- 4H Support: [price]\n\nENTRY TRIGGER:\n[1-2 sentences on the specific price action signal or candle pattern to watch for entry. Use **bold** for the trigger.]\n\nKeep it tight and specific.';
+    var txt=await ai(prompt,'4h:'+pair+':'+hr4key);
+    var lines=txt.split('\n');
+    var biasL=lines.find(function(l){return l.startsWith('4H BIAS:')}) || '';
+    var bias=biasL.replace('4H BIAS:','').trim();
+    var bc=bias.toUpperCase().includes('BULL')?'bbuy':bias.toUpperCase().includes('BEAR')?'bsel':'bwt';
+    document.getElementById('h4b').innerHTML='<span class="bt '+bc+'">'+bias+'</span>';
+    var sections={setup:[],levels:[],trigger:[]};
+    var cur='';
+    lines.forEach(function(l){
+      if(l.startsWith('4H SETUP:')) cur='setup';
+      else if(l.startsWith('KEY 4H LEVELS:')) cur='levels';
+      else if(l.startsWith('ENTRY TRIGGER:')) cur='trigger';
+      else if(cur&&l.trim()) sections[cur].push(l.trim());
+    });
+    document.getElementById('h4s').innerHTML='<div class="cb">'+md(sections.setup.join(' '))+'</div>';
+    document.getElementById('h4l').innerHTML=sections.levels.map(function(l){return '<div style="font-family:\'DM Mono\',monospace;font-size:12px;padding:5px 0;border-bottom:1px solid var(--bd);color:#d4d0ca;">'+l.replace(/^-\s*/,'')+'</div>'}).join('');
+    document.getElementById('h4t').innerHTML='<div class="cb">'+md(sections.trigger.join(' '))+'</div>';
+    document.getElementById('h4m').textContent='Updated '+new Date().toLocaleTimeString('en-AU',{timeZone:'Australia/Brisbane',hour:'2-digit',minute:'2-digit'})+' AEST';
+  } catch(e){
+    document.getElementById('h4b').innerHTML='<div class="eb">'+e.message+'</div>';
+  }
+}
+function force4hr(){delete cache['4h:'+c4+':'+Math.floor(new Date()/14400000)];load4hr(c4,null);}
+
+/* ══════════════════════════════════════
+   SESSIONS  (Amendments 4 & 5)
+══════════════════════════════════════ */
+var SESS=[
+  {name:"Sydney",  flag:"🇦🇺", label:"08:00–17:00 AEST", start:8*60,  end:17*60, color:"#86efac"},
+  {name:"Tokyo",   flag:"🇯🇵", label:"10:00–19:00 AEST", start:10*60, end:19*60, color:"#fbbf24"},
+  {name:"London",  flag:"🇬🇧", label:"18:00–03:00 AEST", start:18*60, end:27*60, color:"#818cf8"},
+  {name:"New York",flag:"🇺🇸", label:"23:00–08:00 AEST", start:23*60, end:32*60, color:"#f87171"}
+];
+
+function getAESTMinutes(){
+  var d=new Date();
+  var aest=new Date(d.toLocaleString('en-US',{timeZone:'Australia/Brisbane'}));
+  return aest.getHours()*60+aest.getMinutes();
+}
+function isOpen(s,m){
+  if(s.end<=24*60) return m>=s.start&&m<s.end;
+  if(m>=s.start) return true;
+  if(m<(s.end-24*60)) return true;
+  return false;
+}
+function pctOfDay(mins){return (mins%1440)/1440;}
+
+var sessTickerInterval;
+function renderSessions(){
+  if(sessTickerInterval) clearInterval(sessTickerInterval);
+  doRenderSessions();
+  sessTickerInterval=setInterval(doRenderSessions,1000);
+}
+function doRenderSessions(){
+  var now=new Date();
+  var aest=new Date(now.toLocaleString('en-US',{timeZone:'Australia/Brisbane'}));
+  var h=aest.getHours(),mi=aest.getMinutes(),sec=aest.getSeconds();
+  var m=h*60+mi;
+  // Clock
+  var cl=document.getElementById('sess-clock');
+  if(cl) cl.textContent=(h<10?'0':'')+h+':'+(mi<10?'0':'')+mi+':'+(sec<10?'0':'')+sec;
+  renderTimeline(m);
+  renderSessCards(m);
+}
+
+function renderTimeline(nowMin){
+  var el=document.getElementById('sess-timeline');
+  if(!el) return;
+  // Build 24h bars
+  var html='<div class="tl-bg"></div>';
+  SESS.forEach(function(s,i){
+    var pStart=pctOfDay(s.start)*100;
+    var dur=(s.end-s.start)/1440*100;
+    var alpha=isOpen(s,nowMin)?'0.7':'0.35';
+    html+='<div class="tl-seg" style="left:'+pStart+'%;width:'+dur+'%;background:'+s.color+';opacity:'+alpha+';top:22px;height:24px;border-radius:4px;position:absolute"></div>';
+    // Session label at start
+    html+='<div class="tl-slabel" style="left:'+pStart+'%;color:'+s.color+';top:2px">'+s.flag+'</div>';
   });
-  se("cal-body",html);
+  // Hour marks
+  [0,3,6,9,12,15,18,21].forEach(function(h){
+    var pct=h/24*100;
+    html+='<div class="tl-hline" style="left:'+pct+'%;top:22px;height:40px;position:absolute"></div>';
+    html+='<div class="tl-hlabel" style="left:'+pct+'%;bottom:0;position:absolute">'+(h<10?'0':'')+h+'</div>';
+  });
+  // Current time line
+  var nowPct=pctOfDay(nowMin)*100;
+  html+='<div class="tl-now-tri" style="left:'+nowPct+'%;top:10px;position:absolute"></div>';
+  html+='<div class="tl-now-line" style="left:'+nowPct+'%;top:14px;height:40px;background:var(--ac);position:absolute"></div>';
+  el.innerHTML=html;
 }
 
-// ══ JOURNAL ══
-function getTrades(){try{return JSON.parse(localStorage.getItem("fxjrnl")||"[]");}catch(e){return[];}}
-function saveTrades(a){localStorage.setItem("fxjrnl",JSON.stringify(a));}
-
-function autoPips(pair,entry,sl,tp,result){
-  if(!entry) return null;
-  var isJPY=pair.indexOf("JPY")>=0;
-  var isGold=pair==="XAU/USD";
-  var m=isJPY?100:isGold?100:10000;
-  if(result==="win"&&tp) return Math.round(Math.abs(tp-entry)*m);
-  if(result==="loss"&&sl) return -Math.round(Math.abs(entry-sl)*m);
-  return 0;
+function colorPairTag(pairStr){
+  var c1=pairStr.slice(0,3),c2=pairStr.slice(4)||pairStr.slice(3);
+  var col=CCY_COLORS[c1]||'#cbd5e1';
+  var col2=CCY_COLORS[c2]||'#cbd5e1';
+  return '<span class="bp-pair-tag" style="background:'+col+'22;color:'+col+';border:1px solid '+col+'44">'+pairStr+'</span>';
 }
 
-function addTrade(){
-  var pair=document.getElementById("j-pair").value;
-  var dir=document.getElementById("j-dir").value;
-  var entry=parseFloat(document.getElementById("j-entry").value)||null;
-  var sl=parseFloat(document.getElementById("j-sl").value)||null;
-  var tp=parseFloat(document.getElementById("j-tp").value)||null;
-  var result=document.getElementById("j-result").value;
-  var manPips=document.getElementById("j-pips").value;
-  var notes=document.getElementById("j-notes").value.trim();
-  var pips=manPips!=""?parseInt(manPips):autoPips(pair,entry,sl,tp,result);
-  if(result==="loss"&&pips>0) pips=-pips;
-  var trade={id:Date.now(),date:new Date().toLocaleDateString("en-AU"),pair,dir,entry,sl,tp,result,pips,notes};
-  var trades=getTrades();
-  trades.unshift(trade);
-  saveTrades(trades);
-  ["j-entry","j-sl","j-tp","j-pips","j-notes"].forEach(function(id){document.getElementById(id).value="";});
-  document.getElementById("j-result").value="open";
-  renderJournal();
+function renderSessCards(m){
+  var grid=document.getElementById('sess-grid');
+  if(!grid) return;
+  var html='';
+  SESS.forEach(function(s){
+    var open=isOpen(s,m);
+    var isMain=(open && SESS.filter(function(x){return isOpen(x,m)}).indexOf(s)===0)||false;
+    // Check overlaps
+    var openCount=SESS.filter(function(x){return isOpen(x,m)}).length;
+    var isOverlap=open&&openCount>1;
+    var cls='sess-card';
+    if(isOverlap) cls+=' s-overlap';
+    else if(open) cls+=' s-open';
+    var badge=open?(isOverlap?'<span class="sess-badge b-overlap">OVERLAP</span>':'<span class="sess-badge b-open">OPEN</span>'):'<span class="sess-badge b-closed">CLOSED</span>';
+    // Countdown
+    var cdLabel='',cdVal='';
+    if(open){
+      cdLabel='Closes in';
+      var endMin=s.end>1440?s.end-1440:s.end;
+      var diff=s.end>1440?(endMin+(1440-m))%1440:(s.end-m+1440)%1440;
+      if(diff<=0) diff=0;
+      cdVal=Math.floor(diff/60)+'h '+(diff%60)+'m';
+    } else {
+      cdLabel='Opens in';
+      var diff=(s.start-m+1440)%1440;
+      cdVal=Math.floor(diff/60)+'h '+(diff%60)+'m';
+    }
+    html+='<div class="'+cls+'"><div class="sess-name">'+s.flag+' '+s.name+'</div><div class="sess-time">'+s.label+'</div>'+badge+'<div class="sess-lbl">'+cdLabel+'</div><div class="sess-cd">'+cdVal+'</div></div>';
+  });
+  grid.innerHTML=html;
+  // Best pairs
+  function fillPairs(id,list){
+    var el=document.getElementById(id);
+    if(el) el.innerHTML=list.map(colorPairTag).join('');
+  }
+  fillPairs('bp-sydney',PAIR_SESSIONS.sydney);
+  fillPairs('bp-tokyo',PAIR_SESSIONS.tokyo);
+  fillPairs('bp-london',PAIR_SESSIONS.london);
+  fillPairs('bp-ny',PAIR_SESSIONS.ny);
+  fillPairs('bp-overlap',PAIR_SESSIONS.overlap);
 }
 
-function deleteTrade(id){
-  saveTrades(getTrades().filter(function(t){return t.id!==id;}));
-  renderJournal();
-}
+/* ══════════════════════════════════════
+   CALENDAR  (Amendment 6)
+══════════════════════════════════════ */
+var calLoaded=false;
+var ECO_TERMS={
+  'CPI':'Consumer Price Index – measures inflation by tracking price changes of a basket of goods.',
+  'PMI':'Purchasing Managers Index – 50+ = expansion, below 50 = contraction.',
+  'NFP':'Non-Farm Payrolls – monthly US jobs report; major USD mover.',
+  'GDP':'Gross Domestic Product – total economic output; signals growth or recession.',
+  'FOMC':'Federal Open Market Committee – sets US interest rates; huge USD impact.',
+  'RBA':'Reserve Bank of Australia – sets AUD interest rates.',
+  'ECB':'European Central Bank – sets EUR interest rates.',
+  'BOE':'Bank of England – sets GBP interest rates.',
+  'BOJ':'Bank of Japan – sets JPY interest rates.',
+  'ISM':'Institute for Supply Management – US manufacturing/services survey.',
+  'ADP':'ADP Employment Report – private-sector jobs preview before NFP.',
+  'PPI':'Producer Price Index – measures wholesale inflation.',
+  'Retail Sales':'Monthly measure of consumer spending; key growth indicator.',
+  'PCE':'Personal Consumption Expenditures – the Fed\'s preferred inflation gauge.'
+};
 
+var calData=[];
+async function loadCalendar(){
+  calLoaded=true;
+  var body=document.getElementById('cal-body');
+  body.innerHTML='<div class="ld" style="padding:20px"><div class="sp"></div>Fetching economic events…</div>';
+  var wk=getWeekRange();
+  try{
+    var prompt='You are an economic calendar expert. List the major forex economic events for the week of '+wk+'. For each event provide:\nDAY|TIME AEST|CURRENCY|IMPORTANCE(high/med/low)|EVENT NAME|FORECAST|PREVIOUS|BRIEF DESCRIPTION\n\nList 12-18 events covering USD, EUR, GBP, AUD, NZD, CAD, JPY. Focus on high and medium importance. Format each event as one line with | separators.';
+    var txt=await ai(prompt,'cal:'+wk);
+    var events=[];
+    txt.split('\n').forEach(function(line){
+      var p=line.split('|');
+      if(p.length>=6){
+        events.push({
+          day:p[0].trim(),time:p[1]?p[1].trim():'TBC',ccy:p[2]?p[2].trim():'',
+          imp:p[3]?p[3].trim().toLowerCase():'med',name:p[4]?p[4].trim():'',
+          forecast:p[5]?p[5].trim():'—',prev:p[6]?p[6].trim():'—',
+          desc:p[7]?p[7].trim():''
+        });
+      }
+    });
+    calData=events;
+    renderCalendar(events);
+    document.getElementById('cal-meta').textContent='Week of '+wk+' · Verify at forexfactory.com · Times are approximate AEST';
+  } catch(e){
+    body.innerHTML='<div class="eb">'+e.message+'</div>';
+  }
+}
+function forceCal(){calLoaded=false;calData=[];loadCalendar();}
+function getWeekRange(){
+  var d=new Date(),mon=new Date(d);
+  mon.setDate(d.getDate()-d.getDay()+1);
+  var fri=new Date(mon);fri.setDate(mon.getDate()+4);
+  return mon.toISOString().split('T')[0]+' to '+fri.toISOString().split('T')[0];
+}
+function getCcyColor(ccy){
+  var key=ccy.trim().toUpperCase().slice(0,3);
+  return CCY_COLORS[key]||'#94a3b8';
+}
+function highlightEcoTerms(text){
+  var t=text;
+  Object.keys(ECO_TERMS).forEach(function(term){
+    var re=new RegExp('\\b'+term+'\\b','g');
+    t=t.replace(re,'<span class="eco-term" title="'+ECO_TERMS[term]+'">'+term+'</span>');
+  });
+  return t;
+}
+function renderCalendar(events){
+  var body=document.getElementById('cal-body');
+  if(!events.length){body.innerHTML='<div class="cb">No events found. Try refreshing.</div>';return;}
+  var byDay={};
+  events.forEach(function(e){
+    if(!byDay[e.day]) byDay[e.day]=[];
+    byDay[e.day].push(e);
+  });
+  var html='';
+  Object.keys(byDay).forEach(function(day){
+    html+='<div class="cal-day"><div class="cal-day-hdr">'+day+'</div>';
+    byDay[day].forEach(function(ev,i){
+      var col=getCcyColor(ev.ccy);
+      var idx=events.indexOf(ev);
+      html+='<div class="cal-event" onclick="openCalPopup('+idx+')">';
+      html+='<span class="cal-imp-badge '+ev.imp+'">'+(ev.imp==='high'?'HIGH':ev.imp==='med'?'MED':'LOW')+'</span>';
+      html+='<div class="cal-text">';
+      html+='<div class="cal-title"><span class="cal-ccy-tag" style="color:'+col+';background:'+col+'22;border:1px solid '+col+'44">'+ev.ccy+'</span>'+highlightEcoTerms(ev.name)+'</div>';
+      html+='<div class="cal-detail">'+ev.time+' · Forecast: <strong>'+ev.forecast+'</strong> · Prev: <strong>'+ev.prev+'</strong></div>';
+      html+='</div></div>';
+    });
+    html+='</div>';
+  });
+  body.innerHTML=html;
+}
+function openCalPopup(idx){
+  var ev=calData[idx];
+  if(!ev) return;
+  var col=getCcyColor(ev.ccy);
+  document.getElementById('cpop-title').textContent=ev.name;
+  document.getElementById('cpop-badge').innerHTML='<span class="cal-imp-badge '+ev.imp+'">'+(ev.imp==='high'?'HIGH':ev.imp==='med'?'MED':'LOW')+'</span>';
+  document.getElementById('cpop-ccy-tag').innerHTML='<span class="cal-ccy-tag" style="color:'+col+';background:'+col+'22;border:1px solid '+col+'44;padding:2px 8px;border-radius:100px">'+ev.ccy+'</span>';
+  document.getElementById('cpop-time').textContent=ev.time+' AEST';
+  var desc=ev.desc?ev.desc:'Forecast: '+ev.forecast+' · Previous: '+ev.prev;
+  document.getElementById('cpop-desc').innerHTML=highlightEcoTerms(desc);
+  // Look up eco term explanation
+  var explain='';
+  Object.keys(ECO_TERMS).forEach(function(term){
+    if(ev.name.includes(term)) explain+='<p style="margin-bottom:6px"><strong>'+term+':</strong> '+ECO_TERMS[term]+'</p>';
+  });
+  var expEl=document.getElementById('cpop-explain');
+  if(explain){expEl.innerHTML=explain;expEl.style.display='block';}
+  else expEl.style.display='none';
+  document.getElementById('cal-popup').style.display='flex';
+}
+function closeCalPopup(){document.getElementById('cal-popup').style.display='none';}
+
+/* ══════════════════════════════════════
+   JOURNAL
+══════════════════════════════════════ */
+function loadJournal(){return JSON.parse(localStorage.getItem('fh_journal')||'[]');}
+function saveJournal(j){localStorage.setItem('fh_journal',JSON.stringify(j));}
 function renderJournal(){
-  var trades=getTrades();
-  var closed=trades.filter(function(t){return t.result!=="open";});
-  var wins=closed.filter(function(t){return t.result==="win";});
-  var totalPips=trades.reduce(function(s,t){return s+(t.pips||0);},0);
-  var wr=closed.length>0?Math.round(wins.length/closed.length*100):null;
-  var streak=0,sType="";
-  for(var i=0;i<trades.length;i++){
-    var r=trades[i].result;
-    if(r==="open"||r==="be") continue;
-    if(!streak){streak=1;sType=r;}
-    else if(r===sType) streak++;
+  var j=loadJournal();
+  var log=document.getElementById('trade-log');
+  if(!log) return;
+  updateStats(j);
+  if(!j.length){log.innerHTML='<div class="empty-j">No trades logged yet.<br>Log your first trade above.</div>';return;}
+  log.innerHTML=[...j].reverse().map(function(t,i){
+    var ri=j.length-1-i;
+    var dc=t.result==='win'?'win':t.result==='loss'?'loss':t.result==='be'?'be':'open-t';
+    var rc=t.result==='win'?'win':t.result==='loss'?'loss':t.result==='be'?'be':'open-r';
+    var rl=t.result==='win'?'WIN':t.result==='loss'?'LOSS':t.result==='be'?'B/E':'OPEN';
+    var dirc=t.dir==='Buy'?'buy':'sell';
+    var pip=t.pips?'<span class="ti-pips '+(parseFloat(t.pips)>=0?'pos':'neg')+'">'+(parseFloat(t.pips)>=0?'+':'')+t.pips+'p</span>':'';
+    return '<div class="ti '+dc+'"><div class="ti-top"><div><span class="ti-pair">'+t.pair+'</span><span class="ti-dir '+dirc+'">'+t.dir+'</span></div><button class="del-btn" onclick="delTrade('+ri+')">×</button></div>'+(t.entry?'<div class="ti-lvl"><span>Entry: '+t.entry+'</span>'+(t.sl?'<span>SL: '+t.sl+'</span>':'')+(t.tp?'<span>TP: '+t.tp+'</span>':'')+'</div>':'')+'<div class="ti-bot"><span class="ti-res '+rc+'">'+rl+'</span>'+pip+'<span class="ti-date">'+t.date+'</span></div>'+(t.notes?'<div class="ti-notes">'+t.notes+'</div>':'')+'</div>';
+  }).join('');
+}
+function addTrade(){
+  var pair=document.getElementById('j-pair').value;
+  var dir=document.getElementById('j-dir').value;
+  var entry=document.getElementById('j-entry').value;
+  var sl=document.getElementById('j-sl').value;
+  var tp=document.getElementById('j-tp').value;
+  var result=document.getElementById('j-result').value;
+  var pips=document.getElementById('j-pips').value;
+  var notes=document.getElementById('j-notes').value.trim();
+  if(!pips&&entry&&sl){
+    var isJpy=pair.includes('JPY');
+    var mult=isJpy?100:10000;
+    var ep=parseFloat(entry),sp=parseFloat(sl),tpp=parseFloat(tp)||0;
+    var slPips=Math.abs(ep-sp)*mult;
+    if(result==='win'&&tpp) pips=(Math.abs(tpp-ep)*mult).toFixed(1);
+    else if(result==='loss') pips=(-slPips).toFixed(1);
+    else if(result==='be') pips='0';
+    else pips=slPips.toFixed(1);
+  }
+  var j=loadJournal();
+  j.push({pair,dir,entry,sl,tp,result,pips,notes,date:new Date().toLocaleDateString('en-AU',{timeZone:'Australia/Brisbane'})});
+  saveJournal(j);
+  ['j-entry','j-sl','j-tp','j-pips','j-notes'].forEach(function(id){document.getElementById(id).value='';});
+  document.getElementById('j-result').value='open';
+  renderJournal();
+}
+function delTrade(i){var j=loadJournal();j.splice(i,1);saveJournal(j);renderJournal();}
+function updateStats(j){
+  var tot=j.length,wins=j.filter(function(t){return t.result==='win'}).length;
+  var losses=j.filter(function(t){return t.result==='loss'}).length;
+  var tp=j.reduce(function(a,t){return a+(parseFloat(t.pips)||0)},0);
+  document.getElementById('js-total').textContent=tot;
+  document.getElementById('js-wr').textContent=tot?(Math.round(wins/tot*100)+'%'):'—';
+  var pi=document.getElementById('js-pips');
+  pi.textContent=(tp>=0?'+':'')+tp.toFixed(1);
+  pi.className='jstat-val '+(tp>0?'jwin':tp<0?'jloss':'jneu');
+  // Streak
+  var streak=0;
+  for(var i=j.length-1;i>=0;i--){
+    if(j[i].result==='open') continue;
+    if(streak===0){streak=(j[i].result==='win'?1:-1);continue;}
+    if(streak>0&&j[i].result==='win') streak++;
+    else if(streak<0&&j[i].result==='loss') streak--;
     else break;
   }
-  se("js-total",trades.length);
-  var wrEl=document.getElementById("js-wr");
-  wrEl.textContent=wr!==null?wr+"%":"—";
-  wrEl.className="jstat-val "+(wr>=60?"jwin":wr<40&&wr!==null?"jloss":"jneu");
-  var pipEl=document.getElementById("js-pips");
-  pipEl.textContent=(totalPips>0?"+":"")+totalPips;
-  pipEl.className="jstat-val "+(totalPips>0?"jwin":totalPips<0?"jloss":"jneu");
-  var stEl=document.getElementById("js-streak");
-  stEl.textContent=streak>0?(sType==="win"?"W":"L")+streak:"—";
-  stEl.className="jstat-val "+(sType==="win"?"jwin":sType==="loss"?"jloss":"jneu");
-  if(!trades.length){se("trade-log","<div class='empty-j'>No trades logged yet.<br>Log your first trade above.</div>");return;}
-  var html="";
-  trades.forEach(function(t){
-    var r=t.result;
-    var ic=r==="win"?"win":r==="loss"?"loss":r==="be"?"be":"open-t";
-    var rc=r==="open"?"open-r":r;
-    var rl=r==="open"?"OPEN":r==="win"?"WIN":r==="loss"?"LOSS":"B/E";
-    var ps=t.pips!=null&&t.pips!==0?((t.pips>0?"+":"")+t.pips+" pips"):"";
-    var pc=t.pips>0?"pos":t.pips<0?"neg":"";
-    var lvl=[];
-    if(t.entry) lvl.push("Entry: "+t.entry);
-    if(t.sl) lvl.push("SL: "+t.sl);
-    if(t.tp) lvl.push("TP: "+t.tp);
-    html+="<div class='ti "+ic+"'>";
-    html+="<div class='ti-top'>";
-    html+="<div><span class='ti-pair'>"+t.pair+"</span><span class='ti-dir "+(t.dir.toLowerCase())+"'>"+t.dir.toUpperCase()+"</span></div>";
-    html+="<button class='del-btn' onclick='deleteTrade("+t.id+")'>✕</button>";
-    html+="</div>";
-    if(lvl.length) html+="<div class='ti-lvl'>"+lvl.join(" &nbsp; ")+"</div>";
-    html+="<div class='ti-bot'>";
-    html+="<div><span class='ti-res "+rc+"'>"+rl+"</span>"+(ps?"<span class='ti-pips "+pc+"'>"+ps+"</span>":"")+"</div>";
-    html+="<span class='ti-date'>"+t.date+"</span>";
-    html+="</div>";
-    if(t.notes) html+="<div class='ti-notes'>"+t.notes+"</div>";
-    html+="</div>";
-  });
-  se("trade-log",html);
+  document.getElementById('js-streak').textContent=streak>0?('W'+streak):streak<0?('L'+Math.abs(streak)):'—';
 }
 
-// ══ POSITION SIZE CALCULATOR ══
-var PIP_USD={USD:10,JPY:7,AUD:6.5,GBP:13,CAD:7.6,CHF:9.2,NZD:5.6,EUR:10.8};
-function getPipVal(pair){
-  if(pair==="XAU/USD") return 1;
-  var q=pair.split("/")[1];
-  return PIP_USD[q]||10;
-}
+/* ══════════════════════════════════════
+   CHECKLIST
+══════════════════════════════════════ */
+function tc(el){el.classList.toggle('done');el.querySelector('.ck').textContent=el.classList.contains('done')?'✓':'';}
+function rc(){document.querySelectorAll('.ci').forEach(function(c){c.classList.remove('done');c.querySelector('.ck').textContent='';});}
 function updateCalcHint(){
-  var pair=document.getElementById("c-pair").value;
-  var hint="";
-  if(pair==="XAU/USD") hint="For Gold: enter SL distance in USD per oz (e.g. 10 = $10/oz stop). Pip value = $1/lot.";
-  else if(pair.indexOf("JPY")>=0) hint="JPY pair: 1 pip = 0.01 price move. Pip value ≈ $7 USD per standard lot.";
-  else hint="Standard pair: 1 pip = 0.0001 price move. Pip value ≈ $"+getPipVal(pair)+" USD per standard lot.";
-  document.getElementById("c-hint").textContent=hint;
+  var p=document.getElementById('c-pair').value;
+  document.getElementById('c-hint').textContent=p.includes('JPY')||p.includes('XAU')?'For JPY pairs: 1 pip = 0.01. For XAU/USD: 1 pip = $0.10.':'For most pairs: 1 pip = 0.0001 price move.';
 }
 function calcPos(){
-  var bal=parseFloat(document.getElementById("c-bal").value)||10000;
-  var rPct=parseFloat(document.getElementById("c-risk").value)||1;
-  var pair=document.getElementById("c-pair").value;
-  var slPips=parseFloat(document.getElementById("c-sl").value)||20;
-  var audUsd=parseFloat(document.getElementById("c-audusd").value)||0.645;
-  var riskAUD=bal*(rPct/100);
-  var riskUSD=riskAUD*audUsd;
-  var pv=getPipVal(pair);
-  var lots=riskUSD/(slPips*pv);
-  var lotStr;
-  if(lots>=1)        lotStr=lots.toFixed(2)+" standard lots";
-  else if(lots>=0.1) lotStr=(lots*10).toFixed(2)+" mini lots ("+lots.toFixed(2)+" lots)";
-  else               lotStr=(lots*100).toFixed(2)+" micro lots ("+lots.toFixed(4)+" lots)";
-  document.getElementById("cr-aud").textContent="A$"+riskAUD.toFixed(2);
-  document.getElementById("cr-usd").textContent="$"+riskUSD.toFixed(2)+" (at AUD/USD "+audUsd+")";
-  document.getElementById("cr-lot").textContent=lotStr;
-  document.getElementById("cr-pipval").textContent="$"+pv+" (approx)";
-  document.getElementById("calc-out").style.display="block";
+  var bal=parseFloat(document.getElementById('c-bal').value)||10000;
+  var risk=parseFloat(document.getElementById('c-risk').value)||1;
+  var sl=parseFloat(document.getElementById('c-sl').value)||20;
+  var audusd=parseFloat(document.getElementById('c-audusd').value)||0.645;
+  var pair=document.getElementById('c-pair').value;
+  var rAUD=bal*(risk/100);
+  var rUSD=rAUD*audusd;
+  var isJpy=pair.includes('JPY');
+  var isXau=pair.includes('XAU');
+  var pipVal=isJpy?9.09:isXau?10:10;
+  var lots=rUSD/(sl*pipVal);
+  document.getElementById('cr-aud').textContent='A$'+rAUD.toFixed(2);
+  document.getElementById('cr-usd').textContent='$'+rUSD.toFixed(2);
+  document.getElementById('cr-lot').textContent=lots.toFixed(2)+' lots ('+Math.round(lots*100)+' micro)';
+  document.getElementById('cr-pipval').textContent='$'+pipVal.toFixed(2);
+  document.getElementById('calc-out').style.display='block';
 }
 
-// ══ CHECKLIST ══
-function tc(item){
-  item.classList.toggle("done");
-  var b=item.querySelector(".ck");
-  b.classList.toggle("done");
-  b.textContent=b.classList.contains("done")?"✓":"";
-}
-function rc(){
-  document.querySelectorAll(".ci").forEach(function(i){
-    i.classList.remove("done");
-    var b=i.querySelector(".ck");
-    b.classList.remove("done");
-    b.textContent="";
-  });
-}
-
-// ══ TRADE REVIEW ══
+/* ══════════════════════════════════════
+   REVIEW – Trade idea
+══════════════════════════════════════ */
 async function revT(){
-  var idea=document.getElementById("ti").value.trim();
-  if(!idea) return;
-  var btn=document.getElementById("rbtn");
-  btn.disabled=true;btn.textContent="Reviewing...";
-  se("rr",ld("Analysing your trade idea..."));
+  var ti=document.getElementById('ti').value.trim();
+  if(!ti) return;
+  var btn=document.getElementById('rbtn'),out=document.getElementById('rr');
+  btn.disabled=true;btn.innerHTML='<div class="sp"></div> Analysing…';
+  out.innerHTML='<div class="ld"><div class="sp"></div>Reviewing your trade idea…</div>';
   try{
-    var t=await cc("You are a professional forex risk manager. Today is "+now.toDateString()+" (Brisbane AEST). The trader's idea: "+idea+"\n\nProvide a structured 4-part review:\n1. Alignment with current market conditions (search the web to verify)\n2. Main risk to this trade\n3. One concrete improvement\n4. Risk:reward assessment and verdict (take it / skip it / wait for better entry)");
-    se("rr","<div class='cb' style='background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.08);border-radius:10px;padding:14px;'>"+fmt(t)+"</div>");
-  }catch(e){se("rr",eb("Review failed: "+e.message));}
-  btn.disabled=false;btn.textContent="Review my trade";
+    var prompt='You are a professional forex trading mentor. A student has this trade idea:\n\n"'+ti+'"\n\nGive structured feedback:\n\n**SETUP QUALITY: [Strong/Moderate/Weak]**\n\n**What\'s good:**\n[2-3 bullet points]\n\n**Concerns:**\n[2-3 bullet points]\n\n**Risk/Reward assessment:**\n[1-2 sentences on the R:R and whether it meets minimum 1:2]\n\n**Recommendation:**\n[PROCEED / WAIT / AVOID] — brief explanation';
+    var txt=await ai(prompt);
+    out.innerHTML='<div class="cb">'+md(txt)+'</div>';
+  } catch(e){out.innerHTML='<div class="eb">'+e.message+'</div>';}
+  btn.disabled=false;btn.innerHTML='Review my trade';
 }
 
-// ══ MAPS ══
-function hmDate(d){return d.toISOString().slice(0,10);}
-
-function getXR(rates,base,quote){
-  if(base==='EUR') return rates[quote];
-  if(quote==='EUR') return 1/rates[base];
-  return rates[quote]/rates[base];
+/* ══════════════════════════════════════
+   REVIEW – Past trade image  (Amendment 9)
+══════════════════════════════════════ */
+var ptrImageB64=null,ptrMimeType=null;
+function handlePtrFile(input){
+  var file=input.files[0];
+  if(!file) return;
+  if(file.size>5*1024*1024){alert('Image too large. Max 5MB.');return;}
+  var reader=new FileReader();
+  reader.onload=function(e){
+    var b64=e.target.result;
+    ptrMimeType=file.type||'image/png';
+    ptrImageB64=b64.split(',')[1];
+    var preview=document.getElementById('ptr-preview');
+    preview.src=b64;preview.style.display='block';
+    var dz=document.getElementById('ptr-dropzone');
+    dz.querySelector('.img-drop-icon').textContent='✅';
+    dz.querySelector('.img-drop-lbl').textContent='Chart loaded – tap to replace';
+  };
+  reader.readAsDataURL(file);
+}
+function handlePtrDrop(event){
+  event.preventDefault();
+  var dz=document.getElementById('ptr-dropzone');
+  dz.classList.remove('dragover');
+  var file=event.dataTransfer.files[0];
+  if(file){
+    var dt=new DataTransfer();dt.items.add(file);
+    var inp=document.getElementById('ptr-img');inp.files=dt.files;
+    handlePtrFile(inp);
+  }
+}
+async function revPastTrade(){
+  if(!ptrImageB64){alert('Please upload a chart screenshot first.');return;}
+  var notes=document.getElementById('ptr-notes').value.trim();
+  var btn=document.getElementById('ptr-btn'),out=document.getElementById('ptr-result');
+  btn.disabled=true;btn.innerHTML='<div class="sp"></div> Analysing chart…';
+  out.innerHTML='<div class="ld"><div class="sp"></div>Analysing your trade chart…</div>';
+  try{
+    var prompt='You are a professional forex trading coach. Analyse this past trade chart image.'+(notes?'\n\nTrader\'s notes: '+notes:'')+'\n\nProvide structured feedback:\n\n**TRADE OUTCOME ASSESSMENT:**\n[Was this a well-executed trade or a poor one, and why?]\n\n**WHAT WENT WELL:**\n[2-3 specific observations from the chart]\n\n**WHAT COULD BE IMPROVED:**\n[2-3 specific areas with actionable suggestions]\n\n**KEY LESSON:**\n[The single most important takeaway from this trade]\n\n**OVERALL GRADE: [A/B/C/D]**\n[Brief explanation of the grade]';
+    var txt=await aiImage(prompt,ptrImageB64,ptrMimeType);
+    out.innerHTML='<div class="cb">'+md(txt)+'</div>';
+  } catch(e){out.innerHTML='<div class="eb">'+e.message+'. Your Cloudflare Worker may need updating to support image analysis.</div>';}
+  btn.disabled=false;btn.innerHTML='Analyse this trade';
 }
 
-function calcPips(base,quote,r0,r1){
-  var cur=getXR(r0,base,quote), prev=getXR(r1,base,quote);
-  var mult=(quote==='JPY')?100:10000;
-  return Math.round((cur-prev)*mult*10)/10;
-}
-
-function hmCell(v){
-  var cls=v>0?'hm-pos':v<0?'hm-neg':'hm-neu';
-  var hi=(Math.abs(v)>30)?' hi':'';
-  return '<td class="hm-cell '+cls+hi+'">'+(v>0?'+':'')+v+'</td>';
-}
-
+/* ══════════════════════════════════════
+   MAPS – HEAT MAP  (Amendment 8 – fixed pip calc)
+══════════════════════════════════════ */
+var MAP_PAIRS=['EURUSD','GBPUSD','USDJPY','USDCHF','USDCAD','AUDUSD','NZDUSD','EURJPY','GBPJPY','EURGBP','AUDNZD','AUDCAD','AUDJPY','EURAUD','GBPAUD','EURCAD','GBPCAD'];
+function hmDate(d){return d.toISOString().split('T')[0];}
 async function loadHeatMap(){
-  var el=document.getElementById('hm-body');
+  hmLoaded=true;
+  var api='https://api.frankfurter.dev/v1';
+  var today=hmDate(new Date());
+  // Use date ranges to reliably find actual trading days (not calendar weekends)
+  var d3 =hmDate(new Date(Date.now()-3*864e5));
+  var d10=hmDate(new Date(Date.now()-10*864e5));
+  var d35=hmDate(new Date(Date.now()-35*864e5));
   try{
-    var t=new Date();
-    var d1=hmDate(new Date(t-1*864e5));
-    var d7=hmDate(new Date(t-7*864e5));
-    var d30=hmDate(new Date(t-30*864e5));
-    var sym='USD,GBP,AUD,CAD,CHF,NZD,JPY';
-    var api='https://api.frankfurter.dev/v1';
-    var [r0,r1,r7,r30]=await Promise.all([
-      fetch(api+'/latest?from=EUR&to='+sym).then(r=>r.json()),
-      fetch(api+'/'+d1+'?from=EUR&to='+sym).then(r=>r.json()),
-      fetch(api+'/'+d7+'?from=EUR&to='+sym).then(r=>r.json()),
-      fetch(api+'/'+d30+'?from=EUR&to='+sym).then(r=>r.json()),
+    var [r3,r10,r35]=await Promise.all([
+      fetch(api+'/'+d3+'..'+today+'?from=EUR').then(function(r){return r.json()}),
+      fetch(api+'/'+d10+'..'+today+'?from=EUR').then(function(r){return r.json()}),
+      fetch(api+'/'+d35+'..'+today+'?from=EUR').then(function(r){return r.json()})
     ]);
-    [r0,r1,r7,r30].forEach(function(r){if(r.rates)r.rates.EUR=1;});
-    var pairs=[
-      ['AUD','CAD'],['AUD','CHF'],['AUD','JPY'],['AUD','NZD'],['AUD','USD'],
-      ['CAD','CHF'],['CAD','JPY'],['CHF','JPY'],
-      ['EUR','AUD'],['EUR','CAD'],['EUR','CHF'],['EUR','GBP'],['EUR','JPY'],['EUR','NZD'],['EUR','USD'],
-      ['GBP','AUD'],['GBP','CAD'],['GBP','CHF'],['GBP','JPY'],['GBP','NZD'],['GBP','USD'],
-      ['NZD','CAD'],['NZD','CHF'],['NZD','JPY'],['NZD','USD'],
-      ['USD','CAD'],['USD','CHF'],['USD','JPY']
-    ];
-    var html='<table class="hm-table"><thead><tr><th>Pair</th><th>Daily</th><th>Weekly</th><th>Monthly</th></tr></thead><tbody>';
-    var lastB='';
-    pairs.forEach(function(p){
-      var b=p[0],q=p[1];
-      if(b!==lastB){
-        html+='<tr><td class="hm-group-lbl" colspan="4">'+b+'</td></tr>';
-        lastB=b;
-      }
-      var d=calcPips(b,q,r0.rates,r1.rates);
-      var w=calcPips(b,q,r0.rates,r7.rates);
-      var m=calcPips(b,q,r0.rates,r30.rates);
-      html+='<tr class="hm-row"><td class="hm-pair">'+b+'/'+q+'</td>'+hmCell(d)+hmCell(w)+hmCell(m)+'</tr>';
-    });
-    html+='</tbody></table>';
-    html+='<div class="meta" style="padding:8px 12px">ECB rates as of '+r0.date+' · Daily = vs prev close · Weekly = vs 7d · Monthly = vs 30d</div>';
-    el.innerHTML=html;
-
-    // Build Majors Matrix
-    var mel=document.getElementById('hm-mat-body');
-    var ccys=[['EUR','🇪🇺'],['USD','🇺🇸'],['AUD','🇦🇺'],['GBP','🇬🇧'],['NZD','🇳🇿'],['CAD','🇨🇦'],['CHF','🇨🇭'],['JPY','🇯🇵']];
-    var mh='<div class="majors-wrap"><table class="majors-table"><thead><tr><th></th>';
-    ccys.forEach(function(c){mh+='<th>'+c[1]+'<br>'+c[0]+'</th>';});
-    mh+='</tr></thead><tbody>';
-    ccys.forEach(function(row){
-      mh+='<tr><td class="row-hdr">'+row[1]+' '+row[0]+'</td>';
-      ccys.forEach(function(col){
-        if(row[0]===col[0]){mh+='<td class="diag">—</td>';return;}
-        var cur=getXR(r0.rates,row[0],col[0]);
-        var prev=getXR(r1.rates,row[0],col[0]);
-        var pct=(cur-prev)/prev*100;
-        var pstr=(pct>=0?'+':'')+pct.toFixed(2)+'%';
-        var cls=pct>0.2?'mat-pos hi':pct>0?'mat-pos':pct<-0.2?'mat-neg hi':'mat-neg';
-        mh+='<td class="'+cls+'">'+pstr+'</td>';
-      });
-      mh+='</tr>';
-    });
-    mh+='</tbody></table></div>';
-    mh+='<div class="meta" style="padding:8px 12px">'+r0.date+' vs '+r1.date+' · row currency strength vs each column currency</div>';
-    mel.innerHTML=mh;
-  }catch(e){
-    el.innerHTML='<div class="cb" style="padding:16px">Unable to load heat map. Check your connection and try again.<br><br><button class="rb" onclick="hmLoaded=false;loadHeatMap()">↺ Retry</button></div>';
-  }
-}
-
-async function loadSentiment(){
-  var el=document.getElementById('sent-body');
-  try{
-    var prompt='Give a concise forex market sentiment summary. For each pair — EURUSD, GBPUSD, AUDUSD, NZDUSD, USDJPY, USDCAD, XAUUSD — state: direction (Bullish / Bearish / Neutral) and one key driver sentence. Lead with a single overall market theme sentence. Under 220 words total. Plain text, no markdown.';
-    var res=await fetch(WU,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({prompt:prompt})});
-    var data=await res.json();
-    var txt=(data.text||'No data returned.').replace(/\n\n/g,'</p><p>').replace(/\n/g,'<br>');
-    el.innerHTML='<p>'+txt+'</p><div class="meta" style="margin-top:10px">Generated by Claude AI · <button class="rb" style="display:inline;padding:4px 10px;font-size:11px" onclick="sentLoaded=false;document.getElementById(\'sent-body\').innerHTML=\'<div class=\\\'ld\\\'><div class=\\\'sp\\\'></div>Refreshing...</div>\';sentLoaded=true;loadSentiment()">↺ Refresh</button></div>';
-  }catch(e){
-    el.innerHTML='<div class="cb">Unable to load sentiment. <button class="rb" onclick="sentLoaded=false;loadSentiment()">↺ Retry</button></div>';
-  }
-}
-
-function pearson(a,b){
-  var n=Math.min(a.length,b.length);
-  if(n<2)return 0;
-  var ma=0,mb=0;
-  for(var i=0;i<n;i++){ma+=a[i];mb+=b[i];}
-  ma/=n;mb/=n;
-  var num=0,da=0,db=0;
-  for(var i=0;i<n;i++){var xa=a[i]-ma,xb=b[i]-mb;num+=xa*xb;da+=xa*xa;db+=xb*xb;}
-  return (da&&db)?Math.round(num/Math.sqrt(da*db)*100):0;
-}
-
-async function loadCorrelation(){
-  var el=document.getElementById('corr-body');
-  try{
-    var t=new Date();
-    var d60=hmDate(new Date(t-60*864e5));
-    var today=hmDate(t);
-    var res=await fetch('https://api.frankfurter.dev/v1/'+d60+'..'+today+'?from=EUR&to=USD,GBP,AUD,CAD,CHF,NZD,JPY');
-    var data=await res.json();
-    var dates=Object.keys(data.rates).sort();
-    var pairDef={
-      'EUR/USD':['EUR','USD'],'GBP/USD':['GBP','USD'],'AUD/USD':['AUD','USD'],
-      'NZD/USD':['NZD','USD'],'USD/CAD':['USD','CAD'],'USD/CHF':['USD','CHF'],
-      'USD/JPY':['USD','JPY'],'EUR/JPY':['EUR','JPY'],'GBP/JPY':['GBP','JPY'],
-      'AUD/JPY':['AUD','JPY'],'EUR/GBP':['EUR','GBP'],'AUD/NZD':['AUD','NZD']
-    };
-    var labels=Object.keys(pairDef);
-    function pairReturns(base,quote){
-      var series=dates.map(function(d){
-        var r=data.rates[d]; if(!r)return null; r.EUR=1;
-        if(base==='EUR')return r[quote];
-        if(quote==='EUR')return 1/r[base];
-        return r[quote]/r[base];
-      }).filter(function(v){return v!==null;});
-      var ret=[];
-      for(var i=1;i<series.length;i++)ret.push((series[i]-series[i-1])/series[i-1]);
-      return ret;
+    var dates3=Object.keys(r3.rates||{}).sort();
+    var dates10=Object.keys(r10.rates||{}).sort();
+    var dates35=Object.keys(r35.rates||{}).sort();
+    var tod=r3.rates[dates3[dates3.length-1]]||{};tod.EUR=1;
+    var yd= r3.rates[dates3[Math.max(0,dates3.length-2)]]||tod;yd.EUR=1;
+    var wk= r10.rates[dates10[0]]||tod;wk.EUR=1;
+    var mo= r35.rates[dates35[0]]||tod;mo.EUR=1;
+    function pips(a,b,sym){
+      var v=((a/b)/(a/b)-1); // will use rates below
+      return v;
     }
-    var retMap={};
-    labels.forEach(function(l){var d=pairDef[l];retMap[l]=pairReturns(d[0],d[1]);});
+    function buildRows(base,comp,sym){
+      // base rates are EUR-based, need to derive pair rate
+      function rate(r,s){if(s==='EUR')return 1;return r[s]||1;}
+      var tRaw=rate(tod,sym),yRaw=rate(yd,sym),wRaw=rate(wk,sym),mRaw=rate(mo,sym);
+      // pair = EUR/SYM if no base conversion; for non-EUR pairs cross
+      var dD=(tRaw-yRaw)/yRaw*10000;
+      var dW=(tRaw-wRaw)/wRaw*10000;
+      var dM=(tRaw-mRaw)/mRaw*10000;
+      return {d:dD,w:dW,m:dM};
+    }
+    var rows=[];
+    var SYMS=['USD','GBP','JPY','CHF','AUD','NZD','CAD'];
+    SYMS.forEach(function(sym){
+      var r=buildRows(tod,yd,sym);
+      rows.push({sym:'EUR/'+sym,d:r.d,w:r.w,m:r.m});
+    });
+    renderHeatPips(rows);
+    buildMajorsMatrix(tod,yd);
+  } catch(e){
+    document.getElementById('hm-body').innerHTML='<div class="eb" style="padding:16px">'+e.message+'</div>';
+  }
+}
+function fmtPip(v){
+  var n=Math.round(v);
+  return (n>0?'+':'')+n;
+}
+function pipClass(v){
+  if(Math.abs(v)<2) return 'hm-neu';
+  return v>0?'hm-pos':'hm-neg';
+}
+function pairColor(sym){
+  var c1=sym.slice(0,3),c2=sym.slice(4);
+  return CCY_COLORS[c1]||'#cbd5e1';
+}
+function renderHeatPips(rows){
+  var html='<table class="hm-table"><thead><tr><th>Pair</th><th>Daily</th><th>Weekly</th><th>Monthly</th></tr></thead><tbody>';
+  rows.forEach(function(r){
+    var col=pairColor(r.sym);
+    var dc=pipClass(r.d),wc=pipClass(r.w),mc=pipClass(r.m);
+    var hiD=Math.abs(r.d)>30?' hi':'',hiW=Math.abs(r.w)>60?' hi':'',hiM=Math.abs(r.m)>150?' hi':'';
+    html+='<tr class="hm-row"><td class="hm-pair" style="color:'+col+'">'+r.sym+'</td>';
+    html+='<td class="hm-cell '+dc+hiD+'">'+fmtPip(r.d)+'</td>';
+    html+='<td class="hm-cell '+wc+hiW+'">'+fmtPip(r.w)+'</td>';
+    html+='<td class="hm-cell '+mc+hiM+'">'+fmtPip(r.m)+'</td></tr>';
+  });
+  html+='</tbody></table>';
+  document.getElementById('hm-body').innerHTML=html;
+}
+function buildMajorsMatrix(tod,yd){
+  var CCYS=['USD','EUR','GBP','AUD','NZD','CAD','JPY','CHF'];
+  function rate(sym){if(sym==='EUR') return 1;return tod[sym]||1;}
+  function prevRate(sym){if(sym==='EUR') return 1;return yd[sym]||1;}
+  function pairChg(c1,c2){
+    var now=(rate(c2)/rate(c1));
+    var prv=(prevRate(c2)/prevRate(c1));
+    return (now-prv)/prv*100;
+  }
+  var html='<div class="majors-wrap"><table class="majors-table"><thead><tr><th></th>';
+  CCYS.forEach(function(c){html+='<th>'+c+'</th>';});
+  html+='</tr></thead><tbody>';
+  CCYS.forEach(function(r){
+    html+='<tr><td class="row-hdr" style="color:'+(CCY_COLORS[r]||'#cbd5e1')+'">'+r+'</td>';
+    CCYS.forEach(function(c){
+      if(r===c){html+='<td class="diag">·</td>';return;}
+      var v=pairChg(r,c);
+      var cls=Math.abs(v)<0.05?'diag':v>0?('mat-pos'+(Math.abs(v)>0.3?' hi':'')):'mat-neg'+(Math.abs(v)>0.3?' hi':'');
+      html+='<td class="'+cls+'">'+(v>0?'+':'')+v.toFixed(2)+'%</td>';
+    });
+    html+='</tr>';
+  });
+  html+='</tbody></table></div>';
+  document.getElementById('hm-mat-body').innerHTML=html;
+}
+function showHMView(id,btn){
+  document.querySelectorAll('.hm-view').forEach(function(v){v.classList.remove('active')});
+  document.querySelectorAll('.hm-vtab').forEach(function(b){b.classList.remove('active')});
+  var el=document.getElementById(id);
+  if(el) el.classList.add('active');
+  if(btn) btn.classList.add('active');
+}
+function showMap(id,btn){
+  document.querySelectorAll('.map-panel').forEach(function(p){p.classList.remove('active')});
+  document.querySelectorAll('.map-tb').forEach(function(b){b.classList.remove('active')});
+  var el=document.getElementById(id);
+  if(el) el.classList.add('active');
+  if(btn) btn.classList.add('active');
+  if(id==='sentiment'&&!sentLoaded) loadSentiment();
+  if(id==='correlation'&&!corrLoaded) loadCorrelation();
+}
+async function loadSentiment(){
+  sentLoaded=true;
+  var out=document.getElementById('sent-body');
+  try{
+    var prompt='You are a forex market analyst. Provide a brief AI market sentiment overview for the current week covering: USD, EUR, GBP, AUD, NZD, CAD, JPY. For each currency state: sentiment (Bullish/Bearish/Neutral), confidence (High/Med/Low), and a one-sentence driver. Format as:\n**USD** – Bullish (High) – [reason]\n**EUR** – etc.\n\nThen add a 2-sentence overall market theme at the end.';
+    var txt=await ai(prompt,'sent:'+weekKey());
+    out.innerHTML='<div class="cb">'+md(txt)+'</div>';
+  } catch(e){out.innerHTML='<div class="eb">'+e.message+'</div>';}
+}
+async function loadCorrelation(){
+  corrLoaded=true;
+  var out=document.getElementById('corr-body');
+  var CPAIRS=['EURUSD','GBPUSD','USDJPY','USDCHF','AUDUSD','NZDUSD','USDCAD'];
+  var api='https://api.frankfurter.dev/v1';
+  var end=hmDate(new Date());
+  var start=hmDate(new Date(Date.now()-60*864e5));
+  try{
+    var data=await fetch(api+'/'+start+'..'+end+'?from=EUR').then(function(r){return r.json()});
+    var dates=Object.keys(data.rates).sort();
+    // Build price series for each pair (all EUR-based, so EURUSD=1/USD rate, etc.)
+    function series(sym){
+      return dates.map(function(d){
+        if(sym==='EURUSD') return data.rates[d].USD||1;
+        if(sym==='EURGBP') return data.rates[d].GBP||1;
+        if(sym==='EURJPY') return data.rates[d].JPY||1;
+        if(sym==='EURCHF') return data.rates[d].CHF||1;
+        if(sym==='EURAUD') return data.rates[d].AUD||1;
+        if(sym==='EURNZD') return data.rates[d].NZD||1;
+        if(sym==='EURCAD') return data.rates[d].CAD||1;
+        // For non-EUR pairs approximate via cross
+        var c1=sym.slice(0,3),c2=sym.slice(3);
+        var r1=c1==='EUR'?1:(data.rates[d][c1]||1);
+        var r2=c2==='EUR'?1:(data.rates[d][c2]||1);
+        return r2/r1;
+      });
+    }
+    function returns(s){return s.slice(1).map(function(v,i){return v/s[i]-1;});}
+    function corr(a,b){
+      var n=a.length,ma=a.reduce(function(s,v){return s+v},0)/n,mb=b.reduce(function(s,v){return s+v},0)/n;
+      var top=0,sa=0,sb=0;
+      for(var i=0;i<n;i++){top+=(a[i]-ma)*(b[i]-mb);sa+=(a[i]-ma)**2;sb+=(b[i]-mb)**2;}
+      return top/Math.sqrt(sa*sb);
+    }
+    var pairs=CPAIRS;
+    var rets=pairs.map(function(p){return returns(series(p));});
     var html='<div class="corr-wrap"><table class="corr-table"><thead><tr><th></th>';
-    labels.forEach(function(l){html+='<th>'+l+'</th>';});
+    pairs.forEach(function(p){html+='<th>'+p+'</th>';});
     html+='</tr></thead><tbody>';
-    labels.forEach(function(l1){
-      html+='<tr><td class="corr-lbl">'+l1+'</td>';
-      labels.forEach(function(l2){
-        var c=pearson(retMap[l1],retMap[l2]);
-        var bg='',col='';
-        if(l1===l2){bg='background:rgba(255,255,255,0.06)';col='color:var(--mt)';}
-        else if(c>=70){bg='background:rgba(74,222,128,0.15)';col='color:#4ade80';}
-        else if(c>=40){bg='background:rgba(74,222,128,0.07)';col='color:#86efac';}
-        else if(c<=-70){bg='background:rgba(248,113,113,0.15)';col='color:#f87171';}
-        else if(c<=-40){bg='background:rgba(248,113,113,0.07)';col='color:#fca5a5';}
-        else{col='color:var(--mt)';}
-        html+='<td style="'+bg+';'+col+'">'+(l1===l2?'—':(c>0?'+':'')+c+'%')+'</td>';
+    pairs.forEach(function(p,i){
+      html+='<tr><td class="corr-lbl">'+p+'</td>';
+      pairs.forEach(function(q,j){
+        if(i===j){html+='<td style="color:var(--mt)">1.00</td>';return;}
+        var c=corr(rets[i],rets[j]);
+        var pct=Math.round(c*100);
+        var abs=Math.abs(pct);
+        var bg=pct>=70?'rgba(74,222,128,0.2)':pct>=30?'rgba(74,222,128,0.08)':pct<=-70?'rgba(248,113,113,0.2)':pct<=-30?'rgba(248,113,113,0.08)':'transparent';
+        var clr=pct>0?'#4ade80':pct<0?'#f87171':'var(--mt)';
+        html+='<td style="background:'+bg+';color:'+clr+'">'+(pct>=0?'+':'')+pct+'%</td>';
       });
       html+='</tr>';
     });
     html+='</tbody></table></div>';
-    html+='<div class="meta" style="margin-top:10px">'+dates.length+' trading days · '+dates[0]+' → '+dates[dates.length-1]+'</div>';
-    el.innerHTML=html;
-  }catch(e){
-    el.innerHTML='<div class="cb">Unable to calculate correlations. <button class="rb" onclick="corrLoaded=false;loadCorrelation()">↺ Retry</button></div>';
-  }
+    out.innerHTML=html;
+  } catch(e){out.innerHTML='<div class="eb">'+e.message+'</div>';}
 }
 
-// ══ INIT ══
-loadD("AUDCAD",null);
-loadW("AUDCAD",null);
-renderJournal();
+/* ══════════════════════════════════════
+   SCANNER  (Amendment 10)
+══════════════════════════════════════ */
+async function runScanner(){
+  var btn=document.getElementById('scan-btn'),res=document.getElementById('scan-results');
+  var meta=document.getElementById('scan-meta');
+  btn.disabled=true;btn.innerHTML='<div class="sp"></div> Scanning…';
+  meta.textContent='';
+  res.innerHTML='<div class="ld" style="padding:20px"><div class="sp"></div>Cross-referencing sentiment, correlation, and multi-timeframe analysis…</div>';
+  try{
+    var prompt='You are a professional forex trading analyst. Analyse the current forex market and identify the 3-5 highest-probability trade setups right now across major pairs.\n\nFor each setup provide this EXACT format (one per setup):\n\nSETUP:\nPAIR: [e.g. GBP/USD]\nDIRECTION: [LONG or SHORT]\nPROBABILITY: [HIGH or MEDIUM]\nENTRY: [price level]\nSTOP LOSS: [price level]\nTAKE PROFIT: [price level]\nREASON: [3-5 sentences explaining why this is a high-probability setup, covering: weekly trend, daily structure, 4H entry trigger, and key catalyst. Use **bold** for key terms.]\n\nFocus on setups with:\n- Clear trend alignment across timeframes\n- Minimum 1:2 risk/reward\n- Upcoming catalyst or clear technical trigger\n- Strong sentiment backing\n\nProvide '+new Date().toISOString().split('T')[0]+' as context date.';
+    var txt=await ai(prompt,'scan:'+new Date().toISOString().split('T')[0]);
+    var setups=txt.split('SETUP:').filter(function(s){return s.trim()});
+    if(!setups.length){
+      res.innerHTML='<div class="scan-empty"><div class="scan-icon">🔍</div><div>No clear setups identified. Market may be consolidating — try again later.</div></div>';
+    } else {
+      var html='';
+      setups.forEach(function(s){
+        var lines=s.split('\n');
+        var get=function(key){var l=lines.find(function(l){return l.trim().startsWith(key+':')});return l?l.replace(key+':','').trim():''};
+        var pair=get('PAIR'),dir=get('DIRECTION'),prob=get('PROBABILITY');
+        var entry=get('ENTRY'),sl=get('STOP LOSS'),tp=get('TAKE PROFIT');
+        var reason=lines.filter(function(l){return l.trim().startsWith('REASON:')}).map(function(l){return l.replace('REASON:','').trim()}).join(' ')||
+          lines.filter(function(l){return !l.match(/^(PAIR|DIRECTION|PROBABILITY|ENTRY|STOP|TAKE)/)&&l.trim()}).join(' ');
+        if(!pair) return;
+        var isHigh=prob.toUpperCase().includes('HIGH');
+        var isLong=dir.toUpperCase().includes('LONG');
+        var probClass=isHigh?'high':'med';
+        var dirClass=isLong?'long':'short';
+        var cardClass=isHigh?'prob-high':'prob-med';
+        // R:R calc
+        var rrHtml='';
+        if(entry&&sl&&tp){
+          var ep=parseFloat(entry.replace(/[^0-9.]/g,'')),sp=parseFloat(sl.replace(/[^0-9.]/g,'')),tp2=parseFloat(tp.replace(/[^0-9.]/g,''));
+          if(ep&&sp&&tp2){
+            var risk=Math.abs(ep-sp),reward=Math.abs(tp2-ep);
+            var rr=reward/risk;
+            rrHtml='<div class="scan-rr">R:R = 1:'+(rr.toFixed(1))+'</div>';
+          }
+        }
+        html+='<div class="scan-card '+cardClass+'"><div class="scan-hdr"><span class="scan-pair">'+pair+'</span><span class="scan-dir '+dirClass+'">'+dir+'</span><span class="scan-prob '+probClass+'">'+prob+' PROB</span></div>';
+        html+='<div class="scan-reason">'+md(reason)+'</div>';
+        if(entry||sl||tp){
+          html+='<div class="scan-levels">';
+          if(entry) html+='<div class="scan-level"><div class="scan-level-lbl">Entry</div><div class="scan-level-val">'+entry+'</div></div>';
+          if(sl) html+='<div class="scan-level"><div class="scan-level-lbl">Stop loss</div><div class="scan-level-val" style="color:#f87171">'+sl+'</div></div>';
+          if(tp) html+='<div class="scan-level"><div class="scan-level-lbl">Take profit</div><div class="scan-level-val" style="color:#4ade80">'+tp+'</div></div>';
+          html+='</div>'+rrHtml;
+        }
+        html+='</div>';
+      });
+      res.innerHTML=html||'<div class="scan-empty"><div class="scan-icon">⚠️</div><div>Could not parse scanner results. Please try again.</div></div>';
+      meta.textContent='Updated '+new Date().toLocaleTimeString('en-AU',{timeZone:'Australia/Brisbane',hour:'2-digit',minute:'2-digit'})+' AEST · Not financial advice';
+    }
+  } catch(e){
+    res.innerHTML='<div class="eb" style="margin:10px">'+e.message+'</div>';
+  }
+  btn.disabled=false;btn.innerHTML='🔍 Run scanner';
+}
+
+/* ══════════════════════════════════════
+   INIT
+══════════════════════════════════════ */
+document.addEventListener('DOMContentLoaded',function(){
+  initPin();
+  initBanner();
+  updateDate();
+  setInterval(updateDate,30000);
+  // Pre-load default pair for daily & weekly
+  loadD('AUDUSD',document.querySelector('#dpr .pp.active'));
+  loadW('AUDUSD',document.querySelector('#wpr .pp.active'));
+  renderJournal();
+});
 </script>
 </body>
 </html>
