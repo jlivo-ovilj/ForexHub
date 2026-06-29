@@ -129,7 +129,7 @@ body{font-family:'Syne',sans-serif;background:var(--bg);color:var(--tx);min-heig
 /* ── SESSIONS ── */
 .sess-timeline{background:var(--sf);border:1px solid var(--bd);border-radius:var(--r);padding:16px 16px 22px;margin-bottom:14px}
 .tl-title{font-family:'DM Mono',monospace;font-size:10px;letter-spacing:0.1em;text-transform:uppercase;color:var(--mt);margin-bottom:12px}
-.tl-outer{position:relative;height:72px;margin-bottom:4px}
+.tl-outer{position:relative;height:auto;margin-bottom:4px}
 .tl-bg{position:absolute;left:0;right:0;top:22px;height:24px;background:var(--sf2);border-radius:4px}
 .tl-seg{position:absolute;top:22px;height:24px;border-radius:4px;transition:opacity 0.2s}
 .tl-now-line{position:absolute;top:14px;height:40px;width:2px;border-radius:1px;transform:translateX(-50%);z-index:2}
@@ -1298,36 +1298,47 @@ function doRenderSessions(){
 function renderTimeline(nowMin){
   var el=document.getElementById('sess-timeline');
   if(!el) return;
-  // Build 24h bars
-  var html='<div class="tl-bg"></div>';
+  var LW=76,RH=20,GAP=8; // label width px, row height px, gap px
+  var nowPct=pctOfDay(nowMin); // 0-1
+  // Convert a 0-1 fraction of the 24h day into a CSS left value inside the track area
+  function tL(p){return 'calc('+(p*100).toFixed(3)+'% + '+(LW*(1-p)).toFixed(2)+'px)';}
+  // Convert a 0-1 duration fraction into a CSS width value inside the track area
+  function tW(p){return 'calc('+(p*100).toFixed(3)+'% - '+(LW*p).toFixed(2)+'px)';}
+  var totalH=SESS.length*(RH+GAP)-GAP; // total height of all rows
+  var html='<div style="position:relative;height:'+(totalH+28)+'px">';
   SESS.forEach(function(s,i){
-    var pStart=pctOfDay(s.start)*100;
-    var alpha=isOpen(s,nowMin)?'0.8':'0.4';
-    var seg='top:22px;height:24px;border-radius:4px;position:absolute;background:'+s.color+';opacity:'+alpha;
+    var top=i*(RH+GAP);
+    var open=isOpen(s,nowMin);
+    var alpha=open?'1':'0.3';
+    var glow=open?';box-shadow:0 0 10px '+s.color+'44':'';
+    // Label
+    html+='<div style="position:absolute;left:0;top:'+top+'px;width:'+LW+'px;height:'+RH+'px;display:flex;align-items:center">';
+    html+='<span style="font-family:\'DM Mono\',monospace;font-size:10px;letter-spacing:0.04em;color:'+(open?s.color:'var(--mt)')+';font-weight:'+(open?'600':'400')+'">'+s.flag+' '+s.name+'</span>';
+    if(open) html+='<span style="margin-left:4px;width:5px;height:5px;border-radius:50%;background:'+s.color+';display:inline-block;flex-shrink:0;box-shadow:0 0 6px '+s.color+'"></span>';
+    html+='</div>';
+    // Track background
+    html+='<div style="position:absolute;left:'+LW+'px;right:0;top:'+top+'px;height:'+RH+'px;background:var(--sf2);border-radius:3px"></div>';
+    // Bar(s)
+    var bStyle='position:absolute;top:'+top+'px;height:'+RH+'px;border-radius:3px;background:'+s.color+';opacity:'+alpha+glow;
     if(s.end>1440){
-      // Session crosses midnight: draw two segments
-      var dur1=(1440-s.start)/1440*100;  // start → midnight
-      var dur2=(s.end-1440)/1440*100;    // midnight → end next day
-      html+='<div class="tl-seg" style="left:'+pStart+'%;width:'+dur1+'%;'+seg+'"></div>';
-      html+='<div class="tl-seg" style="left:0%;width:'+dur2+'%;'+seg+'"></div>';
-      // Label at start of first segment
-      html+='<div class="tl-slabel" style="left:'+pStart+'%;color:'+s.color+';top:2px">'+s.flag+'</div>';
+      var p1=pctOfDay(s.start),d1=(1440-s.start)/1440,d2=(s.end-1440)/1440;
+      html+='<div style="'+bStyle+';left:'+tL(p1)+';width:'+tW(d1)+'"></div>';
+      html+='<div style="'+bStyle+';left:'+LW+'px;width:'+tW(d2)+'"></div>';
     } else {
-      var dur=(s.end-s.start)/1440*100;
-      html+='<div class="tl-seg" style="left:'+pStart+'%;width:'+dur+'%;'+seg+'"></div>';
-      html+='<div class="tl-slabel" style="left:'+pStart+'%;color:'+s.color+';top:2px">'+s.flag+'</div>';
+      var p1=pctOfDay(s.start),dur=(s.end-s.start)/1440;
+      html+='<div style="'+bStyle+';left:'+tL(p1)+';width:'+tW(dur)+'"></div>';
     }
   });
-  // Hour marks
+  // Gridlines + hour labels
   [0,3,6,9,12,15,18,21].forEach(function(h){
-    var pct=h/24*100;
-    html+='<div class="tl-hline" style="left:'+pct+'%;top:22px;height:40px;position:absolute"></div>';
-    html+='<div class="tl-hlabel" style="left:'+pct+'%;bottom:0;position:absolute">'+(h<10?'0':'')+h+'</div>';
+    var p=h/24;
+    html+='<div style="position:absolute;left:'+tL(p)+';top:0;height:'+totalH+'px;width:1px;background:rgba(255,255,255,0.06)"></div>';
+    html+='<div style="position:absolute;left:'+tL(p)+';top:'+(totalH+6)+'px;font-family:\'DM Mono\',monospace;font-size:9px;color:var(--mt);transform:translateX(-50%)">'+(h<10?'0':'')+h+'</div>';
   });
-  // Current time line
-  var nowPct=pctOfDay(nowMin)*100;
-  html+='<div class="tl-now-tri" style="left:'+nowPct+'%;top:10px;position:absolute"></div>';
-  html+='<div class="tl-now-line" style="left:'+nowPct+'%;top:14px;height:40px;background:var(--ac);position:absolute"></div>';
+  // Now line + triangle
+  html+='<div style="position:absolute;left:'+tL(nowPct)+';top:0;height:'+totalH+'px;width:2px;background:var(--ac);border-radius:1px;transform:translateX(-50%);z-index:2"></div>';
+  html+='<div style="position:absolute;left:'+tL(nowPct)+';top:'+(totalH+1)+'px;width:0;height:0;border-left:5px solid transparent;border-right:5px solid transparent;border-top:6px solid var(--ac);transform:translateX(-50%);z-index:2"></div>';
+  html+='</div>';
   el.innerHTML=html;
 }
 
