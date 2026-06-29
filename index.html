@@ -1298,46 +1298,51 @@ function doRenderSessions(){
 function renderTimeline(nowMin){
   var el=document.getElementById('sess-timeline');
   if(!el) return;
-  var LW=76,RH=20,GAP=8; // label width px, row height px, gap px
-  var nowPct=pctOfDay(nowMin); // 0-1
-  // Convert a 0-1 fraction of the 24h day into a CSS left value inside the track area
-  function tL(p){return 'calc('+(p*100).toFixed(3)+'% + '+(LW*(1-p)).toFixed(2)+'px)';}
-  // Convert a 0-1 duration fraction into a CSS width value inside the track area
-  function tW(p){return 'calc('+(p*100).toFixed(3)+'% - '+(LW*p).toFixed(2)+'px)';}
-  var totalH=SESS.length*(RH+GAP)-GAP; // total height of all rows
-  var html='<div style="position:relative;height:'+(totalH+28)+'px">';
+  // Window: 08:00 AEST → 06:00 AEST next day (22 hours)
+  var WS=8*60,WL=22*60; // window start (mins), window length (mins)
+  function wp(m){return(m-WS)/WL;} // raw 0-1 position in window
+  function cl(v){return Math.max(0,Math.min(1,v));} // clamp to [0,1]
+  // Current time mapped into window (times before 8am are next-day)
+  var nowM=nowMin<WS?nowMin+1440:nowMin;
+  var nowWP=cl(wp(nowM));
+  var RH=28,GAP=5;
+  var totalH=SESS.length*(RH+GAP)-GAP;
+  // Local time in session's home timezone
+  var SESS_TZ={Sydney:'Australia/Brisbane',Tokyo:'Asia/Tokyo',London:'Europe/London','New York':'America/New_York'};
+  function localTime(tz){
+    try{return new Intl.DateTimeFormat('en-AU',{timeZone:tz,hour:'2-digit',minute:'2-digit',hour12:false}).format(new Date());}catch(e){return '';}
+  }
+  var html='<div style="position:relative;height:'+(totalH+30)+'px">';
   SESS.forEach(function(s,i){
     var top=i*(RH+GAP);
     var open=isOpen(s,nowMin);
-    var alpha=open?'1':'0.3';
-    var glow=open?';box-shadow:0 0 10px '+s.color+'44':'';
-    // Label
-    html+='<div style="position:absolute;left:0;top:'+top+'px;width:'+LW+'px;height:'+RH+'px;display:flex;align-items:center">';
-    html+='<span style="font-family:\'DM Mono\',monospace;font-size:10px;letter-spacing:0.04em;color:'+(open?s.color:'var(--mt)')+';font-weight:'+(open?'600':'400')+'">'+s.flag+' '+s.name+'</span>';
-    if(open) html+='<span style="margin-left:4px;width:5px;height:5px;border-radius:50%;background:'+s.color+';display:inline-block;flex-shrink:0;box-shadow:0 0 6px '+s.color+'"></span>';
-    html+='</div>';
-    // Track background
-    html+='<div style="position:absolute;left:'+LW+'px;right:0;top:'+top+'px;height:'+RH+'px;background:var(--sf2);border-radius:3px"></div>';
-    // Bar(s)
-    var bStyle='position:absolute;top:'+top+'px;height:'+RH+'px;border-radius:3px;background:'+s.color+';opacity:'+alpha+glow;
-    if(s.end>1440){
-      var p1=pctOfDay(s.start),d1=(1440-s.start)/1440,d2=(s.end-1440)/1440;
-      html+='<div style="'+bStyle+';left:'+tL(p1)+';width:'+tW(d1)+'"></div>';
-      html+='<div style="'+bStyle+';left:'+LW+'px;width:'+tW(d2)+'"></div>';
-    } else {
-      var p1=pctOfDay(s.start),dur=(s.end-s.start)/1440;
-      html+='<div style="'+bStyle+';left:'+tL(p1)+';width:'+tW(dur)+'"></div>';
-    }
+    // Session bar: s.start and s.end are in mins from midnight (end can be >1440 = next day)
+    var sp=cl(wp(s.start)),ep=cl(wp(s.end));
+    var bW=(ep-sp)*100;
+    // Track BG
+    html+='<div style="position:absolute;left:0;right:0;top:'+top+'px;height:'+RH+'px;background:rgba(255,255,255,0.03);border-radius:3px"></div>';
+    // Bar
+    var alpha=open?'0.92':'0.22';
+    var txtCol=open?'rgba(0,0,0,0.9)':'rgba(255,255,255,0.45)';
+    var tz=SESS_TZ[s.name]||'Australia/Brisbane';
+    var timeLbl=open?localTime(tz):'';
+    html+='<div style="position:absolute;left:'+(sp*100).toFixed(2)+'%;width:'+bW.toFixed(2)+'%;top:'+top+'px;height:'+RH+'px;border-radius:3px;background:'+s.color+';opacity:'+alpha+(open?';box-shadow:0 0 10px '+s.color+'55':'')+';overflow:hidden">';
+    html+='<div style="padding:0 8px;height:100%;display:flex;align-items:center;gap:6px;overflow:hidden;white-space:nowrap">';
+    html+='<span style="font-family:\'DM Mono\',monospace;font-size:10px;font-weight:700;color:'+txtCol+'">'+s.flag+' '+s.name+'</span>';
+    if(timeLbl) html+='<span style="font-family:\'DM Mono\',monospace;font-size:9px;color:'+txtCol+';opacity:0.75">'+timeLbl+' local</span>';
+    html+='</div></div>';
   });
-  // Gridlines + hour labels
-  [0,3,6,9,12,15,18,21].forEach(function(h){
-    var p=h/24;
-    html+='<div style="position:absolute;left:'+tL(p)+';top:0;height:'+totalH+'px;width:1px;background:rgba(255,255,255,0.06)"></div>';
-    html+='<div style="position:absolute;left:'+tL(p)+';top:'+(totalH+6)+'px;font-family:\'DM Mono\',monospace;font-size:9px;color:var(--mt);transform:translateX(-50%)">'+(h<10?'0':'')+h+'</div>';
+  // Hour gridlines + labels (every 2h from 8 to 6)
+  [8,10,12,14,16,18,20,22,0,2,4,6].forEach(function(h){
+    var m=h*60,m2=m<WS?m+1440:m;
+    var p=(cl(wp(m2))*100).toFixed(2);
+    html+='<div style="position:absolute;left:'+p+'%;top:0;height:'+totalH+'px;width:1px;background:rgba(255,255,255,0.07)"></div>';
+    html+='<div style="position:absolute;left:'+p+'%;top:'+(totalH+8)+'px;transform:translateX(-50%);font-family:\'DM Mono\',monospace;font-size:9px;color:var(--mt)">'+(h<10?'0':'')+h+'</div>';
   });
   // Now line + triangle
-  html+='<div style="position:absolute;left:'+tL(nowPct)+';top:0;height:'+totalH+'px;width:2px;background:var(--ac);border-radius:1px;transform:translateX(-50%);z-index:2"></div>';
-  html+='<div style="position:absolute;left:'+tL(nowPct)+';top:'+(totalH+1)+'px;width:0;height:0;border-left:5px solid transparent;border-right:5px solid transparent;border-top:6px solid var(--ac);transform:translateX(-50%);z-index:2"></div>';
+  var np=(nowWP*100).toFixed(2);
+  html+='<div style="position:absolute;left:'+np+'%;top:0;height:'+totalH+'px;width:2px;background:var(--ac);transform:translateX(-50%);z-index:4;border-radius:1px"></div>';
+  html+='<div style="position:absolute;left:'+np+'%;top:'+(totalH+2)+'px;transform:translateX(-50%);width:0;height:0;border-left:5px solid transparent;border-right:5px solid transparent;border-top:6px solid var(--ac);z-index:4"></div>';
   html+='</div>';
   el.innerHTML=html;
 }
