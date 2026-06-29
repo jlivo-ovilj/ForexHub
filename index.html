@@ -277,6 +277,10 @@ body{font-family:'Syne',sans-serif;background:var(--bg);color:var(--tx);min-heig
 .hm-cell{font-family:'DM Mono',monospace;font-size:12px;text-align:center;padding:8px 12px;border-bottom:1px solid var(--bd);font-weight:500}
 .hm-pos{color:#4ade80}.hm-neg{color:#f87171}.hm-neu{color:var(--mt)}
 .hm-pos.hi{background:rgba(74,222,128,0.12)}.hm-neg.hi{background:rgba(248,113,113,0.12)}
+.pip-fccy{padding:3px 10px;border-radius:100px;font-family:'DM Mono',monospace;font-size:11px;border:1px solid var(--bd2);background:transparent;color:var(--mt);cursor:pointer;white-space:nowrap;transition:all 0.15s}
+.pip-fccy.all-active{border-color:var(--ac);background:var(--adm);color:var(--ac)}
+.hm-table thead th{cursor:pointer;user-select:none;transition:color 0.15s}
+.hm-table thead th:hover{color:var(--t)}
 .majors-wrap{overflow-x:auto;-webkit-overflow-scrolling:touch}
 .majors-table{border-collapse:collapse;white-space:nowrap;width:100%}
 .majors-table th{font-family:'Syne',sans-serif;font-size:12px;font-weight:600;text-align:center;padding:10px 8px;border:1px solid var(--bd);color:var(--tx);background:var(--sf2)}
@@ -749,7 +753,15 @@ body{font-family:'Syne',sans-serif;background:var(--bg);color:var(--tx);min-heig
   <div id="review-idea" class="review-sub active">
     <div class="card">
       <div class="cl">Your trade idea</div>
-      <textarea class="ta" id="ti" placeholder="e.g. I want to buy AUD/USD at 0.6900 SL 0.6870 TP 0.6960 — daily trend bullish, price just bounced off key support"></textarea>
+      <div class="cb" style="margin-bottom:12px">Describe your trade setup below. Optionally drop a chart screenshot for deeper analysis.</div>
+      <div class="img-drop" id="tir-dropzone" onclick="document.getElementById('tir-img').click()" ondragover="event.preventDefault();this.classList.add('dragover')" ondragleave="this.classList.remove('dragover')" ondrop="handleTirDrop(event)">
+        <div class="img-drop-icon">📊</div>
+        <div class="img-drop-lbl">Optional: tap to add chart screenshot</div>
+        <div class="img-drop-sub">PNG, JPG or GIF · max 5MB</div>
+      </div>
+      <input type="file" id="tir-img" accept="image/*" onchange="handleTirFile(this)">
+      <img id="tir-preview" class="img-preview" alt="Chart preview">
+      <textarea class="ta" id="ti" placeholder="e.g. I want to buy AUD/USD at 0.6900 SL 0.6870 TP 0.6960 — daily trend bullish, price just bounced off key support" style="margin-top:10px"></textarea>
       <br><button class="sb" id="rbtn" onclick="revT()">Review my trade</button>
       <div id="rr" style="margin-top:14px"></div>
     </div>
@@ -1583,15 +1595,44 @@ function calcPos(){
 /* ══════════════════════════════════════
    REVIEW – Trade idea
 ══════════════════════════════════════ */
+var tirImageB64=null,tirMimeType=null;
+function handleTirFile(input){
+  var file=input.files[0];
+  if(!file) return;
+  if(file.size>5*1024*1024){alert('Image too large. Max 5MB.');return;}
+  var reader=new FileReader();
+  reader.onload=function(e){
+    var b64=e.target.result;
+    tirMimeType=file.type||'image/png';
+    tirImageB64=b64.split(',')[1];
+    var preview=document.getElementById('tir-preview');
+    preview.src=b64;preview.style.display='block';
+    var dz=document.getElementById('tir-dropzone');
+    dz.querySelector('.img-drop-icon').textContent='✅';
+    dz.querySelector('.img-drop-lbl').textContent='Chart loaded – tap to replace';
+  };
+  reader.readAsDataURL(file);
+}
+function handleTirDrop(event){
+  event.preventDefault();
+  var dz=document.getElementById('tir-dropzone');
+  dz.classList.remove('dragover');
+  var file=event.dataTransfer.files[0];
+  if(file){
+    var dt=new DataTransfer();dt.items.add(file);
+    var inp=document.getElementById('tir-img');inp.files=dt.files;
+    handleTirFile(inp);
+  }
+}
 async function revT(){
   var ti=document.getElementById('ti').value.trim();
-  if(!ti) return;
+  if(!ti&&!tirImageB64){alert('Please describe your trade idea or upload a chart.');return;}
   var btn=document.getElementById('rbtn'),out=document.getElementById('rr');
   btn.disabled=true;btn.innerHTML='<div class="sp"></div> Analysing…';
   out.innerHTML='<div class="ld"><div class="sp"></div>Reviewing your trade idea…</div>';
   try{
-    var prompt='You are a professional forex trading mentor. A student has this trade idea:\n\n"'+ti+'"\n\nGive structured feedback:\n\n**SETUP QUALITY: [Strong/Moderate/Weak]**\n\n**What\'s good:**\n[2-3 bullet points]\n\n**Concerns:**\n[2-3 bullet points]\n\n**Risk/Reward assessment:**\n[1-2 sentences on the R:R and whether it meets minimum 1:2]\n\n**Recommendation:**\n[PROCEED / WAIT / AVOID] — brief explanation';
-    var txt=await ai(prompt);
+    var basePrompt='You are a professional forex trading mentor. '+(ti?'A student has this trade idea:\n\n"'+ti+'"\n\n':'Analyse the chart image provided.\n\n')+'Give structured feedback:\n\n**SETUP QUALITY: [Strong/Moderate/Weak]**\n\n**What\'s good:**\n[2-3 bullet points]\n\n**Concerns:**\n[2-3 bullet points]\n\n**Risk/Reward assessment:**\n[1-2 sentences on the R:R and whether it meets minimum 1:2]\n\n**Recommendation:**\n[PROCEED / WAIT / AVOID] — brief explanation';
+    var txt=tirImageB64?await aiImage(basePrompt,tirImageB64,tirMimeType):await ai(basePrompt);
     out.innerHTML='<div class="cb">'+md(txt)+'</div>';
   } catch(e){out.innerHTML='<div class="eb">'+e.message+'</div>';}
   btn.disabled=false;btn.innerHTML='Review my trade';
@@ -1712,8 +1753,45 @@ function pairColor(sym){
   var c1=sym.slice(0,3),c2=sym.slice(4);
   return CCY_COLORS[c1]||'#cbd5e1';
 }
+var _pipRows=[],_pipSort={col:'sym',dir:1},_pipCcy='';
 function renderHeatPips(rows){
-  var html='<table class="hm-table"><thead><tr><th>Pair</th><th>Daily</th><th>Weekly</th><th>Monthly</th></tr></thead><tbody>';
+  _pipRows=rows.slice().sort(function(a,b){return a.sym.localeCompare(b.sym);});
+  _pipSort={col:'sym',dir:1};_pipCcy='';
+  drawPipTable();
+}
+function sortPips(sc){
+  if(_pipSort.col===sc){_pipSort.dir*=-1;}
+  else{_pipSort.col=sc;_pipSort.dir=sc==='sym'?1:-1;}
+  drawPipTable();
+}
+function setPipCcy(ccy){_pipCcy=ccy;drawPipTable();}
+function drawPipTable(){
+  var rows=_pipRows.slice();
+  if(_pipCcy) rows=rows.filter(function(r){return r.sym.indexOf(_pipCcy)!==-1;});
+  var sc=_pipSort.col,sd=_pipSort.dir;
+  rows.sort(function(a,b){
+    var av=sc==='sym'?a.sym:a[sc],bv=sc==='sym'?b.sym:b[sc];
+    return sc==='sym'?sd*av.localeCompare(bv):sd*(av-bv);
+  });
+  var CCYS=['AUD','CAD','CHF','EUR','GBP','JPY','NZD','USD'];
+  var fHtml='<div style="display:flex;flex-wrap:wrap;gap:5px;margin-bottom:10px">';
+  fHtml+='<button class="pip-fccy'+(!_pipCcy?' all-active':'')+'" onclick="setPipCcy(\'\')">All</button>';
+  CCYS.forEach(function(ccy){
+    var col=CCY_COLORS[ccy]||'#cbd5e1';
+    var isA=_pipCcy===ccy;
+    fHtml+='<button class="pip-fccy" onclick="setPipCcy(\''+ccy+'\')" style="color:'+col+';border-color:'+(isA?col:'var(--bd2)')+';background:'+(isA?col+'22':'transparent')+'">'+ccy+'</button>';
+  });
+  fHtml+='</div>';
+  function arr(col){
+    if(_pipSort.col!==col) return '<span style="opacity:0.3;font-size:9px"> ⇅</span>';
+    return '<span style="font-size:9px"> '+(_pipSort.dir===1?'▲':'▼')+'</span>';
+  }
+  var html=fHtml+'<table class="hm-table"><thead><tr>';
+  html+='<th onclick="sortPips(\'sym\')" style="text-align:left">Pair'+arr('sym')+'</th>';
+  html+='<th onclick="sortPips(\'d\')">Daily'+arr('d')+'</th>';
+  html+='<th onclick="sortPips(\'w\')">Weekly'+arr('w')+'</th>';
+  html+='<th onclick="sortPips(\'m\')">Monthly'+arr('m')+'</th>';
+  html+='</tr></thead><tbody>';
   rows.forEach(function(r){
     var col=pairColor(r.sym);
     var dc=pipClass(r.d),wc=pipClass(r.w),mc=pipClass(r.m);
@@ -1843,37 +1921,35 @@ async function runScanner(){
   meta.textContent='';
   res.innerHTML='<div class="ld" style="padding:20px"><div class="sp"></div>Cross-referencing sentiment, correlation, and multi-timeframe analysis…</div>';
   try{
-    var prompt='You are a professional forex trading analyst. Analyse the current forex market and identify the 3-5 highest-probability trade setups right now across major pairs.\n\nFor each setup provide this EXACT format (one per setup):\n\nSETUP:\nPAIR: [e.g. GBP/USD]\nDIRECTION: [LONG or SHORT]\nPROBABILITY: [HIGH or MEDIUM]\nENTRY: [price level]\nSTOP LOSS: [price level]\nTAKE PROFIT: [price level]\nREASON: [3-5 sentences explaining why this is a high-probability setup, covering: weekly trend, daily structure, 4H entry trigger, and key catalyst. Use **bold** for key terms.]\n\nFocus on setups with:\n- Clear trend alignment across timeframes\n- Minimum 1:2 risk/reward\n- Upcoming catalyst or clear technical trigger\n- Strong sentiment backing\n\nProvide '+new Date().toISOString().split('T')[0]+' as context date.';
+    var prompt='You are a professional forex trading analyst. Analyse the current forex market and identify the 3-5 highest-probability trade setups right now across major pairs.\n\nFor each setup use this EXACT plain-text format with no markdown, no asterisks, no bold:\n\nSETUP:\nPAIR: e.g. GBP/USD\nDIRECTION: LONG or SHORT\nPROBABILITY: HIGH or MEDIUM\nENTRY: price level\nSTOP LOSS: price level\nTAKE PROFIT: price level\nREASON: 3-5 sentences explaining the setup covering weekly trend, daily structure, 4H trigger, and catalyst.\n\nFocus on setups with clear multi-timeframe alignment, minimum 1:2 risk/reward, and strong technical or fundamental backing. Start each setup with exactly "SETUP:" on its own line. Do not use any markdown.\n\nContext date: '+new Date().toISOString().split('T')[0];
     var txt=await ai(prompt,'scan:'+new Date().toISOString().split('T')[0]);
-    var setups=txt.split('SETUP:').filter(function(s){return s.trim()});
+    // Normalise: strip markdown so field detection works reliably
+    var norm=txt.replace(/\*\*/g,'').replace(/\*/g,'').replace(/^#+\s*/gm,'').replace(/^-{3,}$/gm,'');
+    // Split on SETUP: (handles variations like "SETUP 1:", "Setup:")
+    var setups=norm.split(/\bSETUP\b[^:]*:/i).filter(function(s){return s.trim()&&/\bPAIR\b/i.test(s);});
     if(!setups.length){
-      res.innerHTML='<div class="scan-empty"><div class="scan-icon">🔍</div><div>No clear setups identified. Market may be consolidating — try again later.</div></div>';
+      res.innerHTML='<div class="scan-empty"><div class="scan-icon">🔍</div><div>No clear setups identified right now — market may be consolidating. Try again later.</div></div>';
     } else {
       var html='';
       setups.forEach(function(s){
-        var lines=s.split('\n');
-        var get=function(key){var l=lines.find(function(l){return l.trim().startsWith(key+':')});return l?l.replace(key+':','').trim():''};
+        // Use regex on the block for reliable field extraction
+        var get=function(key){var m=s.match(new RegExp('^'+key+'\\s*:(.*)$','im'));return m?m[1].trim():'';};
         var pair=get('PAIR'),dir=get('DIRECTION'),prob=get('PROBABILITY');
         var entry=get('ENTRY'),sl=get('STOP LOSS'),tp=get('TAKE PROFIT');
-        var reason=lines.filter(function(l){return l.trim().startsWith('REASON:')}).map(function(l){return l.replace('REASON:','').trim()}).join(' ')||
-          lines.filter(function(l){return !l.match(/^(PAIR|DIRECTION|PROBABILITY|ENTRY|STOP|TAKE)/)&&l.trim()}).join(' ');
+        // Grab REASON: everything from that line to next field keyword or end
+        var rm=s.match(/\bREASON\b\s*:([\s\S]*?)(?=\n(?:PAIR|DIRECTION|PROBABILITY|ENTRY|STOP|TAKE|SETUP)\s*:|$)/i);
+        var reason=rm?rm[1].trim():'';
+        if(!reason) reason=s.split('\n').filter(function(l){return l.trim()&&!/^(PAIR|DIRECTION|PROBABILITY|ENTRY|STOP LOSS|TAKE PROFIT)\s*:/i.test(l.trim());}).join(' ');
         if(!pair) return;
         var isHigh=prob.toUpperCase().includes('HIGH');
         var isLong=dir.toUpperCase().includes('LONG');
-        var probClass=isHigh?'high':'med';
-        var dirClass=isLong?'long':'short';
         var cardClass=isHigh?'prob-high':'prob-med';
-        // R:R calc
         var rrHtml='';
         if(entry&&sl&&tp){
           var ep=parseFloat(entry.replace(/[^0-9.]/g,'')),sp=parseFloat(sl.replace(/[^0-9.]/g,'')),tp2=parseFloat(tp.replace(/[^0-9.]/g,''));
-          if(ep&&sp&&tp2){
-            var risk=Math.abs(ep-sp),reward=Math.abs(tp2-ep);
-            var rr=reward/risk;
-            rrHtml='<div class="scan-rr">R:R = 1:'+(rr.toFixed(1))+'</div>';
-          }
+          if(ep&&sp&&tp2){var risk=Math.abs(ep-sp),reward=Math.abs(tp2-ep);rrHtml='<div class="scan-rr">R:R = 1:'+(reward/risk).toFixed(1)+'</div>';}
         }
-        html+='<div class="scan-card '+cardClass+'"><div class="scan-hdr"><span class="scan-pair">'+pair+'</span><span class="scan-dir '+dirClass+'">'+dir+'</span><span class="scan-prob '+probClass+'">'+prob+' PROB</span></div>';
+        html+='<div class="scan-card '+cardClass+'"><div class="scan-hdr"><span class="scan-pair">'+pair+'</span><span class="scan-dir '+(isLong?'long':'short')+'">'+dir+'</span><span class="scan-prob '+(isHigh?'high':'med')+'">'+prob+' PROB</span></div>';
         html+='<div class="scan-reason">'+md(reason)+'</div>';
         if(entry||sl||tp){
           html+='<div class="scan-levels">';
@@ -1884,7 +1960,7 @@ async function runScanner(){
         }
         html+='</div>';
       });
-      res.innerHTML=html||'<div class="scan-empty"><div class="scan-icon">⚠️</div><div>Could not parse scanner results. Please try again.</div></div>';
+      res.innerHTML=html||'<div class="scan-empty"><div class="scan-icon">⚠️</div><div>No setups found — market may be unclear. Try again later.</div></div>';
       meta.textContent='Updated '+new Date().toLocaleTimeString('en-AU',{timeZone:'Australia/Brisbane',hour:'2-digit',minute:'2-digit'})+' AEST · Not financial advice';
     }
   } catch(e){
