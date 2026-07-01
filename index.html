@@ -1282,19 +1282,27 @@ function reportDocHTML(id){
   var light=document.body.classList.contains('light');
   var sect=document.body.getAttribute('data-sect')||'scanner';
   var title=c.dataset.title;
-  var extra='body{overflow:auto!important}'
+  var extra='body{overflow:auto!important;background:#ffffff!important;color:#141414!important}'
    +'.fh-doc{max-width:900px;margin:0 auto;padding:26px 20px}'
-   +'.fh-rhdr{display:flex;align-items:flex-end;justify-content:space-between;gap:12px;border-bottom:1px solid var(--bd);padding-bottom:12px;margin-bottom:18px}'
-   +'.fh-rtitle{font-size:20px;font-weight:700}.fh-rtitle span{color:var(--ac)}'
-   +'.fh-rmeta{font-family:"DM Mono",monospace;font-size:11px;color:var(--mt);text-align:right;white-space:nowrap}'
-   +'.fh-rfoot{margin-top:20px;border-top:1px solid var(--bd);padding-top:10px;font-family:"DM Mono",monospace;font-size:11px;color:var(--mt)}'
+   +'.fh-rhdr{display:flex;align-items:flex-end;justify-content:space-between;gap:12px;border-bottom:1px solid #ccc;padding-bottom:12px;margin-bottom:18px}'
+   +'.fh-rtitle{font-size:20px;font-weight:700;color:#111}.fh-rtitle span{color:var(--ac)}'
+   +'.fh-rmeta{font-family:"DM Mono",monospace;font-size:11px;color:#555;text-align:right;white-space:nowrap}'
+   +'.fh-rfoot{margin-top:20px;border-top:1px solid #ccc;padding-top:10px;font-family:"DM Mono",monospace;font-size:11px;color:#666}'
+   /* Readability: dark, bolder body text on white */
+   +'.cb,.scan-reason,.clb,.cpop-explain,.cpop-desc{color:#141414!important;font-weight:500!important;line-height:1.75!important}'
+   +'.cb strong,.scan-reason strong{color:#000!important;font-weight:700!important}'
+   +'.scan-reason span,.cb span{font-weight:700!important}'
+   +'.cal-detail{color:#333!important}.cal-val{color:#000!important;font-weight:700!important}'
+   +'.scan-level-lbl{color:#555!important}.scan-level-val{font-weight:700!important}'
+   +'.card,.scan-card{background:#fff!important;border-color:#d5d5d5!important}'
+   +'.scan-level{background:#f2f2f0!important}'
    +'@media print{@page{margin:12mm}body{-webkit-print-color-adjust:exact;print-color-adjust:exact}.scan-card,.card{break-inside:avoid}}';
   return '<!DOCTYPE html><html lang="en"><head><meta charset="utf-8">'
    +'<meta name="viewport" content="width=device-width,initial-scale=1">'
    +'<title>ForexHub — '+title+' — '+stampAEST()+'</title>'
    +'<link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Syne:wght@400;500;600;700&display=swap" rel="stylesheet">'
    +'<style>'+css+'\n'+extra+'</style></head>'
-   +'<body class="'+(light?'light':'')+'" data-sect="'+sect+'" style="background:var(--bg);color:var(--tx)">'
+   +'<body class="light" data-sect="'+sect+'" style="background:#ffffff;color:#141414">'
    +'<div class="fh-doc">'
    +'<div class="fh-rhdr"><div class="fh-rtitle">Forex<span>Hub</span> — '+title+'</div>'
    +'<div class="fh-rmeta">'+stampAEST()+'</div></div>'
@@ -1334,17 +1342,32 @@ function doEmail(id){
   var blob=new Blob([reportDocHTML(id)],{type:'text/html;charset=utf-8'});
   var a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download=fname;document.body.appendChild(a);a.click();a.remove();
   setTimeout(function(){URL.revokeObjectURL(a.href);},1000);
-  var body=reportText(id)+'\n\n----------\n📎 A formatted copy ("'+fname+'") was just downloaded to your device — attach it to this email to send the styled version.';
-  location.href='mailto:?subject='+encodeURIComponent('ForexHub — '+c.dataset.title)+'&body='+encodeURIComponent(body);
-  showToast('Formatted copy downloaded — attach '+fname);
+  var subject='ForexHub — '+c.dataset.title;
+  var body=reportText(id)+'\n\n----------\n📎 Attach the downloaded file "'+fname+'" for the formatted version.';
+  // Open Gmail compose (reliable — no OS mail handler needed); fall back to mailto
+  var gmail='https://mail.google.com/mail/?view=cm&fs=1&tf=1&su='+encodeURIComponent(subject)+'&body='+encodeURIComponent(body);
+  var win=window.open(gmail,'_blank');
+  if(!win){ location.href='mailto:?subject='+encodeURIComponent(subject)+'&body='+encodeURIComponent(body); }
+  showToast('Opening email · attach '+fname);
 }
-function doSave(id){
+async function doSave(id){
   var c=document.getElementById(id);
-  var blob=new Blob([reportDocHTML(id)],{type:'text/html;charset=utf-8'});
-  var a=document.createElement('a');a.href=URL.createObjectURL(blob);
-  a.download=c.dataset.name+'_'+fileStamp()+'.html';document.body.appendChild(a);a.click();a.remove();
+  var fname=c.dataset.name+'_'+fileStamp()+'.html';
+  var html=reportDocHTML(id);
+  // Native "Save As" dialog so the user chooses the folder (Chrome/Edge)
+  if(window.showSaveFilePicker){
+    try{
+      var handle=await window.showSaveFilePicker({suggestedName:fname,types:[{description:'ForexHub report (HTML)',accept:{'text/html':['.html']}}]});
+      var w=await handle.createWritable();await w.write(html);await w.close();
+      showToast('Saved '+fname);
+      return;
+    }catch(e){ if(e&&e.name==='AbortError') return; } // user cancelled → stop; other errors → fall back
+  }
+  // Fallback: normal download to the browser's Downloads folder
+  var blob=new Blob([html],{type:'text/html;charset=utf-8'});
+  var a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download=fname;document.body.appendChild(a);a.click();a.remove();
   setTimeout(function(){URL.revokeObjectURL(a.href);},1000);
-  showToast('Saved '+a.download);
+  showToast('Saved '+fname);
 }
 function doPrint(id){
   var w=window.open('','_blank');
