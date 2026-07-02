@@ -953,7 +953,8 @@ body.light .chart-modal-overlay{background:rgba(0,0,0,0.55)}
   <div class="st">About ForexHub</div>
   <div class="ss">Your daily forex companion</div>
   <div class="card">
-    <div class="ai"><div class="aq">How does the analysis work?</div><div class="aa">ForexHub sends prompts to Claude AI via a Cloudflare Worker with live web search. All 29 pairs are available across Daily, Weekly, and 4-Hour tabs.</div></div>
+    <div class="ai"><div class="aq">Estimated AI spend</div><div class="aa" id="ai-spend">—</div></div>
+    <div class="ai"><div class="aq">How does the analysis work?</div><div class="aa">ForexHub sends prompts to Claude AI via a Cloudflare Worker. Analysis runs on the cheaper Haiku model and is cached per day; the scanner uses a stronger model with live prices and web search. Web search is only used where freshness matters, to keep costs down.</div></div>
     <div class="ai"><div class="aq">How do I remove the PIN gate?</div><div class="aa">The PIN is "2025". To remove it permanently for public access, delete the pin-gate div and the checkPin() / initPin() functions from the HTML source.</div></div>
     <div class="ai"><div class="aq">How often should I refresh?</div><div class="aa">Daily tab: each morning AEST. Weekly tab: Monday before markets open. 4H tab: before intraday sessions. Calendar: once per week on Monday.</div></div>
     <div class="ai"><div class="aq">Where is my journal stored?</div><div class="aa">Your trade journal is saved in your browser's localStorage. It never leaves your device and persists across sessions.</div></div>
@@ -1039,7 +1040,7 @@ var PAIR_SESSIONS = {
 var CORRECT_PIN = "2025";
 /* Safe storage — Web Storage can throw on file:// or in private mode. Never let it block the app. */
 var SS={get:function(k){try{return sessionStorage.getItem(k);}catch(e){return null;}},set:function(k,v){try{sessionStorage.setItem(k,v);}catch(e){}}};
-var LS={get:function(k){try{return localStorage.getItem(k);}catch(e){return null;}},set:function(k,v){try{localStorage.setItem(k,v);}catch(e){}}};
+var LS={get:function(k){try{return localStorage.getItem(k);}catch(e){return null;}},set:function(k,v){try{localStorage.setItem(k,v);}catch(e){}},del:function(k){try{localStorage.removeItem(k);}catch(e){}}};
 function initPin(){
   if(SS.get('fh_pin')==='ok'){
     document.getElementById('pin-gate').style.display='none';
@@ -1127,51 +1128,84 @@ function showReviewSub(id,btn){
 /* ══════════════════════════════════════
    AI CALL HELPER
 ══════════════════════════════════════ */
-async function ai(prompt,cacheKey,maxTokens){
+/* Estimated AI spend tracking (USD, from the usage the worker now returns) */
+var RATES={'claude-haiku-4-5':[1,5],'claude-sonnet-4-6':[3,15],'claude-sonnet-5':[2,10]}; // [in,out] US$ per 1M tokens
+function costDayKey(){return 'fh_cost:'+new Date().toLocaleDateString('en-CA',{timeZone:'Australia/Brisbane'});}
+function trackUsage(u,model,searched){
+  if(!u) return;
+  var r=RATES[model]||RATES['claude-sonnet-4-6'];
+  var inTok=(u.input_tokens||0)+(u.cache_read_input_tokens||0)+(u.cache_creation_input_tokens||0);
+  var outTok=u.output_tokens||0;
+  var searches=(u.server_tool_use&&u.server_tool_use.web_search_requests)||(searched?1:0);
+  var cost=inTok/1e6*r[0]+outTok/1e6*r[1]+searches*0.01;
+  var key=costDayKey(), cur=parseFloat(LS.get(key)||'0')||0;
+  LS.set(key,(cur+cost).toFixed(4));
+  updateSpend();
+}
+function updateSpend(){
+  var el=document.getElementById('ai-spend');
+  if(el){var t=parseFloat(LS.get(costDayKey())||'0')||0; el.textContent='≈ US$'+t.toFixed(2)+' today (estimated)';}
+}
+/* AI call — opts: {maxTokens, model, webSearch}. localStorage-cached by cacheKey to avoid re-billing. */
+async function ai(prompt,cacheKey,opts){
+  if(typeof opts==='number') opts={maxTokens:opts};
+  opts=opts||{};
   if(cacheKey && cache[cacheKey]) return cache[cacheKey];
+  if(cacheKey){ var ls=LS.get('fhai:'+cacheKey); if(ls){ cache[cacheKey]=ls; return ls; } }
   var payload={prompt:prompt};
-  if(maxTokens) payload.maxTokens=maxTokens;
+  if(opts.maxTokens) payload.maxTokens=opts.maxTokens;
+  if(opts.model) payload.model=opts.model;
+  if(opts.webSearch) payload.webSearch=true;
   var res=await fetch(WU,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(payload)});
-  if(!res.ok) throw new Error('API '+res.status);
-  var d=await res.json();
-  var txt=d.text||d.content&&d.content[0]&&d.content[0].text||'No response';
-  if(cacheKey) cache[cacheKey]=txt;
+  var d=null; try{d=await res.json();}catch(e){}
+  if(!res.ok) throw new Error((d&&d.error)?d.error:('API '+res.status));
+  var txt=(d&&(d.text||(d.content&&d.content[0]&&d.content[0].text)))||'No response';
+  try{trackUsage(d&&d.usage, d&&d.model, d&&d.searched);}catch(e){}
+  if(cacheKey){ cache[cacheKey]=txt; LS.set('fhai:'+cacheKey,txt); }
   return txt;
 }
 
 /* ══════════════════════════════════════
    LIVE PRICE CONTEXT + FRESHNESS  (Amendments 11 & 12)
 ══════════════════════════════════════ */
-var _livePrices=null;
-async function getLivePrices(){
-  if(_livePrices) return _livePrices;
-  var api='https://api.frankfurter.dev/v1';
-  var today=hmDate(new Date()), d7=hmDate(new Date(Date.now()-7*864e5));
-  var r=await fetch(api+'/'+d7+'..'+today+'?from=EUR').then(function(x){return x.json()});
-  var dates=Object.keys(r.rates||{}).sort();
-  var latest=Object.assign({},r.rates[dates[dates.length-1]]||{}); latest.EUR=1;
-  _livePrices={rates:latest,date:dates[dates.length-1]};
-  return _livePrices;
-}
-function livePairPrice(rates,pair){
-  var a=pair.slice(0,3),b=pair.slice(3);
-  var ra=a==='EUR'?1:rates[a], rb=b==='EUR'?1:rates[b];
-  if(!ra||!rb) return null;
-  return rb/ra; // price of A/B via EUR bridge
+/* Near-real-time FX quotes via the worker's /price proxy (Yahoo, keyless) — replaces the daily ECB fix */
+var PRICE_URL=WU.replace(/\/api$/,'')+'/price';
+var _quoteCache={};
+async function liveQuotes(pairs){
+  var need=pairs.filter(function(p){return _quoteCache[p]==null;});
+  if(need.length){
+    try{
+      var d=await fetch(PRICE_URL+'?pairs='+encodeURIComponent(need.join(',')),{cache:'no-store'}).then(function(r){return r.json();});
+      var qs=(d&&d.quotes)||{};
+      Object.keys(qs).forEach(function(k){_quoteCache[k]=qs[k];});
+    }catch(e){}
+  }
+  var out={}; pairs.forEach(function(p){ if(_quoteCache[p]!=null) out[p]=_quoteCache[p]; }); return out;
 }
 function fmtPrice(pair,v){return v.toFixed(pair.indexOf('JPY')>-1?3:pair.indexOf('XAU')>-1?2:5);}
+/* One-line quote with today's range + momentum, so the model won't fade a strong move or use a passed level */
+function quoteLine(pair,q){
+  var s=fmtPrice(pair,q.p);
+  if(q.hi!=null&&q.lo!=null){
+    s+=' (today '+fmtPrice(pair,q.lo)+'–'+fmtPrice(pair,q.hi);
+    if(q.chg!=null) s+=', '+(q.chg>=0?'+':'')+q.chg+'% — momentum '+(q.chg>0.15?'UP':q.chg<-0.15?'DOWN':'flat');
+    s+=')';
+  }
+  return s;
+}
 async function priceContext(pair){
   try{
-    var lp=await getLivePrices();
-    var v=livePairPrice(lp.rates,pair);
-    if(!v) return '';
+    var q=(await liveQuotes([pair]))[pair];
+    if(!q||q.p==null) return '';
     var p=pair.slice(0,3)+'/'+pair.slice(3);
-    return 'CURRENT PRICE: '+p+' is trading around '+fmtPrice(pair,v)+' (ECB reference rate, '+lp.date+'). Anchor ALL levels to this current price and keep every level realistic and within a sensible distance of it.\n\n';
+    var t=new Date().toLocaleTimeString('en-AU',{timeZone:'Australia/Brisbane',hour:'2-digit',minute:'2-digit'});
+    return 'CURRENT LIVE MARKET ('+t+' AEST): '+p+' = '+quoteLine(pair,q)+'. Anchor ALL levels to THIS live price — resistance just above, support just below, entry within a realistic distance. Never use a level price has already moved past, and do not fight a strong intraday move (see momentum) without a clear reversal reason.\n\n';
   }catch(e){return '';}
 }
-function freshnessNote(){
+function freshnessNote(useSearch){
   var d=new Date().toLocaleDateString('en-AU',{timeZone:'Australia/Brisbane',weekday:'long',day:'numeric',month:'long',year:'numeric'});
-  return '\n\nToday is '+d+'. Use web search to confirm current catalysts. Only call an event "upcoming" if it is genuinely in the future relative to today — never describe a past election, central-bank meeting or data release as if it is still ahead.';
+  if(useSearch) return '\n\nToday is '+d+'. Use web search to confirm current catalysts. Only call an event "upcoming" if it is genuinely in the future relative to today — never describe a past election, central-bank meeting or data release as if it is still ahead.';
+  return '\n\nToday is '+d+'. Base your analysis on the live price above and well-established context. Do not present specific scheduled events as "upcoming" unless you are certain they are still in the future.';
 }
 async function aiImage(prompt,imageB64,mimeType){
   var res=await fetch(WU,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({prompt:prompt,image:imageB64,mimeType:mimeType||'image/png'})});
@@ -1515,8 +1549,8 @@ async function loadD(pair,btn){
   var bias='';
   try{
     var pc=await priceContext(pair);
-    var prompt=pc+'You are a professional forex analyst. Provide a concise DAILY analysis for '+p+' as of today '+new Date().toISOString().split('T')[0]+' AEST. Format exactly:\nBIAS: [BULLISH/BEARISH/NEUTRAL]\n\nKEY LEVELS:\n- Resistance 1: [price]\n- Resistance 2: [price]\n- Entry zone: [price range]\n- Support 1: [price]\n- Support 2: [price]\n\nWATCH TODAY:\n[2-3 bullet points on what to watch, catalysts, and specific entry triggers. Use **bold** for key terms.]\n\nBe specific with price levels — resistances above and supports below the current price. Keep it concise.'+freshnessNote();
-    var txt=await ai(prompt,'d:'+pair+':'+new Date().toDateString());
+    var prompt=pc+'You are a professional forex analyst. Provide a concise DAILY analysis for '+p+' as of today '+new Date().toISOString().split('T')[0]+' AEST. Format exactly:\nBIAS: [BULLISH/BEARISH/NEUTRAL]\n\nKEY LEVELS:\n- Resistance 1: [price]\n- Resistance 2: [price]\n- Entry zone: [price range]\n- Support 1: [price]\n- Support 2: [price]\n\nWATCH TODAY:\n[2-3 bullet points on what to watch, catalysts, and specific entry triggers. Use **bold** for key terms.]\n\nBe specific with price levels — resistances above and supports below the current price. Keep it concise.'+freshnessNote(false);
+    var txt=await ai(prompt,'d:'+pair+':'+new Date().toDateString(),{model:'claude-haiku-4-5',maxTokens:1000});
     var lines=txt.split('\n');
     function stripMd(s){return s.replace(/\*\*/g,'').replace(/\*/g,'').replace(/^#+\s*/,'').trim();}
     var biasLine=lines.find(function(l){return stripMd(l).toUpperCase().startsWith('BIAS:')}) || '';
@@ -1549,7 +1583,7 @@ async function loadD(pair,btn){
     document.getElementById('db').innerHTML='<div class="eb">'+e.message+'</div>';
   }
 }
-function forceD(){delete cache['d:'+cD+':'+new Date().toDateString()];loadD(cD,null);}
+function forceD(){var k='d:'+cD+':'+new Date().toDateString();delete cache[k];LS.del('fhai:'+k);loadD(cD,null);}
 
 /* ══════════════════════════════════════
    WEEKLY ANALYSIS
@@ -1570,8 +1604,8 @@ async function loadW(pair,btn){
   var p=pair.slice(0,3)+'/'+pair.slice(3);
   try{
     var pc=await priceContext(pair);
-    var prompt=pc+'You are a professional forex analyst. Provide a concise WEEKLY analysis for '+p+' for the week of '+new Date().toISOString().split('T')[0]+'. Format exactly:\nMACRO THEME:\n[2-3 sentences on the macro backdrop driving this pair. Use **bold** for key themes.]\n\nTREND AND STRUCTURE:\n[2-3 sentences on the weekly trend, structure, key levels. Use **bold** for level prices.]\n\nKEY EVENTS THIS WEEK:\n- [Event 1: day and what to watch]\n- [Event 2]\n- [Event 3]\n\nKeep each section tight and actionable.'+freshnessNote();
-    var txt=await ai(prompt,'w:'+pair+':'+weekKey());
+    var prompt=pc+'You are a professional forex analyst. Provide a concise WEEKLY analysis for '+p+' for the week of '+new Date().toISOString().split('T')[0]+'. Format exactly:\nMACRO THEME:\n[2-3 sentences on the macro backdrop driving this pair. Use **bold** for key themes.]\n\nTREND AND STRUCTURE:\n[2-3 sentences on the weekly trend, structure, key levels. Use **bold** for level prices.]\n\nKEY EVENTS THIS WEEK:\n- [Event 1: day and what to watch]\n- [Event 2]\n- [Event 3]\n\nKeep each section tight and actionable.'+freshnessNote(true);
+    var txt=await ai(prompt,'w:'+pair+':'+weekKey(),{model:'claude-haiku-4-5',maxTokens:1200,webSearch:true});
     var lines=txt.split('\n');
     var sections={macro:[],trend:[],events:[]};
     var cur='';
@@ -1597,7 +1631,7 @@ async function loadW(pair,btn){
     document.getElementById('wt').innerHTML='<div class="eb">'+e.message+'</div>';
   }
 }
-function forceW(){delete cache['w:'+cW+':'+weekKey()];loadW(cW,null);}
+function forceW(){var k='w:'+cW+':'+weekKey();delete cache[k];LS.del('fhai:'+k);loadW(cW,null);}
 function weekKey(){var d=new Date();d.setDate(d.getDate()-d.getDay());return d.toISOString().split('T')[0];}
 
 /* ══════════════════════════════════════
@@ -1616,8 +1650,8 @@ async function load4hr(pair,btn){
   var hr4key=Math.floor(new Date()/14400000);
   try{
     var pc=await priceContext(pair);
-    var prompt=pc+'You are a professional forex analyst. Provide a 4-HOUR intraday analysis for '+p+' right now '+new Date().toISOString().split('T')[0]+'. Format exactly:\n4H BIAS: [BULLISH/BEARISH/NEUTRAL]\n\n4H SETUP:\n[2-3 sentences on the 4H chart structure, pattern, and context. Use **bold** for key terms.]\n\nKEY 4H LEVELS:\n- 4H Resistance: [price]\n- 4H Entry zone: [price range]\n- 4H Support: [price]\n\nENTRY TRIGGER:\n[1-2 sentences on the specific price action signal or candle pattern to watch for entry. Use **bold** for the trigger.]\n\nKeep it tight and specific — resistance above and support below the current price.'+freshnessNote();
-    var txt=await ai(prompt,'4h:'+pair+':'+hr4key);
+    var prompt=pc+'You are a professional forex analyst. Provide a 4-HOUR intraday analysis for '+p+' right now '+new Date().toISOString().split('T')[0]+'. Format exactly:\n4H BIAS: [BULLISH/BEARISH/NEUTRAL]\n\n4H SETUP:\n[2-3 sentences on the 4H chart structure, pattern, and context. Use **bold** for key terms.]\n\nKEY 4H LEVELS:\n- 4H Resistance: [price]\n- 4H Entry zone: [price range]\n- 4H Support: [price]\n\nENTRY TRIGGER:\n[1-2 sentences on the specific price action signal or candle pattern to watch for entry. Use **bold** for the trigger.]\n\nKeep it tight and specific — resistance above and support below the current price.'+freshnessNote(false);
+    var txt=await ai(prompt,'4h:'+pair+':'+hr4key,{model:'claude-haiku-4-5',maxTokens:1000});
     var lines=txt.split('\n');
     function strip4(s){return s.replace(/\*\*/g,'').replace(/\*/g,'').replace(/^#+\s*/,'').trim();}
     var biasL=lines.find(function(l){return strip4(l).toUpperCase().startsWith('4H BIAS')}) || '';
@@ -1642,7 +1676,7 @@ async function load4hr(pair,btn){
     document.getElementById('h4b').innerHTML='<div class="eb">'+e.message+'</div>';
   }
 }
-function force4hr(){delete cache['4h:'+c4+':'+Math.floor(new Date()/14400000)];load4hr(c4,null);}
+function force4hr(){var k='4h:'+c4+':'+Math.floor(new Date()/14400000);delete cache[k];LS.del('fhai:'+k);load4hr(c4,null);}
 
 /* ══════════════════════════════════════
    SESSIONS  (Amendments 4 & 5)
@@ -1814,8 +1848,8 @@ async function loadCalendar(){
   body.innerHTML='<div class="ld" style="padding:20px"><div class="sp"></div>Fetching economic events…</div>';
   var wk=getWeekRange();
   try{
-    var prompt='You are an economic calendar expert. List the major forex economic events for the week of '+wk+'. For each event provide:\nDAY|TIME AEST|CURRENCY|IMPORTANCE(high/med/low)|EVENT NAME|FORECAST|PREVIOUS|BRIEF DESCRIPTION\n\nList 12-18 events covering USD, EUR, GBP, AUD, NZD, CAD, JPY. Focus on high and medium importance. Use the DAY column in the form "MON 30 JUN" (weekday + date + month). Output ONLY real event rows — do not include a header row, an example row, or placeholder/dashed rows. Format each event as one line with | separators.'+freshnessNote();
-    var txt=await ai(prompt,'cal:'+wk,2600);
+    var prompt='You are an economic calendar expert. List the major forex economic events for the week of '+wk+'. For each event provide:\nDAY|TIME AEST|CURRENCY|IMPORTANCE(high/med/low)|EVENT NAME|FORECAST|PREVIOUS|BRIEF DESCRIPTION\n\nList 12-18 events covering USD, EUR, GBP, AUD, NZD, CAD, JPY. Focus on high and medium importance. Use the DAY column in the form "MON 30 JUN" (weekday + date + month). Output ONLY real event rows — do not include a header row, an example row, or placeholder/dashed rows. Format each event as one line with | separators.'+freshnessNote(true);
+    var txt=await ai(prompt,'cal:'+wk,{model:'claude-haiku-4-5',maxTokens:2600,webSearch:true});
     var events=[];
     txt.split('\n').forEach(function(line){
       var p=line.split('|');
@@ -1835,7 +1869,7 @@ async function loadCalendar(){
     body.innerHTML='<div class="eb">'+e.message+'</div>';
   }
 }
-function forceCal(){calLoaded=false;calData=[];loadCalendar();}
+function forceCal(){var k='cal:'+getWeekRange();delete cache[k];LS.del('fhai:'+k);calLoaded=false;calData=[];loadCalendar();}
 function getWeekRange(){
   var d=new Date(),mon=new Date(d);
   mon.setDate(d.getDate()-d.getDay()+1);
@@ -2255,8 +2289,8 @@ async function loadSentiment(){
   sentLoaded=true;
   var out=document.getElementById('sent-body');
   try{
-    var prompt='You are a forex market analyst. Provide a brief AI market sentiment overview for the current week covering: USD, EUR, GBP, AUD, NZD, CAD, JPY. For each currency state: sentiment (Bullish/Bearish/Neutral), confidence (High/Med/Low), and a one-sentence driver. Format as:\n**USD** – Bullish (High) – [reason]\n**EUR** – etc.\n\nThen add a 2-sentence overall market theme at the end.'+freshnessNote();
-    var txt=await ai(prompt,'sent:'+weekKey());
+    var prompt='You are a forex market analyst. Provide a brief AI market sentiment overview for the current week covering: USD, EUR, GBP, AUD, NZD, CAD, JPY. For each currency state: sentiment (Bullish/Bearish/Neutral), confidence (High/Med/Low), and a one-sentence driver. Format as:\n**USD** – Bullish (High) – [reason]\n**EUR** – etc.\n\nThen add a 2-sentence overall market theme at the end.'+freshnessNote(true);
+    var txt=await ai(prompt,'sent:'+weekKey(),{model:'claude-haiku-4-5',maxTokens:1200,webSearch:true});
     out.innerHTML='<div class="cb">'+colorizeCcy(md(txt))+'</div>';
     buildShareBar('sent-share','Market sentiment','#sent-body','sentiment');
   } catch(e){out.innerHTML='<div class="eb">'+e.message+'</div>';}
@@ -2339,16 +2373,17 @@ async function runScanner(){
   var shareEl=document.getElementById('scan-share');if(shareEl){shareEl.style.display='none';shareEl.innerHTML='';}
   res.innerHTML='<div class="ld" style="padding:20px"><div class="sp"></div>Cross-referencing sentiment, correlation, and multi-timeframe analysis…</div>';
   try{
-    // Live prices to anchor entries to reality (Amendment 11)
+    // Live intraday prices to anchor entries to the real current market (fixes stale entries)
     var priceBlock='';
     try{
-      var lp=await getLivePrices();
       var majors=['EURUSD','GBPUSD','USDJPY','USDCHF','USDCAD','AUDUSD','NZDUSD','EURJPY','GBPJPY','EURGBP','AUDJPY','EURAUD'];
-      var lines=majors.map(function(mp){var v=livePairPrice(lp.rates,mp);return v?(mp.slice(0,3)+'/'+mp.slice(3)+' = '+fmtPrice(mp,v)):null;}).filter(Boolean);
-      if(lines.length) priceBlock='CURRENT LIVE PRICES (ECB reference, '+lp.date+'):\n'+lines.join('\n')+'\n\n';
+      var q=await liveQuotes(majors);
+      var lines=majors.map(function(mp){return q[mp]?(mp.slice(0,3)+'/'+mp.slice(3)+' = '+quoteLine(mp,q[mp])):null;}).filter(Boolean);
+      var tnow=new Date().toLocaleTimeString('en-AU',{timeZone:'Australia/Brisbane',hour:'2-digit',minute:'2-digit'});
+      if(lines.length) priceBlock='CURRENT LIVE PRICES ('+tnow+' AEST, real-time — each line shows price, today\'s range and % move/momentum):\n'+lines.join('\n')+'\n\n';
     }catch(e){}
-    var prompt=priceBlock+'You are a professional forex trading analyst. Analyse the current forex market and identify the 3-5 highest-probability trade setups right now across major pairs.\n\nFor each setup use this EXACT plain-text format with no markdown, no asterisks, no bold:\n\nSETUP:\nPAIR: e.g. GBP/USD\nDIRECTION: LONG or SHORT\nPROBABILITY: HIGH or MEDIUM\nENTRY: price level\nSTOP LOSS: price level\nTAKE PROFIT: price level\nREASON: 3-5 sentences explaining the setup covering weekly trend, daily structure, 4H trigger, and catalyst.\n\nCRITICAL LEVEL RULES — base every level on the CURRENT LIVE PRICES above:\n- ENTRY must be within roughly 0.5% of the current price (a realistic pending order), never far away.\n- For a SHORT: ENTRY at or slightly ABOVE current price, STOP LOSS above entry, TAKE PROFIT below entry.\n- For a LONG: ENTRY at or slightly BELOW current price, STOP LOSS below entry, TAKE PROFIT above entry.\n- Direction, entry, stop and target must be internally consistent and achieve at least 1:2 risk/reward.\n- Do not contradict yourself: if the reasoning is bearish the direction must be SHORT, and vice-versa.\n\nOnly include setups with clear multi-timeframe alignment and strong technical or fundamental backing. Start each setup with exactly "SETUP:" on its own line. Do not use any markdown. Always finish the final setup completely — never cut off mid-sentence.'+freshnessNote();
-    var txt=await ai(prompt,'scan:'+new Date().toISOString().split('T')[0],3800);
+    var prompt=priceBlock+'You are a professional forex trading analyst. Analyse the current forex market and identify the 3-5 highest-probability trade setups right now across major pairs.\n\nFor each setup use this EXACT plain-text format with no markdown, no asterisks, no bold:\n\nSETUP:\nPAIR: e.g. GBP/USD\nDIRECTION: LONG or SHORT\nPROBABILITY: HIGH or MEDIUM\nENTRY: price level\nSTOP LOSS: price level\nTAKE PROFIT: price level\nREASON: 3-5 sentences explaining the setup covering weekly trend, daily structure, 4H trigger, and catalyst.\n\nCRITICAL LEVEL RULES — base every level on the CURRENT LIVE PRICES above:\n- ENTRY must be within roughly 0.5% of the current price (a realistic pending order that has NOT already been hit), never far away.\n- Never use a level that price has already traded through — the entry must still be reachable from the current live price.\n- Respect each pair\'s momentum shown above: do NOT recommend fading a strong UP or DOWN move (a pair trading near its daily high/low with a clear % move) unless you can state a specific reversal signal. Prefer setups that trade WITH the prevailing intraday direction.\n- For a SHORT: ENTRY at or slightly ABOVE current price, STOP LOSS above entry, TAKE PROFIT below entry.\n- For a LONG: ENTRY at or slightly BELOW current price, STOP LOSS below entry, TAKE PROFIT above entry.\n- Direction, entry, stop and target must be internally consistent and achieve at least 1:2 risk/reward.\n- Do not contradict yourself: if the reasoning is bearish the direction must be SHORT, and vice-versa.\n\nOnly include setups with clear multi-timeframe alignment and strong technical or fundamental backing. Start each setup with exactly "SETUP:" on its own line. Do not use any markdown. Always finish the final setup completely — never cut off mid-sentence.'+freshnessNote(true);
+    var txt=await ai(prompt,'scan:'+Math.floor(Date.now()/9e5),{model:'claude-sonnet-5',maxTokens:3800,webSearch:true});
     // Normalise: strip markdown so field detection works reliably
     var norm=txt.replace(/\*\*/g,'').replace(/\*/g,'').replace(/^#+\s*/gm,'').replace(/^-{3,}$/gm,'');
     // Split on SETUP: (handles variations like "SETUP 1:", "Setup:")
@@ -2399,10 +2434,20 @@ async function runScanner(){
 /* ══════════════════════════════════════
    INIT
 ══════════════════════════════════════ */
+/* Bound the localStorage analysis cache and refresh the spend display */
+function initCache(){
+  try{
+    var n=0,rm=[];
+    for(var i=0;i<localStorage.length;i++){var k=localStorage.key(i); if(k&&k.indexOf('fhai:')===0){n++;rm.push(k);}}
+    if(n>200) rm.forEach(function(k){localStorage.removeItem(k);}); // hard cap so it can't grow forever
+  }catch(e){}
+  updateSpend();
+}
 document.addEventListener('DOMContentLoaded',function(){
   initPin();
   initTheme();
   initBanner();
+  initCache();
   updateDate();
   setInterval(updateDate,30000);
   // Pre-load default pair — Weekly is default active tab
