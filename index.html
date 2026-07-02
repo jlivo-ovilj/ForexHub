@@ -2530,7 +2530,7 @@ async function renderBriefing(force){
   var alerts=[];
   gaps.filter(function(s){return Math.abs(s.gapPips)>pspread(s.pair)&&Math.abs(s.gapPips)>=10;}).slice(0,3).forEach(function(s){var edge=Math.abs(s.gapPips)-pspread(s.pair);alerts.push({t:'gap',x:slashPair(s.pair)+' gapped '+fmtPips(s.gapPips)+' pips at the ~7am rollover vs a ~'+pspread(s.pair).toFixed(1)+'-pip spread — tradable (edge +'+edge.toFixed(1)+' pips).'});});
   var bigAbs=rows.slice().sort(function(a,b){return Math.abs(b.movePips)-Math.abs(a.movePips);})[0];
-  if(bigAbs) alerts.push({t:'move',x:slashPair(bigAbs.pair)+' was the day\'s biggest mover ('+fmtPips(bigAbs.movePips)+' pips on '+bigAbs.prevDate+').'});
+  if(bigAbs) alerts.push({t:'move',x:slashPair(bigAbs.pair)+' was the biggest mover in the previous session ('+fmtPips(bigAbs.movePips)+' pips).'});
   rows.filter(function(s){return s.activity>2;}).sort(function(a,b){return b.activity-a.activity;}).slice(0,2).forEach(function(s){alerts.push({t:'vol',x:slashPair(s.pair)+' traded '+s.activity.toFixed(1)+'× its normal daily range — elevated volatility.'});});
   var hot=news.match(/non-?farm|nfp|\bcpi\b|fomc|rate decision|interest rate|payroll|\bgdp\b|unemployment|inflation/i);
   if(hot) alerts.push({t:'news',x:'High-impact data on the calendar today ('+hot[0].toUpperCase()+') — expect volatility around the release; see Today\'s news below.'});
@@ -2541,18 +2541,18 @@ async function renderBriefing(force){
   h+=alerts.length?('<div class="alert-list">'+alerts.map(function(a){return '<div class="alert-item alert-'+a.t+'">'+a.x+'</div>';}).join('')+'</div>'):'<div class="cb">Nothing unusual at the open — no large gaps or volatility spikes.</div>';
   h+='</div>';
   h+='<div class="brief-grid">';
-  h+='<div class="brief-sec"><div class="brief-h">📈 Top gainers <span class="muted">'+(gainers[0]?gainers[0].prevDate:'')+'</span></div>'+(gainers.length?moveTable(gainers,'bup'):'<div class="cb">—</div>')+'</div>';
+  h+='<div class="brief-sec"><div class="brief-h">📈 Top gainers <span class="muted">previous session</span></div>'+(gainers.length?moveTable(gainers,'bup'):'<div class="cb">—</div>')+'</div>';
   h+='<div class="brief-sec"><div class="brief-h">📉 Biggest fallers</div>'+(losers.length?moveTable(losers,'bdown'):'<div class="cb">—</div>')+'</div>';
   h+='</div>';
   h+='<div class="brief-sec"><div class="brief-h">🔥 Most active currencies <span class="muted">range vs 14-day average</span></div>';
   h+='<div class="chip-row">'+mostActive.map(function(o){return '<span class="act-chip">'+ccySpan(o.c)+' <b>'+o.avg.toFixed(2)+'×</b></span>';}).join('')+'</div>';
   h+='<div class="ss" style="margin-top:8px;margin-bottom:0">FX has no public spot-volume feed, so this ranks how much each currency moved relative to its own 14-day norm — a proxy for where the action was.</div></div>';
-  h+='<div class="brief-sec"><div class="brief-h">↔️ Gap analysis <span class="muted">5pm-NY rollover (≈7am AEST) · tradable when gap &gt; spread · ≥10 pips = strong, smaller edges = worth a look</span></div>';
+  h+='<div class="brief-sec"><div class="brief-h">↔️ Gap analysis <span class="muted">weekend gap (Fri→Mon) · tradable when gap &gt; spread · weekday 7am gaps are broker-specific → TradingView</span></div>';
   if(gaps.length){
     h+='<table class="brief-tbl"><thead><tr><th>Pair</th><th class="bnum">Gap</th><th class="bnum">Spread</th><th class="bnum">Edge</th><th>Verdict</th></tr></thead><tbody>';
     gaps.slice(0,10).forEach(function(s){var sp=pspread(s.pair);var g=Math.abs(s.gapPips);var edge=g-sp;var verdict=edge<=0?'<span class="fill-low">Not worth it</span>':(g>=10?'<span class="fill-high">Tradable</span>':'<span class="fill-medium">Worth a look</span>');h+='<tr><td>'+pairChip(s.pair)+'</td><td class="bnum '+(s.gapPips>0?'bup':'bdown')+'">'+fmtPips(s.gapPips)+'</td><td class="bnum bmuted">'+sp.toFixed(1)+'</td><td class="bnum '+(edge>0?'bup':'bdown')+'">'+(edge>=0?'+':'')+edge.toFixed(1)+'</td><td>'+verdict+'</td></tr>';});
-    h+='</tbody></table><div class="ss" style="margin-top:8px;margin-bottom:0">Gap measured at the 5pm New York rollover (≈7am AEST / US close) — your 6am→7am candle. Core rule: gap must beat the spread (edge &gt; 0). A 10+ pip gap with positive edge is a strong setup; a smaller gap that still beats the spread is flagged "worth a look". Spread is a typical rollover figure and varies through the hour — treat a thin edge with caution.</div>';
-  } else { h+='<div class="cb">No gaps beating the spread at the last rollover (≈7am AEST). GBP crosses gap here most often.</div>'; }
+    h+='</tbody></table><div class="ss" style="margin-top:8px;margin-bottom:0">This shows the market gap at the session rollover — mainly the <b>weekend gap</b> (Friday close → Monday open), which appears in any feed. Weekday 7am rollover gaps (e.g. a 25-pip GBP/AUD jump) are a Pepperstone-feed artifact that free market data doesn\'t contain, so those come from your <b>TradingView</b> alert. Rule: gap must beat the spread (edge &gt; 0); ≥10 pips = strong. Spread is a typical rollover estimate.</div>';
+  } else { h+='<div class="cb">No significant weekend/rollover gap in the market feed right now. Weekday 7am gaps are broker-specific — those come from your TradingView alert.</div>'; }
   h+='</div>';
   h+='<div class="brief-sec"><div class="brief-h">📰 Today\'s market-moving news <span class="muted">'+whenLong+'</span></div><div class="brief-news">'+md(news||'No news loaded.')+'</div></div>';
   box.innerHTML=h;
