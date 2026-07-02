@@ -1183,7 +1183,13 @@ async function liveQuotes(pairs){
   var out={}; pairs.forEach(function(p){ if(_quoteCache[p]!=null) out[p]=_quoteCache[p]; }); return out;
 }
 function fmtPrice(pair,v){return v.toFixed(pair.indexOf('JPY')>-1?3:pair.indexOf('XAU')>-1?2:5);}
-/* One-line quote with today's range + momentum, so the model won't fade a strong move or use a passed level */
+/* Multi-timeframe trend string: 4H / D / W / M % moves with direction arrows */
+function trArrow(v){return v==null?'':(v>0.05?'▲':v<-0.05?'▼':'▬');}
+function trPart(lbl,v){return v==null?null:lbl+' '+trArrow(v)+(v>=0?'+':'')+v+'%';}
+function trendStr(q){
+  return [trPart('4H',q.t4h),trPart('D',q.td),trPart('W',q.tw),trPart('M',q.tm)].filter(Boolean).join(' · ');
+}
+/* One-line quote: price + today's range + momentum + higher-timeframe trend, so the model won't fade a strong move or use a passed level */
 function quoteLine(pair,q){
   var s=fmtPrice(pair,q.p);
   if(q.hi!=null&&q.lo!=null){
@@ -1191,6 +1197,8 @@ function quoteLine(pair,q){
     if(q.chg!=null) s+=', '+(q.chg>=0?'+':'')+q.chg+'% — momentum '+(q.chg>0.15?'UP':q.chg<-0.15?'DOWN':'flat');
     s+=')';
   }
+  var tr=trendStr(q);
+  if(tr) s+=' | trend '+tr;
   return s;
 }
 async function priceContext(pair){
@@ -1199,7 +1207,7 @@ async function priceContext(pair){
     if(!q||q.p==null) return '';
     var p=pair.slice(0,3)+'/'+pair.slice(3);
     var t=new Date().toLocaleTimeString('en-AU',{timeZone:'Australia/Brisbane',hour:'2-digit',minute:'2-digit'});
-    return 'CURRENT LIVE MARKET ('+t+' AEST): '+p+' = '+quoteLine(pair,q)+'. Anchor ALL levels to THIS live price — resistance just above, support just below, entry within a realistic distance. Never use a level price has already moved past, and do not fight a strong intraday move (see momentum) without a clear reversal reason.\n\n';
+    return 'CURRENT LIVE MARKET ('+t+' AEST): '+p+' = '+quoteLine(pair,q)+'.\n(trend = % move over 4H/Day/Week/Month; ▲ up, ▼ down, ▬ flat.) Anchor ALL levels to THIS live price — resistance just above, support just below, entry within a realistic distance. Never use a level price has already moved past. Trade WITH the dominant higher-timeframe trend (weekly/monthly); only call a counter-trend setup if you cite a specific reversal signal, and never fade a strong intraday move without one.\n\n';
   }catch(e){return '';}
 }
 function freshnessNote(useSearch){
@@ -2380,9 +2388,9 @@ async function runScanner(){
       var q=await liveQuotes(majors);
       var lines=majors.map(function(mp){return q[mp]?(mp.slice(0,3)+'/'+mp.slice(3)+' = '+quoteLine(mp,q[mp])):null;}).filter(Boolean);
       var tnow=new Date().toLocaleTimeString('en-AU',{timeZone:'Australia/Brisbane',hour:'2-digit',minute:'2-digit'});
-      if(lines.length) priceBlock='CURRENT LIVE PRICES ('+tnow+' AEST, real-time — each line shows price, today\'s range and % move/momentum):\n'+lines.join('\n')+'\n\n';
+      if(lines.length) priceBlock='CURRENT LIVE PRICES ('+tnow+' AEST, real-time). Each line: price (today\'s range, % move/momentum) | trend 4H/Day/Week/Month (▲ up ▼ down ▬ flat):\n'+lines.join('\n')+'\n\n';
     }catch(e){}
-    var prompt=priceBlock+'You are a professional forex trading analyst. Analyse the current forex market and identify the 3-5 highest-probability trade setups right now across major pairs.\n\nFor each setup use this EXACT plain-text format with no markdown, no asterisks, no bold:\n\nSETUP:\nPAIR: e.g. GBP/USD\nDIRECTION: LONG or SHORT\nPROBABILITY: HIGH or MEDIUM\nENTRY: price level\nSTOP LOSS: price level\nTAKE PROFIT: price level\nREASON: 3-5 sentences explaining the setup covering weekly trend, daily structure, 4H trigger, and catalyst.\n\nCRITICAL LEVEL RULES — base every level on the CURRENT LIVE PRICES above:\n- ENTRY must be within roughly 0.5% of the current price (a realistic pending order that has NOT already been hit), never far away.\n- Never use a level that price has already traded through — the entry must still be reachable from the current live price.\n- Respect each pair\'s momentum shown above: do NOT recommend fading a strong UP or DOWN move (a pair trading near its daily high/low with a clear % move) unless you can state a specific reversal signal. Prefer setups that trade WITH the prevailing intraday direction.\n- For a SHORT: ENTRY at or slightly ABOVE current price, STOP LOSS above entry, TAKE PROFIT below entry.\n- For a LONG: ENTRY at or slightly BELOW current price, STOP LOSS below entry, TAKE PROFIT above entry.\n- Direction, entry, stop and target must be internally consistent and achieve at least 1:2 risk/reward.\n- Do not contradict yourself: if the reasoning is bearish the direction must be SHORT, and vice-versa.\n\nOnly include setups with clear multi-timeframe alignment and strong technical or fundamental backing. Start each setup with exactly "SETUP:" on its own line. Do not use any markdown. Always finish the final setup completely — never cut off mid-sentence.'+freshnessNote(true);
+    var prompt=priceBlock+'You are a professional forex trading analyst. Analyse the current forex market and identify the 3-5 highest-probability trade setups right now across major pairs.\n\nFor each setup use this EXACT plain-text format with no markdown, no asterisks, no bold:\n\nSETUP:\nPAIR: e.g. GBP/USD\nDIRECTION: LONG or SHORT\nPROBABILITY: HIGH or MEDIUM\nENTRY: price level\nSTOP LOSS: price level\nTAKE PROFIT: price level\nREASON: 3-5 sentences explaining the setup covering weekly trend, daily structure, 4H trigger, and catalyst.\n\nCRITICAL LEVEL RULES — base every level on the CURRENT LIVE PRICES above:\n- ENTRY must be within roughly 0.5% of the current price (a realistic pending order that has NOT already been hit), never far away.\n- Never use a level that price has already traded through — the entry must still be reachable from the current live price.\n- Respect each pair\'s momentum AND its 4H/Day/Week/Month trend shown above: prefer setups that trade WITH the dominant higher-timeframe trend (weekly/monthly direction), triggered on the 4H. Do NOT recommend fading a strong UP or DOWN move (a pair near its daily high/low with a clear % move, or aligned trends across timeframes) unless you can state a specific reversal signal. Weight the setup\'s probability by how well the timeframes align.\n- For a SHORT: ENTRY at or slightly ABOVE current price, STOP LOSS above entry, TAKE PROFIT below entry.\n- For a LONG: ENTRY at or slightly BELOW current price, STOP LOSS below entry, TAKE PROFIT above entry.\n- Direction, entry, stop and target must be internally consistent and achieve at least 1:2 risk/reward.\n- Do not contradict yourself: if the reasoning is bearish the direction must be SHORT, and vice-versa.\n\nOnly include setups with clear multi-timeframe alignment and strong technical or fundamental backing. Start each setup with exactly "SETUP:" on its own line. Do not use any markdown. Always finish the final setup completely — never cut off mid-sentence.'+freshnessNote(true);
     var txt=await ai(prompt,'scan:'+Math.floor(Date.now()/9e5),{model:'claude-sonnet-5',maxTokens:3800,webSearch:true});
     // Normalise: strip markdown so field detection works reliably
     var norm=txt.replace(/\*\*/g,'').replace(/\*/g,'').replace(/^#+\s*/gm,'').replace(/^-{3,}$/gm,'');
