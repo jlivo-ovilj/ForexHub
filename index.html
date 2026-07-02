@@ -309,6 +309,32 @@ body{font-family:'Syne',sans-serif;background:var(--bg);color:var(--tx);min-heig
 /* ── SCANNER ── */
 .scanner-intro{background:var(--sf);border:1px solid var(--bd);border-radius:var(--r);padding:20px;margin-bottom:16px}
 .scan-controls{display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-top:14px}
+/* Morning briefing */
+#briefing .brief-sec{background:var(--sf);border:1px solid var(--bd);border-radius:var(--r);padding:16px 18px;margin-bottom:12px}
+#briefing .brief-h{font-size:15px;font-weight:700;margin-bottom:10px;display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+#briefing .brief-h .muted{font-size:11px;font-weight:500;color:var(--mt)}
+#briefing .brief-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+@media(max-width:640px){#briefing .brief-grid{grid-template-columns:1fr}}
+#briefing .brief-tbl{width:100%;border-collapse:collapse;font-size:13px}
+#briefing .brief-tbl th{text-align:left;font-size:10px;text-transform:uppercase;letter-spacing:0.04em;color:var(--mt);font-weight:600;padding:4px 8px;border-bottom:1px solid var(--bd)}
+#briefing .brief-tbl td{padding:6px 8px;border-bottom:1px solid var(--bd)}
+#briefing .brief-tbl tr:last-child td{border-bottom:none}
+#briefing .brief-tbl .bnum{text-align:right;font-family:'DM Mono',monospace}
+#briefing .bup{color:#22c55e;font-weight:600}
+#briefing .bdown{color:#ef4444;font-weight:600}
+#briefing .bmuted{color:var(--mt);font-weight:500}
+#briefing .chip-row{display:flex;gap:8px;flex-wrap:wrap}
+#briefing .act-chip{background:var(--bg);border:1px solid var(--bd);border-radius:100px;padding:5px 12px;font-size:13px}
+#briefing .alert-list{display:flex;flex-direction:column;gap:8px}
+#briefing .alert-item{padding:9px 12px;border-radius:8px;font-size:13px;border-left:3px solid var(--mt);background:var(--bg)}
+#briefing .alert-gap{border-left-color:#3b82f6}
+#briefing .alert-move{border-left-color:#22c55e}
+#briefing .alert-vol{border-left-color:#fbbf24}
+#briefing .alert-news{border-left-color:#ef4444}
+#briefing .fill-high{color:#22c55e;font-weight:600}
+#briefing .fill-medium{color:#fbbf24;font-weight:600}
+#briefing .fill-low{color:#ef4444;font-weight:600}
+#briefing .brief-news{font-size:13px;line-height:1.6}
 .scan-card{background:var(--sf);border:1px solid var(--bd);border-radius:var(--r);padding:18px;margin-bottom:10px}
 .scan-card.prob-high{border-color:rgba(74,222,128,0.4);background:rgba(74,222,128,0.03)}
 .scan-card.prob-med{border-color:rgba(251,191,36,0.35);background:rgba(251,191,36,0.02)}
@@ -429,6 +455,7 @@ body.light .chart-modal-overlay{background:rgba(0,0,0,0.55)}
 <!-- ══ NAV ══ -->
 <div class="nav">
   <button class="nb active" onclick="showS('analysis',this)">Analysis</button>
+  <button class="nb" onclick="showS('briefing',this)">Briefing</button>
   <button class="nb" onclick="showS('sessions',this)">Sessions</button>
   <button class="nb" onclick="showS('calendar',this)">Calendar</button>
   <button class="nb" onclick="showS('journal',this)">Journal</button>
@@ -929,6 +956,19 @@ body.light .chart-modal-overlay{background:rgba(0,0,0,0.55)}
 </div>
 
 <!-- ══ SCANNER ══ -->
+<!-- ══ MORNING BRIEFING ══ -->
+<div id="briefing" class="sec">
+  <div class="st">Morning briefing</div>
+  <div class="ss">Your daily snapshot — overnight movers, currency activity, gaps and today's market-moving news</div>
+  <div class="scan-controls">
+    <button class="sb" onclick="forceBrief()">↻ Refresh briefing</button>
+    <span class="meta" id="brief-meta"></span>
+  </div>
+  <div id="brief-body" data-loaded="0" style="margin-top:14px">
+    <div class="scan-empty"><div class="scan-icon">☕</div><div>Loading this morning's briefing…</div></div>
+  </div>
+</div>
+
 <div id="scanner" class="sec">
   <div class="st">Trade scanner</div>
   <div class="ss">AI cross-references sentiment, correlation, weekly &amp; daily analysis to surface high-probability setups</div>
@@ -1095,6 +1135,7 @@ function showS(id,btn){
   if(btn) btn.classList.add('active');
   document.body.setAttribute('data-sect',id);
   // lazy-load on first visit
+  if(id==='briefing') renderBriefing(false);
   if(id==='sessions') renderSessions();
   if(id==='calendar' && !calLoaded) loadCalendar();
   if(id==='maps'){
@@ -2443,6 +2484,82 @@ async function runScanner(){
    INIT
 ══════════════════════════════════════ */
 /* Bound the localStorage analysis cache and refresh the spend display */
+/* ══════════════════════════════════════
+   MORNING BRIEFING
+══════════════════════════════════════ */
+var BRIEF_URL=WU.replace(/\/api$/,'')+'/briefing';
+var BRIEF_PAIRS=['EURUSD','GBPUSD','USDJPY','USDCHF','USDCAD','AUDUSD','NZDUSD','EURJPY','GBPJPY','EURGBP','AUDJPY','EURAUD','GBPAUD','EURCAD','GBPCAD','AUDNZD','NZDJPY','CADJPY','CHFJPY','EURCHF','GBPCHF','AUDCAD'];
+/* Typical Pepperstone Standard-account average spreads (pips) — grades gaps until the user supplies their broker's */
+var PEP_SPREAD={EURUSD:0.6,GBPUSD:0.9,USDJPY:0.7,USDCHF:1.0,USDCAD:1.2,AUDUSD:0.7,NZDUSD:1.2,EURJPY:1.2,GBPJPY:1.8,EURGBP:1.0,AUDJPY:1.3,EURAUD:1.6,GBPAUD:2.4,EURCAD:1.8,GBPCAD:2.6,AUDNZD:1.8,NZDJPY:1.9,CADJPY:1.7,CHFJPY:1.9,EURCHF:1.5,GBPCHF:2.3,AUDCAD:1.6};
+function pspread(p){return PEP_SPREAD[p]||1.5;}
+function briefDayKey(){return new Date().toLocaleDateString('en-CA',{timeZone:'Australia/Brisbane'});}
+function slashPair(p){return p.slice(0,3)+'/'+p.slice(3);}
+function fmtPips(v){return v==null?'—':((v>0?'+':'')+v.toFixed(1));}
+var briefRendered=null;
+
+async function renderBriefing(force){
+  var box=document.getElementById('brief-body'); if(!box) return;
+  var day=briefDayKey();
+  if(briefRendered===day && !force && box.getAttribute('data-loaded')==='1') return;
+  briefRendered=day;
+  box.innerHTML='<div class="scan-empty"><div class="scan-icon">☕</div><div>Building this morning\'s briefing…</div></div>';
+  // 1. Market stats (free, real-time)
+  var stats={};
+  try{ var d=await fetch(BRIEF_URL+'?pairs='+encodeURIComponent(BRIEF_PAIRS.join(',')),{cache:'no-store'}).then(function(r){return r.json();}); stats=(d&&d.stats)||{}; }catch(e){}
+  var rows=Object.keys(stats).map(function(p){var s=stats[p];s.pair=p;return s;}).filter(function(s){return s.movePips!=null;});
+  if(!rows.length){ box.innerHTML='<div class="scan-empty"><div class="scan-icon">☕</div><div>Market data unavailable right now — tap Refresh in a moment.</div></div>'; box.setAttribute('data-loaded','0'); briefRendered=null; return; }
+  // 2. Gainers / losers by pips
+  var byMove=rows.slice().sort(function(a,b){return b.movePips-a.movePips;});
+  var gainers=byMove.filter(function(s){return s.movePips>0;}).slice(0,5);
+  var losers=byMove.filter(function(s){return s.movePips<0;}).slice(-5).reverse();
+  // 3. Currency activity (range vs 14-day ATR — volume proxy)
+  var ccy={};
+  rows.forEach(function(s){var a=s.pair.slice(0,3),b=s.pair.slice(3);[a,b].forEach(function(c){if(!ccy[c])ccy[c]={c:c,act:0,n:0};ccy[c].act+=(s.activity||0);ccy[c].n++;});});
+  var mostActive=Object.keys(ccy).map(function(c){var o=ccy[c];o.avg=o.n?o.act/o.n:0;return o;}).sort(function(a,b){return b.avg-a.avg;}).slice(0,4);
+  // 4. Gaps (only when a new session has opened and the gap beats the spread)
+  var gaps=rows.filter(function(s){return s.gapPips!=null&&Math.abs(s.gapPips)>=pspread(s.pair);}).sort(function(a,b){return Math.abs(b.gapPips)-Math.abs(a.gapPips);});
+  // 5. Today's news (AI, cached daily)
+  var whenLong=new Date().toLocaleDateString('en-AU',{timeZone:'Australia/Brisbane',weekday:'long',day:'numeric',month:'long',year:'numeric'});
+  var news='';
+  try{
+    news=await ai('List today\'s scheduled high-impact economic events that could move the forex market, for '+whenLong+'. For each: the time in AEST (Australia/Brisbane), the event (e.g. US Non-Farm Payrolls, CPI, a central-bank rate decision), the currency affected, and the FX pairs most likely to react. Only list genuinely scheduled releases for today; if the calendar is light, say so plainly. Plain text, one event per line beginning with the AEST time. No markdown, no preamble.','brief-news:'+day,{model:'claude-haiku-4-5',maxTokens:900,webSearch:true});
+  }catch(e){ news='Could not load today\'s news feed ('+((e&&e.message)||e)+').'; }
+  // 6. Alerts (computed from the above)
+  var alerts=[];
+  gaps.slice(0,3).forEach(function(s){alerts.push({t:'gap',x:slashPair(s.pair)+' opened with a '+fmtPips(s.gapPips)+'-pip gap ('+(Math.abs(s.gapPips)/pspread(s.pair)).toFixed(1)+'× typical spread) — watch for a fill.'});});
+  var bigAbs=rows.slice().sort(function(a,b){return Math.abs(b.movePips)-Math.abs(a.movePips);})[0];
+  if(bigAbs) alerts.push({t:'move',x:slashPair(bigAbs.pair)+' was the day\'s biggest mover ('+fmtPips(bigAbs.movePips)+' pips on '+bigAbs.prevDate+').'});
+  rows.filter(function(s){return s.activity>2;}).sort(function(a,b){return b.activity-a.activity;}).slice(0,2).forEach(function(s){alerts.push({t:'vol',x:slashPair(s.pair)+' traded '+s.activity.toFixed(1)+'× its normal daily range — elevated volatility.'});});
+  var hot=news.match(/non-?farm|nfp|\bcpi\b|fomc|rate decision|interest rate|payroll|\bgdp\b|unemployment|inflation/i);
+  if(hot) alerts.push({t:'news',x:'High-impact data on the calendar today ('+hot[0].toUpperCase()+') — expect volatility around the release; see Today\'s news below.'});
+  // ── render ──
+  function moveTable(list,cls){return '<table class="brief-tbl"><tbody>'+list.map(function(s){return '<tr><td>'+pairChip(s.pair)+'</td><td class="bnum '+cls+'">'+fmtPips(s.movePips)+'</td><td class="bnum bmuted">'+(s.rangePips!=null?Math.round(s.rangePips)+'p rng':'')+'</td></tr>';}).join('')+'</tbody></table>';}
+  var h='';
+  h+='<div class="brief-sec"><div class="brief-h">⚡ Alerts</div>';
+  h+=alerts.length?('<div class="alert-list">'+alerts.map(function(a){return '<div class="alert-item alert-'+a.t+'">'+a.x+'</div>';}).join('')+'</div>'):'<div class="cb">Nothing unusual at the open — no large gaps or volatility spikes.</div>';
+  h+='</div>';
+  h+='<div class="brief-grid">';
+  h+='<div class="brief-sec"><div class="brief-h">📈 Top gainers <span class="muted">'+(gainers[0]?gainers[0].prevDate:'')+'</span></div>'+(gainers.length?moveTable(gainers,'bup'):'<div class="cb">—</div>')+'</div>';
+  h+='<div class="brief-sec"><div class="brief-h">📉 Biggest fallers</div>'+(losers.length?moveTable(losers,'bdown'):'<div class="cb">—</div>')+'</div>';
+  h+='</div>';
+  h+='<div class="brief-sec"><div class="brief-h">🔥 Most active currencies <span class="muted">range vs 14-day average</span></div>';
+  h+='<div class="chip-row">'+mostActive.map(function(o){return '<span class="act-chip">'+ccySpan(o.c)+' <b>'+o.avg.toFixed(2)+'×</b></span>';}).join('')+'</div>';
+  h+='<div class="ss" style="margin-top:8px;margin-bottom:0">FX has no public spot-volume feed, so this ranks how much each currency moved relative to its own 14-day norm — a proxy for where the action was.</div></div>';
+  h+='<div class="brief-sec"><div class="brief-h">↔️ Gap analysis <span class="muted">open vs prior close · graded vs typical Pepperstone spread</span></div>';
+  if(gaps.length){
+    h+='<table class="brief-tbl"><thead><tr><th>Pair</th><th class="bnum">Gap</th><th class="bnum">Spread</th><th class="bnum">×Spr</th><th>Fill odds</th></tr></thead><tbody>';
+    gaps.slice(0,8).forEach(function(s){var mult=Math.abs(s.gapPips)/pspread(s.pair);var fill=mult<3?'high':mult<8?'medium':'low';h+='<tr><td>'+pairChip(s.pair)+'</td><td class="bnum '+(s.gapPips>0?'bup':'bdown')+'">'+fmtPips(s.gapPips)+'</td><td class="bnum bmuted">'+pspread(s.pair).toFixed(1)+'</td><td class="bnum">'+mult.toFixed(1)+'×</td><td><span class="fill-'+fill+'">'+fill.charAt(0).toUpperCase()+fill.slice(1)+'</span></td></tr>';});
+    h+='</tbody></table><div class="ss" style="margin-top:8px;margin-bottom:0">Small gaps (a few × the spread, well inside the daily range) usually fill fast; large news-driven gaps may not. A guide, not a guarantee.</div>';
+  } else { h+='<div class="cb">No significant gaps at the open — nothing beyond the normal spread. (Gaps mainly appear Monday morning after the weekend.)</div>'; }
+  h+='</div>';
+  h+='<div class="brief-sec"><div class="brief-h">📰 Today\'s market-moving news <span class="muted">'+whenLong+'</span></div><div class="brief-news">'+md(news||'No news loaded.')+'</div></div>';
+  box.innerHTML=h;
+  box.setAttribute('data-loaded','1');
+  var tm=new Date().toLocaleTimeString('en-AU',{timeZone:'Australia/Brisbane',hour:'2-digit',minute:'2-digit'});
+  var mt=document.getElementById('brief-meta'); if(mt) mt.textContent='As of '+tm+' AEST';
+}
+function forceBrief(){var day=briefDayKey();LS.del('fhai:brief-news:'+day);try{delete cache['brief-news:'+day];}catch(e){}var b=document.getElementById('brief-body');if(b)b.setAttribute('data-loaded','0');briefRendered=null;renderBriefing(true);}
+
 function initCache(){
   try{
     var n=0,rm=[];
@@ -2462,6 +2579,11 @@ document.addEventListener('DOMContentLoaded',function(){
   loadW('AUDUSD',document.querySelector('#wpr .pp.active'));
   loadD('AUDUSD',document.querySelector('#dpr .pp.active'));
   renderJournal();
+  // Pre-warm the morning briefing after 8am AEST so it's ready when opened
+  try{
+    var bh=parseInt(new Date().toLocaleString('en-AU',{timeZone:'Australia/Brisbane',hour:'2-digit',hour12:false}).replace(/\D/g,''),10);
+    if(bh>=8) setTimeout(function(){renderBriefing(false);},1800);
+  }catch(e){}
 });
 </script>
 </body>
