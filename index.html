@@ -2517,9 +2517,9 @@ async function renderBriefing(force){
   var ccy={};
   rows.forEach(function(s){var a=s.pair.slice(0,3),b=s.pair.slice(3);[a,b].forEach(function(c){if(!ccy[c])ccy[c]={c:c,act:0,n:0};ccy[c].act+=(s.activity||0);ccy[c].n++;});});
   var mostActive=Object.keys(ccy).map(function(c){var o=ccy[c];o.avg=o.n?o.act/o.n:0;return o;}).sort(function(a,b){return b.avg-a.avg;}).slice(0,4);
-  // 4. Gaps at the 5pm-NY rollover (≈7am AEST). Criteria: gap ≥ 10 pips; tradable only if gap > spread.
-  var MIN_GAP=10;
-  var gaps=rows.filter(function(s){return s.gapPips!=null&&Math.abs(s.gapPips)>=MIN_GAP;}).sort(function(a,b){return Math.abs(b.gapPips)-Math.abs(a.gapPips);});
+  // 4. Gaps at the 5pm-NY rollover (≈7am AEST). Core rule: gap > spread = tradable. ≥10 pips w/ edge = strong; smaller edges = "worth a look".
+  // Show anything that beats the spread (floor 5 pips to cut noise), plus any 10+ pip gap even if the spread blocks it (for awareness). Rank by edge.
+  var gaps=rows.filter(function(s){if(s.gapPips==null)return false;var g=Math.abs(s.gapPips),sp=pspread(s.pair);return (g>sp&&g>=5)||g>=10;}).sort(function(a,b){return (Math.abs(b.gapPips)-pspread(b.pair))-(Math.abs(a.gapPips)-pspread(a.pair));});
   // 5. Today's news (AI, cached daily)
   var whenLong=new Date().toLocaleDateString('en-AU',{timeZone:'Australia/Brisbane',weekday:'long',day:'numeric',month:'long',year:'numeric'});
   var news='';
@@ -2528,7 +2528,7 @@ async function renderBriefing(force){
   }catch(e){ news='Could not load today\'s news feed ('+((e&&e.message)||e)+').'; }
   // 6. Alerts (computed from the above)
   var alerts=[];
-  gaps.filter(function(s){return Math.abs(s.gapPips)>pspread(s.pair);}).slice(0,3).forEach(function(s){var edge=Math.abs(s.gapPips)-pspread(s.pair);alerts.push({t:'gap',x:slashPair(s.pair)+' gapped '+fmtPips(s.gapPips)+' pips at the ~7am rollover vs a ~'+pspread(s.pair).toFixed(1)+'-pip spread — tradable (edge +'+edge.toFixed(1)+' pips).'});});
+  gaps.filter(function(s){return Math.abs(s.gapPips)>pspread(s.pair)&&Math.abs(s.gapPips)>=10;}).slice(0,3).forEach(function(s){var edge=Math.abs(s.gapPips)-pspread(s.pair);alerts.push({t:'gap',x:slashPair(s.pair)+' gapped '+fmtPips(s.gapPips)+' pips at the ~7am rollover vs a ~'+pspread(s.pair).toFixed(1)+'-pip spread — tradable (edge +'+edge.toFixed(1)+' pips).'});});
   var bigAbs=rows.slice().sort(function(a,b){return Math.abs(b.movePips)-Math.abs(a.movePips);})[0];
   if(bigAbs) alerts.push({t:'move',x:slashPair(bigAbs.pair)+' was the day\'s biggest mover ('+fmtPips(bigAbs.movePips)+' pips on '+bigAbs.prevDate+').'});
   rows.filter(function(s){return s.activity>2;}).sort(function(a,b){return b.activity-a.activity;}).slice(0,2).forEach(function(s){alerts.push({t:'vol',x:slashPair(s.pair)+' traded '+s.activity.toFixed(1)+'× its normal daily range — elevated volatility.'});});
@@ -2547,12 +2547,12 @@ async function renderBriefing(force){
   h+='<div class="brief-sec"><div class="brief-h">🔥 Most active currencies <span class="muted">range vs 14-day average</span></div>';
   h+='<div class="chip-row">'+mostActive.map(function(o){return '<span class="act-chip">'+ccySpan(o.c)+' <b>'+o.avg.toFixed(2)+'×</b></span>';}).join('')+'</div>';
   h+='<div class="ss" style="margin-top:8px;margin-bottom:0">FX has no public spot-volume feed, so this ranks how much each currency moved relative to its own 14-day norm — a proxy for where the action was.</div></div>';
-  h+='<div class="brief-sec"><div class="brief-h">↔️ Gap analysis <span class="muted">5pm-NY rollover (≈7am AEST) · gap ≥ 10 pips · tradable if gap &gt; spread</span></div>';
+  h+='<div class="brief-sec"><div class="brief-h">↔️ Gap analysis <span class="muted">5pm-NY rollover (≈7am AEST) · tradable when gap &gt; spread · ≥10 pips = strong, smaller edges = worth a look</span></div>';
   if(gaps.length){
     h+='<table class="brief-tbl"><thead><tr><th>Pair</th><th class="bnum">Gap</th><th class="bnum">Spread</th><th class="bnum">Edge</th><th>Verdict</th></tr></thead><tbody>';
-    gaps.slice(0,10).forEach(function(s){var sp=pspread(s.pair);var g=Math.abs(s.gapPips);var edge=g-sp;var trade=g>sp;h+='<tr><td>'+pairChip(s.pair)+'</td><td class="bnum '+(s.gapPips>0?'bup':'bdown')+'">'+fmtPips(s.gapPips)+'</td><td class="bnum bmuted">'+sp.toFixed(1)+'</td><td class="bnum '+(trade?'bup':'bdown')+'">'+(edge>=0?'+':'')+edge.toFixed(1)+'</td><td>'+(trade?'<span class="fill-high">Tradable</span>':'<span class="fill-low">Not worth it</span>')+'</td></tr>';});
-    h+='</tbody></table><div class="ss" style="margin-top:8px;margin-bottom:0">Gap measured at the 5pm New York rollover (≈7am AEST / US close) — your 6am→7am candle. Tradable = gap beats the spread (edge &gt; 0). Spread is a typical Pepperstone figure and widens at the rollover, so treat a thin edge with caution.</div>';
-  } else { h+='<div class="cb">No gaps of 10 pips or more at the last rollover (≈7am AEST). GBP crosses gap here most often.</div>'; }
+    gaps.slice(0,10).forEach(function(s){var sp=pspread(s.pair);var g=Math.abs(s.gapPips);var edge=g-sp;var verdict=edge<=0?'<span class="fill-low">Not worth it</span>':(g>=10?'<span class="fill-high">Tradable</span>':'<span class="fill-medium">Worth a look</span>');h+='<tr><td>'+pairChip(s.pair)+'</td><td class="bnum '+(s.gapPips>0?'bup':'bdown')+'">'+fmtPips(s.gapPips)+'</td><td class="bnum bmuted">'+sp.toFixed(1)+'</td><td class="bnum '+(edge>0?'bup':'bdown')+'">'+(edge>=0?'+':'')+edge.toFixed(1)+'</td><td>'+verdict+'</td></tr>';});
+    h+='</tbody></table><div class="ss" style="margin-top:8px;margin-bottom:0">Gap measured at the 5pm New York rollover (≈7am AEST / US close) — your 6am→7am candle. Core rule: gap must beat the spread (edge &gt; 0). A 10+ pip gap with positive edge is a strong setup; a smaller gap that still beats the spread is flagged "worth a look". Spread is a typical rollover figure and varies through the hour — treat a thin edge with caution.</div>';
+  } else { h+='<div class="cb">No gaps beating the spread at the last rollover (≈7am AEST). GBP crosses gap here most often.</div>'; }
   h+='</div>';
   h+='<div class="brief-sec"><div class="brief-h">📰 Today\'s market-moving news <span class="muted">'+whenLong+'</span></div><div class="brief-news">'+md(news||'No news loaded.')+'</div></div>';
   box.innerHTML=h;
