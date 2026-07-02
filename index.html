@@ -2489,9 +2489,10 @@ async function runScanner(){
 ══════════════════════════════════════ */
 var BRIEF_URL=WU.replace(/\/api$/,'')+'/briefing';
 var BRIEF_PAIRS=['EURUSD','GBPUSD','USDJPY','USDCHF','USDCAD','AUDUSD','NZDUSD','EURJPY','GBPJPY','EURGBP','AUDJPY','EURAUD','GBPAUD','EURCAD','GBPCAD','AUDNZD','NZDJPY','CADJPY','CHFJPY','EURCHF','GBPCHF','AUDCAD'];
-/* Typical Pepperstone Standard-account average spreads (pips) — grades gaps until the user supplies their broker's */
-var PEP_SPREAD={EURUSD:0.6,GBPUSD:0.9,USDJPY:0.7,USDCHF:1.0,USDCAD:1.2,AUDUSD:0.7,NZDUSD:1.2,EURJPY:1.2,GBPJPY:1.8,EURGBP:1.0,AUDJPY:1.3,EURAUD:1.6,GBPAUD:2.4,EURCAD:1.8,GBPCAD:2.6,AUDNZD:1.8,NZDJPY:1.9,CADJPY:1.7,CHFJPY:1.9,EURCHF:1.5,GBPCHF:2.3,AUDCAD:1.6};
-function pspread(p){return PEP_SPREAD[p]||1.5;}
+/* Typical Pepperstone spreads AT THE 5pm-NY ROLLOVER (pips) — spreads widen sharply in that thin-liquidity minute,
+   which is the spread that matters for gap-trading at ~7am AEST. Estimates; confirm against your own platform. */
+var PEP_SPREAD={EURUSD:3,GBPUSD:6,USDJPY:3,USDCHF:7,USDCAD:6,AUDUSD:4,NZDUSD:7,EURJPY:6,GBPJPY:14,EURGBP:4,AUDJPY:8,EURAUD:12,GBPAUD:16,EURCAD:11,GBPCAD:18,AUDNZD:9,NZDJPY:11,CADJPY:9,CHFJPY:12,EURCHF:6,GBPCHF:16,AUDCAD:9};
+function pspread(p){return PEP_SPREAD[p]||8;}
 function briefDayKey(){return new Date().toLocaleDateString('en-CA',{timeZone:'Australia/Brisbane'});}
 function slashPair(p){return p.slice(0,3)+'/'+p.slice(3);}
 function fmtPips(v){return v==null?'—':((v>0?'+':'')+v.toFixed(1));}
@@ -2516,8 +2517,9 @@ async function renderBriefing(force){
   var ccy={};
   rows.forEach(function(s){var a=s.pair.slice(0,3),b=s.pair.slice(3);[a,b].forEach(function(c){if(!ccy[c])ccy[c]={c:c,act:0,n:0};ccy[c].act+=(s.activity||0);ccy[c].n++;});});
   var mostActive=Object.keys(ccy).map(function(c){var o=ccy[c];o.avg=o.n?o.act/o.n:0;return o;}).sort(function(a,b){return b.avg-a.avg;}).slice(0,4);
-  // 4. Gaps (only when a new session has opened and the gap beats the spread)
-  var gaps=rows.filter(function(s){return s.gapPips!=null&&Math.abs(s.gapPips)>=pspread(s.pair);}).sort(function(a,b){return Math.abs(b.gapPips)-Math.abs(a.gapPips);});
+  // 4. Gaps at the 5pm-NY rollover (≈7am AEST). Criteria: gap ≥ 10 pips; tradable only if gap > spread.
+  var MIN_GAP=10;
+  var gaps=rows.filter(function(s){return s.gapPips!=null&&Math.abs(s.gapPips)>=MIN_GAP;}).sort(function(a,b){return Math.abs(b.gapPips)-Math.abs(a.gapPips);});
   // 5. Today's news (AI, cached daily)
   var whenLong=new Date().toLocaleDateString('en-AU',{timeZone:'Australia/Brisbane',weekday:'long',day:'numeric',month:'long',year:'numeric'});
   var news='';
@@ -2526,7 +2528,7 @@ async function renderBriefing(force){
   }catch(e){ news='Could not load today\'s news feed ('+((e&&e.message)||e)+').'; }
   // 6. Alerts (computed from the above)
   var alerts=[];
-  gaps.slice(0,3).forEach(function(s){alerts.push({t:'gap',x:slashPair(s.pair)+' opened with a '+fmtPips(s.gapPips)+'-pip gap ('+(Math.abs(s.gapPips)/pspread(s.pair)).toFixed(1)+'× typical spread) — watch for a fill.'});});
+  gaps.filter(function(s){return Math.abs(s.gapPips)>pspread(s.pair);}).slice(0,3).forEach(function(s){var edge=Math.abs(s.gapPips)-pspread(s.pair);alerts.push({t:'gap',x:slashPair(s.pair)+' gapped '+fmtPips(s.gapPips)+' pips at the ~7am rollover vs a ~'+pspread(s.pair).toFixed(1)+'-pip spread — tradable (edge +'+edge.toFixed(1)+' pips).'});});
   var bigAbs=rows.slice().sort(function(a,b){return Math.abs(b.movePips)-Math.abs(a.movePips);})[0];
   if(bigAbs) alerts.push({t:'move',x:slashPair(bigAbs.pair)+' was the day\'s biggest mover ('+fmtPips(bigAbs.movePips)+' pips on '+bigAbs.prevDate+').'});
   rows.filter(function(s){return s.activity>2;}).sort(function(a,b){return b.activity-a.activity;}).slice(0,2).forEach(function(s){alerts.push({t:'vol',x:slashPair(s.pair)+' traded '+s.activity.toFixed(1)+'× its normal daily range — elevated volatility.'});});
@@ -2545,12 +2547,12 @@ async function renderBriefing(force){
   h+='<div class="brief-sec"><div class="brief-h">🔥 Most active currencies <span class="muted">range vs 14-day average</span></div>';
   h+='<div class="chip-row">'+mostActive.map(function(o){return '<span class="act-chip">'+ccySpan(o.c)+' <b>'+o.avg.toFixed(2)+'×</b></span>';}).join('')+'</div>';
   h+='<div class="ss" style="margin-top:8px;margin-bottom:0">FX has no public spot-volume feed, so this ranks how much each currency moved relative to its own 14-day norm — a proxy for where the action was.</div></div>';
-  h+='<div class="brief-sec"><div class="brief-h">↔️ Gap analysis <span class="muted">open vs prior close · graded vs typical Pepperstone spread</span></div>';
+  h+='<div class="brief-sec"><div class="brief-h">↔️ Gap analysis <span class="muted">5pm-NY rollover (≈7am AEST) · gap ≥ 10 pips · tradable if gap &gt; spread</span></div>';
   if(gaps.length){
-    h+='<table class="brief-tbl"><thead><tr><th>Pair</th><th class="bnum">Gap</th><th class="bnum">Spread</th><th class="bnum">×Spr</th><th>Fill odds</th></tr></thead><tbody>';
-    gaps.slice(0,8).forEach(function(s){var mult=Math.abs(s.gapPips)/pspread(s.pair);var fill=mult<3?'high':mult<8?'medium':'low';h+='<tr><td>'+pairChip(s.pair)+'</td><td class="bnum '+(s.gapPips>0?'bup':'bdown')+'">'+fmtPips(s.gapPips)+'</td><td class="bnum bmuted">'+pspread(s.pair).toFixed(1)+'</td><td class="bnum">'+mult.toFixed(1)+'×</td><td><span class="fill-'+fill+'">'+fill.charAt(0).toUpperCase()+fill.slice(1)+'</span></td></tr>';});
-    h+='</tbody></table><div class="ss" style="margin-top:8px;margin-bottom:0">Small gaps (a few × the spread, well inside the daily range) usually fill fast; large news-driven gaps may not. A guide, not a guarantee.</div>';
-  } else { h+='<div class="cb">No significant gaps at the open — nothing beyond the normal spread. (Gaps mainly appear Monday morning after the weekend.)</div>'; }
+    h+='<table class="brief-tbl"><thead><tr><th>Pair</th><th class="bnum">Gap</th><th class="bnum">Spread</th><th class="bnum">Edge</th><th>Verdict</th></tr></thead><tbody>';
+    gaps.slice(0,10).forEach(function(s){var sp=pspread(s.pair);var g=Math.abs(s.gapPips);var edge=g-sp;var trade=g>sp;h+='<tr><td>'+pairChip(s.pair)+'</td><td class="bnum '+(s.gapPips>0?'bup':'bdown')+'">'+fmtPips(s.gapPips)+'</td><td class="bnum bmuted">'+sp.toFixed(1)+'</td><td class="bnum '+(trade?'bup':'bdown')+'">'+(edge>=0?'+':'')+edge.toFixed(1)+'</td><td>'+(trade?'<span class="fill-high">Tradable</span>':'<span class="fill-low">Not worth it</span>')+'</td></tr>';});
+    h+='</tbody></table><div class="ss" style="margin-top:8px;margin-bottom:0">Gap measured at the 5pm New York rollover (≈7am AEST / US close) — your 6am→7am candle. Tradable = gap beats the spread (edge &gt; 0). Spread is a typical Pepperstone figure and widens at the rollover, so treat a thin edge with caution.</div>';
+  } else { h+='<div class="cb">No gaps of 10 pips or more at the last rollover (≈7am AEST). GBP crosses gap here most often.</div>'; }
   h+='</div>';
   h+='<div class="brief-sec"><div class="brief-h">📰 Today\'s market-moving news <span class="muted">'+whenLong+'</span></div><div class="brief-news">'+md(news||'No news loaded.')+'</div></div>';
   box.innerHTML=h;
