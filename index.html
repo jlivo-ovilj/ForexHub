@@ -27,6 +27,8 @@ body[data-sect="review"]    {--ac:#f97316;--adm:rgba(249,115,22,0.12)}
 body[data-sect="maps"]      {--ac:#38bdf8;--adm:rgba(56,189,248,0.12)}
 body[data-sect="scanner"]   {--ac:#e879f9;--adm:rgba(232,121,249,0.12)}
 body[data-sect="about"]     {--ac:#94a3b8;--adm:rgba(148,163,184,0.12)}
+body[data-sect="briefing"]  {--ac:#eab308;--adm:rgba(234,179,8,0.12)}
+body[data-sect="trends"]    {--ac:#10b981;--adm:rgba(16,185,129,0.12)}
 *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
 body{font-family:'Syne',sans-serif;background:var(--bg);color:var(--tx);min-height:100vh;overflow-x:hidden}
 
@@ -456,13 +458,14 @@ body.light .chart-modal-overlay{background:rgba(0,0,0,0.55)}
 <div class="nav">
   <button class="nb active" onclick="showS('analysis',this)">Analysis</button>
   <button class="nb" onclick="showS('briefing',this)">Briefing</button>
+  <button class="nb" onclick="showS('scanner',this)">Scanner</button>
+  <button class="nb" onclick="showS('trends',this)">Trends</button>
+  <button class="nb" onclick="showS('maps',this)">Maps</button>
   <button class="nb" onclick="showS('sessions',this)">Sessions</button>
   <button class="nb" onclick="showS('calendar',this)">Calendar</button>
-  <button class="nb" onclick="showS('journal',this)">Journal</button>
   <button class="nb" onclick="showS('checklist',this)">Checklist</button>
   <button class="nb" onclick="showS('review',this)">Review</button>
-  <button class="nb" onclick="showS('maps',this)">Maps</button>
-  <button class="nb" onclick="showS('scanner',this)">Scanner</button>
+  <button class="nb" onclick="showS('journal',this)">Journal</button>
   <button class="nb" onclick="showS('about',this)">About</button>
 </div>
 
@@ -527,7 +530,7 @@ body.light .chart-modal-overlay{background:rgba(0,0,0,0.55)}
         </div>
       </div>
       <div class="analysis-main">
-        <div class="st">Daily analysis</div>
+        <div class="st" id="d-title">Daily analysis</div>
         <div class="ss">AI-powered · live web search · Brisbane AEST</div>
         <div class="card">
           <div class="cl">Today's bias</div>
@@ -600,7 +603,7 @@ body.light .chart-modal-overlay{background:rgba(0,0,0,0.55)}
         </div>
       </div>
       <div class="analysis-main">
-        <div class="st">Weekly outlook</div>
+        <div class="st" id="w-title">Weekly outlook</div>
         <div class="ss">Macro theme · trend · key events</div>
         <div class="card">
           <div class="cl">Macro theme</div>
@@ -670,7 +673,7 @@ body.light .chart-modal-overlay{background:rgba(0,0,0,0.55)}
         </div>
       </div>
       <div class="analysis-main">
-        <div class="st" style="color:#60a5fa">4-Hour analysis</div>
+        <div class="st" id="h4-title" style="color:#60a5fa">4-Hour analysis</div>
         <div class="ss">Short-term bias · intraday structure · entry trigger for the current 4H candle</div>
         <div class="card" style="border-color:rgba(96,165,250,0.2)">
           <div class="cl h4-accent">4H bias <span style="font-weight:400;font-size:11px;color:var(--mt)">(current direction on 4H chart)</span></div>
@@ -789,7 +792,12 @@ body.light .chart-modal-overlay{background:rgba(0,0,0,0.55)}
     <div class="fld"><label>Notes</label><textarea class="ta" id="j-notes" placeholder="Setup, what worked, what to improve..." style="min-height:70px"></textarea></div>
     <button class="sb" onclick="addTrade()">+ Log trade</button>
   </div>
-  <div class="cl" style="margin-bottom:10px">Trade history</div>
+  <div style="display:flex;align-items:center;gap:8px;margin-bottom:10px;flex-wrap:wrap">
+    <div class="cl" style="margin:0">Trade history</div>
+    <button class="pip-fccy" style="margin-left:auto" onclick="exportJournal()">⬇ Backup</button>
+    <button class="pip-fccy" onclick="document.getElementById('j-import').click()">⬆ Restore</button>
+    <input type="file" id="j-import" accept="application/json,.json" style="display:none" onchange="importJournal(this)">
+  </div>
   <div id="trade-log"><div class="empty-j">No trades logged yet.<br>Log your first trade above.</div></div>
 </div>
 
@@ -955,6 +963,20 @@ body.light .chart-modal-overlay{background:rgba(0,0,0,0.55)}
   </div>
 </div>
 
+<!-- ══ TRENDS (top-down scanner) ══ -->
+<div id="trends" class="sec">
+  <div class="st">Top-down trend scanner</div>
+  <div class="ss">Weekly · Daily · 4H trend and aligned bias · live data · no AI</div>
+  <div class="scan-controls" style="margin-bottom:12px">
+    <button class="sb" onclick="loadTrendScan()">↺ Refresh</button>
+    <span class="meta" id="trend-meta"></span>
+  </div>
+  <div class="card" style="padding:0;overflow:hidden">
+    <div id="trend-body"><div class="ld" style="padding:20px"><div class="sp"></div>Loading trends…</div></div>
+  </div>
+  <div class="map-src">Trend = % move over ~4H / 1 day / 1 week. Bias reads the W/D/4H alignment. Tap a column header to sort; filter by currency or hide the mixed ones.</div>
+</div>
+
 <!-- ══ SCANNER ══ -->
 <!-- ══ MORNING BRIEFING ══ -->
 <div id="briefing" class="sec">
@@ -967,6 +989,7 @@ body.light .chart-modal-overlay{background:rgba(0,0,0,0.55)}
   <div id="brief-body" data-loaded="0" style="margin-top:14px">
     <div class="scan-empty"><div class="scan-icon">☕</div><div>Loading this morning's briefing…</div></div>
   </div>
+  <div class="share-bar" id="brief-share" style="display:none;margin-top:14px"></div>
 </div>
 
 <div id="scanner" class="sec">
@@ -1034,7 +1057,10 @@ body.light .chart-modal-overlay{background:rgba(0,0,0,0.55)}
   <div class="chart-modal">
     <div class="chart-modal-hdr">
       <div class="chart-modal-title" id="chart-modal-title"></div>
-      <button class="cpop-close" onclick="closeChartModal()">×</button>
+      <div style="display:flex;gap:8px;align-items:center">
+        <button class="pip-fccy" onclick="copyChartImage()" title="Copy chart image to clipboard">📋 Copy</button>
+        <button class="cpop-close" onclick="closeChartModal()">×</button>
+      </div>
     </div>
     <div id="chart-modal-body"></div>
   </div>
@@ -1050,7 +1076,7 @@ var cD   = "AUDUSD";
 var cW   = "AUDUSD";
 var c4   = "EURJPY";
 var curPair = "AUDUSD";   // shared across timeframes (Amendment 5)
-var hmLoaded=false, sentLoaded=false, corrLoaded=false;
+var hmLoaded=false, sentLoaded=false, corrLoaded=false, trendLoaded=false;
 
 /* Activate the sidebar pill matching a pair (e.g. "AUDCAD" → "AUD/CAD") */
 function activatePairPill(sel,pair){
@@ -1143,6 +1169,7 @@ function showS(id,btn){
     if(!sentLoaded) loadSentiment();
     if(!corrLoaded) loadCorrelation();
   }
+  if(id==='trends' && !trendLoaded) loadTrendScan();
 }
 
 /* Analysis sub-tabs  (Amendment 7) */
@@ -1255,6 +1282,83 @@ function freshnessNote(useSearch){
   var d=new Date().toLocaleDateString('en-AU',{timeZone:'Australia/Brisbane',weekday:'long',day:'numeric',month:'long',year:'numeric'});
   if(useSearch) return '\n\nToday is '+d+'. Use web search to confirm current catalysts. Only call an event "upcoming" if it is genuinely in the future relative to today — never describe a past election, central-bank meeting or data release as if it is still ahead.';
   return '\n\nToday is '+d+'. Base your analysis on the live price above and well-established context. Do not present specific scheduled events as "upcoming" unless you are certain they are still in the future.';
+}
+
+/* ══════════════════════════════════════
+   TOP-DOWN TREND SCANNER  (own page · no AI · live price data)
+══════════════════════════════════════ */
+var TREND_PAIRS=['EURUSD','GBPUSD','USDJPY','USDCHF','USDCAD','AUDUSD','NZDUSD',
+  'EURGBP','EURJPY','EURCHF','EURAUD','EURNZD','EURCAD',
+  'GBPJPY','GBPCHF','GBPAUD','GBPNZD','GBPCAD',
+  'AUDJPY','AUDNZD','AUDCAD','AUDCHF','NZDJPY','NZDCAD','NZDCHF','CADJPY','CADCHF','CHFJPY'];
+var _trendData=null,_trendSort={col:'bias',dir:-1},_trendCcy='',_trendHideMix=false;
+async function loadTrendScan(){
+  trendLoaded=true;
+  var out=document.getElementById('trend-body');
+  out.innerHTML='<div class="ld" style="padding:20px"><div class="sp"></div>Loading trends…</div>';
+  TREND_PAIRS.forEach(function(p){delete _quoteCache[p];});   // force fresh data on refresh
+  try{
+    var q=await liveQuotes(TREND_PAIRS);
+    var rows=[];
+    TREND_PAIRS.forEach(function(p){var d=q[p];if(!d)return;rows.push({sym:p,w:d.tw,dd:d.td,h:d.t4h,m:d.tm});});
+    _trendData=rows;
+    var t=new Date().toLocaleTimeString('en-AU',{timeZone:'Australia/Brisbane',hour:'2-digit',minute:'2-digit'});
+    var mt=document.getElementById('trend-meta'); if(mt) mt.textContent=rows.length+' pairs · '+t+' AEST';
+    if(!rows.length){out.innerHTML='<div class="eb" style="padding:16px">No price data returned — try Refresh.</div>';return;}
+    renderTrends();
+  }catch(e){out.innerHTML='<div class="eb" style="padding:16px">'+e.message+'</div>';}
+}
+function trDir(v){return v==null?0:(v>0.05?1:v<-0.05?-1:0);}
+function trBias(w,d,h){
+  var wd=trDir(w),dd=trDir(d),hd=trDir(h);
+  if(wd===1&&dd===1&&hd===1) return {t:'STRONG BUY',r:2};
+  if(dd===1&&hd===1&&wd!==-1) return {t:'Buy',r:1};
+  if(wd===-1&&dd===-1&&hd===-1) return {t:'STRONG SELL',r:-2};
+  if(dd===-1&&hd===-1&&wd!==1) return {t:'Sell',r:-1};
+  return {t:'Mixed',r:0};
+}
+function sortTrend(c){if(_trendSort.col===c){_trendSort.dir*=-1;}else{_trendSort.col=c;_trendSort.dir=c==='sym'?1:-1;}renderTrends();}
+function setTrendCcy(c){_trendCcy=c;renderTrends();}
+function toggleTrendMix(){_trendHideMix=!_trendHideMix;renderTrends();}
+function renderTrends(){
+  if(!_trendData)return;
+  var rows=_trendData.slice();
+  rows.forEach(function(r){var b=trBias(r.w,r.dd,r.h);r._bt=b.t;r._br=b.r;});
+  if(_trendCcy)rows=rows.filter(function(r){return r.sym.indexOf(_trendCcy)>-1;});
+  if(_trendHideMix)rows=rows.filter(function(r){return r._bt!=='Mixed';});
+  var sc=_trendSort.col,sd=_trendSort.dir;
+  rows.sort(function(a,b){
+    if(sc==='sym')return sd*a.sym.localeCompare(b.sym);
+    var av=sc==='bias'?a._br:sc==='w'?a.w:sc==='d'?a.dd:a.h;
+    var bv=sc==='bias'?b._br:sc==='w'?b.w:sc==='d'?b.dd:b.h;
+    av=av==null?-999:av;bv=bv==null?-999:bv;
+    return sd*(av-bv);
+  });
+  var CCYS=['AUD','CAD','CHF','EUR','GBP','JPY','NZD','USD'];
+  var f='<div style="display:flex;flex-wrap:wrap;gap:5px;align-items:center;padding:10px 12px">';
+  f+='<button class="pip-fccy'+(!_trendCcy?' all-active':'')+'" onclick="setTrendCcy(\'\')">All</button>';
+  CCYS.forEach(function(c){var col=CCY_COLORS[c]||'#cbd5e1',a=_trendCcy===c;
+    f+='<button class="pip-fccy" onclick="setTrendCcy(\''+c+'\')" style="color:'+col+';border-color:'+(a?col:'var(--bd2)')+';background:'+(a?col+'22':'transparent')+'">'+c+'</button>';});
+  f+='<button class="pip-fccy'+(_trendHideMix?' all-active':'')+'" style="margin-left:auto" onclick="toggleTrendMix()">'+(_trendHideMix?'Show all':'Hide Mixed')+'</button>';
+  f+='</div>';
+  function arr(col){if(_trendSort.col!==col)return '<span style="opacity:0.3;font-size:9px"> ⇅</span>';return '<span style="font-size:9px"> '+(_trendSort.dir===1?'▲':'▼')+'</span>';}
+  function cell(v){var d=trDir(v),cls=d>0?'hm-pos':d<0?'hm-neg':'hm-neu',a=d>0?'▲':d<0?'▼':'▬';return '<td class="hm-cell '+cls+'">'+a+' '+(v==null?'–':(v>=0?'+':'')+v+'%')+'</td>';}
+  var h=f+'<table class="hm-table"><thead><tr>';
+  h+='<th onclick="sortTrend(\'sym\')" style="text-align:left">Pair'+arr('sym')+'</th>';
+  h+='<th onclick="sortTrend(\'w\')">Weekly'+arr('w')+'</th>';
+  h+='<th onclick="sortTrend(\'d\')">Daily'+arr('d')+'</th>';
+  h+='<th onclick="sortTrend(\'h\')">4H'+arr('h')+'</th>';
+  h+='<th onclick="sortTrend(\'bias\')">Bias'+arr('bias')+'</th>';
+  h+='</tr></thead><tbody>';
+  rows.forEach(function(r){
+    var bg=r._br===2?'rgba(74,222,128,0.25)':r._br===1?'rgba(74,222,128,0.1)':r._br===-2?'rgba(248,113,113,0.25)':r._br===-1?'rgba(248,113,113,0.1)':'transparent';
+    var clr=r._br>0?'#4ade80':r._br<0?'#f87171':'var(--mt)';
+    h+='<tr class="hm-row"><td class="hm-pair" style="color:'+pairColor(r.sym)+'">'+r.sym+'</td>';
+    h+=cell(r.w)+cell(r.dd)+cell(r.h);
+    h+='<td style="background:'+bg+';color:'+clr+';font-weight:600">'+r._bt+'</td></tr>';
+  });
+  h+='</tbody></table>';
+  document.getElementById('trend-body').innerHTML=h;
 }
 async function aiImage(prompt,imageB64,mimeType){
   var res=await fetch(WU,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({prompt:prompt,image:imageB64,mimeType:mimeType||'image/png'})});
@@ -1426,23 +1530,60 @@ function doShare(id){var t=reportText(id),c=document.getElementById(id);
 }
 function doEmail(id){
   var c=document.getElementById(id);
-  var fname=c.dataset.name+'_'+fileStamp()+'.html';
-  // Download the styled copy so the user can attach the nicely-presented version
-  var blob=new Blob([reportDocHTML(id)],{type:'text/html;charset=utf-8'});
-  var a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download=fname;document.body.appendChild(a);a.click();a.remove();
-  setTimeout(function(){URL.revokeObjectURL(a.href);},1000);
   var subject='ForexHub — '+c.dataset.title;
-  var body=reportText(id)+'\n\n----------\n📎 Attach the downloaded file "'+fname+'" for the formatted version.';
-  // Open Gmail compose (reliable — no OS mail handler needed); fall back to mailto
-  var gmail='https://mail.google.com/mail/?view=cm&fs=1&tf=1&su='+encodeURIComponent(subject)+'&body='+encodeURIComponent(body);
-  var win=window.open(gmail,'_blank');
-  if(!win){ location.href='mailto:?subject='+encodeURIComponent(subject)+'&body='+encodeURIComponent(body); }
-  showToast('Opening email · attach '+fname);
+  var body=reportText(id)+'\n\n----------\nA print window opened — choose "Save as PDF", then attach that PDF for the professional formatted version.';
+  // Open the styled report ready to Save as PDF (a real, professional attachment)
+  doPrint(id);
+  // Open the email compose shortly after so both windows appear (avoids the pop-up blocker eating one)
+  setTimeout(function(){
+    var gmail='https://mail.google.com/mail/?view=cm&fs=1&tf=1&su='+encodeURIComponent(subject)+'&body='+encodeURIComponent(body);
+    var win=window.open(gmail,'_blank');
+    if(!win){ location.href='mailto:?subject='+encodeURIComponent(subject)+'&body='+encodeURIComponent(body); }
+  },900);
+  showToast('Save the print window as PDF, then attach it to the email');
+}
+/* ── #11: remember an OneDrive folder per report type (File System Access; needs http/localhost) ── */
+function _fhIdb(){return new Promise(function(res,rej){var r=indexedDB.open('fh_fs',1);r.onupgradeneeded=function(){r.result.createObjectStore('dirs');};r.onsuccess=function(){res(r.result);};r.onerror=function(){rej(r.error);};});}
+function _fhIdbGet(k){return _fhIdb().then(function(db){return new Promise(function(res){var t=db.transaction('dirs','readonly').objectStore('dirs').get(k);t.onsuccess=function(){res(t.result);};t.onerror=function(){res(null);};});}).catch(function(){return null;});}
+function _fhIdbSet(k,v){return _fhIdb().then(function(db){return new Promise(function(res){var t=db.transaction('dirs','readwrite').objectStore('dirs').put(v,k);t.onsuccess=function(){res(true);};t.onerror=function(){res(false);};});}).catch(function(){return false;});}
+async function _fhPerm(h){if(!h||!h.queryPermission)return false;var o={mode:'readwrite'};if(await h.queryPermission(o)==='granted')return true;try{if(await h.requestPermission(o)==='granted')return true;}catch(e){}return false;}
+async function getReportDir(folder){
+  var key='dir:'+folder;
+  var h=await _fhIdbGet(key);
+  if(h && await _fhPerm(h)) return h;
+  if(!window.showDirectoryPicker) return null;
+  showToast('Pick your "'+folder+'" folder — remembered for next time');
+  try{ h=await window.showDirectoryPicker({id:'fh_'+folder.replace(/\s/g,''),mode:'readwrite'}); await _fhIdbSet(key,h); return h; }
+  catch(e){ return null; }
+}
+function reportFolder(title){
+  var t=(title||'').toLowerCase();
+  if(t.indexOf('brief')>-1) return {folder:'Morning Briefing'};
+  if(t.indexOf('scanner')>-1||t.indexOf('scan')>-1) return {folder:'Trade Scanner'};
+  if(t.indexOf('review')>-1) return {folder:'Trade Reviews'};
+  if(t.indexOf('analysis')>-1||t.indexOf('outlook')>-1){var m=(title||'').match(/([A-Z]{3})\/([A-Z]{3})/);return {folder:'Analysis',sub:m?m[1]+m[2]:null};}
+  return {folder:null};
 }
 async function doSave(id){
   var c=document.getElementById(id);
   var fname=c.dataset.name+'_'+fileStamp()+'.html';
   var html=reportDocHTML(id);
+  // #11 — auto-save into the remembered OneDrive folder (per-pair subfolder for Analysis). Only when served via http/localhost.
+  if(window.showDirectoryPicker){
+    var fi=reportFolder(c.dataset.title);
+    if(fi.folder){
+      var dir=await getReportDir(fi.folder);
+      if(dir){
+        try{
+          if(fi.sub){ dir=await dir.getDirectoryHandle(fi.sub,{create:true}); }
+          var fh=await dir.getFileHandle(fname,{create:true});
+          var ww=await fh.createWritable(); await ww.write(html); await ww.close();
+          showToast('Saved to '+fi.folder+(fi.sub?'/'+fi.sub:'')+' — '+fname);
+          return;
+        }catch(e){ if(e&&e.name==='AbortError') return; }
+      }
+    }
+  }
   // Native "Save As" dialog so the user chooses the folder (Chrome/Edge)
   if(window.showSaveFilePicker){
     try{
@@ -1479,6 +1620,28 @@ function openChartModal(){
   document.getElementById('chart-modal').style.display='flex';
 }
 function closeChartModal(){document.getElementById('chart-modal').style.display='none';}
+function copyChartImage(){
+  var canvas=document.querySelector('#chart-modal-body canvas');
+  if(!canvas){showToast('No chart to copy');return;}
+  if(navigator.clipboard && window.ClipboardItem && canvas.toBlob){
+    canvas.toBlob(function(blob){
+      try{
+        navigator.clipboard.write([new ClipboardItem({'image/png':blob})]).then(function(){
+          showToast('Chart copied — paste it into your trading platform');
+        }).catch(function(){ downloadCanvas(canvas); });
+      }catch(e){ downloadCanvas(canvas); }
+    },'image/png');
+  } else { downloadCanvas(canvas); }
+}
+function downloadCanvas(canvas){
+  try{
+    var a=document.createElement('a');
+    a.href=canvas.toDataURL('image/png');
+    a.download='chart-'+(lastDaily?lastDaily.pair:'fxhub')+'.png';
+    document.body.appendChild(a);a.click();a.remove();
+    showToast('Copy unavailable here — image downloaded instead');
+  }catch(e){ showToast('Could not copy the chart'); }
+}
 
 /* ══════════════════════════════════════
    CALENDAR DATE HELPERS  (Amendment 6)
@@ -1595,6 +1758,7 @@ async function loadD(pair,btn){
   }
   setDLoading();
   var p=pair.slice(0,3)+'/'+pair.slice(3);
+  var dt=document.getElementById('d-title'); if(dt) dt.innerHTML='Daily analysis &nbsp; '+pairChip(pair);
   var bias='';
   try{
     var pc=await priceContext(pair);
@@ -1651,6 +1815,7 @@ async function loadW(pair,btn){
   }
   setWLoading();
   var p=pair.slice(0,3)+'/'+pair.slice(3);
+  var wt2=document.getElementById('w-title'); if(wt2) wt2.innerHTML='Weekly outlook &nbsp; '+pairChip(pair);
   try{
     var pc=await priceContext(pair);
     var prompt=pc+'You are a professional forex analyst. Provide a concise WEEKLY analysis for '+p+' for the week of '+new Date().toISOString().split('T')[0]+'. Format exactly:\nMACRO THEME:\n[2-3 sentences on the macro backdrop driving this pair. Use **bold** for key themes.]\n\nTREND AND STRUCTURE:\n[2-3 sentences on the weekly trend, structure, key levels. Use **bold** for level prices.]\n\nKEY EVENTS THIS WEEK:\n- [Event 1: day and what to watch]\n- [Event 2]\n- [Event 3]\n\nKeep each section tight and actionable.'+freshnessNote(true);
@@ -1696,6 +1861,7 @@ async function load4hr(pair,btn){
   document.getElementById('h4s').innerHTML='';document.getElementById('h4l').innerHTML='';
   document.getElementById('h4t').innerHTML='';document.getElementById('h4m').textContent='';
   var p=pair.slice(0,3)+'/'+pair.slice(3);
+  var h4t2=document.getElementById('h4-title'); if(h4t2) h4t2.innerHTML='4-Hour analysis &nbsp; '+pairChip(pair);
   var hr4key=Math.floor(new Date()/14400000);
   try{
     var pc=await priceContext(pair);
@@ -1897,8 +2063,8 @@ async function loadCalendar(){
   body.innerHTML='<div class="ld" style="padding:20px"><div class="sp"></div>Fetching economic events…</div>';
   var wk=getWeekRange();
   try{
-    var prompt='You are an economic calendar expert. List the major forex economic events for the week of '+wk+'. For each event provide:\nDAY|TIME AEST|CURRENCY|IMPORTANCE(high/med/low)|EVENT NAME|FORECAST|PREVIOUS|BRIEF DESCRIPTION\n\nList 12-18 events covering USD, EUR, GBP, AUD, NZD, CAD, JPY. Focus on high and medium importance. Use the DAY column in the form "MON 30 JUN" (weekday + date + month). Output ONLY real event rows — do not include a header row, an example row, or placeholder/dashed rows. Format each event as one line with | separators.'+freshnessNote(true);
-    var txt=await ai(prompt,'cal:'+wk,{model:'claude-haiku-4-5',maxTokens:2600,webSearch:true});
+    var prompt='You are an economic calendar expert. List the major forex economic events for the week of '+wk+'. For each event provide:\nDAY|TIME AEST|CURRENCY|IMPORTANCE(high/med/low)|EVENT NAME|FORECAST|PREVIOUS|BRIEF DESCRIPTION\n\nList 12-18 events covering USD, EUR, GBP, AUD, NZD, CAD, JPY. Focus on high and medium importance. Use the DAY column in the form "MON 30 JUN" (weekday + date + month). Output ONLY real event rows — do not include a header row, an example row, or placeholder/dashed rows. Do NOT narrate your process or write "let me search"/"searching"; run any searches silently and output ONLY the pipe-delimited rows. Format each event as one line with | separators.'+freshnessNote(true);
+    var txt=stripNarration(await ai(prompt,'cal:'+wk,{model:'claude-haiku-4-5',maxTokens:2600,webSearch:true}));
     var events=[];
     txt.split('\n').forEach(function(line){
       var p=line.split('|');
@@ -2032,6 +2198,34 @@ function addTrade(){
   renderJournal();
 }
 function delTrade(i){var j=loadJournal();j.splice(i,1);saveJournal(j);renderJournal();}
+function exportJournal(){
+  var data=LS.get('fh_journal')||'[]';
+  var blob=new Blob([data],{type:'application/json'});
+  var url=URL.createObjectURL(blob);
+  var a=document.createElement('a');
+  a.href=url; a.download='fxhub-journal-'+new Date().toISOString().slice(0,10)+'.json';
+  document.body.appendChild(a); a.click(); document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+}
+function importJournal(input){
+  var f=input.files&&input.files[0]; if(!f) return;
+  var reader=new FileReader();
+  reader.onload=function(e){
+    try{
+      var imp=JSON.parse(e.target.result);
+      if(!Array.isArray(imp)) throw new Error('not an array');
+      var cur=loadJournal();
+      var sig=function(t){return [t.pair,t.dir,t.entry,t.sl,t.tp,t.date,t.pips].join('|');};
+      var seen={}; cur.forEach(function(t){seen[sig(t)]=1;});
+      var added=0;
+      imp.forEach(function(t){ if(t&&!seen[sig(t)]){cur.push(t);seen[sig(t)]=1;added++;} });
+      saveJournal(cur); renderJournal();
+      alert('Restored '+added+' trade(s). Your journal now has '+cur.length+'.');
+    }catch(err){ alert('Could not read that file — pick a FxHub journal backup (.json).'); }
+    input.value='';
+  };
+  reader.readAsText(f);
+}
 function updateStats(j){
   var tot=j.length,wins=j.filter(function(t){return t.result==='win'}).length;
   var losses=j.filter(function(t){return t.result==='loss'}).length;
@@ -2293,8 +2487,23 @@ function drawPipTable(){
   html+='</tbody></table>';
   document.getElementById('hm-body').innerHTML=html;
 }
+var MAT_CCYS=['USD','EUR','GBP','AUD','NZD','CAD','JPY','CHF'];
+var _matRows=MAT_CCYS.slice(),_matCols=MAT_CCYS.slice(),_matTod=null,_matYd=null;
+function toggleMat(axis,ccy){
+  var arr=axis==='row'?_matRows:_matCols;
+  var i=arr.indexOf(ccy);
+  if(i>-1)arr.splice(i,1);else arr.push(ccy);
+  buildMajorsMatrix();
+}
+function matAll(axis,on){
+  if(axis==='row')_matRows=on?MAT_CCYS.slice():[];
+  else _matCols=on?MAT_CCYS.slice():[];
+  buildMajorsMatrix();
+}
 function buildMajorsMatrix(tod,yd){
-  var CCYS=['USD','EUR','GBP','AUD','NZD','CAD','JPY','CHF'];
+  if(tod)_matTod=tod;if(yd)_matYd=yd;
+  tod=_matTod;yd=_matYd;
+  if(!tod||!yd)return;
   function rate(sym){if(sym==='EUR') return 1;return tod[sym]||1;}
   function prevRate(sym){if(sym==='EUR') return 1;return yd[sym]||1;}
   function pairChg(c1,c2){
@@ -2302,12 +2511,30 @@ function buildMajorsMatrix(tod,yd){
     var prv=(prevRate(c2)/prevRate(c1));
     return (now-prv)/prv*100;
   }
-  var html='<div class="majors-wrap"><table class="majors-table"><thead><tr><th></th>';
-  CCYS.forEach(function(c){html+='<th style="color:'+(CCY_COLORS[c]||'#cbd5e1')+'">'+c+'</th>';});
+  var rows=MAT_CCYS.filter(function(c){return _matRows.indexOf(c)>-1;});
+  var cols=MAT_CCYS.filter(function(c){return _matCols.indexOf(c)>-1;});
+  function chipBar(label,axis,sel){
+    var full=sel.length===MAT_CCYS.length;
+    var h='<div style="display:flex;flex-wrap:wrap;gap:5px;align-items:center;margin-bottom:6px">';
+    h+='<span style="font-size:10px;color:var(--mt);width:42px;flex-shrink:0">'+label+'</span>';
+    h+='<button class="pip-fccy'+(full?' all-active':'')+'" onclick="matAll(\''+axis+'\','+(full?'false':'true')+')">'+(full?'None':'All')+'</button>';
+    MAT_CCYS.forEach(function(c){
+      var on=sel.indexOf(c)>-1,col=CCY_COLORS[c]||'#cbd5e1';
+      h+='<button class="pip-fccy" onclick="toggleMat(\''+axis+'\',\''+c+'\')" style="color:'+col+';border-color:'+(on?col:'var(--bd2)')+';background:'+(on?col+'22':'transparent')+';opacity:'+(on?1:0.4)+'">'+c+'</button>';
+    });
+    h+='</div>';return h;
+  }
+  var html='<div style="padding:10px 12px 4px">'+chipBar('Rows','row',_matRows)+chipBar('Cols','col',_matCols)+'</div>';
+  if(!rows.length||!cols.length){
+    html+='<div class="meta" style="padding:6px 14px 14px">Select at least one currency on each axis.</div>';
+    document.getElementById('hm-mat-body').innerHTML=html;return;
+  }
+  html+='<div class="majors-wrap"><table class="majors-table"><thead><tr><th></th>';
+  cols.forEach(function(c){html+='<th style="color:'+(CCY_COLORS[c]||'#cbd5e1')+'">'+c+'</th>';});
   html+='</tr></thead><tbody>';
-  CCYS.forEach(function(r){
+  rows.forEach(function(r){
     html+='<tr><td class="row-hdr" style="color:'+(CCY_COLORS[r]||'#cbd5e1')+'">'+r+'</td>';
-    CCYS.forEach(function(c){
+    cols.forEach(function(c){
       if(r===c){html+='<td class="diag">·</td>';return;}
       var v=pairChg(r,c);
       var cls=Math.abs(v)<0.05?'diag':v>0?('mat-pos'+(Math.abs(v)>0.3?' hi':'')):'mat-neg'+(Math.abs(v)>0.3?' hi':'');
@@ -2349,7 +2576,7 @@ var CORR_ALL=['EURUSD','GBPUSD','USDJPY','USDCHF','USDCAD','AUDUSD','NZDUSD',
   'EURGBP','EURJPY','EURCHF','EURAUD','EURNZD','EURCAD',
   'GBPJPY','GBPCHF','GBPAUD','GBPNZD','GBPCAD',
   'AUDJPY','AUDNZD','AUDCAD','AUDCHF','NZDJPY','NZDCAD','NZDCHF','CADJPY','CADCHF','CHFJPY'];
-var corrView='majors', _corrData=null, _corrDates=null;
+var corrView='majors', _corrData=null, _corrDates=null, _corrFocus=null, _corrSortDir=-1, _corrDisplay='grid';
 async function loadCorrelation(){
   corrLoaded=true;
   var out=document.getElementById('corr-body');
@@ -2368,6 +2595,10 @@ function showCorrView(v,btn){
   if(btn) btn.classList.add('active');
   if(_corrData) renderCorr();
 }
+function sortCorrBy(s){if(_corrFocus===s){_corrSortDir*=-1;}else{_corrFocus=s;}renderCorr();}
+function resetCorrSort(){_corrFocus=null;renderCorr();}
+function toggleCorrSort(){_corrSortDir*=-1;renderCorr();}
+function setCorrDisplay(m){_corrDisplay=m;renderCorr();}
 function renderCorr(){
   var out=document.getElementById('corr-body');
   if(!_corrData){out.innerHTML='<div class="ld"><div class="sp"></div>Loading correlations…</div>';return;}
@@ -2391,18 +2622,59 @@ function renderCorr(){
   var pairs=corrView==='all'?CORR_ALL:CORR_MAJORS;
   var rets=pairs.map(function(p){return returns(series(p));});
   function pcol(sym){return CCY_COLORS[sym.slice(0,3)]||'var(--tx)';}
-  var html='<div class="corr-wrap"><table class="corr-table"><thead><tr><th></th>';
-  pairs.forEach(function(p){html+='<th style="color:'+pcol(p)+'">'+p+'</th>';});
+  var ref=_corrFocus?pairs.indexOf(_corrFocus):-1;
+  function ctrlBar(){
+    if(ref<0) return '<div class="meta" style="margin-bottom:8px">Tap a pair — in the top row or left column — to sort/rank its correlations (tap again to flip).</div>';
+    var b='<div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:8px">';
+    b+='<button class="pip-fccy'+(_corrDisplay==='grid'?' all-active':'')+'" onclick="setCorrDisplay(\'grid\')">Grid</button>';
+    b+='<button class="pip-fccy'+(_corrDisplay==='list'?' all-active':'')+'" onclick="setCorrDisplay(\'list\')">List</button>';
+    b+='<span class="meta">by</span><span style="font-weight:700;color:'+pcol(_corrFocus)+'">'+_corrFocus+'</span>';
+    b+='<button class="pip-fccy" onclick="toggleCorrSort()">'+(_corrSortDir===-1?'Most correlated ▼':'Most inverse ▲')+'</button>';
+    b+='<button class="pip-fccy" style="margin-left:auto" onclick="resetCorrSort()">Reset</button>';
+    b+='</div>';
+    return b;
+  }
+  // ── LIST view (only when a pair is selected) ──
+  if(ref>-1 && _corrDisplay==='list'){
+    var list=[];
+    pairs.forEach(function(p,j){if(j===ref)return;list.push({sym:p,c:Math.round(corr(rets[ref],rets[j])*100)});});
+    list.sort(function(a,b){return _corrSortDir*(a.c-b.c);});
+    var h=ctrlBar();
+    h+='<div class="meta" style="margin-bottom:8px">Top = moves WITH '+_corrFocus+' · bottom = moves OPPOSITE.</div>';
+    list.forEach(function(it){
+      var barclr=it.c>=0?'#4ade80':'#f87171';
+      h+='<div style="display:flex;align-items:center;gap:8px;padding:3px 2px;cursor:pointer" onclick="sortCorrBy(\''+it.sym+'\')">';
+      h+='<div style="width:66px;font-weight:600;font-size:13px;color:'+pcol(it.sym)+'">'+it.sym+'</div>';
+      h+='<div style="flex:1;height:14px;background:var(--sf2);border-radius:4px;overflow:hidden"><div style="height:100%;width:'+Math.abs(it.c)+'%;background:'+barclr+'"></div></div>';
+      h+='<div style="width:46px;text-align:right;font-size:12px;color:'+barclr+'">'+(it.c>=0?'+':'')+it.c+'%</div>';
+      h+='</div>';
+    });
+    out.innerHTML=h;
+    return;
+  }
+  // ── GRID view (default; reordered when a pair is selected) ──
+  var order=pairs.map(function(p,i){return i;});
+  if(ref>-1){
+    order.sort(function(a,b){
+      if(a===ref)return -1;if(b===ref)return 1;
+      return _corrSortDir*(corr(rets[ref],rets[a])-corr(rets[ref],rets[b]));
+    });
+  }
+  var html=ctrlBar();
+  html+='<div class="corr-wrap"><table class="corr-table"><thead><tr><th></th>';
+  order.forEach(function(ci){var p=pairs[ci];var sel=ci===ref;
+    html+='<th style="color:'+pcol(p)+';cursor:pointer'+(sel?';text-decoration:underline':'')+'" onclick="sortCorrBy(\''+p+'\')">'+p+'</th>';});
   html+='</tr></thead><tbody>';
-  pairs.forEach(function(p,i){
-    html+='<tr><td class="corr-lbl" style="color:'+pcol(p)+'">'+p+'</td>';
-    pairs.forEach(function(q,j){
-      if(i===j){html+='<td style="color:var(--mt)">1.00</td>';return;}
-      var c=corr(rets[i],rets[j]);
+  order.forEach(function(ri){var rp=pairs[ri];var selR=ri===ref;
+    html+='<tr><td class="corr-lbl" style="color:'+pcol(rp)+';cursor:pointer'+(selR?';text-decoration:underline':'')+'" onclick="sortCorrBy(\''+rp+'\')">'+rp+'</td>';
+    order.forEach(function(ci){
+      if(ri===ci){html+='<td style="color:var(--mt)">1.00</td>';return;}
+      var c=corr(rets[ri],rets[ci]);
       var pct=Math.round(c*100);
       var bg=pct>=70?'rgba(74,222,128,0.2)':pct>=30?'rgba(74,222,128,0.08)':pct<=-70?'rgba(248,113,113,0.2)':pct<=-30?'rgba(248,113,113,0.08)':'transparent';
       var clr=pct>0?'#4ade80':pct<0?'#f87171':'var(--mt)';
-      html+='<td style="background:'+bg+';color:'+clr+'">'+(pct>=0?'+':'')+pct+'%</td>';
+      var hl=(ri===ref||ci===ref)?';box-shadow:inset 0 0 0 1px rgba(255,255,255,0.18)':'';
+      html+='<td style="background:'+bg+';color:'+clr+hl+'">'+(pct>=0?'+':'')+pct+'%</td>';
     });
     html+='</tr>';
   });
@@ -2498,6 +2770,15 @@ function slashPair(p){return p.slice(0,3)+'/'+p.slice(3);}
 function fmtPips(v){return v==null?'—':((v>0?'+':'')+v.toFixed(1));}
 var briefRendered=null;
 
+function stripNarration(t){
+  var lines=(t||'').split('\n');
+  var out=lines.filter(function(l){
+    var s=l.trim();
+    if(!s) return true;
+    return !/^(let me\b|i'?ll\b|i will\b|i'?m going to|i need to|i'?m (now )?(going to )?search|searching\b|let'?s\b|first,? i\b|now,? i\b|next,? i\b|looking (up|for|at)\b|checking\b|let me search|let me look|based on my search|based on the search|here (is|are)\b|i found\b|i'?ve found|according to my search|after search)/i.test(s);
+  });
+  return out.join('\n').replace(/\n{3,}/g,'\n\n').trim();
+}
 async function renderBriefing(force){
   var box=document.getElementById('brief-body'); if(!box) return;
   var day=briefDayKey();
@@ -2524,7 +2805,8 @@ async function renderBriefing(force){
   var whenLong=new Date().toLocaleDateString('en-AU',{timeZone:'Australia/Brisbane',weekday:'long',day:'numeric',month:'long',year:'numeric'});
   var news='';
   try{
-    news=await ai('List today\'s scheduled high-impact economic events that could move the forex market, for '+whenLong+'. For each: the time in AEST (Australia/Brisbane), the event (e.g. US Non-Farm Payrolls, CPI, a central-bank rate decision), the currency affected, and the FX pairs most likely to react. Only list genuinely scheduled releases for today; if the calendar is light, say so plainly. Plain text, one event per line beginning with the AEST time. No markdown, no preamble.','brief-news:'+day,{model:'claude-haiku-4-5',maxTokens:900,webSearch:true});
+    news=await ai('List ONLY today\'s scheduled high-impact economic events that could move the forex market, for '+whenLong+' (today). For each event, on one line: the local release time WITH its zone, then the converted AEST (Australia/Brisbane) time, then the event, the currency, and the FX pairs likely to react — e.g. "13:30 GMT / 23:30 AEST — US Non-Farm Payrolls (USD) -> EUR/USD, USD/JPY". Do NOT list yesterday\'s or past events. If the calendar is light today, say so in one short line. CRITICAL: do not narrate your process — never write "let me search", "I\'ll look", "searching", "let me check", or "based on my search". Run any searches silently and output ONLY the finished list. Plain text, no markdown, no preamble, no closing remarks.','brief-news:'+day,{model:'claude-haiku-4-5',maxTokens:900,webSearch:true});
+    news=stripNarration(news);
   }catch(e){ news='Could not load today\'s news feed ('+((e&&e.message)||e)+').'; }
   // 6. Alerts (computed from the above)
   var alerts=[];
@@ -2557,6 +2839,7 @@ async function renderBriefing(force){
   h+='<div class="brief-sec"><div class="brief-h">📰 Today\'s market-moving news <span class="muted">'+whenLong+'</span></div><div class="brief-news">'+md(news||'No news loaded.')+'</div></div>';
   box.innerHTML=h;
   box.setAttribute('data-loaded','1');
+  buildShareBar('brief-share','Morning briefing','#brief-body','Morning_Briefing');
   var tm=new Date().toLocaleTimeString('en-AU',{timeZone:'Australia/Brisbane',hour:'2-digit',minute:'2-digit'});
   var mt=document.getElementById('brief-meta'); if(mt) mt.textContent='As of '+tm+' AEST';
 }
