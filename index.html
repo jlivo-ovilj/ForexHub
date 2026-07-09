@@ -2070,19 +2070,32 @@ async function loadCalendar(){
   var wk=getWeekRange();
   try{
     var prompt='You are an economic calendar expert. Search an economic calendar (e.g. forexfactory, investing.com) and list the major forex economic events for '+wk+' (the next 7 days). For each event provide:\nDAY|TIME AEST|CURRENCY|IMPORTANCE(high/med/low)|EVENT NAME|FORECAST|PREVIOUS|BRIEF DESCRIPTION\n\nMANDATORY CHECKLIST — you MUST explicitly check for and include, if scheduled in this window: every central-bank rate decision (FOMC/Fed, ECB, BoE, BoJ, RBA, RBNZ, BoC, SNB) and their minutes/press conferences; CPI releases; employment reports (NFP etc.); GDP. Missing a scheduled central-bank decision is a critical failure.\n\nList 12-18 events covering USD, EUR, GBP, AUD, NZD, CAD, JPY, CHF. Focus on high and medium importance. Use the DAY column in the form "MON 30 JUN" (weekday + date + month). Output ONLY real event rows — no header row, no example row, no placeholder/dashed rows, no narration of any kind. Each event = one line with | separators; the pipe rows must be your ENTIRE output.'+freshnessNote(true);
-    var txt=stripNarration(await ai(prompt,'cal:'+wk,{model:'claude-haiku-4-5',maxTokens:2600,webSearch:true}));
-    var events=[];
-    txt.split('\n').forEach(function(line){
-      var p=line.split('|');
-      if(p.length>=6){
-        events.push({
-          day:p[0].trim(),time:p[1]?p[1].trim():'TBC',ccy:p[2]?p[2].trim():'',
-          imp:p[3]?p[3].trim().toLowerCase():'med',name:p[4]?p[4].trim():'',
-          forecast:p[5]?p[5].trim():'—',prev:p[6]?p[6].trim():'—',
-          desc:p[7]?p[7].trim():''
-        });
-      }
-    });
+    function parseCalRows(t){
+      var evs=[];
+      (t||'').split('\n').forEach(function(line){
+        var p=line.split('|');
+        if(p.length>=6){
+          evs.push({
+            day:p[0].trim(),time:p[1]?p[1].trim():'TBC',ccy:p[2]?p[2].trim():'',
+            imp:p[3]?p[3].trim().toLowerCase():'med',name:p[4]?p[4].trim():'',
+            forecast:p[5]?p[5].trim():'—',prev:p[6]?p[6].trim():'—',
+            desc:p[7]?p[7].trim():''
+          });
+        }
+      });
+      return evs;
+    }
+    var ck='cal:'+wk;
+    var txt=stripNarration(await ai(prompt,ck,{model:'claude-haiku-4-5',maxTokens:2600,webSearch:true}));
+    var events=parseCalRows(txt);
+    if(!events.length){
+      // Bad response (prose, no pipe rows) — purge it and retry once, and never cache a rows-less
+      // reply for the whole window (that's what left the tab stuck on "No events found").
+      delete cache[ck]; LS.del('fhai:'+ck);
+      txt=stripNarration(await ai(prompt,ck,{model:'claude-haiku-4-5',maxTokens:2600,webSearch:true}));
+      events=parseCalRows(txt);
+      if(!events.length){ delete cache[ck]; LS.del('fhai:'+ck); }
+    }
     calData=filterCalEvents(events);
     renderCalendar(calData);
     document.getElementById('cal-meta').textContent='Upcoming events · next 7 days ('+wk+') · Verify at forexfactory.com · Times are approximate AEST';
