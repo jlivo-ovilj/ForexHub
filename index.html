@@ -2069,7 +2069,7 @@ async function loadCalendar(){
   body.innerHTML='<div class="ld" style="padding:20px"><div class="sp"></div>Fetching economic events…</div>';
   var wk=getWeekRange();
   try{
-    var prompt='You are an economic calendar expert. List the major forex economic events for the week of '+wk+'. For each event provide:\nDAY|TIME AEST|CURRENCY|IMPORTANCE(high/med/low)|EVENT NAME|FORECAST|PREVIOUS|BRIEF DESCRIPTION\n\nList 12-18 events covering USD, EUR, GBP, AUD, NZD, CAD, JPY. Focus on high and medium importance. Use the DAY column in the form "MON 30 JUN" (weekday + date + month). Output ONLY real event rows — do not include a header row, an example row, or placeholder/dashed rows. Do NOT narrate your process or write "let me search"/"searching"; run any searches silently and output ONLY the pipe-delimited rows. Format each event as one line with | separators.'+freshnessNote(true);
+    var prompt='You are an economic calendar expert. Search an economic calendar (e.g. forexfactory, investing.com) and list the major forex economic events for '+wk+' (the next 7 days). For each event provide:\nDAY|TIME AEST|CURRENCY|IMPORTANCE(high/med/low)|EVENT NAME|FORECAST|PREVIOUS|BRIEF DESCRIPTION\n\nMANDATORY CHECKLIST — you MUST explicitly check for and include, if scheduled in this window: every central-bank rate decision (FOMC/Fed, ECB, BoE, BoJ, RBA, RBNZ, BoC, SNB) and their minutes/press conferences; CPI releases; employment reports (NFP etc.); GDP. Missing a scheduled central-bank decision is a critical failure.\n\nList 12-18 events covering USD, EUR, GBP, AUD, NZD, CAD, JPY, CHF. Focus on high and medium importance. Use the DAY column in the form "MON 30 JUN" (weekday + date + month). Output ONLY real event rows — no header row, no example row, no placeholder/dashed rows, no narration of any kind. Each event = one line with | separators; the pipe rows must be your ENTIRE output.'+freshnessNote(true);
     var txt=stripNarration(await ai(prompt,'cal:'+wk,{model:'claude-haiku-4-5',maxTokens:2600,webSearch:true}));
     var events=[];
     txt.split('\n').forEach(function(line){
@@ -2085,17 +2085,18 @@ async function loadCalendar(){
     });
     calData=filterCalEvents(events);
     renderCalendar(calData);
-    document.getElementById('cal-meta').textContent='Upcoming events · week of '+wk+' · Verify at forexfactory.com · Times are approximate AEST';
+    document.getElementById('cal-meta').textContent='Upcoming events · next 7 days ('+wk+') · Verify at forexfactory.com · Times are approximate AEST';
   } catch(e){
     body.innerHTML='<div class="eb">'+e.message+'</div>';
   }
 }
 function forceCal(){var k='cal:'+getWeekRange();delete cache[k];LS.del('fhai:'+k);calLoaded=false;calData=[];loadCalendar();}
 function getWeekRange(){
-  var d=new Date(),mon=new Date(d);
-  mon.setDate(d.getDate()-d.getDay()+1);
-  var fri=new Date(mon);fri.setDate(mon.getDate()+4);
-  return mon.toISOString().split('T')[0]+' to '+fri.toISOString().split('T')[0];
+  // Rolling 7-day window from TODAY (Brisbane time) — never empties out late in the week,
+  // and avoids the old UTC/toISOString bug that shifted the range back a day.
+  function bris(d){return d.toLocaleDateString('en-CA',{timeZone:'Australia/Brisbane'});}
+  var now=new Date(), end=new Date(now.getTime()+7*864e5);
+  return bris(now)+' to '+bris(end);
 }
 function getCcyColor(ccy){
   var key=ccy.trim().toUpperCase().slice(0,3);
@@ -2782,7 +2783,7 @@ async function renderBriefing(force){
   var whenLong=new Date().toLocaleDateString('en-AU',{timeZone:'Australia/Brisbane',weekday:'long',day:'numeric',month:'long',year:'numeric'});
   var news='';
   try{
-    news=await ai('List ONLY today\'s scheduled high-impact economic events that could move the forex market, for '+whenLong+' (today). For each event, on one line: the local release time WITH its zone, then the converted AEST (Australia/Brisbane) time, then the event, the currency, and the FX pairs likely to react — e.g. "13:30 GMT / 23:30 AEST — US Non-Farm Payrolls (USD) -> EUR/USD, USD/JPY". Do NOT list yesterday\'s or past events. If the calendar is light today, say so in one short line. CRITICAL: do not narrate your process — never write "let me search", "I\'ll look", "searching", "let me check", or "based on my search". Run any searches silently and output ONLY the finished list. Plain text, no markdown, no preamble, no closing remarks.','brief-news:'+day,{model:'claude-haiku-4-5',maxTokens:900,webSearch:true});
+    news=await ai('Search an economic calendar (forexfactory, investing.com) for '+whenLong+' (today) and list ONLY today\'s scheduled economic events that could move the forex market. MANDATORY CHECKLIST — explicitly check for and never omit, if scheduled today: any central-bank rate decision, statement, minutes or press conference (FOMC/Fed, ECB, BoE, BoJ, RBA, RBNZ, BoC, SNB), CPI, employment reports (NFP etc.), GDP. Missing a scheduled central-bank decision is a critical failure. For each event, on one line: the local release time WITH its zone, then the converted AEST (Australia/Brisbane) time, then the event, the currency, and the FX pairs likely to react — e.g. "13:30 GMT / 23:30 AEST — US Non-Farm Payrolls (USD) -> EUR/USD, USD/JPY". Do NOT list yesterday\'s or past events. If the calendar is genuinely light today, say so in one short line. Output ONLY the finished list — plain text, no markdown, no preamble, no narration, no closing remarks.','brief-news:'+day,{model:'claude-haiku-4-5',maxTokens:900,webSearch:true});
     news=stripNarration(news);
   }catch(e){ news='Could not load today\'s news feed ('+((e&&e.message)||e)+').'; }
   // 6. Alerts (computed from the above)
