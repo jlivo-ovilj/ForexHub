@@ -1239,8 +1239,10 @@ async function ai(prompt,cacheKey,opts){
 /* Near-real-time FX quotes via the worker's /price proxy (Yahoo, keyless) — replaces the daily ECB fix */
 var PRICE_URL=WU.replace(/\/api$/,'')+'/price';
 var _quoteCache={};
+var QUOTE_TTL=5*60*1000;   // quotes expire after 5 min so a long-open tab never feeds stale prices to the scanner/analysis
 async function liveQuotes(pairs){
-  var need=pairs.filter(function(p){return _quoteCache[p]==null;});
+  var now=Date.now();
+  var need=pairs.filter(function(p){var e=_quoteCache[p];return !e||(now-e.ts)>QUOTE_TTL;});
   if(need.length){
     // Chunk ≤12 pairs per call: the worker does 2 Yahoo fetches per pair and Cloudflare
     // caps one request at 50 subrequests — a 28-pair call silently dropped ~3 pairs.
@@ -1248,11 +1250,11 @@ async function liveQuotes(pairs){
     await Promise.all(chunks.map(function(ch){
       return fetch(PRICE_URL+'?pairs='+encodeURIComponent(ch.join(',')),{cache:'no-store'})
         .then(function(r){return r.json();})
-        .then(function(d){var qs=(d&&d.quotes)||{};Object.keys(qs).forEach(function(k){_quoteCache[k]=qs[k];});})
+        .then(function(d){var qs=(d&&d.quotes)||{};var t=Date.now();Object.keys(qs).forEach(function(k){_quoteCache[k]={ts:t,q:qs[k]};});})
         .catch(function(e){});
     }));
   }
-  var out={}; pairs.forEach(function(p){ if(_quoteCache[p]!=null) out[p]=_quoteCache[p]; }); return out;
+  var out={}; pairs.forEach(function(p){ if(_quoteCache[p]!=null) out[p]=_quoteCache[p].q; }); return out;
 }
 function fmtPrice(pair,v){return v.toFixed(pair.indexOf('JPY')>-1?3:pair.indexOf('XAU')>-1?2:5);}
 /* Multi-timeframe trend string: 4H / D / W / M % moves with direction arrows */
@@ -1279,7 +1281,7 @@ async function priceContext(pair){
     if(!q||q.p==null) return '';
     var p=pair.slice(0,3)+'/'+pair.slice(3);
     var t=new Date().toLocaleTimeString('en-AU',{timeZone:'Australia/Brisbane',hour:'2-digit',minute:'2-digit'});
-    return 'CURRENT LIVE MARKET ('+t+' AEST): '+p+' = '+quoteLine(pair,q)+'.\n(trend = % move over 4H/Day/Week/Month; ▲ up, ▼ down, ▬ flat.) Anchor ALL levels to THIS live price — resistance just above, support just below, entry within a realistic distance. Never use a level price has already moved past. Trade WITH the dominant higher-timeframe trend (weekly/monthly); only call a counter-trend setup if you cite a specific reversal signal, and never fade a strong intraday move without one.\n\n';
+    return 'CURRENT LIVE MARKET ('+t+' AEST): '+p+' = '+quoteLine(pair,q)+'.\n(trend = % move over 4H/Day/Week/Month; D and today\'s range are measured from the 7am AEST session open, so early in the day D is naturally small — weight W/M more then; ▲ up, ▼ down, ▬ flat.) Anchor ALL levels to THIS live price — resistance just above, support just below, entry within a realistic distance. Never use a level price has already moved past. Trade WITH the dominant higher-timeframe trend (weekly/monthly); only call a counter-trend setup if you cite a specific reversal signal, and never fade a strong intraday move without one.\n\n';
   }catch(e){return '';}
 }
 function freshnessNote(useSearch){
@@ -2676,7 +2678,7 @@ async function runScanner(){
       var q=await liveQuotes(majors);
       var lines=majors.map(function(mp){return q[mp]?(mp.slice(0,3)+'/'+mp.slice(3)+' = '+quoteLine(mp,q[mp])):null;}).filter(Boolean);
       var tnow=new Date().toLocaleTimeString('en-AU',{timeZone:'Australia/Brisbane',hour:'2-digit',minute:'2-digit'});
-      if(lines.length) priceBlock='CURRENT LIVE PRICES ('+tnow+' AEST, real-time). Each line: price (today\'s range, % move/momentum) | trend 4H/Day/Week/Month (▲ up ▼ down ▬ flat):\n'+lines.join('\n')+'\n\n';
+      if(lines.length) priceBlock='CURRENT LIVE PRICES ('+tnow+' AEST, real-time). Each line: price (today\'s range, % move/momentum) | trend 4H/Day/Week/Month (▲ up ▼ down ▬ flat). "Today"/D are measured from the 7am AEST session open — early in the day D is naturally small, so weight W/M more then:\n'+lines.join('\n')+'\n\n';
     }catch(e){}
     var prompt=priceBlock+'You are a professional forex trading analyst. Analyse the current forex market and identify the 3-5 highest-probability trade setups right now across major pairs.\n\nFor each setup use this EXACT plain-text format with no markdown, no asterisks, no bold:\n\nSETUP:\nPAIR: e.g. GBP/USD\nDIRECTION: LONG or SHORT\nPROBABILITY: HIGH or MEDIUM\nENTRY: price level\nSTOP LOSS: price level\nTAKE PROFIT: price level\nREASON: 3-5 sentences explaining the setup covering weekly trend, daily structure, 4H trigger, and catalyst.\n\nCRITICAL LEVEL RULES — base every level on the CURRENT LIVE PRICES above:\n- ENTRY must be within roughly 0.5% of the current price (a realistic pending order that has NOT already been hit), never far away.\n- Never use a level that price has already traded through — the entry must still be reachable from the current live price.\n- Respect each pair\'s momentum AND its 4H/Day/Week/Month trend shown above: prefer setups that trade WITH the dominant higher-timeframe trend (weekly/monthly direction), triggered on the 4H. Do NOT recommend fading a strong UP or DOWN move (a pair near its daily high/low with a clear % move, or aligned trends across timeframes) unless you can state a specific reversal signal. Weight the setup\'s probability by how well the timeframes align.\n- For a SHORT: ENTRY at or slightly ABOVE current price, STOP LOSS above entry, TAKE PROFIT below entry.\n- For a LONG: ENTRY at or slightly BELOW current price, STOP LOSS below entry, TAKE PROFIT above entry.\n- Direction, entry, stop and target must be internally consistent and achieve at least 1:2 risk/reward.\n- Do not contradict yourself: if the reasoning is bearish the direction must be SHORT, and vice-versa.\n\nOnly include setups with clear multi-timeframe alignment and strong technical or fundamental backing. Start each setup with exactly "SETUP:" on its own line. Do not use any markdown. Always finish the final setup completely — never cut off mid-sentence.'+freshnessNote(false);
     var txt=await ai(prompt,'scan:'+Math.floor(Date.now()/9e5),{model:'claude-sonnet-5',maxTokens:3800,webSearch:false});
