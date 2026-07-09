@@ -933,9 +933,9 @@ body.light .chart-modal-overlay{background:rgba(0,0,0,0.55)}
       <div class="card" style="padding:0;overflow:hidden">
         <div id="hm-mat-body"><div class="ld" style="padding:20px"><div class="sp"></div>Loading matrix…</div></div>
       </div>
-      <div class="meta" style="margin-top:8px">Daily % change · each row currency vs each column currency</div>
+      <div class="meta" style="margin-top:8px">% change since the 7am AEST rollover · each row currency vs each column currency</div>
     </div>
-    <div class="map-src">Rates: <a href="https://frankfurter.dev/" target="_blank" rel="noopener">Frankfurter API (ECB)</a></div>
+    <div class="map-src" id="hm-src">Live prices · Daily = pips since the 7am AEST rollover · Weekly/Monthly vs 5/21 trading days ago</div>
   </div>
   <!-- Sentiment -->
   <div id="sentiment" class="map-panel">
@@ -974,7 +974,7 @@ body.light .chart-modal-overlay{background:rgba(0,0,0,0.55)}
   <div class="card" style="padding:0;overflow:hidden">
     <div id="trend-body"><div class="ld" style="padding:20px"><div class="sp"></div>Loading trends…</div></div>
   </div>
-  <div class="map-src">Trend = % move over ~4H / 1 day / 1 week. Bias reads the W/D/4H alignment. Tap a column header to sort; filter by currency or hide the mixed ones.</div>
+  <div class="map-src">Trend = % move: Daily since the 7am AEST rollover · Weekly vs 5 trading days ago · 4H over the last 4 hours. Bias reads the W/D/4H alignment — early in the day expect small Daily numbers and more "Mixed". Tap a column header to sort; filter by currency or hide the mixed ones.</div>
 </div>
 
 <!-- ══ SCANNER ══ -->
@@ -1242,11 +1242,15 @@ var _quoteCache={};
 async function liveQuotes(pairs){
   var need=pairs.filter(function(p){return _quoteCache[p]==null;});
   if(need.length){
-    try{
-      var d=await fetch(PRICE_URL+'?pairs='+encodeURIComponent(need.join(',')),{cache:'no-store'}).then(function(r){return r.json();});
-      var qs=(d&&d.quotes)||{};
-      Object.keys(qs).forEach(function(k){_quoteCache[k]=qs[k];});
-    }catch(e){}
+    // Chunk ≤12 pairs per call: the worker does 2 Yahoo fetches per pair and Cloudflare
+    // caps one request at 50 subrequests — a 28-pair call silently dropped ~3 pairs.
+    var chunks=[]; for(var i=0;i<need.length;i+=12) chunks.push(need.slice(i,i+12));
+    await Promise.all(chunks.map(function(ch){
+      return fetch(PRICE_URL+'?pairs='+encodeURIComponent(ch.join(',')),{cache:'no-store'})
+        .then(function(r){return r.json();})
+        .then(function(d){var qs=(d&&d.quotes)||{};Object.keys(qs).forEach(function(k){_quoteCache[k]=qs[k];});})
+        .catch(function(e){});
+    }));
   }
   var out={}; pairs.forEach(function(p){ if(_quoteCache[p]!=null) out[p]=_quoteCache[p]; }); return out;
 }
@@ -2374,54 +2378,26 @@ var MAP_PAIRS=['EURUSD','GBPUSD','USDJPY','USDCHF','USDCAD','AUDUSD','NZDUSD','E
 function hmDate(d){return d.toISOString().split('T')[0];}
 async function loadHeatMap(){
   hmLoaded=true;
-  var api='https://api.frankfurter.dev/v1';
-  var today=hmDate(new Date());
-  // Use date ranges to reliably find actual trading days (not calendar weekends)
-  var d3 =hmDate(new Date(Date.now()-3*864e5));
-  var d10=hmDate(new Date(Date.now()-10*864e5));
-  var d35=hmDate(new Date(Date.now()-35*864e5));
+  var body=document.getElementById('hm-body');
+  body.innerHTML='<div class="ld" style="padding:20px"><div class="sp"></div>Loading live pip data…</div>';
   try{
-    var [r3,r10,r35]=await Promise.all([
-      fetch(api+'/'+d3+'..'+today+'?from=EUR').then(function(r){return r.json()}),
-      fetch(api+'/'+d10+'..'+today+'?from=EUR').then(function(r){return r.json()}),
-      fetch(api+'/'+d35+'..'+today+'?from=EUR').then(function(r){return r.json()})
-    ]);
-    var dates3=Object.keys(r3.rates||{}).sort();
-    var dates10=Object.keys(r10.rates||{}).sort();
-    var dates35=Object.keys(r35.rates||{}).sort();
-    var tod=r3.rates[dates3[dates3.length-1]]||{};tod.EUR=1;
-    var yd= r3.rates[dates3[Math.max(0,dates3.length-2)]]||tod;yd.EUR=1;
-    var wk= r10.rates[dates10[0]]||tod;wk.EUR=1;
-    var mo= r35.rates[dates35[0]]||tod;mo.EUR=1;
-    // cross(rates, A, B) → A/B price using EUR as bridge
-    function cross(rates,a,b){
-      var ra=a==='EUR'?1:(rates[a]||1);
-      var rb=b==='EUR'?1:(rates[b]||1);
-      return rb/ra;
-    }
-    function pipsForPair(a,b){
-      var mult=(b==='JPY'||a==='JPY')?100:10000;
-      var tR=cross(tod,a,b),yR=cross(yd,a,b),wR=cross(wk,a,b),mR=cross(mo,a,b);
-      return {sym:a+'/'+b,d:(tR-yR)*mult,w:(tR-wR)*mult,m:(tR-mR)*mult};
-    }
-    var ALLPAIRS=[
-      // Majors
-      ['EUR','USD'],['GBP','USD'],['AUD','USD'],['NZD','USD'],
-      ['USD','JPY'],['USD','CHF'],['USD','CAD'],
-      // EUR crosses
-      ['EUR','GBP'],['EUR','JPY'],['EUR','CHF'],['EUR','AUD'],['EUR','NZD'],['EUR','CAD'],
-      // GBP crosses
-      ['GBP','JPY'],['GBP','CHF'],['GBP','AUD'],['GBP','NZD'],['GBP','CAD'],
-      // Other crosses
-      ['AUD','JPY'],['AUD','NZD'],['AUD','CAD'],['AUD','CHF'],
-      ['NZD','JPY'],['NZD','CAD'],['NZD','CHF'],
-      ['CAD','JPY'],['CHF','JPY']
-    ];
-    var rows=ALLPAIRS.map(function(p){return pipsForPair(p[0],p[1]);});
+    // Live prices via the worker (Yahoo) — replaces the old ECB daily fix, which could lag 1-2 days.
+    TREND_PAIRS.forEach(function(p){delete _quoteCache[p];});   // always fresh on (re)load
+    var q=await liveQuotes(TREND_PAIRS);
+    var rows=[];
+    TREND_PAIRS.forEach(function(p){
+      var d=q[p]; if(!d||d.dp==null) return;
+      rows.push({sym:p.slice(0,3)+'/'+p.slice(3), d:d.dp, w:d.wp!=null?d.wp:0, m:d.mp!=null?d.mp:0});
+    });
+    if(!rows.length){body.innerHTML='<div class="eb" style="padding:16px">No live data returned — tap the Heat Map tab again to retry.</div>';hmLoaded=false;return;}
     renderHeatPips(rows);
-    buildMajorsMatrix(tod,yd);
+    buildMajorsMatrixLive(q);
+    var t=new Date().toLocaleTimeString('en-AU',{timeZone:'Australia/Brisbane',hour:'2-digit',minute:'2-digit'});
+    var src=document.getElementById('hm-src');
+    if(src) src.textContent='Live prices · Daily = pips since the 7am AEST rollover · Weekly/Monthly vs 5/21 trading days ago · as of '+t+' AEST';
   } catch(e){
-    document.getElementById('hm-body').innerHTML='<div class="eb" style="padding:16px">'+e.message+'</div>';
+    body.innerHTML='<div class="eb" style="padding:16px">'+e.message+'</div>';
+    hmLoaded=false;
   }
 }
 function fmtPip(v){
@@ -2488,7 +2464,7 @@ function drawPipTable(){
   document.getElementById('hm-body').innerHTML=html;
 }
 var MAT_CCYS=['USD','EUR','GBP','AUD','NZD','CAD','JPY','CHF'];
-var _matRows=MAT_CCYS.slice(),_matCols=MAT_CCYS.slice(),_matTod=null,_matYd=null;
+var _matRows=MAT_CCYS.slice(),_matCols=MAT_CCYS.slice(),_matQ=null;
 function toggleMat(axis,ccy){
   var arr=axis==='row'?_matRows:_matCols;
   var i=arr.indexOf(ccy);
@@ -2500,16 +2476,14 @@ function matAll(axis,on){
   else _matCols=on?MAT_CCYS.slice():[];
   buildMajorsMatrix();
 }
-function buildMajorsMatrix(tod,yd){
-  if(tod)_matTod=tod;if(yd)_matYd=yd;
-  tod=_matTod;yd=_matYd;
-  if(!tod||!yd)return;
-  function rate(sym){if(sym==='EUR') return 1;return tod[sym]||1;}
-  function prevRate(sym){if(sym==='EUR') return 1;return yd[sym]||1;}
+function buildMajorsMatrixLive(q){_matQ=q;buildMajorsMatrix();}
+function buildMajorsMatrix(){
+  if(!_matQ)return;
+  // cell = % change of ROW/COL since the 7am rollover, from the live quotes (invert if we hold COL/ROW)
   function pairChg(c1,c2){
-    var now=(rate(c2)/rate(c1));
-    var prv=(prevRate(c2)/prevRate(c1));
-    return (now-prv)/prv*100;
+    var d=_matQ[c1+c2]; if(d&&d.td!=null) return d.td;
+    var r=_matQ[c2+c1]; if(r&&r.td!=null) return (1/(1+r.td/100)-1)*100;
+    return null;
   }
   var rows=MAT_CCYS.filter(function(c){return _matRows.indexOf(c)>-1;});
   var cols=MAT_CCYS.filter(function(c){return _matCols.indexOf(c)>-1;});
@@ -2537,6 +2511,7 @@ function buildMajorsMatrix(tod,yd){
     cols.forEach(function(c){
       if(r===c){html+='<td class="diag">·</td>';return;}
       var v=pairChg(r,c);
+      if(v==null){html+='<td class="diag">–</td>';return;}
       var cls=Math.abs(v)<0.05?'diag':v>0?('mat-pos'+(Math.abs(v)>0.3?' hi':'')):'mat-neg'+(Math.abs(v)>0.3?' hi':'');
       html+='<td class="'+cls+'">'+(v>0?'+':'')+v.toFixed(2)+'%</td>';
     });
