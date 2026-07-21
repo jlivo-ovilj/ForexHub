@@ -50,7 +50,8 @@ body{font-family:'Syne',sans-serif;background:var(--bg);color:var(--tx);min-heig
 /* ── NAV ── */
 .nav{display:flex;gap:4px;padding:12px 20px;border-bottom:1px solid var(--bd);overflow-x:auto;scrollbar-width:none;justify-content:center}
 .nav::-webkit-scrollbar{display:none}
-.nb{white-space:nowrap;padding:7px 16px;border-radius:100px;font-family:'Syne',sans-serif;font-size:13px;font-weight:500;border:1px solid var(--bd2);background:transparent;color:var(--mt);cursor:pointer;flex-shrink:0}
+.nb{white-space:nowrap;padding:7px 16px;border-radius:100px;font-family:'Syne',sans-serif;font-size:13px;font-weight:500;border:1px solid var(--bd2);background:transparent;color:rgba(240,237,232,0.62);cursor:pointer;flex-shrink:0;transition:color 0.15s,border-color 0.15s}
+.nb:hover{color:var(--tx);border-color:rgba(255,255,255,0.28)}
 .nb.active{background:var(--ac);color:#0a0a0a;border-color:var(--ac)}
 
 /* ── MAIN ── */
@@ -285,7 +286,7 @@ body{font-family:'Syne',sans-serif;background:var(--bg);color:var(--tx);min-heig
 .hm-row:hover{background:rgba(255,255,255,0.025)}
 .hm-pair{font-family:'DM Mono',monospace;font-size:12px;font-weight:600;padding:8px 12px;border-bottom:1px solid var(--bd)}
 .hm-cell{font-family:'DM Mono',monospace;font-size:12px;text-align:center;padding:8px 12px;border-bottom:1px solid var(--bd);font-weight:500}
-.hm-pos{color:#4ade80}.hm-neg{color:#f87171}.hm-neu{color:var(--mt)}
+.hm-pos{color:#4ade80}.hm-neg{color:#f87171}.hm-neu{color:#8b8885}
 .hm-pos.hi{background:rgba(74,222,128,0.12)}.hm-neg.hi{background:rgba(248,113,113,0.12)}
 .pip-fccy{padding:3px 10px;border-radius:100px;font-family:'DM Mono',monospace;font-size:11px;border:1px solid var(--bd2);background:transparent;color:var(--mt);cursor:pointer;white-space:nowrap;transition:all 0.15s}
 .pip-fccy.all-active{border-color:var(--ac);background:var(--adm);color:var(--ac)}
@@ -354,7 +355,7 @@ body{font-family:'Syne',sans-serif;background:var(--bg);color:var(--tx);min-heig
 .scan-level-lbl{font-family:'DM Mono',monospace;font-size:9px;text-transform:uppercase;letter-spacing:0.08em;color:var(--mt);margin-bottom:4px}
 .scan-level-val{font-family:'DM Mono',monospace;font-size:13px;font-weight:700;color:var(--tx)}
 .scan-rr{font-family:'DM Mono',monospace;font-size:11px;color:var(--ac);margin-top:8px}
-.scan-empty{text-align:center;padding:50px 20px;color:var(--mt)}
+.scan-empty{text-align:center;padding:50px 20px;color:#b0aba3;font-size:15px}
 .scan-empty .scan-icon{font-size:40px;margin-bottom:12px}
 
 /* ── ABOUT ── */
@@ -999,6 +1000,7 @@ body.light .chart-modal-overlay{background:rgba(0,0,0,0.55)}
     <div class="cb">The scanner analyses all major pairs using current market sentiment, technical structure, and inter-market correlations to identify the highest-probability setups right now.</div>
     <div class="scan-controls">
       <button class="sb" id="scan-btn" onclick="runScanner()">🔍 Run scanner</button>
+      <button class="sb" id="pullback-btn" onclick="runPullbackScanner()" style="background:rgba(251,191,36,0.15);color:#fbbf24;border:1px solid rgba(251,191,36,0.4)">↩ Pullback scan</button>
       <span class="meta" id="scan-meta"></span>
     </div>
   </div>
@@ -1515,13 +1517,19 @@ function reportText(id){
   var el=document.querySelector(c.dataset.body);
   var clone=el.cloneNode(true);
   clone.querySelectorAll('.share-bar,button,.rb').forEach(function(b){b.remove();});
-  clone.querySelectorAll('.scan-pair-chip').forEach(function(ch){ch.replaceWith(document.createTextNode(ch.textContent.replace(/\s+/g,'')+'  '));});
+  // Inject clear text dividers between scanner setup cards so they don't bleed together in plaintext
+  clone.querySelectorAll('.scan-card').forEach(function(card){
+    var sep=document.createElement('div');
+    sep.textContent='────────────────────';
+    card.parentNode.insertBefore(sep,card);
+  });
+  clone.querySelectorAll('.scan-pair-chip').forEach(function(ch){ch.replaceWith(document.createTextNode('\n'+ch.textContent.replace(/\s+/g,'')+'  '));});
   clone.querySelectorAll('.scan-levels').forEach(function(g){
     var parts=Array.prototype.map.call(g.querySelectorAll('.scan-level'),function(lv){
       var l=lv.querySelector('.scan-level-lbl'),v=lv.querySelector('.scan-level-val');
       return (l?l.textContent.trim():'')+': '+(v?v.textContent.trim():'');
     });
-    g.replaceWith(document.createTextNode('\n'+parts.join('   ·   ')));
+    g.replaceWith(document.createTextNode('\n'+parts.join('   ·   ')+'\n'));
   });
   var txt=(clone.innerText||'').replace(/[ \t]+\n/g,'\n').replace(/\n{3,}/g,'\n\n').trim();
   return 'ForexHub — '+c.dataset.title+'\n'+stampAEST()+'\n\n'+txt+'\n\n— Not financial advice. Educational only.';
@@ -2155,7 +2163,7 @@ function openCalPopup(idx){
   document.getElementById('cpop-title').textContent=ev.name;
   document.getElementById('cpop-badge').innerHTML='<span class="cal-imp-badge '+ev.imp+'">'+(ev.imp==='high'?'HIGH':ev.imp==='med'?'MED':'LOW')+'</span>';
   document.getElementById('cpop-ccy-tag').innerHTML='<span class="cal-ccy-tag" style="color:'+col+';background:'+col+'22;border:1px solid '+col+'44;padding:2px 8px;border-radius:100px">'+ev.ccy+'</span>';
-  document.getElementById('cpop-time').textContent=ev.time+' AEST';
+  document.getElementById('cpop-time').textContent=(ev.day?ev.day+' · ':'')+ev.time+' AEST';
   var desc=ev.desc?ev.desc:'Forecast: '+ev.forecast+' · Previous: '+ev.prev;
   document.getElementById('cpop-desc').innerHTML=highlightEcoTerms(desc);
   // Look up eco term explanation
@@ -2744,6 +2752,80 @@ async function runScanner(){
 }
 
 /* ══════════════════════════════════════
+   PULLBACK SCANNER  (Amendment 8)
+══════════════════════════════════════ */
+async function runPullbackScanner(){
+  var btn=document.getElementById('pullback-btn'),res=document.getElementById('scan-results');
+  var meta=document.getElementById('scan-meta');
+  btn.disabled=true;btn.innerHTML='<div class="sp"></div> Scanning…';
+  meta.textContent='';
+  var shareEl=document.getElementById('scan-share');if(shareEl){shareEl.style.display='none';shareEl.innerHTML='';}
+  res.innerHTML='<div class="ld" style="padding:20px"><div class="sp"></div>Fetching yesterday\'s top movers for pullback analysis…</div>';
+  try{
+    // 1. Get live quotes to find yesterday's biggest movers (daily % change)
+    var q=await liveQuotes(TREND_PAIRS);
+    var movers=[];
+    TREND_PAIRS.forEach(function(p){
+      var d=q[p];if(!d||d.td==null)return;
+      movers.push({pair:p,td:d.td,tw:d.tw,q:d});
+    });
+    // Sort by absolute daily move, take top 8
+    movers.sort(function(a,b){return Math.abs(b.td)-Math.abs(a.td);});
+    var top=movers.slice(0,8);
+    if(!top.length){res.innerHTML='<div class="scan-empty"><div class="scan-icon">📊</div><div>No price data available — try again in a moment.</div></div>';btn.disabled=false;btn.innerHTML='↩ Pullback scan';return;}
+    // 2. Build price block for context
+    var tnow=new Date().toLocaleTimeString('en-AU',{timeZone:'Australia/Brisbane',hour:'2-digit',minute:'2-digit'});
+    var priceBlock='YESTERDAY\'S TOP MOVERS — LIVE DATA ('+tnow+' AEST):\n'+top.map(function(m){
+      var p=m.pair.slice(0,3)+'/'+m.pair.slice(3);
+      return p+': daily '+(m.td>=0?'+':'')+m.td+'% | weekly '+(m.tw>=0?'+':'')+m.tw+'% | current '+quoteLine(m.pair,m.q);
+    }).join('\n')+'\n\n';
+    // 3. AI prompt
+    var prompt=priceBlock+'You are a professional forex trader specialising in mean-reversion and pullback entries. The pairs above made yesterday\'s biggest directional moves. Analyse each for pullback potential — i.e. whether the pair has moved too far too fast and is likely to retrace before continuing, or whether momentum is strong enough that the trend will extend without a meaningful pullback.\n\nFor each setup where you see a valid pullback opportunity, use this EXACT plain-text format (no markdown, no asterisks):\n\nSETUP:\nPAIR: e.g. GBP/USD\nDIRECTION: LONG or SHORT (direction of the pullback entry — buying a dip in an uptrend = LONG)\nPROBABILITY: HIGH or MEDIUM\nENTRY: price level (pullback target — where you expect price to retrace to before entry)\nSTOP LOSS: price level\nTAKE PROFIT: price level (continuation of the prior trend)\nREASON: 3-5 sentences covering: how far price moved, why a pullback is likely here (key level, Fibonacci zone, RSI/momentum divergence, etc.), and where the continuation trade targets.\n\nOnly include pairs with a clear pullback setup. Skip pairs where the move is too shallow or where momentum shows no sign of pausing. Aim for 2-4 setups. Always finish each setup completely — never cut off mid-sentence.'+freshnessNote(false);
+    var txt=await ai(prompt,'pullback:'+Math.floor(Date.now()/36e5),{model:'claude-sonnet-5',maxTokens:3000,webSearch:false});
+    var norm=txt.replace(/\*\*/g,'').replace(/\*/g,'').replace(/^#+\s*/gm,'').replace(/^-{3,}$/gm,'');
+    var setups=norm.split(/\bSETUP\b[^:]*:/i).filter(function(s){return s.trim()&&/\bPAIR\b/i.test(s);});
+    if(!setups.length){
+      res.innerHTML='<div class="scan-empty"><div class="scan-icon">↩</div><div>No clear pullback setups — yesterday\'s movers appear to still have momentum. Try again later or use the main scanner.</div></div>';
+    } else {
+      var html='<div style="background:rgba(251,191,36,0.07);border:1px solid rgba(251,191,36,0.2);border-radius:var(--rs);padding:10px 14px;margin-bottom:14px;font-size:13px;color:#fbbf24">↩ Pullback scanner — yesterday\'s top movers analysed for mean-reversion entries</div>';
+      setups.forEach(function(s){
+        var get=function(key){var m=s.match(new RegExp('^'+key+'\\s*:(.*)$','im'));return m?m[1].trim():'';};
+        var pair=get('PAIR'),dir=get('DIRECTION'),prob=get('PROBABILITY');
+        var entry=get('ENTRY'),sl=get('STOP LOSS'),tp=get('TAKE PROFIT');
+        var rm=s.match(/\bREASON\b\s*:([\s\S]*?)(?=\n(?:PAIR|DIRECTION|PROBABILITY|ENTRY|STOP|TAKE|SETUP)\s*:|$)/i);
+        var reason=rm?rm[1].trim():'';
+        if(!reason) reason=s.split('\n').filter(function(l){return l.trim()&&!/^(PAIR|DIRECTION|PROBABILITY|ENTRY|STOP LOSS|TAKE PROFIT)\s*:/i.test(l.trim());}).join(' ');
+        if(!pair) return;
+        var isHigh=prob.toUpperCase().includes('HIGH');
+        var isLong=dir.toUpperCase().includes('LONG');
+        var cardClass=isHigh?'prob-high':'prob-med';
+        var rrHtml='';
+        if(entry&&sl&&tp){
+          var ep=parseFloat(entry.replace(/[^0-9.]/g,'')),sp=parseFloat(sl.replace(/[^0-9.]/g,'')),tp2=parseFloat(tp.replace(/[^0-9.]/g,''));
+          if(ep&&sp&&tp2){var risk=Math.abs(ep-sp),reward=Math.abs(tp2-ep);rrHtml='<div class="scan-rr">R:R = 1:'+(reward/risk).toFixed(1)+'</div>';}
+        }
+        html+='<div class="scan-card '+cardClass+'"><div class="scan-hdr">'+pairChip(pair)+'<span class="scan-dir '+(isLong?'long':'short')+'">'+dir+'</span><span class="scan-prob '+(isHigh?'high':'med')+'">'+prob+' PROB</span><span style="font-size:11px;color:#fbbf24;margin-left:4px">↩ PULLBACK</span></div>';
+        html+='<div class="scan-reason">'+colorizeCcy(md(reason))+'</div>';
+        if(entry||sl||tp){
+          html+='<div class="scan-levels">';
+          if(entry) html+='<div class="scan-level"><div class="scan-level-lbl">Entry</div><div class="scan-level-val">'+entry+'</div></div>';
+          if(sl) html+='<div class="scan-level"><div class="scan-level-lbl">Stop loss</div><div class="scan-level-val" style="color:#f87171">'+sl+'</div></div>';
+          if(tp) html+='<div class="scan-level"><div class="scan-level-lbl">Take profit</div><div class="scan-level-val" style="color:#4ade80">'+tp+'</div></div>';
+          html+='</div>'+rrHtml;
+        }
+        html+='</div>';
+      });
+      res.innerHTML=html||'<div class="scan-empty"><div class="scan-icon">⚠️</div><div>Could not parse pullback setups. Try again.</div></div>';
+      meta.textContent='Pullback scan · '+new Date().toLocaleTimeString('en-AU',{timeZone:'Australia/Brisbane',hour:'2-digit',minute:'2-digit'})+' AEST · Not financial advice';
+      if(html) buildShareBar('scan-share','Pullback scanner','#scan-results','pullback_scanner');
+    }
+  } catch(e){
+    res.innerHTML='<div class="eb" style="margin:10px">'+e.message+'</div>';
+  }
+  btn.disabled=false;btn.innerHTML='↩ Pullback scan';
+}
+
+/* ══════════════════════════════════════
    INIT
 ══════════════════════════════════════ */
 /* Bound the localStorage analysis cache and refresh the spend display */
@@ -2827,7 +2909,21 @@ async function renderBriefing(force){
     h+='</tbody></table><div class="ss" style="margin-top:8px;margin-bottom:0">This shows the market gap at the session rollover — mainly the <b>weekend gap</b> (Friday close → Monday open), which appears in any feed. Weekday 7am rollover gaps (e.g. a 25-pip GBP/AUD jump) are a Pepperstone-feed artifact that free market data doesn\'t contain, so those come from your <b>TradingView</b> alert. Rule: gap must beat the spread (edge &gt; 0); ≥10 pips = strong. Spread is a typical rollover estimate.</div>';
   } else { h+='<div class="cb">No significant weekend/rollover gap in the market feed right now. Weekday 7am gaps are broker-specific — those come from your TradingView alert.</div>'; }
   h+='</div>';
-  h+='<div class="brief-sec"><div class="brief-h">📰 Today\'s market-moving news <span class="muted">'+whenLong+'</span></div><div class="brief-news">'+md(news||'No news loaded.')+'</div></div>';
+  // Render news: each line as its own item with currency colour strip + delineation
+  function renderNews(raw){
+    if(!raw) return '<div class="cb" style="color:var(--mt)">No news loaded.</div>';
+    // Strip citation references like [1], [2], [Source:...], (Source:...), footnote markers
+    var clean=raw.replace(/\[\d+\]/g,'').replace(/\[Source[^\]]*\]/gi,'').replace(/\(Source[^)]*\)/gi,'').replace(/\[\s*\]/g,'').replace(/\s{2,}/g,' ');
+    var lines=clean.split('\n').map(function(l){return l.trim();}).filter(function(l){return l.length>4;});
+    if(!lines.length) return '<div class="cb" style="color:var(--mt)">No events found for today.</div>';
+    return lines.map(function(line){
+      // Detect leading currency from the line (e.g. "US " or "EUR" or known codes in the text)
+      var match=line.match(/\b(USD|EUR|GBP|AUD|NZD|CAD|JPY|CHF)\b/);
+      var accentCol=(match&&CCY_COLORS[match[1]])||'var(--bd2)';
+      return '<div style="padding:8px 12px;border-left:3px solid '+accentCol+';background:rgba(255,255,255,0.02);border-radius:0 6px 6px 0;margin-bottom:6px;font-size:13px;line-height:1.6">'+colorizeCcy(md(line))+'</div>';
+    }).join('');
+  }
+  h+='<div class="brief-sec"><div class="brief-h">📰 Today\'s market-moving news <span class="muted">'+whenLong+'</span></div><div class="brief-news">'+renderNews(news)+'</div></div>';
   box.innerHTML=h;
   box.setAttribute('data-loaded','1');
   buildShareBar('brief-share','Morning briefing','#brief-body','Morning_Briefing');
