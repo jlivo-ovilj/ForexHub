@@ -2691,7 +2691,7 @@ function setScanMode(mode){
   var sb=document.getElementById('scan-btn'),pb=document.getElementById('pullback-btn'),desc=document.getElementById('scan-desc');
   if(mode==='pullback'){
     sb.classList.add('sb-inactive'); pb.classList.remove('sb-inactive');
-    if(desc) desc.textContent='The pullback scanner ranks yesterday\'s biggest movers by session range, then analyses the top 8 for mean-reversion or trend-continuation entries — catching high-momentum pairs at a better price rather than chasing the move.';
+    if(desc) desc.textContent='The pullback scanner finds today\'s biggest movers, then sets LIMIT ORDERS — either a dip-buy (wait for a retracement to support, then enter with the trend at a better price) or a fade (the move is over-extended; enter against it expecting a reversal). You are NOT entering at market — you place a limit order at the entry trigger and wait for price to come to you.';
   } else {
     pb.classList.add('sb-inactive'); sb.classList.remove('sb-inactive');
     if(desc) desc.textContent='The scanner analyses all major pairs using current market sentiment, technical structure, and inter-market correlations to identify the highest-probability setups right now.';
@@ -2716,7 +2716,7 @@ async function runScanner(){
       if(lines.length) priceBlock='CURRENT LIVE PRICES ('+tnow+' AEST, real-time). Each line: price (today\'s range, % move/momentum) | trend 4H/Day/Week/Month (▲ up ▼ down ▬ flat). "Today"/D are measured from the 7am AEST session open — early in the day D is naturally small, so weight W/M more then:\n'+lines.join('\n')+'\n\n';
     }catch(e){}
     var prompt=priceBlock+'You are a professional forex trading analyst. Analyse the current forex market and identify the 3-5 highest-probability trade setups right now across major pairs.\n\nFor each setup use this EXACT plain-text format with no markdown, no asterisks, no bold:\n\nSETUP:\nPAIR: e.g. GBP/USD\nDIRECTION: LONG or SHORT\nPROBABILITY: HIGH or MEDIUM\nENTRY: price level\nSTOP LOSS: price level\nTAKE PROFIT: price level\nREASON: 3-5 sentences explaining the setup covering weekly trend, daily structure, 4H trigger, and catalyst.\n\nCRITICAL LEVEL RULES — base every level on the CURRENT LIVE PRICES above:\n- ENTRY must be within roughly 0.5% of the current price (a realistic pending order that has NOT already been hit), never far away.\n- Never use a level that price has already traded through — the entry must still be reachable from the current live price.\n- Respect each pair\'s momentum AND its 4H/Day/Week/Month trend shown above: prefer setups that trade WITH the dominant higher-timeframe trend (weekly/monthly direction), triggered on the 4H. Do NOT recommend fading a strong UP or DOWN move (a pair near its daily high/low with a clear % move, or aligned trends across timeframes) unless you can state a specific reversal signal. Weight the setup\'s probability by how well the timeframes align.\n- For a SHORT: ENTRY at or slightly ABOVE current price, STOP LOSS above entry, TAKE PROFIT below entry.\n- For a LONG: ENTRY at or slightly BELOW current price, STOP LOSS below entry, TAKE PROFIT above entry.\n- Direction, entry, stop and target must be internally consistent and achieve at least 1:2 risk/reward.\n- Do not contradict yourself: if the reasoning is bearish the direction must be SHORT, and vice-versa.\n\nOnly include setups with clear multi-timeframe alignment and strong technical or fundamental backing. Start each setup with exactly "SETUP:" on its own line. Do not use any markdown. Always finish the final setup completely — never cut off mid-sentence.'+freshnessNote(false);
-    var txt=await ai(prompt,'scan:'+Math.floor(Date.now()/9e5),{model:'claude-sonnet-5',maxTokens:3800,webSearch:false});
+    var txt=await ai(prompt,'scan:'+Math.floor(Date.now()/9e5),{model:'claude-sonnet-5',maxTokens:2600,webSearch:false});
     // Normalise: strip markdown so field detection works reliably
     var norm=txt.replace(/\*\*/g,'').replace(/\*/g,'').replace(/^#+\s*/gm,'').replace(/^-{3,}$/gm,'');
     // Split on SETUP: (handles variations like "SETUP 1:", "Setup:")
@@ -2776,10 +2776,11 @@ async function runPullbackScanner(){
   var shareEl=document.getElementById('scan-share');if(shareEl){shareEl.style.display='none';shareEl.innerHTML='';}
   res.innerHTML='<div class="ld" style="padding:20px"><div class="sp"></div>Fetching yesterday\'s top movers for pullback analysis…</div>';
   try{
-    // 1. Get live quotes to find yesterday's biggest movers (daily % change)
-    var q=await liveQuotes(TREND_PAIRS);
+    // 1. Get live quotes — top 20 liquid pairs only (saves one Yahoo API call vs all 28)
+    var pbPairs=['EURUSD','GBPUSD','USDJPY','AUDUSD','USDCAD','USDCHF','NZDUSD','EURJPY','GBPJPY','AUDJPY','EURGBP','EURAUD','GBPAUD','EURCAD','GBPCAD','AUDNZD','EURCHF','GBPCHF','NZDJPY','CADJPY'];
+    var q=await liveQuotes(pbPairs);
     var movers=[];
-    TREND_PAIRS.forEach(function(p){
+    pbPairs.forEach(function(p){
       var d=q[p];if(!d||d.td==null)return;
       movers.push({pair:p,td:d.td,tw:d.tw,q:d});
     });
@@ -2789,40 +2790,47 @@ async function runPullbackScanner(){
     if(!top.length){res.innerHTML='<div class="scan-empty"><div class="scan-icon">📊</div><div>No price data available — try again in a moment.</div></div>';btn.disabled=false;btn.innerHTML='↩ Pullback scan';return;}
     // 2. Build price block for context
     var tnow=new Date().toLocaleTimeString('en-AU',{timeZone:'Australia/Brisbane',hour:'2-digit',minute:'2-digit'});
-    var priceBlock='YESTERDAY\'S TOP MOVERS — LIVE DATA ('+tnow+' AEST):\n'+top.map(function(m){
+    var priceBlock='TODAY\'S TOP MOVERS — LIVE DATA ('+tnow+' AEST):\n'+top.map(function(m){
       var p=m.pair.slice(0,3)+'/'+m.pair.slice(3);
-      return p+': daily '+(m.td>=0?'+':'')+m.td+'% | weekly '+(m.tw>=0?'+':'')+m.tw+'% | current '+quoteLine(m.pair,m.q);
+      return p+': daily '+(m.td>=0?'+':'')+m.td+'% | weekly '+(m.tw>=0?'+':'')+m.tw+'% | '+quoteLine(m.pair,m.q);
     }).join('\n')+'\n\n';
-    // 3. AI prompt
-    var prompt=priceBlock+'You are a professional forex trader specialising in mean-reversion and pullback entries. The pairs above made yesterday\'s biggest directional moves. Analyse each for pullback potential — i.e. whether the pair has moved too far too fast and is likely to retrace before continuing, or whether momentum is strong enough that the trend will extend without a meaningful pullback.\n\nFor each setup where you see a valid pullback opportunity, use this EXACT plain-text format (no markdown, no asterisks):\n\nSETUP:\nPAIR: e.g. GBP/USD\nDIRECTION: LONG or SHORT (direction of the pullback entry — buying a dip in an uptrend = LONG)\nPROBABILITY: HIGH or MEDIUM\nENTRY: price level (pullback target — where you expect price to retrace to before entry)\nSTOP LOSS: price level\nTAKE PROFIT: price level (continuation of the prior trend)\nREASON: 3-5 sentences covering: how far price moved, why a pullback is likely here (key level, Fibonacci zone, RSI/momentum divergence, etc.), and where the continuation trade targets.\n\nOnly include pairs with a clear pullback setup. Skip pairs where the move is too shallow or where momentum shows no sign of pausing. Aim for 2-4 setups. Always finish each setup completely — never cut off mid-sentence.'+freshnessNote(false);
-    var txt=await ai(prompt,'pullback:'+Math.floor(Date.now()/36e5),{model:'claude-sonnet-5',maxTokens:3000,webSearch:false});
+    // 3. AI prompt — explicitly frames entries as limit orders away from current price
+    var prompt=priceBlock+'You are a professional forex trader. The pairs above made today\'s biggest directional moves. Your job is to identify PENDING LIMIT ORDER setups for traders who missed the move — NOT market orders to enter right now.\n\nFor each valid setup, decide between two approaches:\n  A) DIP BUY / RALLY SELL (trend-continuation): The trend is strong. Wait for a normal retracement to support/resistance, then enter WITH the trend at a better price.\n  B) FADE (mean-reversion): The move is over-extended. Enter AGAINST the move expecting a significant reversal (must cite a specific reversal signal — overbought/divergence/key level rejection).\n\nUse this EXACT plain-text format (no markdown, no asterisks):\n\nSETUP:\nPAIR: e.g. AUD/JPY\nORDER TYPE: DIP BUY / RALLY SELL / FADE LONG / FADE SHORT\nDIRECTION: LONG or SHORT\nPROBABILITY: HIGH or MEDIUM\nENTRY TRIGGER: the specific price level to place a limit order (must be meaningfully away from current price — at least 0.2% for majors)\nSTOP LOSS: price level\nTAKE PROFIT: price level\nREASON: 3-5 sentences covering: (1) how far price has moved and why it needs to pause, (2) why the entry trigger level is significant (support/resistance, Fibonacci, key zone), (3) what confirms the setup and where it targets.\n\nCRITICAL: Entry trigger must be a LIMIT ORDER LEVEL the price has NOT yet reached — it must be away from the current live price shown above. Never place entry at the current market price. For a DIP BUY the entry is BELOW current price. For a RALLY SELL the entry is ABOVE current price. For FADE entries, current price is acceptable only if at a key rejection level. Aim for 2–4 setups. Always complete every setup — never cut off mid-sentence.'+freshnessNote(false);
+    var txt=await ai(prompt,'pullback:'+Math.floor(Date.now()/36e5),{model:'claude-sonnet-5',maxTokens:2200,webSearch:false});
     var norm=txt.replace(/\*\*/g,'').replace(/\*/g,'').replace(/^#+\s*/gm,'').replace(/^-{3,}$/gm,'');
     var setups=norm.split(/\bSETUP\b[^:]*:/i).filter(function(s){return s.trim()&&/\bPAIR\b/i.test(s);});
     if(!setups.length){
       res.innerHTML='<div class="scan-empty"><div class="scan-icon">↩</div><div>No clear pullback setups — yesterday\'s movers appear to still have momentum. Try again later or use the main scanner.</div></div>';
     } else {
-      var html='<div style="background:rgba(251,191,36,0.07);border:1px solid rgba(251,191,36,0.2);border-radius:var(--rs);padding:10px 14px;margin-bottom:14px;font-size:13px;color:#fbbf24">↩ Pullback scanner — yesterday\'s top movers analysed for mean-reversion entries</div>';
+      var html='<div style="background:rgba(251,191,36,0.07);border:1px solid rgba(251,191,36,0.2);border-radius:var(--rs);padding:10px 14px;margin-bottom:14px;font-size:13px;color:#fbbf24">↩ Pullback scanner — LIMIT ORDERS only. Place at the entry trigger and wait for price to come to you. Not a market-entry signal.</div>';
       setups.forEach(function(s){
         var get=function(key){var m=s.match(new RegExp('^'+key+'\\s*:(.*)$','im'));return m?m[1].trim():'';};
-        var pair=get('PAIR'),dir=get('DIRECTION'),prob=get('PROBABILITY');
-        var entry=get('ENTRY'),sl=get('STOP LOSS'),tp=get('TAKE PROFIT');
-        var rm=s.match(/\bREASON\b\s*:([\s\S]*?)(?=\n(?:PAIR|DIRECTION|PROBABILITY|ENTRY|STOP|TAKE|SETUP)\s*:|$)/i);
+        var pair=get('PAIR'),orderType=get('ORDER TYPE'),dir=get('DIRECTION'),prob=get('PROBABILITY');
+        var entry=get('ENTRY TRIGGER')||get('ENTRY'),sl=get('STOP LOSS'),tp=get('TAKE PROFIT');
+        var rm=s.match(/\bREASON\b\s*:([\s\S]*?)(?=\n(?:PAIR|ORDER TYPE|DIRECTION|PROBABILITY|ENTRY|STOP|TAKE|SETUP)\s*:|$)/i);
         var reason=rm?rm[1].trim():'';
-        if(!reason) reason=s.split('\n').filter(function(l){return l.trim()&&!/^(PAIR|DIRECTION|PROBABILITY|ENTRY|STOP LOSS|TAKE PROFIT)\s*:/i.test(l.trim());}).join(' ');
+        if(!reason) reason=s.split('\n').filter(function(l){return l.trim()&&!/^(PAIR|ORDER TYPE|DIRECTION|PROBABILITY|ENTRY|STOP LOSS|TAKE PROFIT)\s*:/i.test(l.trim());}).join(' ');
         if(!pair) return;
         var isHigh=prob.toUpperCase().includes('HIGH');
         var isLong=dir.toUpperCase().includes('LONG');
+        var isFade=/fade/i.test(orderType);
+        var orderCol=isFade?'#f472b6':'#fbbf24';
+        var orderLabel=orderType||(isLong?'DIP BUY':'RALLY SELL');
         var cardClass=isHigh?'prob-high':'prob-med';
         var rrHtml='';
         if(entry&&sl&&tp){
           var ep=parseFloat(entry.replace(/[^0-9.]/g,'')),sp=parseFloat(sl.replace(/[^0-9.]/g,'')),tp2=parseFloat(tp.replace(/[^0-9.]/g,''));
           if(ep&&sp&&tp2){var risk=Math.abs(ep-sp),reward=Math.abs(tp2-ep);rrHtml='<div class="scan-rr">R:R = 1:'+(reward/risk).toFixed(1)+'</div>';}
         }
-        html+='<div class="scan-card '+cardClass+'"><div class="scan-hdr">'+pairChip(pair)+'<span class="scan-dir '+(isLong?'long':'short')+'">'+dir+'</span><span class="scan-prob '+(isHigh?'high':'med')+'">'+prob+' PROB</span><span style="font-size:11px;color:#fbbf24;margin-left:4px">↩ PULLBACK</span></div>';
+        // Show current live price for this pair so user can see gap to entry trigger
+        var nowPrice='';
+        var pd=q[pair.replace('/','')];
+        if(pd&&pd.p!=null) nowPrice=' <span style="font-size:11px;color:rgba(240,237,232,0.45);font-weight:400">now '+fmtPrice(pair.replace('/',''),pd.p)+'</span>';
+        html+='<div class="scan-card '+cardClass+'"><div class="scan-hdr">'+pairChip(pair)+'<span class="scan-dir '+(isLong?'long':'short')+'">'+dir+'</span><span class="scan-prob '+(isHigh?'high':'med')+'">'+prob+' PROB</span><span style="font-size:11px;padding:2px 8px;border-radius:100px;background:rgba(255,255,255,0.06);color:'+orderCol+';margin-left:4px;border:1px solid '+orderCol+'40">'+orderLabel+'</span></div>';
         html+='<div class="scan-reason">'+colorizeCcy(md(reason))+'</div>';
         if(entry||sl||tp){
           html+='<div class="scan-levels">';
-          if(entry) html+='<div class="scan-level"><div class="scan-level-lbl">Entry</div><div class="scan-level-val">'+entry+'</div></div>';
+          if(entry) html+='<div class="scan-level"><div class="scan-level-lbl">Entry trigger (limit)'+nowPrice+'</div><div class="scan-level-val">'+entry+'</div></div>';
           if(sl) html+='<div class="scan-level"><div class="scan-level-lbl">Stop loss</div><div class="scan-level-val" style="color:#f87171">'+sl+'</div></div>';
           if(tp) html+='<div class="scan-level"><div class="scan-level-lbl">Take profit</div><div class="scan-level-val" style="color:#4ade80">'+tp+'</div></div>';
           html+='</div>'+rrHtml;
