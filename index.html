@@ -324,7 +324,7 @@ body{font-family:'Syne',sans-serif;background:var(--bg);color:var(--tx);min-heig
 .ticker-price{color:var(--tx);opacity:0.8;font-size:11px}
 .ticker-chg{font-size:10px;font-weight:600}
 .t-up{color:var(--buy)}.t-dn{color:var(--sel)}.t-flat{color:var(--mt)}
-@keyframes ticker-scroll{0%{transform:translateX(0)}100%{transform:translateX(-50%)}}
+@keyframes ticker-scroll{0%{transform:translateX(0)}100%{transform:translateX(-25%)}}
 /* Clickable rows everywhere */
 .row-link{cursor:pointer;transition:background 0.12s}
 .row-link:hover{background:rgba(255,255,255,0.055)!important}
@@ -512,31 +512,9 @@ body.light .chart-modal-overlay{background:rgba(0,0,0,0.55)}
   <button class="nb" onclick="showS('about',this)">About</button>
 </div>
 
-<!-- ══ PRICE TICKER ══ -->
+<!-- ══ PRICE TICKER (built by initTicker) ══ -->
 <div class="ticker-wrap" id="tickerWrap">
-  <div class="ticker-track" id="tickerTrack">
-    <button class="ticker-item" onclick="goToPair('EURUSD')"><span class="ticker-sym" style="color:#3b82f6">EUR</span><span class="ticker-sym" style="color:#9ca3af">USD</span><span class="ticker-price" id="tk-EURUSD">—</span><span class="ticker-chg t-flat" id="tkc-EURUSD"></span></button>
-    <button class="ticker-item" onclick="goToPair('GBPUSD')"><span class="ticker-sym" style="color:#8b5cf6">GBP</span><span class="ticker-sym" style="color:#9ca3af">USD</span><span class="ticker-price" id="tk-GBPUSD">—</span><span class="ticker-chg t-flat" id="tkc-GBPUSD"></span></button>
-    <button class="ticker-item" onclick="goToPair('USDJPY')"><span class="ticker-sym" style="color:#9ca3af">USD</span><span class="ticker-sym" style="color:#f97316">JPY</span><span class="ticker-price" id="tk-USDJPY">—</span><span class="ticker-chg t-flat" id="tkc-USDJPY"></span></button>
-    <button class="ticker-item" onclick="goToPair('AUDUSD')"><span class="ticker-sym" style="color:#22c55e">AUD</span><span class="ticker-sym" style="color:#9ca3af">USD</span><span class="ticker-price" id="tk-AUDUSD">—</span><span class="ticker-chg t-flat" id="tkc-AUDUSD"></span></button>
-    <button class="ticker-item" onclick="goToPair('USDCAD')"><span class="ticker-sym" style="color:#9ca3af">USD</span><span class="ticker-sym" style="color:#ef4444">CAD</span><span class="ticker-price" id="tk-USDCAD">—</span><span class="ticker-chg t-flat" id="tkc-USDCAD"></span></button>
-    <button class="ticker-item" onclick="goToPair('USDCHF')"><span class="ticker-sym" style="color:#9ca3af">USD</span><span class="ticker-sym" style="color:#ec4899">CHF</span><span class="ticker-price" id="tk-USDCHF">—</span><span class="ticker-chg t-flat" id="tkc-USDCHF"></span></button>
-    <button class="ticker-item" onclick="goToPair('NZDUSD')"><span class="ticker-sym" style="color:#06b6d4">NZD</span><span class="ticker-sym" style="color:#9ca3af">USD</span><span class="ticker-price" id="tk-NZDUSD">—</span><span class="ticker-chg t-flat" id="tkc-NZDUSD"></span></button>
-    <button class="ticker-item" onclick="goToPair('EURJPY')"><span class="ticker-sym" style="color:#3b82f6">EUR</span><span class="ticker-sym" style="color:#f97316">JPY</span><span class="ticker-price" id="tk-EURJPY">—</span><span class="ticker-chg t-flat" id="tkc-EURJPY"></span></button>
-    <button class="ticker-item" onclick="goToPair('GBPJPY')"><span class="ticker-sym" style="color:#8b5cf6">GBP</span><span class="ticker-sym" style="color:#f97316">JPY</span><span class="ticker-price" id="tk-GBPJPY">—</span><span class="ticker-chg t-flat" id="tkc-GBPJPY"></span></button>
-    <button class="ticker-item" onclick="goToPair('AUDJPY')"><span class="ticker-sym" style="color:#22c55e">AUD</span><span class="ticker-sym" style="color:#f97316">JPY</span><span class="ticker-price" id="tk-AUDJPY">—</span><span class="ticker-chg t-flat" id="tkc-AUDJPY"></span></button>
-    <!-- duplicated for seamless loop -->
-    <button class="ticker-item" onclick="goToPair('EURUSD')"><span class="ticker-sym" style="color:#3b82f6">EUR</span><span class="ticker-sym" style="color:#9ca3af">USD</span><span class="ticker-price" id="tk2-EURUSD">—</span><span class="ticker-chg t-flat" id="tkc2-EURUSD"></span></button>
-    <button class="ticker-item" onclick="goToPair('GBPUSD')"><span class="ticker-sym" style="color:#8b5cf6">GBP</span><span class="ticker-sym" style="color:#9ca3af">USD</span><span class="ticker-price" id="tk2-GBPUSD">—</span><span class="ticker-chg t-flat" id="tkc2-GBPUSD"></span></button>
-    <button class="ticker-item" onclick="goToPair('USDJPY')"><span class="ticker-sym" style="color:#9ca3af">USD</span><span class="ticker-sym" style="color:#f97316">JPY</span><span class="ticker-price" id="tk2-USDJPY">—</span><span class="ticker-chg t-flat" id="tkc2-USDJPY"></span></button>
-    <button class="ticker-item" onclick="goToPair('AUDUSD')"><span class="ticker-sym" style="color:#22c55e">AUD</span><span class="ticker-sym" style="color:#9ca3af">USD</span><span class="ticker-price" id="tk2-AUDUSD">—</span><span class="ticker-chg t-flat" id="tkc2-AUDUSD"></span></button>
-    <button class="ticker-item" onclick="goToPair('USDCAD')"><span class="ticker-sym" style="color:#9ca3af">USD</span><span class="ticker-sym" style="color:#ef4444">CAD</span><span class="ticker-price" id="tk2-USDCAD">—</span><span class="ticker-chg t-flat" id="tkc2-USDCAD"></span></button>
-    <button class="ticker-item" onclick="goToPair('USDCHF')"><span class="ticker-sym" style="color:#9ca3af">USD</span><span class="ticker-sym" style="color:#ec4899">CHF</span><span class="ticker-price" id="tk2-USDCHF">—</span><span class="ticker-chg t-flat" id="tkc2-USDCHF"></span></button>
-    <button class="ticker-item" onclick="goToPair('NZDUSD')"><span class="ticker-sym" style="color:#06b6d4">NZD</span><span class="ticker-sym" style="color:#9ca3af">USD</span><span class="ticker-price" id="tk2-NZDUSD">—</span><span class="ticker-chg t-flat" id="tkc2-NZDUSD"></span></button>
-    <button class="ticker-item" onclick="goToPair('EURJPY')"><span class="ticker-sym" style="color:#3b82f6">EUR</span><span class="ticker-sym" style="color:#f97316">JPY</span><span class="ticker-price" id="tk2-EURJPY">—</span><span class="ticker-chg t-flat" id="tkc2-EURJPY"></span></button>
-    <button class="ticker-item" onclick="goToPair('GBPJPY')"><span class="ticker-sym" style="color:#8b5cf6">GBP</span><span class="ticker-sym" style="color:#f97316">JPY</span><span class="ticker-price" id="tk2-GBPJPY">—</span><span class="ticker-chg t-flat" id="tkc2-GBPJPY"></span></button>
-    <button class="ticker-item" onclick="goToPair('AUDJPY')"><span class="ticker-sym" style="color:#22c55e">AUD</span><span class="ticker-sym" style="color:#f97316">JPY</span><span class="ticker-price" id="tk2-AUDJPY">—</span><span class="ticker-chg t-flat" id="tkc2-AUDJPY"></span></button>
-  </div>
+  <div class="ticker-track" id="tickerTrack"></div>
 </div>
 
 <div class="main">
@@ -1407,20 +1385,26 @@ function goToPair(pair, timeframe){
 ══════════════════════════════════════ */
 var TICKER_PAIRS=['EURUSD','GBPUSD','USDJPY','AUDUSD','USDCAD','USDCHF','NZDUSD','EURJPY','GBPJPY','AUDJPY'];
 var _tickerPrev={};
+var _TICKER_COLORS={'EUR':'#3b82f6','GBP':'#8b5cf6','USD':'#9ca3af','AUD':'#22c55e','CAD':'#ef4444','CHF':'#ec4899','NZD':'#06b6d4','JPY':'#f97316'};
 
-function updateTickerEl(prefix, pair, price, prevPrice){
-  var priceEl = document.getElementById(prefix+pair);
-  var chgEl   = document.getElementById(prefix.replace('tk-','tkc-').replace('tk2-','tkc2-')+pair);
-  if(!priceEl) return;
-  var isJPY = pair.slice(3) === 'JPY';
+/* Update all copies of a pair in the ticker at once using data-pair attribute */
+function updateTickerPair(pair, price, prevPrice){
+  var isJPY = pair.slice(3)==='JPY';
   var dec = isJPY ? 3 : 5;
-  priceEl.textContent = price.toFixed(dec);
-  if(chgEl && prevPrice){
+  var priceStr = price.toFixed(dec);
+  document.querySelectorAll('.ticker-item[data-pair="'+pair+'"] .ticker-price').forEach(function(el){
+    el.textContent = priceStr;
+  });
+  if(prevPrice != null){
     var diff = price - prevPrice;
-    var pct  = (diff/prevPrice*100);
+    var pct  = (diff / prevPrice * 100);
     var sign = diff >= 0 ? '+' : '';
-    chgEl.textContent = sign + pct.toFixed(2)+'%';
-    chgEl.className   = 'ticker-chg ' + (diff > 0.00001 ? 't-up' : diff < -0.00001 ? 't-dn' : 't-flat');
+    var chgStr = sign + pct.toFixed(2) + '%';
+    var cls = 'ticker-chg ' + (diff > 0.000001 ? 't-up' : diff < -0.000001 ? 't-dn' : 't-flat');
+    document.querySelectorAll('.ticker-item[data-pair="'+pair+'"] .ticker-chg').forEach(function(el){
+      el.textContent = chgStr;
+      el.className = cls;
+    });
   }
 }
 
@@ -1430,16 +1414,34 @@ async function refreshTicker(){
     TICKER_PAIRS.forEach(function(pair){
       var q = quotes[pair];
       if(!q) return;
-      var price = q.p || q;
-      var prev  = _tickerPrev[pair] || price;
-      updateTickerEl('tk-',  pair, price, prev);
-      updateTickerEl('tk2-', pair, price, prev);
+      var price = typeof q === 'object' ? (q.p || q.ask || q.bid) : q;
+      if(!price || isNaN(price)) return;
+      var prev = _tickerPrev[pair] != null ? _tickerPrev[pair] : null;
+      updateTickerPair(pair, price, prev);
       _tickerPrev[pair] = price;
     });
-  } catch(e){}
+  } catch(e){ console.warn('Ticker refresh failed', e); }
 }
 
 function initTicker(){
+  /* Build 4 identical sets of ticker items — 4 copies ensures seamless loop
+     at any viewport width (animation moves exactly 1 set = 25% of track) */
+  var track = document.getElementById('tickerTrack');
+  if(!track) return;
+  function makeSet(){
+    return TICKER_PAIRS.map(function(pair){
+      var a = pair.slice(0,3), b = pair.slice(3,6);
+      var ca = _TICKER_COLORS[a]||'#9ca3af', cb = _TICKER_COLORS[b]||'#9ca3af';
+      return '<button class="ticker-item" data-pair="'+pair+'" onclick="goToPair(\''+pair+'\')">'
+        +'<span class="ticker-sym" style="color:'+ca+'">'+a+'</span>'
+        +'<span class="ticker-sym" style="color:'+cb+'">'+b+'</span>'
+        +'<span class="ticker-price">—</span>'
+        +'<span class="ticker-chg t-flat"></span>'
+        +'</button>';
+    }).join('');
+  }
+  var oneSet = makeSet();
+  track.innerHTML = oneSet + oneSet + oneSet + oneSet; // 4 copies → -25% animation = seamless
   refreshTicker();
   setInterval(refreshTicker, 5*60*1000);
 }
