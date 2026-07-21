@@ -29,6 +29,7 @@ body[data-sect="scanner"]   {--ac:#e879f9;--adm:rgba(232,121,249,0.12)}
 body[data-sect="about"]     {--ac:#94a3b8;--adm:rgba(148,163,184,0.12)}
 body[data-sect="briefing"]  {--ac:#eab308;--adm:rgba(234,179,8,0.12)}
 body[data-sect="trends"]    {--ac:#10b981;--adm:rgba(16,185,129,0.12)}
+body[data-sect="calculator"]{--ac:#06b6d4;--adm:rgba(6,182,212,0.12)}
 *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
 body{font-family:'Syne',sans-serif;background:var(--bg);color:var(--tx);min-height:100vh;overflow-x:hidden}
 
@@ -240,6 +241,25 @@ body{font-family:'Syne',sans-serif;background:var(--bg);color:var(--tx);min-heig
 .sb:disabled{opacity:0.5;cursor:not-allowed}
 .sb-pb{background:rgba(251,191,36,0.18);color:#fbbf24;border:1px solid rgba(251,191,36,0.45)}
 .sb-inactive{opacity:0.38;filter:saturate(0.4)}
+
+/* ── CALCULATOR ── */
+.calc-pip-tbl{width:100%;border-collapse:collapse}
+.calc-pip-tbl thead th{font-family:'DM Mono',monospace;font-size:10px;text-transform:uppercase;letter-spacing:0.08em;color:var(--mt);padding:8px 10px;text-align:right;border-bottom:1px solid var(--bd2);position:sticky;top:0;background:var(--sf)}
+.calc-pip-tbl thead th:first-child{text-align:left}
+.calc-pip-tbl td{font-family:'DM Mono',monospace;font-size:12px;padding:7px 10px;text-align:right;border-bottom:1px solid var(--bd)}
+.calc-pip-tbl td:first-child{text-align:left}
+.calc-pip-tbl tr:hover{background:rgba(255,255,255,0.025)}
+.calc-grp-lbl{font-family:'DM Mono',monospace;font-size:9px;letter-spacing:0.12em;text-transform:uppercase;color:var(--mt);padding:8px 10px 4px;background:var(--sf2);display:block}
+.planner-hdr{display:grid;gap:6px;align-items:center;padding:7px 10px;background:var(--sf2);border-radius:var(--rs) var(--rs) 0 0;font-family:'DM Mono',monospace;font-size:10px;text-transform:uppercase;letter-spacing:0.08em;color:var(--mt)}
+.planner-row{display:grid;gap:6px;align-items:center;padding:6px 10px;border-bottom:1px solid var(--bd);font-family:'DM Mono',monospace;font-size:12px}
+.planner-row.total-row{background:rgba(6,182,212,0.06);border-top:1px solid rgba(6,182,212,0.35);border-bottom:none;border-radius:0 0 var(--rs) var(--rs)}
+.pip-inp{background:var(--sf2);border:1px solid var(--bd2);border-radius:4px;padding:5px 8px;font-family:'DM Mono',monospace;font-size:12px;color:var(--tx);text-align:right;width:100%;outline:none;-moz-appearance:textfield}
+.pip-inp:focus{border-color:var(--ac)}
+.pip-inp::-webkit-inner-spin-button,.pip-inp::-webkit-outer-spin-button{-webkit-appearance:none}
+.calc-pv-strip{background:var(--sf2);border:1px solid var(--bd);border-radius:var(--rs);padding:10px 14px;margin-bottom:14px;display:flex;gap:20px;flex-wrap:wrap;font-family:'DM Mono',monospace;font-size:12px;color:var(--mt)}
+.calc-pv-strip strong{color:var(--ac)}
+.calc-two-col{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;margin-bottom:14px}
+@media(max-width:600px){.calc-two-col{grid-template-columns:1fr 1fr}.planner-hdr,.planner-row{font-size:11px;gap:4px;padding:5px 8px}}
 
 /* Checklist */
 .ci{display:flex;align-items:flex-start;gap:12px;padding:10px 0;border-bottom:1px solid var(--bd);cursor:pointer}
@@ -469,6 +489,7 @@ body.light .chart-modal-overlay{background:rgba(0,0,0,0.55)}
   <button class="nb" onclick="showS('checklist',this)">Checklist</button>
   <button class="nb" onclick="showS('review',this)">Review</button>
   <button class="nb" onclick="showS('journal',this)">Journal</button>
+  <button class="nb" onclick="showS('calculator',this)">Calculator</button>
   <button class="nb" onclick="showS('about',this)">About</button>
 </div>
 
@@ -1015,6 +1036,117 @@ body.light .chart-modal-overlay{background:rgba(0,0,0,0.55)}
   </div>
 </div>
 
+<!-- ══ CALCULATOR ══ -->
+<div id="calculator" class="sec">
+  <div class="st">Calculator</div>
+  <div class="ss">Live AUD pip values &amp; session trade planner</div>
+
+  <!-- Pip Value Table -->
+  <div class="card" style="margin-bottom:16px">
+    <div style="display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:12px;gap:12px">
+      <div>
+        <div style="font-weight:700;font-size:15px;margin-bottom:3px">Live Pip Values</div>
+        <div class="meta">AUD values calculated from live prices · Standard (100k) / Mini (10k) / Micro (1k) lots</div>
+      </div>
+      <button class="sb" style="margin-top:0;padding:8px 16px;font-size:13px;flex-shrink:0" onclick="loadCalculator()">↻ Refresh</button>
+    </div>
+    <div id="calc-pip-loading" style="text-align:center;padding:28px;color:var(--mt);font-size:13px">Loading live prices…</div>
+    <div id="calc-pip-table" style="overflow-x:auto;display:none"></div>
+    <div class="meta" style="margin-top:8px;line-height:1.5">* <strong>Pips/100%</strong> — pips needed for a single standard-lot position to return 100% on a A$10,000 account</div>
+  </div>
+
+  <!-- Trade Planner -->
+  <div class="card">
+    <div style="font-weight:700;font-size:15px;margin-bottom:3px">Session Trade Planner</div>
+    <div class="meta" style="margin-bottom:16px">Model a sequence of trades and see your running P&amp;L in AUD</div>
+
+    <!-- Config -->
+    <div class="calc-two-col">
+      <div class="fld">
+        <label>Opening Balance (AUD)</label>
+        <input class="inp" id="planner-bal" type="number" value="1000" min="1" step="100" oninput="updatePlanner()">
+      </div>
+      <div class="fld">
+        <label>Pair</label>
+        <select class="sel-i" id="planner-pair" onchange="updatePlannerPair()">
+          <optgroup label="Major USD">
+            <option value="EURUSD">EUR/USD</option>
+            <option value="GBPUSD">GBP/USD</option>
+            <option value="USDJPY">USD/JPY</option>
+            <option value="AUDUSD" selected>AUD/USD</option>
+            <option value="USDCAD">USD/CAD</option>
+            <option value="USDCHF">USD/CHF</option>
+            <option value="NZDUSD">NZD/USD</option>
+          </optgroup>
+          <optgroup label="JPY Crosses">
+            <option value="EURJPY">EUR/JPY</option>
+            <option value="GBPJPY">GBP/JPY</option>
+            <option value="AUDJPY">AUD/JPY</option>
+            <option value="NZDJPY">NZD/JPY</option>
+            <option value="CADJPY">CAD/JPY</option>
+          </optgroup>
+          <optgroup label="EUR / GBP Crosses">
+            <option value="EURGBP">EUR/GBP</option>
+            <option value="EURAUD">EUR/AUD</option>
+            <option value="GBPAUD">GBP/AUD</option>
+            <option value="EURCAD">EUR/CAD</option>
+            <option value="GBPCAD">GBP/CAD</option>
+            <option value="EURCHF">EUR/CHF</option>
+            <option value="GBPCHF">GBP/CHF</option>
+          </optgroup>
+          <optgroup label="AUD Crosses">
+            <option value="AUDNZD">AUD/NZD</option>
+            <option value="AUDCAD">AUD/CAD</option>
+            <option value="AUDCHF">AUD/CHF</option>
+          </optgroup>
+        </select>
+      </div>
+      <div class="fld">
+        <label>Lot Size</label>
+        <select class="sel-i" id="planner-lot" onchange="updatePlanner()">
+          <option value="100000">Standard (100k)</option>
+          <option value="10000" selected>Mini (10k)</option>
+          <option value="1000">Micro (1k)</option>
+        </select>
+      </div>
+    </div>
+
+    <!-- Pip value strip -->
+    <div class="calc-pv-strip" id="planner-pv-strip">
+      <span>Pair: <strong id="pv-pair">AUD/USD</strong></span>
+      <span>Live price: <strong id="pv-price" style="color:var(--tx)">—</strong></span>
+      <span>$/pip: <strong id="pv-val">—</strong></span>
+      <span style="margin-left:auto;color:var(--mt);font-size:11px" id="pv-note"></span>
+    </div>
+
+    <!-- Trade rows table -->
+    <div style="border:1px solid var(--bd);border-radius:var(--rs);overflow:hidden">
+      <div class="planner-hdr" style="grid-template-columns:26px 1fr 1fr 1fr 1fr 28px">
+        <span>#</span><span>Pips</span>
+        <span style="text-align:right">P&amp;L (A$)</span>
+        <span style="text-align:right">Balance</span>
+        <span style="text-align:right">% of OB</span>
+        <span></span>
+      </div>
+      <div id="planner-rows"></div>
+      <div class="planner-row total-row" id="planner-total" style="grid-template-columns:26px 1fr 1fr 1fr 1fr 28px">
+        <span style="color:var(--mt)">∑</span>
+        <span style="color:var(--mt)">Total</span>
+        <span id="pt-pnl" style="text-align:right">—</span>
+        <span id="pt-bal" style="text-align:right;color:var(--tx)">—</span>
+        <span id="pt-pct" style="text-align:right">—</span>
+        <span></span>
+      </div>
+    </div>
+
+    <!-- Actions -->
+    <div style="display:flex;gap:10px;margin-top:12px;align-items:center;flex-wrap:wrap">
+      <button class="sb" style="margin-top:0;padding:8px 18px;font-size:13px" onclick="addPlannerRow()">+ Add trade</button>
+      <button class="pip-fccy" style="margin-left:auto" onclick="clearPlanner()">Clear</button>
+    </div>
+  </div>
+</div>
+
 <!-- ══ ABOUT ══ -->
 <div id="about" class="sec">
   <div class="st">About ForexHub</div>
@@ -1174,6 +1306,7 @@ function showS(id,btn){
     if(!corrLoaded) loadCorrelation();
   }
   if(id==='trends' && !trendLoaded) loadTrendScan();
+  if(id==='calculator' && !calcLoaded) loadCalculator();
 }
 
 /* Analysis sub-tabs  (Amendment 7) */
@@ -2848,6 +2981,215 @@ async function runPullbackScanner(){
 }
 
 /* ══════════════════════════════════════
+   CALCULATOR — Pip Values + Trade Planner
+══════════════════════════════════════ */
+var calcLoaded=false;
+var calcAllPairs=['EURUSD','GBPUSD','USDJPY','AUDUSD','USDCAD','USDCHF','NZDUSD','EURJPY','GBPJPY','AUDJPY','NZDJPY','CADJPY','EURGBP','EURAUD','GBPAUD','EURCAD','GBPCAD','AUDNZD','EURCHF','GBPCHF','AUDCAD','AUDCHF'];
+var plannerQuotes={};
+var plannerData=[];
+var PLANNER_DEFAULT_ROWS=5;
+
+/* Returns the AUD pip value for 1 standard lot (100,000 units) using live cross rates */
+function getPipValueAUD(pair,quotes){
+  var q=pair.slice(3); // quote currency
+  var isJPY=(q==='JPY');
+  var pipMove=isJPY?0.01:0.0001;
+  var pipInQuote=pipMove*100000; // 10 for most, 1000 for JPY
+  function r(p){var v=quotes[p];return v?(v.p||v):null;}
+  var audUsd=r('AUDUSD')||0.63;
+  var audJpy=r('AUDJPY')||97;
+  var audCad=r('AUDCAD')||0.89;
+  var audNzd=r('AUDNZD')||1.08;
+  var usdChf=r('USDCHF')||0.90;
+  var gbpUsd=r('GBPUSD')||1.27;
+  var eurUsd=r('EURUSD')||1.08;
+  var audPerQuote;
+  if(q==='AUD')      audPerQuote=1;
+  else if(q==='USD') audPerQuote=1/audUsd;
+  else if(q==='JPY') audPerQuote=1/audJpy;
+  else if(q==='CAD') audPerQuote=1/audCad;
+  else if(q==='NZD') audPerQuote=1/audNzd;
+  else if(q==='CHF') audPerQuote=1/(audUsd*usdChf);
+  else if(q==='GBP') audPerQuote=gbpUsd/audUsd;
+  else if(q==='EUR') audPerQuote=eurUsd/audUsd;
+  else               audPerQuote=1;
+  return pipInQuote*audPerQuote;
+}
+
+async function loadCalculator(){
+  calcLoaded=true;
+  var loading=document.getElementById('calc-pip-loading');
+  var tableDiv=document.getElementById('calc-pip-table');
+  if(loading){loading.style.display='block';loading.textContent='Loading live prices…';}
+  if(tableDiv) tableDiv.style.display='none';
+  try{
+    var quotes=await liveQuotes(calcAllPairs);
+    plannerQuotes=quotes;
+    var CCY_GROUPS=[
+      {label:'Major USD',pairs:['EURUSD','GBPUSD','AUDUSD','NZDUSD','USDCAD','USDCHF','USDJPY']},
+      {label:'JPY Crosses',pairs:['EURJPY','GBPJPY','AUDJPY','NZDJPY','CADJPY']},
+      {label:'EUR Crosses',pairs:['EURGBP','EURAUD','EURCAD','EURCHF']},
+      {label:'GBP Crosses',pairs:['GBPAUD','GBPCAD','GBPCHF']},
+      {label:'AUD Crosses',pairs:['AUDNZD','AUDCAD','AUDCHF']}
+    ];
+    var html='<table class="calc-pip-tbl"><thead><tr>';
+    html+='<th style="text-align:left">Pair</th>';
+    html+='<th>Live Price</th>';
+    html+='<th style="color:var(--ac)">$/pip Std</th>';
+    html+='<th>$/pip Mini</th>';
+    html+='<th>$/pip Micro</th>';
+    html+='<th>Pips/100%*</th>';
+    html+='</tr></thead><tbody>';
+    CCY_GROUPS.forEach(function(grp){
+      html+='<tr><td colspan="6"><span class="calc-grp-lbl">'+grp.label+'</span></td></tr>';
+      grp.pairs.forEach(function(pair){
+        var qd=quotes[pair];
+        var price=qd?(qd.p||qd):null;
+        var stdPip=getPipValueAUD(pair,quotes);
+        var miniPip=stdPip/10;
+        var microPip=stdPip/100;
+        var pips100=stdPip>0?(10000/stdPip).toFixed(0):'—';
+        var base=pair.slice(0,3);
+        var col=CCY_COLORS[base]||'var(--tx)';
+        html+='<tr class="hm-row">';
+        html+='<td><span style="color:'+col+';font-weight:700;font-size:13px">'+base+'</span><span style="color:var(--mt)">/'+pair.slice(3)+'</span></td>';
+        html+='<td>'+(price!=null?fmtPrice(pair,price):'—')+'</td>';
+        html+='<td style="color:var(--ac)">A$'+stdPip.toFixed(2)+'</td>';
+        html+='<td>A$'+miniPip.toFixed(2)+'</td>';
+        html+='<td style="color:var(--mt)">A$'+microPip.toFixed(3)+'</td>';
+        html+='<td style="color:var(--mt)">'+pips100+'</td>';
+        html+='</tr>';
+      });
+    });
+    html+='</tbody></table>';
+    if(tableDiv){tableDiv.innerHTML=html;tableDiv.style.display='block';}
+    if(loading) loading.style.display='none';
+    updatePlannerPair();
+  } catch(e){
+    if(loading){loading.style.display='block';loading.textContent='Failed to load prices. Tap Refresh to retry.';}
+  }
+}
+
+/* ── Trade Planner ── */
+function initPlanner(){
+  plannerData=[];
+  for(var i=0;i<PLANNER_DEFAULT_ROWS;i++) plannerData.push({pips:''});
+  renderPlannerRows();
+}
+
+function renderPlannerRows(){
+  var tbody=document.getElementById('planner-rows');
+  if(!tbody) return;
+  var cols='grid-template-columns:26px 1fr 1fr 1fr 1fr 28px';
+  var html='';
+  plannerData.forEach(function(row,i){
+    html+='<div class="planner-row" style="'+cols+'" id="pr-'+i+'">';
+    html+='<span style="color:var(--mt);font-size:11px">'+(i+1)+'</span>';
+    html+='<input class="pip-inp" id="pip-in-'+i+'" type="number" value="'+(row.pips||'')+'" placeholder="0" oninput="plannerPipsChange('+i+',this.value)">';
+    html+='<span id="pr-pnl-'+i+'" style="text-align:right;color:var(--mt)">—</span>';
+    html+='<span id="pr-bal-'+i+'" style="text-align:right;color:var(--mt)">—</span>';
+    html+='<span id="pr-pct-'+i+'" style="text-align:right;color:var(--mt)">—</span>';
+    html+='<button onclick="removePlannerRow('+i+')" style="background:none;border:none;color:var(--mt);cursor:pointer;font-size:16px;text-align:center;padding:0;line-height:1" title="Remove">×</button>';
+    html+='</div>';
+  });
+  tbody.innerHTML=html;
+  updatePlanner();
+}
+
+function plannerPipsChange(i,val){
+  plannerData[i].pips=val===''?'':parseFloat(val)||0;
+  updatePlanner();
+}
+
+function addPlannerRow(){
+  plannerData.push({pips:''});
+  renderPlannerRows();
+  // focus new input
+  setTimeout(function(){
+    var el=document.getElementById('pip-in-'+(plannerData.length-1));
+    if(el) el.focus();
+  },50);
+}
+
+function removePlannerRow(i){
+  plannerData.splice(i,1);
+  if(!plannerData.length) plannerData.push({pips:''});
+  renderPlannerRows();
+}
+
+function clearPlanner(){
+  initPlanner();
+}
+
+function updatePlannerPair(){
+  var pair=(document.getElementById('planner-pair')||{}).value||'AUDUSD';
+  var el=document.getElementById('pv-pair'); if(el) el.textContent=pair.slice(0,3)+'/'+pair.slice(3);
+  var qd=plannerQuotes[pair];
+  var price=qd?(qd.p||qd):null;
+  var prEl=document.getElementById('pv-price');
+  if(prEl){prEl.textContent=price!=null?fmtPrice(pair,price):'—';}
+  updatePlanner();
+}
+
+function updatePlanner(){
+  var pair=(document.getElementById('planner-pair')||{}).value||'AUDUSD';
+  var lot=parseInt((document.getElementById('planner-lot')||{}).value||10000);
+  var openBal=parseFloat((document.getElementById('planner-bal')||{}).value||1000)||1000;
+  var stdPip=getPipValueAUD(pair,plannerQuotes);
+  var pipVal=stdPip*(lot/100000);
+
+  // Pip value strip
+  var pvEl=document.getElementById('pv-val');
+  if(pvEl) pvEl.textContent=pipVal>0?('A$'+pipVal.toFixed(2)+' per pip'):'— (refresh prices)';
+  var pvNote=document.getElementById('pv-note');
+  if(pvNote&&pipVal>0){
+    var lotLabel=lot===100000?'Std':lot===10000?'Mini':'Micro';
+    pvNote.textContent=lotLabel+' lot · A$'+(pipVal*10).toFixed(2)+' per 10 pips';
+  }
+  // Update pair label in strip too
+  var pairEl=document.getElementById('pv-pair');
+  if(pairEl) pairEl.textContent=pair.slice(0,3)+'/'+pair.slice(3);
+  var qd=plannerQuotes[pair];
+  var price=qd?(qd.p||qd):null;
+  var prEl=document.getElementById('pv-price');
+  if(prEl) prEl.textContent=price!=null?fmtPrice(pair,price):'—';
+
+  // Running P&L
+  var running=openBal, totalPnl=0, hasTrades=false;
+  plannerData.forEach(function(row,i){
+    var pips=(row.pips===''||row.pips===null)?null:parseFloat(row.pips);
+    var pnlEl=document.getElementById('pr-pnl-'+i);
+    var balEl=document.getElementById('pr-bal-'+i);
+    var pctEl=document.getElementById('pr-pct-'+i);
+    if(pips===null||isNaN(pips)||pips===0){
+      if(pnlEl){pnlEl.textContent='—';pnlEl.style.color='var(--mt)';}
+      if(balEl){balEl.textContent='—';balEl.style.color='var(--mt)';}
+      if(pctEl){pctEl.textContent='—';pctEl.style.color='var(--mt)';}
+      return;
+    }
+    hasTrades=true;
+    var pnl=pips*pipVal;
+    totalPnl+=pnl;
+    running+=pnl;
+    var pct=(pnl/openBal)*100;
+    var col=pnl>=0?'var(--buy)':'var(--sel)';
+    if(pnlEl){pnlEl.style.color=col;pnlEl.textContent=(pnl>=0?'+':'')+'A$'+pnl.toFixed(2);}
+    if(balEl){balEl.style.color='var(--tx)';balEl.textContent='A$'+running.toFixed(2);}
+    if(pctEl){pctEl.style.color=col;pctEl.textContent=(pct>=0?'+':'')+pct.toFixed(2)+'%';}
+  });
+
+  // Total row
+  var tc=totalPnl>=0?'var(--buy)':'var(--sel)';
+  var totalPct=(totalPnl/openBal)*100;
+  var ptPnl=document.getElementById('pt-pnl');
+  var ptBal=document.getElementById('pt-bal');
+  var ptPct=document.getElementById('pt-pct');
+  if(ptPnl){ptPnl.style.color=hasTrades?tc:'var(--mt)';ptPnl.textContent=hasTrades?(totalPnl>=0?'+':'')+'A$'+totalPnl.toFixed(2):'—';}
+  if(ptBal){ptBal.style.color='var(--tx)';ptBal.textContent=hasTrades?'A$'+running.toFixed(2):'—';}
+  if(ptPct){ptPct.style.color=hasTrades?tc:'var(--mt)';ptPct.textContent=hasTrades?(totalPct>=0?'+':'')+totalPct.toFixed(2)+'%':'—';}
+}
+
+/* ══════════════════════════════════════
    INIT
 ══════════════════════════════════════ */
 /* Bound the localStorage analysis cache and refresh the spend display */
@@ -2984,6 +3326,7 @@ document.addEventListener('DOMContentLoaded',function(){
   initTheme();
   initBanner();
   initCache();
+  initPlanner();
   updateDate();
   setInterval(updateDate,30000);
   // Pre-load default pair — Weekly is default active tab
