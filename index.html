@@ -250,6 +250,9 @@ body{font-family:'Syne',sans-serif;background:var(--bg);color:var(--tx);min-heig
 .calc-pip-tbl td:first-child{text-align:left}
 .calc-pip-tbl tr:hover{background:rgba(255,255,255,0.025)}
 .calc-grp-lbl{font-family:'DM Mono',monospace;font-size:9px;letter-spacing:0.12em;text-transform:uppercase;color:var(--mt);padding:8px 10px 4px;background:var(--sf2);display:block}
+.pip-filter-btn{background:none;border:1px solid var(--bd);color:var(--mt);border-radius:12px;padding:3px 10px;font-family:'DM Mono',monospace;font-size:10px;cursor:pointer;transition:all 0.15s;white-space:nowrap}
+.pip-filter-btn.active{background:var(--ac);border-color:var(--ac);color:#000;font-weight:600}
+.pip-filter-btn:hover:not(.active){border-color:var(--ac);color:var(--ac)}
 .planner-hdr{display:grid;gap:6px;align-items:center;padding:7px 10px;background:var(--sf2);border-radius:var(--rs) var(--rs) 0 0;font-family:'DM Mono',monospace;font-size:10px;text-transform:uppercase;letter-spacing:0.08em;color:var(--mt)}
 .planner-row{display:grid;gap:6px;align-items:center;padding:6px 10px;border-bottom:1px solid var(--bd);font-family:'DM Mono',monospace;font-size:12px}
 .planner-row.total-row{background:rgba(6,182,212,0.06);border-top:1px solid rgba(6,182,212,0.35);border-bottom:none;border-radius:0 0 var(--rs) var(--rs)}
@@ -1070,13 +1073,33 @@ body.light .chart-modal-overlay{background:rgba(0,0,0,0.55)}
     <div style="display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:12px;gap:12px">
       <div>
         <div style="font-weight:700;font-size:15px;margin-bottom:3px">Live Pip Values</div>
-        <div class="meta">AUD values calculated from live prices · Standard (100k) / Mini (10k) / Micro (1k) lots</div>
+        <div class="meta">AUD values · select lot size to switch · click any row to load into planner</div>
       </div>
       <button class="sb" style="margin-top:0;padding:8px 16px;font-size:13px;flex-shrink:0" onclick="loadCalculator()">↻ Refresh</button>
     </div>
+    <!-- Filter + lot-size controls (shown once table loads) -->
+    <div id="pip-controls" style="display:none;margin-bottom:10px">
+      <div style="display:flex;flex-wrap:wrap;gap:6px;align-items:center">
+        <span style="font-size:10px;color:var(--mt);font-family:'DM Mono',monospace;flex-shrink:0">Filter:</span>
+        <button class="pip-filter-btn active" onclick="filterPipTable('all',this)">All</button>
+        <button class="pip-filter-btn" onclick="filterPipTable('Major USD',this)">Major USD</button>
+        <button class="pip-filter-btn" onclick="filterPipTable('JPY Crosses',this)">JPY</button>
+        <button class="pip-filter-btn" onclick="filterPipTable('EUR Crosses',this)">EUR</button>
+        <button class="pip-filter-btn" onclick="filterPipTable('GBP Crosses',this)">GBP</button>
+        <button class="pip-filter-btn" onclick="filterPipTable('AUD Crosses',this)">AUD</button>
+        <div style="margin-left:auto;display:flex;align-items:center;gap:6px;flex-shrink:0">
+          <span style="font-size:10px;color:var(--mt);font-family:'DM Mono',monospace">Lot:</span>
+          <select id="pip-lot-sel" onchange="changePipLotSize(this.value)" class="sel-i" style="width:auto;padding:3px 10px;font-size:11px;height:28px">
+            <option value="100000">Standard (100k)</option>
+            <option value="10000" selected>Mini (10k)</option>
+            <option value="1000">Micro (1k)</option>
+          </select>
+        </div>
+      </div>
+    </div>
     <div id="calc-pip-loading" style="text-align:center;padding:28px;color:var(--mt);font-size:13px">Loading live prices…</div>
     <div id="calc-pip-table" style="overflow-x:auto;display:none"></div>
-    <div class="meta" style="margin-top:8px;line-height:1.5">* <strong>Pips/100%</strong> — pips needed for a single standard-lot position to return 100% on a A$10,000 account</div>
+    <div class="meta" style="margin-top:8px;line-height:1.5">† <strong>Pips/100%</strong> — pips needed for a 1-lot position to return 100% on a A$1,000 account</div>
   </div>
 
   <!-- Trade Planner -->
@@ -1146,20 +1169,25 @@ body.light .chart-modal-overlay{background:rgba(0,0,0,0.55)}
 
     <!-- Trade rows table -->
     <div style="border:1px solid var(--bd);border-radius:var(--rs);overflow:hidden">
-      <div class="planner-hdr" style="grid-template-columns:26px 1fr 1fr 1fr 1fr 28px">
-        <span>#</span><span>Pips</span>
+      <div class="planner-hdr" id="planner-hdr" style="grid-template-columns:22px 1fr 80px 1fr 1fr 64px 64px 24px">
+        <span>#</span>
+        <span>Open Bal</span>
+        <span style="text-align:right">Pips</span>
         <span style="text-align:right">P&amp;L (A$)</span>
         <span style="text-align:right">Balance</span>
-        <span style="text-align:right">% of OB</span>
+        <span style="text-align:right">% trade</span>
+        <span style="text-align:right">Cum%</span>
         <span></span>
       </div>
       <div id="planner-rows"></div>
-      <div class="planner-row total-row" id="planner-total" style="grid-template-columns:26px 1fr 1fr 1fr 1fr 28px">
+      <div class="planner-row total-row" id="planner-total" style="grid-template-columns:22px 1fr 80px 1fr 1fr 64px 64px 24px">
         <span style="color:var(--mt)">∑</span>
-        <span style="color:var(--mt)">Total</span>
+        <span style="color:var(--mt)">Session</span>
+        <span></span>
         <span id="pt-pnl" style="text-align:right">—</span>
         <span id="pt-bal" style="text-align:right;color:var(--tx)">—</span>
         <span id="pt-pct" style="text-align:right">—</span>
+        <span id="pt-cum" style="text-align:right">—</span>
         <span></span>
       </div>
     </div>
@@ -1169,6 +1197,7 @@ body.light .chart-modal-overlay{background:rgba(0,0,0,0.55)}
       <button class="sb" style="margin-top:0;padding:8px 18px;font-size:13px" onclick="addPlannerRow()">+ Add trade</button>
       <button class="pip-fccy" style="margin-left:auto" onclick="clearPlanner()">Clear</button>
     </div>
+    <div class="meta" style="margin-top:10px;line-height:1.6">Opening balance optional. <strong>Open Bal</strong> = that trade's starting balance (cascades). <strong>% trade</strong> = return for that trade vs its opening balance. <strong>Cum%</strong> = total return from your original opening balance.</div>
   </div>
 </div>
 
@@ -3165,42 +3194,61 @@ async function loadCalculator(){
       {label:'GBP Crosses',pairs:['GBPAUD','GBPCAD','GBPCHF']},
       {label:'AUD Crosses',pairs:['AUDNZD','AUDCAD','AUDCHF']}
     ];
+    // Read current lot selection (default Mini)
+    var currentLot=parseInt((document.getElementById('pip-lot-sel')||{}).value||10000);
+    var lotFactor=currentLot/100000;
     var html='<table class="calc-pip-tbl"><thead><tr>';
     html+='<th style="text-align:left">Pair</th>';
     html+='<th>Live Price</th>';
-    html+='<th style="color:var(--ac)">$/pip Std</th>';
-    html+='<th>$/pip Mini</th>';
-    html+='<th>$/pip Micro</th>';
-    html+='<th>Pips/100%*</th>';
+    html+='<th style="color:var(--ac)" id="pip-th-col">$/pip</th>';
+    html+='<th>Pips/100%†</th>';
     html+='</tr></thead><tbody>';
     CCY_GROUPS.forEach(function(grp){
-      html+='<tr><td colspan="6"><span class="calc-grp-lbl">'+grp.label+'</span></td></tr>';
+      html+='<tr class="pip-grp-row" data-group="'+grp.label+'"><td colspan="4"><span class="calc-grp-lbl">'+grp.label+'</span></td></tr>';
       grp.pairs.forEach(function(pair){
         var qd=quotes[pair];
         var price=qd?(qd.p||qd):null;
         var stdPip=getPipValueAUD(pair,quotes);
-        var miniPip=stdPip/10;
-        var microPip=stdPip/100;
-        var pips100=stdPip>0?(10000/stdPip).toFixed(0):'—';
+        var displayPip=stdPip*lotFactor;
+        var pips100=stdPip>0?(1000/stdPip).toFixed(1):'—';
         var base=pair.slice(0,3);
         var col=CCY_COLORS[base]||'var(--tx)';
-        html+='<tr class="hm-row row-link" onclick="loadPlannerPair(\''+pair+'\')" title="Load '+pair+' into planner">';
+        html+='<tr class="hm-row row-link pip-pair-row" data-group="'+grp.label+'" onclick="loadPlannerPair(\''+pair+'\')" title="Load '+pair+' into planner">';
         html+='<td><span style="color:'+col+';font-weight:700;font-size:13px">'+base+'</span><span style="color:var(--mt)">/'+pair.slice(3)+'</span></td>';
         html+='<td>'+(price!=null?fmtPrice(pair,price):'—')+'</td>';
-        html+='<td style="color:var(--ac)">A$'+stdPip.toFixed(2)+'</td>';
-        html+='<td>A$'+miniPip.toFixed(2)+'</td>';
-        html+='<td style="color:var(--mt)">A$'+microPip.toFixed(3)+'</td>';
+        html+='<td style="color:var(--ac)" class="pip-val-cell" data-std="'+stdPip+'">'+(stdPip>0?'A$'+displayPip.toFixed(currentLot===1000?3:2):'—')+'</td>';
         html+='<td style="color:var(--mt)">'+pips100+'</td>';
         html+='</tr>';
       });
     });
     html+='</tbody></table>';
     if(tableDiv){tableDiv.innerHTML=html;tableDiv.style.display='block';}
+    var controls=document.getElementById('pip-controls');
+    if(controls) controls.style.display='';
     if(loading) loading.style.display='none';
     updatePlannerPair();
   } catch(e){
     if(loading){loading.style.display='block';loading.textContent='Failed to load prices. Tap Refresh to retry.';}
   }
+}
+
+/* ── Pip table filter + lot-size switch ── */
+function filterPipTable(group, btn){
+  document.querySelectorAll('.pip-filter-btn').forEach(function(b){b.classList.remove('active');});
+  if(btn) btn.classList.add('active');
+  document.querySelectorAll('.pip-pair-row,.pip-grp-row').forEach(function(row){
+    row.style.display=(group==='all'||row.getAttribute('data-group')===group)?'':'none';
+  });
+}
+
+function changePipLotSize(lotStr){
+  var lot=parseInt(lotStr)||10000;
+  var factor=lot/100000;
+  document.querySelectorAll('.pip-val-cell').forEach(function(cell){
+    var stdPip=parseFloat(cell.getAttribute('data-std'))||0;
+    var val=stdPip*factor;
+    cell.textContent=stdPip>0?('A$'+val.toFixed(lot===1000?3:2)):'—';
+  });
 }
 
 /* ── Trade Planner ── */
@@ -3213,15 +3261,17 @@ function initPlanner(){
 function renderPlannerRows(){
   var tbody=document.getElementById('planner-rows');
   if(!tbody) return;
-  var cols='grid-template-columns:26px 1fr 1fr 1fr 1fr 28px';
+  var cols='grid-template-columns:22px 1fr 80px 1fr 1fr 64px 64px 24px';
   var html='';
   plannerData.forEach(function(row,i){
     html+='<div class="planner-row" style="'+cols+'" id="pr-'+i+'">';
     html+='<span style="color:var(--mt);font-size:11px">'+(i+1)+'</span>';
-    html+='<input class="pip-inp" id="pip-in-'+i+'" type="number" value="'+(row.pips||'')+'" placeholder="0" oninput="plannerPipsChange('+i+',this.value)">';
+    html+='<span id="pr-ob-'+i+'" style="font-size:11px;color:var(--mt)">—</span>';
+    html+='<input class="pip-inp" id="pip-in-'+i+'" type="number" value="'+(row.pips||'')+'" placeholder="0" oninput="plannerPipsChange('+i+',this.value)" style="text-align:right">';
     html+='<span id="pr-pnl-'+i+'" style="text-align:right;color:var(--mt)">—</span>';
     html+='<span id="pr-bal-'+i+'" style="text-align:right;color:var(--mt)">—</span>';
     html+='<span id="pr-pct-'+i+'" style="text-align:right;color:var(--mt)">—</span>';
+    html+='<span id="pr-cum-'+i+'" style="text-align:right;color:var(--mt)">—</span>';
     html+='<button onclick="removePlannerRow('+i+')" style="background:none;border:none;color:var(--mt);cursor:pointer;font-size:16px;text-align:center;padding:0;line-height:1" title="Remove">×</button>';
     html+='</div>';
   });
@@ -3289,7 +3339,9 @@ function updatePlannerPair(){
 function updatePlanner(){
   var pair=(document.getElementById('planner-pair')||{}).value||'AUDUSD';
   var lot=parseInt((document.getElementById('planner-lot')||{}).value||10000);
-  var openBal=parseFloat((document.getElementById('planner-bal')||{}).value||1000)||1000;
+  var balInput=((document.getElementById('planner-bal')||{}).value||'').toString().trim();
+  var openBal=balInput===''?0:parseFloat(balInput)||0;
+  var hasOB=openBal>0;
   var stdPip=getPipValueAUD(pair,plannerQuotes);
   var pipVal=stdPip*(lot/100000);
 
@@ -3309,39 +3361,66 @@ function updatePlanner(){
   var prEl=document.getElementById('pv-price');
   if(prEl) prEl.textContent=price!=null?fmtPrice(pair,price):'—';
 
-  // Running P&L
+  // Running P&L — per-trade % vs that trade's opening balance; Cum% vs original OB
   var running=openBal, totalPnl=0, hasTrades=false;
+  var origOB=openBal; // lock in original for cumulative calc
   plannerData.forEach(function(row,i){
     var pips=(row.pips===''||row.pips===null)?null:parseFloat(row.pips);
+    var obEl=document.getElementById('pr-ob-'+i);
     var pnlEl=document.getElementById('pr-pnl-'+i);
     var balEl=document.getElementById('pr-bal-'+i);
     var pctEl=document.getElementById('pr-pct-'+i);
+    var cumEl=document.getElementById('pr-cum-'+i);
+    // Always show OB for this row (what the trade started with)
+    if(obEl){obEl.textContent=hasOB?'A$'+running.toFixed(2):'—';obEl.style.color='var(--mt)';}
     if(pips===null||isNaN(pips)||pips===0){
       if(pnlEl){pnlEl.textContent='—';pnlEl.style.color='var(--mt)';}
       if(balEl){balEl.textContent='—';balEl.style.color='var(--mt)';}
       if(pctEl){pctEl.textContent='—';pctEl.style.color='var(--mt)';}
+      if(cumEl){cumEl.textContent='—';cumEl.style.color='var(--mt)';}
       return;
     }
     hasTrades=true;
+    var prevRunning=running;
     var pnl=pips*pipVal;
     totalPnl+=pnl;
     running+=pnl;
-    var pct=(pnl/openBal)*100;
+    // % trade = return for this trade vs its opening balance
+    var pct=(hasOB&&prevRunning!==0)?(pnl/prevRunning)*100:null;
+    // Cum% = total return from original OB to now
+    var cum=(hasOB&&origOB>0)?((running-origOB)/origOB)*100:null;
     var col=pnl>=0?'var(--buy)':'var(--sel)';
     if(pnlEl){pnlEl.style.color=col;pnlEl.textContent=(pnl>=0?'+':'')+'A$'+pnl.toFixed(2);}
     if(balEl){balEl.style.color='var(--tx)';balEl.textContent='A$'+running.toFixed(2);}
-    if(pctEl){pctEl.style.color=col;pctEl.textContent=(pct>=0?'+':'')+pct.toFixed(2)+'%';}
+    if(pctEl){
+      if(pct!==null){pctEl.style.color=col;pctEl.textContent=(pct>=0?'+':'')+pct.toFixed(1)+'%';}
+      else{pctEl.style.color='var(--mt)';pctEl.textContent='—';}
+    }
+    if(cumEl){
+      if(cum!==null){cumEl.style.color=pnl>=0?'var(--buy)':'var(--sel)';cumEl.textContent=(cum>=0?'+':'')+cum.toFixed(0)+'%';}
+      else{cumEl.style.color='var(--mt)';cumEl.textContent='—';}
+    }
   });
 
-  // Total row
+  // Total row — session P&L, final balance, cumulative session return
   var tc=totalPnl>=0?'var(--buy)':'var(--sel)';
-  var totalPct=(totalPnl/openBal)*100;
+  var totalPct=(hasOB&&origOB>0)?(totalPnl/origOB)*100:null;
   var ptPnl=document.getElementById('pt-pnl');
   var ptBal=document.getElementById('pt-bal');
   var ptPct=document.getElementById('pt-pct');
+  var ptCum=document.getElementById('pt-cum');
   if(ptPnl){ptPnl.style.color=hasTrades?tc:'var(--mt)';ptPnl.textContent=hasTrades?(totalPnl>=0?'+':'')+'A$'+totalPnl.toFixed(2):'—';}
   if(ptBal){ptBal.style.color='var(--tx)';ptBal.textContent=hasTrades?'A$'+running.toFixed(2):'—';}
-  if(ptPct){ptPct.style.color=hasTrades?tc:'var(--mt)';ptPct.textContent=hasTrades?(totalPct>=0?'+':'')+totalPct.toFixed(2)+'%':'—';}
+  if(ptPct&&ptCum){
+    // % trade column in total row = session P&L / original OB
+    if(hasTrades&&totalPct!==null){
+      ptPct.style.color=tc;ptPct.textContent=(totalPct>=0?'+':'')+totalPct.toFixed(1)+'%';
+      ptCum.style.color=tc;ptCum.textContent=(totalPct>=0?'+':'')+totalPct.toFixed(0)+'%';
+    } else {
+      ptPct.style.color='var(--mt)';ptPct.textContent='—';
+      ptCum.style.color='var(--mt)';ptCum.textContent='—';
+    }
+  }
 }
 
 /* ══════════════════════════════════════
