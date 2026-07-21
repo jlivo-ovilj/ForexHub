@@ -12,7 +12,7 @@
 <style>
 :root{
   --bg:#0a0a0a;--sf:#131313;--sf2:#1a1a1a;--bd:rgba(255,255,255,0.08);--bd2:rgba(255,255,255,0.14);
-  --tx:#f0ede8;--mt:#6b6b6b;--ac:#c8f135;--adm:rgba(200,241,53,0.12);
+  --tx:#f0ede8;--mt:#9b9894;--ac:#c8f135;--adm:rgba(200,241,53,0.12);
   --buy:#4ade80;--bbg:rgba(74,222,128,0.1);
   --sel:#f87171;--sbg:rgba(248,113,113,0.1);
   --wt:#fbbf24;--wbg:rgba(251,191,36,0.1);
@@ -134,7 +134,7 @@ body{font-family:'Syne',sans-serif;background:var(--bg);color:var(--tx);min-heig
 @keyframes spin{to{transform:rotate(360deg)}}
 .eb{background:var(--sbg);border:1px solid rgba(248,113,113,0.2);border-radius:var(--rs);padding:12px 14px;font-size:13px;color:var(--sel);line-height:1.6}
 .rb{display:flex;align-items:center;gap:6px;padding:8px 16px;border-radius:100px;border:1px solid var(--bd2);background:transparent;color:var(--mt);font-family:'Syne',sans-serif;font-size:13px;cursor:pointer;margin-top:4px}
-.meta{font-family:'DM Mono',monospace;font-size:10px;color:var(--mt);margin-top:10px}
+.meta{font-family:'DM Mono',monospace;font-size:11px;color:var(--tx);opacity:0.6;margin-top:10px}
 .st{font-size:22px;font-weight:700;letter-spacing:-0.02em;margin-bottom:4px}
 .ss{font-size:13px;color:var(--mt);margin-bottom:18px}
 
@@ -393,7 +393,7 @@ button.scan-pair-chip:hover{opacity:0.75}
 .scan-reason{font-size:13px;line-height:1.7;color:#d4d0ca;margin-bottom:12px}
 .scan-levels{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px}
 .scan-level{background:var(--sf2);border-radius:var(--rs);padding:10px;text-align:center}
-.scan-level-lbl{font-family:'DM Mono',monospace;font-size:9px;text-transform:uppercase;letter-spacing:0.08em;color:var(--mt);margin-bottom:4px}
+.scan-level-lbl{font-family:'DM Mono',monospace;font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:0.08em;color:var(--tx);opacity:0.75;margin-bottom:4px}
 .scan-level-val{font-family:'DM Mono',monospace;font-size:13px;font-weight:700;color:var(--tx)}
 .scan-rr{font-family:'DM Mono',monospace;font-size:11px;color:var(--ac);margin-top:8px}
 .scan-empty{text-align:center;padding:50px 20px;color:#b0aba3;font-size:15px}
@@ -417,7 +417,7 @@ button.scan-pair-chip:hover{opacity:0.75}
 /* ── LIGHT MODE ── */
 body.light{
   --bg:#f5f4f1;--sf:#ffffff;--sf2:#eceae5;--bd:rgba(0,0,0,0.10);--bd2:rgba(0,0,0,0.18);
-  --tx:#1c1b19;--mt:#6c6a66;
+  --tx:#1c1b19;--mt:#7a7874;
 }
 body.light .hdr{background:rgba(245,244,241,0.92);border-bottom:1px solid var(--bd)}
 body.light .cb{color:#33312d}
@@ -440,7 +440,7 @@ body.light .nb.active,body.light .pin-btn,body.light .sb{color:#0a0a0a}
 .cal-val{color:var(--wt);font-weight:700}
 body.light .cal-detail{color:#6c6a66}
 body.light .cal-val{color:#b45309}
-body:not(.light) .ss{color:#8f8d88}
+body:not(.light) .ss{color:#b0ada8}
 
 /* ── COLOUR-CODED PAIR HEADER (Amendment 2/5) ── */
 .scan-pair-chip{display:inline-flex;align-items:center;gap:1px;padding:3px 12px;border-radius:8px;font-size:18px;font-weight:700;letter-spacing:0.02em;border:1.5px solid;line-height:1.1}
@@ -1383,11 +1383,10 @@ function goToPair(pair, timeframe){
 /* ══════════════════════════════════════
    PRICE TICKER
 ══════════════════════════════════════ */
-var TICKER_PAIRS=['EURUSD','GBPUSD','USDJPY','AUDUSD','USDCAD','USDCHF','NZDUSD','EURJPY','GBPJPY','AUDJPY'];
+var TICKER_PAIRS=['AUDUSD','AUDJPY','EURUSD','EURJPY','GBPUSD','GBPJPY','NZDUSD','USDCAD','USDCHF','USDJPY'];
 var _tickerPrev={};
-var _TICKER_COLORS={'EUR':'#3b82f6','GBP':'#8b5cf6','USD':'#9ca3af','AUD':'#22c55e','CAD':'#ef4444','CHF':'#ec4899','NZD':'#06b6d4','JPY':'#f97316'};
 
-/* Update all copies of a pair in the ticker at once using data-pair attribute */
+/* Update all 4 copies of a pair in the ticker simultaneously */
 function updateTickerPair(pair, price, prevPrice){
   var isJPY = pair.slice(3)==='JPY';
   var dec = isJPY ? 3 : 5;
@@ -1411,27 +1410,42 @@ function updateTickerPair(pair, price, prevPrice){
 async function refreshTicker(){
   try {
     var quotes = await liveQuotes(TICKER_PAIRS);
+    var priceMap = {};
+    var missing = 0;
     TICKER_PAIRS.forEach(function(pair){
       var q = quotes[pair];
-      if(!q) return;
-      var price = typeof q === 'object' ? (q.p || q.ask || q.bid) : q;
-      if(!price || isNaN(price)) return;
-      var prev = _tickerPrev[pair] != null ? _tickerPrev[pair] : null;
-      updateTickerPair(pair, price, prev);
-      _tickerPrev[pair] = price;
+      var p = q && (typeof q === 'object' ? +(q.p || q.regularMarketPrice || q.ask || 0) : +q);
+      if(p && !isNaN(p) && p > 0){ priceMap[pair] = p; }
+      else { missing++; }
     });
-  } catch(e){ console.warn('Ticker refresh failed', e); }
+    if(missing === 0){
+      // All prices ready — update every pair at once
+      TICKER_PAIRS.forEach(function(pair){
+        var prev = (_tickerPrev[pair] != null) ? _tickerPrev[pair] : null;
+        updateTickerPair(pair, priceMap[pair], prev);
+        _tickerPrev[pair] = priceMap[pair];
+      });
+    } else {
+      // Not all ready yet — retry in 5s (keeps display at — until complete)
+      setTimeout(refreshTicker, 5000);
+    }
+  } catch(e){
+    setTimeout(refreshTicker, 10000);
+  }
 }
 
 function initTicker(){
-  /* Build 4 identical sets of ticker items — 4 copies ensures seamless loop
-     at any viewport width (animation moves exactly 1 set = 25% of track) */
+  /* Build 4 identical sets — 4 copies ensures seamless loop at any viewport width.
+     Uses site's global CCY_COLORS so pair colours match the rest of ForexHub. */
   var track = document.getElementById('tickerTrack');
   if(!track) return;
   function makeSet(){
     return TICKER_PAIRS.map(function(pair){
       var a = pair.slice(0,3), b = pair.slice(3,6);
-      var ca = _TICKER_COLORS[a]||'#9ca3af', cb = _TICKER_COLORS[b]||'#9ca3af';
+      // Use the site's global CCY_COLORS; fall back to muted grey
+      var colors = (typeof CCY_COLORS !== 'undefined') ? CCY_COLORS : {};
+      var ca = colors[a] || '#9b9894';
+      var cb = colors[b] || '#9b9894';
       return '<button class="ticker-item" data-pair="'+pair+'" onclick="goToPair(\''+pair+'\')">'
         +'<span class="ticker-sym" style="color:'+ca+'">'+a+'</span>'
         +'<span class="ticker-sym" style="color:'+cb+'">'+b+'</span>'
@@ -1441,7 +1455,7 @@ function initTicker(){
     }).join('');
   }
   var oneSet = makeSet();
-  track.innerHTML = oneSet + oneSet + oneSet + oneSet; // 4 copies → -25% animation = seamless
+  track.innerHTML = oneSet + oneSet + oneSet + oneSet;
   refreshTicker();
   setInterval(refreshTicker, 5*60*1000);
 }
