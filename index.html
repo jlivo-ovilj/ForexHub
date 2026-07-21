@@ -236,8 +236,10 @@ body{font-family:'Syne',sans-serif;background:var(--bg);color:var(--tx);min-heig
 .row2{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px}
 .fld{display:flex;flex-direction:column;gap:5px;margin-bottom:10px}
 .fld label{font-family:'DM Mono',monospace;font-size:10px;letter-spacing:0.1em;text-transform:uppercase;color:var(--mt)}
-.sb{display:inline-flex;align-items:center;gap:6px;margin-top:10px;padding:10px 20px;background:var(--ac);color:#0a0a0a;border:none;border-radius:100px;font-family:'Syne',sans-serif;font-size:14px;font-weight:700;cursor:pointer}
+.sb{display:inline-flex;align-items:center;gap:6px;margin-top:10px;padding:10px 20px;background:var(--ac);color:#0a0a0a;border:none;border-radius:100px;font-family:'Syne',sans-serif;font-size:14px;font-weight:700;cursor:pointer;transition:opacity 0.2s,filter 0.2s}
 .sb:disabled{opacity:0.5;cursor:not-allowed}
+.sb-pb{background:rgba(251,191,36,0.18);color:#fbbf24;border:1px solid rgba(251,191,36,0.45)}
+.sb-inactive{opacity:0.38;filter:saturate(0.4)}
 
 /* Checklist */
 .ci{display:flex;align-items:flex-start;gap:12px;padding:10px 0;border-bottom:1px solid var(--bd);cursor:pointer}
@@ -997,10 +999,10 @@ body.light .chart-modal-overlay{background:rgba(0,0,0,0.55)}
   <div class="st">Trade scanner</div>
   <div class="ss">AI cross-references sentiment, correlation, weekly &amp; daily analysis to surface high-probability setups</div>
   <div class="scanner-intro">
-    <div class="cb">The scanner analyses all major pairs using current market sentiment, technical structure, and inter-market correlations to identify the highest-probability setups right now.</div>
+    <div class="cb" id="scan-desc">The scanner analyses all major pairs using current market sentiment, technical structure, and inter-market correlations to identify the highest-probability setups right now.</div>
     <div class="scan-controls">
       <button class="sb" id="scan-btn" onclick="runScanner()">🔍 Run scanner</button>
-      <button class="sb" id="pullback-btn" onclick="runPullbackScanner()" style="background:rgba(251,191,36,0.15);color:#fbbf24;border:1px solid rgba(251,191,36,0.4)">↩ Pullback scan</button>
+      <button class="sb sb-pb" id="pullback-btn" onclick="runPullbackScanner()">↩ Pullback scan</button>
       <span class="meta" id="scan-meta"></span>
     </div>
   </div>
@@ -2685,7 +2687,18 @@ function renderCorr(){
 /* ══════════════════════════════════════
    SCANNER  (Amendment 10)
 ══════════════════════════════════════ */
+function setScanMode(mode){
+  var sb=document.getElementById('scan-btn'),pb=document.getElementById('pullback-btn'),desc=document.getElementById('scan-desc');
+  if(mode==='pullback'){
+    sb.classList.add('sb-inactive'); pb.classList.remove('sb-inactive');
+    if(desc) desc.textContent='The pullback scanner ranks yesterday\'s biggest movers by session range, then analyses the top 8 for mean-reversion or trend-continuation entries — catching high-momentum pairs at a better price rather than chasing the move.';
+  } else {
+    pb.classList.add('sb-inactive'); sb.classList.remove('sb-inactive');
+    if(desc) desc.textContent='The scanner analyses all major pairs using current market sentiment, technical structure, and inter-market correlations to identify the highest-probability setups right now.';
+  }
+}
 async function runScanner(){
+  setScanMode('scanner');
   var btn=document.getElementById('scan-btn'),res=document.getElementById('scan-results');
   var meta=document.getElementById('scan-meta');
   btn.disabled=true;btn.innerHTML='<div class="sp"></div> Scanning…';
@@ -2755,6 +2768,7 @@ async function runScanner(){
    PULLBACK SCANNER  (Amendment 8)
 ══════════════════════════════════════ */
 async function runPullbackScanner(){
+  setScanMode('pullback');
   var btn=document.getElementById('pullback-btn'),res=document.getElementById('scan-results');
   var meta=document.getElementById('scan-meta');
   btn.disabled=true;btn.innerHTML='<div class="sp"></div> Scanning…';
@@ -2844,11 +2858,13 @@ function fmtPips(v){return v==null?'—':((v>0?'+':'')+v.toFixed(1));}
 var briefRendered=null;
 
 function stripNarration(t){
-  var lines=(t||'').split('\n');
+  // First strip any <cite> XML tags injected by web search
+  t=(t||'').replace(/<cite[^>]*>[\s\S]*?<\/cite>/gi,'').replace(/<\/?cite[^>]*>/gi,'');
+  var lines=t.split('\n');
   var out=lines.filter(function(l){
     var s=l.trim();
     if(!s) return true;
-    return !/^(let me\b|i'?ll\b|i will\b|i'?m going to|i need to|i'?m (now )?(going to )?search|searching\b|let'?s\b|first,? i\b|now,? i\b|next,? i\b|looking (up|for|at)\b|checking\b|let me search|let me look|based on my search|based on the search|here (is|are)\b|i found\b|i'?ve found|according to my search|after search)/i.test(s);
+    return !/^(let me\b|i'?ll\b|i will\b|i'?m going to|i need to|i'?m (now )?(going to )?search|searching\b|let'?s\b|first,? i\b|now,? i\b|next,? i\b|looking (up|for|at)\b|checking\b|let me search|let me look|based on my search|based on the search|based on my research|based on (the |my )?(above|following|available|provided|search|research|calendar|information)|i have found\b|i('ve| have) found\b|i've found the|here (is|are)\b|here's what|i found\b|i'?ve found|according to my (search|research|analysis|sources)|after search|the following (is|are|events|releases)\b|please note\b|note that\b|below (is|are)\b)/i.test(s);
   });
   return out.join('\n').replace(/\n{3,}/g,'\n\n').trim();
 }
@@ -2878,7 +2894,7 @@ async function renderBriefing(force){
   var whenLong=new Date().toLocaleDateString('en-AU',{timeZone:'Australia/Brisbane',weekday:'long',day:'numeric',month:'long',year:'numeric'});
   var news='';
   try{
-    news=await ai('Search an economic calendar (forexfactory, investing.com) for '+whenLong+' (today) and list ONLY today\'s scheduled economic events that could move the forex market. MANDATORY CHECKLIST — explicitly check for and never omit, if scheduled today: any central-bank rate decision, statement, minutes or press conference (FOMC/Fed, ECB, BoE, BoJ, RBA, RBNZ, BoC, SNB), CPI, employment reports (NFP etc.), GDP. Missing a scheduled central-bank decision is a critical failure. For each event, on one line: the local release time WITH its zone, then the converted AEST (Australia/Brisbane) time, then the event, the currency, and the FX pairs likely to react — e.g. "13:30 GMT / 23:30 AEST — US Non-Farm Payrolls (USD) -> EUR/USD, USD/JPY". Do NOT list yesterday\'s or past events. If the calendar is genuinely light today, say so in one short line. Output ONLY the finished list — plain text, no markdown, no preamble, no narration, no closing remarks.','brief-news:'+day,{model:'claude-haiku-4-5',maxTokens:900,webSearch:true});
+    news=await ai('Search an economic calendar (forexfactory, investing.com) for '+whenLong+' (today) and list ONLY today\'s scheduled economic events that could move the forex market. MANDATORY CHECKLIST — explicitly check for and never omit, if scheduled today: any central-bank rate decision, statement, minutes or press conference (FOMC/Fed, ECB, BoE, BoJ, RBA, RBNZ, BoC, SNB), CPI, employment reports (NFP etc.), GDP. Missing a scheduled central-bank decision is a critical failure. For each event, on one line: the local release time WITH its zone, then the converted AEST (Australia/Brisbane) time, then the event, the currency, and the FX pairs likely to react — e.g. "13:30 GMT / 23:30 AEST — US Non-Farm Payrolls (USD) -> EUR/USD, USD/JPY". Do NOT list yesterday\'s or past events. If the calendar is genuinely light today, say so in one short line. CRITICAL: Your response MUST start directly with the first time/event line (e.g. "13:30 GMT..."). Never begin with "Based on", "I have found", "Here are", "The following", or any other introduction. Output ONLY the raw event list — no preamble, no narration, no markdown, no closing remarks.','brief-news:'+day,{model:'claude-haiku-4-5',maxTokens:900,webSearch:true});
     news=stripNarration(news);
   }catch(e){ news='Could not load today\'s news feed ('+((e&&e.message)||e)+').'; }
   // 6. Alerts (computed from the above)
@@ -2912,15 +2928,30 @@ async function renderBriefing(force){
   // Render news: each line as its own item with currency colour strip + delineation
   function renderNews(raw){
     if(!raw) return '<div class="cb" style="color:var(--mt)">No news loaded.</div>';
-    // Strip citation references like [1], [2], [Source:...], (Source:...), footnote markers
-    var clean=raw.replace(/\[\d+\]/g,'').replace(/\[Source[^\]]*\]/gi,'').replace(/\(Source[^)]*\)/gi,'').replace(/\[\s*\]/g,'').replace(/\s{2,}/g,' ');
+    // Strip citation references: <cite>...</cite> tags, [1], [Source:...], (Source:...), footnote markers
+    var clean=raw
+      .replace(/<cite[^>]*>[\s\S]*?<\/cite>/gi,'')   // <cite index="...">text</cite>
+      .replace(/<\/?cite[^>]*>/gi,'')                  // any stray <cite> or </cite> tags
+      .replace(/\[\d+(,\s*\d+)*\]/g,'')               // [1] [1,2] [63-1,63-2] style numeric refs
+      .replace(/\[Source[^\]]*\]/gi,'').replace(/\(Source[^)]*\)/gi,'')
+      .replace(/\[\s*\]/g,'').replace(/\s{2,}/g,' ');
+    // Force line breaks before time-stamped event markers so events in one paragraph each get their own line
+    // Matches patterns like "13:30 GMT", "07:00 AEST", "10:00 CET" mid-sentence
+    clean=clean.replace(/([.!?])\s+(?=\d{1,2}:\d{2}\s)/g,'$1\n');
+    clean=clean.replace(/\s+(?=\d{1,2}:\d{2}\s+(?:GMT|UTC|AEST|NZST|CET|BST|EST|JST)\s*[/–—])/g,'\n');
     var lines=clean.split('\n').map(function(l){return l.trim();}).filter(function(l){return l.length>4;});
+    // Filter out narration lines: lines longer than 160 chars that don't contain a time-zone event pattern
+    var evtPattern=/\d{1,2}:\d{2}|\b(GMT|UTC|AEST|NZST|CET|BST)\b/;
+    lines=lines.filter(function(l){
+      if(evtPattern.test(l)) return true;                          // has time ref → keep
+      if(/\b(USD|EUR|GBP|AUD|NZD|CAD|JPY|CHF)\//.test(l)) return true; // has pair → keep
+      return l.length<160;                                          // short enough to be a note → keep
+    });
     if(!lines.length) return '<div class="cb" style="color:var(--mt)">No events found for today.</div>';
     return lines.map(function(line){
-      // Detect leading currency from the line (e.g. "US " or "EUR" or known codes in the text)
       var match=line.match(/\b(USD|EUR|GBP|AUD|NZD|CAD|JPY|CHF)\b/);
       var accentCol=(match&&CCY_COLORS[match[1]])||'var(--bd2)';
-      return '<div style="padding:8px 12px;border-left:3px solid '+accentCol+';background:rgba(255,255,255,0.02);border-radius:0 6px 6px 0;margin-bottom:6px;font-size:13px;line-height:1.6">'+colorizeCcy(md(line))+'</div>';
+      return '<div style="padding:10px 14px;border-left:3px solid '+accentCol+';background:rgba(255,255,255,0.025);border-radius:0 6px 6px 0;margin-bottom:10px;font-size:13px;line-height:1.65;border-bottom:1px solid rgba(255,255,255,0.04)">'+colorizeCcy(md(line))+'</div>';
     }).join('');
   }
   h+='<div class="brief-sec"><div class="brief-h">📰 Today\'s market-moving news <span class="muted">'+whenLong+'</span></div><div class="brief-news">'+renderNews(news)+'</div></div>';
