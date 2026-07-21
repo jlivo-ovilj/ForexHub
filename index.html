@@ -134,9 +134,9 @@ body{font-family:'Syne',sans-serif;background:var(--bg);color:var(--tx);min-heig
 @keyframes spin{to{transform:rotate(360deg)}}
 .eb{background:var(--sbg);border:1px solid rgba(248,113,113,0.2);border-radius:var(--rs);padding:12px 14px;font-size:13px;color:var(--sel);line-height:1.6}
 .rb{display:flex;align-items:center;gap:6px;padding:8px 16px;border-radius:100px;border:1px solid var(--bd2);background:transparent;color:var(--mt);font-family:'Syne',sans-serif;font-size:13px;cursor:pointer;margin-top:4px}
-.meta{font-family:'DM Mono',monospace;font-size:11px;color:var(--tx);opacity:0.6;margin-top:10px}
+.meta{font-family:'DM Mono',monospace;font-size:11px;color:var(--tx);opacity:0.8;margin-top:10px}
 .st{font-size:22px;font-weight:700;letter-spacing:-0.02em;margin-bottom:4px}
-.ss{font-size:13px;color:var(--mt);margin-bottom:18px}
+.ss{font-size:13px;color:var(--tx);opacity:0.85;margin-bottom:18px}
 
 /* ── SESSIONS ── */
 .sess-timeline{background:var(--sf);border:1px solid var(--bd);border-radius:var(--r);padding:16px 16px 22px;margin-bottom:14px}
@@ -236,7 +236,7 @@ body{font-family:'Syne',sans-serif;background:var(--bg);color:var(--tx);min-heig
 .sel-i:focus{border-color:var(--ac)}
 .row2{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px}
 .fld{display:flex;flex-direction:column;gap:5px;margin-bottom:10px}
-.fld label{font-family:'DM Mono',monospace;font-size:10px;letter-spacing:0.1em;text-transform:uppercase;color:var(--mt)}
+.fld label{font-family:'DM Mono',monospace;font-size:10px;letter-spacing:0.1em;text-transform:uppercase;color:var(--tx);opacity:0.85}
 .sb{display:inline-flex;align-items:center;gap:6px;margin-top:10px;padding:10px 20px;background:var(--ac);color:#0a0a0a;border:none;border-radius:100px;font-family:'Syne',sans-serif;font-size:14px;font-weight:700;cursor:pointer;transition:opacity 0.2s,filter 0.2s}
 .sb:disabled{opacity:0.5;cursor:not-allowed}
 .sb-pb{background:rgba(251,191,36,0.18);color:#fbbf24;border:1px solid rgba(251,191,36,0.45)}
@@ -245,6 +245,9 @@ body{font-family:'Syne',sans-serif;background:var(--bg);color:var(--tx);min-heig
 /* ── CALCULATOR ── */
 .calc-pip-tbl{width:100%;border-collapse:collapse}
 .calc-pip-tbl thead th{font-family:'DM Mono',monospace;font-size:10px;text-transform:uppercase;letter-spacing:0.08em;color:var(--mt);padding:8px 10px;text-align:right;border-bottom:1px solid var(--bd2);position:sticky;top:0;background:var(--sf)}
+.calc-pip-tbl thead th.sortable{cursor:pointer;user-select:none;transition:color 0.15s;white-space:nowrap}
+.calc-pip-tbl thead th.sortable:hover{color:var(--ac)}
+.sort-ind{font-size:9px;opacity:0.8}
 .calc-pip-tbl thead th:first-child{text-align:left}
 .calc-pip-tbl td{font-family:'DM Mono',monospace;font-size:12px;padding:7px 10px;text-align:right;border-bottom:1px solid var(--bd)}
 .calc-pip-tbl td:first-child{text-align:left}
@@ -443,7 +446,7 @@ body.light .nb.active,body.light .pin-btn,body.light .sb{color:#0a0a0a}
 .cal-val{color:var(--wt);font-weight:700}
 body.light .cal-detail{color:#6c6a66}
 body.light .cal-val{color:#b45309}
-body:not(.light) .ss{color:#b0ada8}
+body:not(.light) .ss{color:#d0cec9;opacity:0.9}
 
 /* ── COLOUR-CODED PAIR HEADER (Amendment 2/5) ── */
 .scan-pair-chip{display:inline-flex;align-items:center;gap:1px;padding:3px 12px;border-radius:8px;font-size:18px;font-weight:700;letter-spacing:0.02em;border:1.5px solid;line-height:1.1}
@@ -1079,7 +1082,7 @@ body.light .chart-modal-overlay{background:rgba(0,0,0,0.55)}
     </div>
     <!-- Filter + lot-size controls (shown once table loads) -->
     <div id="pip-controls" style="display:none;margin-bottom:10px">
-      <div style="display:flex;flex-wrap:wrap;gap:6px;align-items:center">
+      <div style="display:flex;flex-wrap:wrap;gap:6px;align-items:center;margin-bottom:6px">
         <span style="font-size:10px;color:var(--mt);font-family:'DM Mono',monospace;flex-shrink:0">Filter:</span>
         <button class="pip-filter-btn active" onclick="filterPipTable('all',this)">All</button>
         <button class="pip-filter-btn" onclick="filterPipTable('Major USD',this)">Major USD</button>
@@ -1087,7 +1090,13 @@ body.light .chart-modal-overlay{background:rgba(0,0,0,0.55)}
         <button class="pip-filter-btn" onclick="filterPipTable('EUR Crosses',this)">EUR</button>
         <button class="pip-filter-btn" onclick="filterPipTable('GBP Crosses',this)">GBP</button>
         <button class="pip-filter-btn" onclick="filterPipTable('AUD Crosses',this)">AUD</button>
-        <div style="margin-left:auto;display:flex;align-items:center;gap:6px;flex-shrink:0">
+      </div>
+      <div style="display:flex;flex-wrap:wrap;gap:10px;align-items:center">
+        <div style="display:flex;align-items:center;gap:6px">
+          <span style="font-size:10px;color:var(--mt);font-family:'DM Mono',monospace;white-space:nowrap">Account A$:</span>
+          <input id="pip-account" type="number" value="1000" min="100" step="500" oninput="updatePipAccount()" class="inp" style="width:80px;padding:3px 8px;font-size:11px;height:28px;text-align:right">
+        </div>
+        <div style="display:flex;align-items:center;gap:6px">
           <span style="font-size:10px;color:var(--mt);font-family:'DM Mono',monospace">Lot:</span>
           <select id="pip-lot-sel" onchange="changePipLotSize(this.value)" class="sel-i" style="width:auto;padding:3px 10px;font-size:11px;height:28px">
             <option value="100000">Standard (100k)</option>
@@ -1095,11 +1104,12 @@ body.light .chart-modal-overlay{background:rgba(0,0,0,0.55)}
             <option value="1000">Micro (1k)</option>
           </select>
         </div>
+        <span style="font-size:10px;color:var(--mt);font-family:'DM Mono',monospace;margin-left:4px">↑ click column headers to sort</span>
       </div>
     </div>
     <div id="calc-pip-loading" style="text-align:center;padding:28px;color:var(--mt);font-size:13px">Loading live prices…</div>
     <div id="calc-pip-table" style="overflow-x:auto;display:none"></div>
-    <div class="meta" style="margin-top:8px;line-height:1.5">† <strong>Pips/100%</strong> — pips needed for a 1-lot position to return 100% on a A$1,000 account</div>
+    <div class="meta" style="margin-top:8px;line-height:1.5">† <strong>Pips/100%</strong> — pips needed for 1 lot to return 100% on your set account size · change <em>Account A$</em> above to recalculate</div>
   </div>
 
   <!-- Trade Planner -->
@@ -1163,7 +1173,7 @@ body.light .chart-modal-overlay{background:rgba(0,0,0,0.55)}
       <span>Pair: <strong id="pv-pair">AUD/USD</strong></span>
       <span>Live price: <strong id="pv-price" style="color:var(--tx)">—</strong></span>
       <span>$/pip: <strong id="pv-val">—</strong></span>
-      <span style="margin-left:auto;color:var(--mt);font-size:11px" id="pv-note"></span>
+      <span style="margin-left:auto;color:var(--tx);opacity:0.8;font-size:11px" id="pv-note"></span>
       <button onclick="goToPair(document.getElementById('planner-pair').value)" title="Open pair in Analysis" style="margin-left:8px;background:transparent;border:1px solid var(--ac);color:var(--ac);border-radius:4px;padding:2px 10px;font-family:'DM Mono',monospace;font-size:11px;cursor:pointer;flex-shrink:0;transition:background 0.15s" onmouseover="this.style.background='rgba(6,182,212,0.15)'" onmouseout="this.style.background='transparent'">→ Analysis</button>
     </div>
 
@@ -1412,7 +1422,7 @@ function goToPair(pair, timeframe){
 /* ══════════════════════════════════════
    PRICE TICKER
 ══════════════════════════════════════ */
-var TICKER_PAIRS=['AUDUSD','AUDJPY','EURUSD','EURJPY','GBPUSD','GBPJPY','NZDUSD','USDCAD','USDCHF','USDJPY'];
+var TICKER_PAIRS=['AUDJPY','AUDUSD','EURJPY','EURUSD','GBPJPY','GBPUSD','NZDUSD','USDCAD','USDCHF','USDJPY'];
 var _tickerPrev={};
 
 /* Update all 4 copies of a pair in the ticker simultaneously */
@@ -3148,6 +3158,9 @@ async function runPullbackScanner(){
 var calcLoaded=false;
 var calcAllPairs=['EURUSD','GBPUSD','USDJPY','AUDUSD','USDCAD','USDCHF','NZDUSD','EURJPY','GBPJPY','AUDJPY','NZDJPY','CADJPY','EURGBP','EURAUD','GBPAUD','EURCAD','GBPCAD','AUDNZD','EURCHF','GBPCHF','AUDCAD','AUDCHF'];
 var plannerQuotes={};
+var _calcPipData=[];
+var _calcPipFilter='all';
+var _calcPipSort={col:null,dir:1};
 var plannerData=[];
 var PLANNER_DEFAULT_ROWS=5;
 
@@ -3194,67 +3207,117 @@ async function loadCalculator(){
       {label:'GBP Crosses',pairs:['GBPAUD','GBPCAD','GBPCHF']},
       {label:'AUD Crosses',pairs:['AUDNZD','AUDCAD','AUDCHF']}
     ];
-    // Read current lot selection (default Mini)
-    var currentLot=parseInt((document.getElementById('pip-lot-sel')||{}).value||10000);
-    var lotFactor=currentLot/100000;
-    var html='<table class="calc-pip-tbl"><thead><tr>';
-    html+='<th style="text-align:left">Pair</th>';
-    html+='<th>Live Price</th>';
-    html+='<th style="color:var(--ac)" id="pip-th-col">$/pip</th>';
-    html+='<th>Pips/100%†</th>';
-    html+='</tr></thead><tbody>';
+    // Build flat data array for sorting/filtering
+    _calcPipData=[];
     CCY_GROUPS.forEach(function(grp){
-      html+='<tr class="pip-grp-row" data-group="'+grp.label+'"><td colspan="4"><span class="calc-grp-lbl">'+grp.label+'</span></td></tr>';
       grp.pairs.forEach(function(pair){
         var qd=quotes[pair];
         var price=qd?(qd.p||qd):null;
         var stdPip=getPipValueAUD(pair,quotes);
-        var displayPip=stdPip*lotFactor;
-        var pips100=stdPip>0?(1000/stdPip).toFixed(1):'—';
-        var base=pair.slice(0,3);
-        var col=CCY_COLORS[base]||'var(--tx)';
-        html+='<tr class="hm-row row-link pip-pair-row" data-group="'+grp.label+'" onclick="loadPlannerPair(\''+pair+'\')" title="Load '+pair+' into planner">';
-        html+='<td><span style="color:'+col+';font-weight:700;font-size:13px">'+base+'</span><span style="color:var(--mt)">/'+pair.slice(3)+'</span></td>';
-        html+='<td>'+(price!=null?fmtPrice(pair,price):'—')+'</td>';
-        html+='<td style="color:var(--ac)" class="pip-val-cell" data-std="'+stdPip+'">'+(stdPip>0?'A$'+displayPip.toFixed(currentLot===1000?3:2):'—')+'</td>';
-        html+='<td style="color:var(--mt)">'+pips100+'</td>';
-        html+='</tr>';
+        _calcPipData.push({pair:pair,group:grp.label,price:price,stdPip:stdPip});
       });
     });
-    html+='</tbody></table>';
+    // Build table shell with sortable headers
+    var html='<table class="calc-pip-tbl"><thead><tr>';
+    html+='<th class="sortable" style="text-align:left" onclick="sortPipTable(\'pair\')" id="pip-th-pair">Pair <span class="sort-ind" id="si-pair"></span></th>';
+    html+='<th class="sortable" onclick="sortPipTable(\'price\')" id="pip-th-price">Live Price <span class="sort-ind" id="si-price"></span></th>';
+    html+='<th class="sortable" style="color:var(--ac)" onclick="sortPipTable(\'pip\')" id="pip-th-pip"><span id="pip-lot-lbl">Mini </span>$/pip <span class="sort-ind" id="si-pip"></span></th>';
+    html+='<th class="sortable" onclick="sortPipTable(\'pips100\')" id="pip-th-pips100">Pips/100%† <span class="sort-ind" id="si-pips100"></span></th>';
+    html+='</tr></thead><tbody id="pip-tbody"></tbody></table>';
     if(tableDiv){tableDiv.innerHTML=html;tableDiv.style.display='block';}
     var controls=document.getElementById('pip-controls');
     if(controls) controls.style.display='';
     if(loading) loading.style.display='none';
+    // Reset sort on refresh (filter persists)
+    _calcPipSort={col:null,dir:1};
+    renderPipTableBody();
     updatePlannerPair();
   } catch(e){
     if(loading){loading.style.display='block';loading.textContent='Failed to load prices. Tap Refresh to retry.';}
   }
 }
 
-/* ── Pip table filter + lot-size switch ── */
+/* ── Pip table: render, filter, sort, lot-size, account-size ── */
+function renderPipTableBody(){
+  var tbody=document.getElementById('pip-tbody');
+  if(!tbody) return;
+  var lot=parseInt((document.getElementById('pip-lot-sel')||{}).value||10000);
+  var account=parseFloat((document.getElementById('pip-account')||{}).value||1000)||1000;
+  var lotFactor=lot/100000;
+  // Update lot label in header
+  var lblEl=document.getElementById('pip-lot-lbl');
+  if(lblEl){var lbl=lot===100000?'Std ':lot===10000?'Mini ':'Micro ';lblEl.textContent=lbl;}
+  // Filter
+  var data=_calcPipData.filter(function(d){return _calcPipFilter==='all'||d.group===_calcPipFilter;});
+  // Sort
+  var isSorted=!!_calcPipSort.col;
+  if(isSorted){
+    data=data.slice().sort(function(a,b){
+      var va,vb;
+      if(_calcPipSort.col==='pair'){va=a.pair;vb=b.pair;return _calcPipSort.dir*(va<vb?-1:va>vb?1:0);}
+      if(_calcPipSort.col==='price'){va=a.price||0;vb=b.price||0;return _calcPipSort.dir*(va-vb);}
+      if(_calcPipSort.col==='pip'){va=a.stdPip||0;vb=b.stdPip||0;return _calcPipSort.dir*(va-vb);}
+      if(_calcPipSort.col==='pips100'){
+        va=a.stdPip>0?account/a.stdPip:9999999;
+        vb=b.stdPip>0?account/b.stdPip:9999999;
+        return _calcPipSort.dir*(va-vb);
+      }
+      return 0;
+    });
+  }
+  var html='';
+  var lastGroup=null;
+  data.forEach(function(d){
+    var pair=d.pair,grp=d.group,price=d.price,stdPip=d.stdPip;
+    // Group header only in unsorted grouped view
+    if(!isSorted&&grp!==lastGroup){
+      html+='<tr class="pip-grp-row" data-group="'+grp+'"><td colspan="4"><span class="calc-grp-lbl">'+grp+'</span></td></tr>';
+      lastGroup=grp;
+    }
+    var displayPip=stdPip*lotFactor;
+    var pips100=stdPip>0?(account/stdPip).toFixed(1):'—';
+    var base=pair.slice(0,3);
+    var col=CCY_COLORS[base]||'var(--tx)';
+    html+='<tr class="hm-row row-link pip-pair-row" data-group="'+grp+'" onclick="loadPlannerPair(\''+pair+'\')" title="Load '+pair+' into planner">';
+    html+='<td><span style="color:'+col+';font-weight:700;font-size:13px">'+base+'</span><span style="color:var(--mt)">/'+pair.slice(3)+'</span></td>';
+    html+='<td>'+(price!=null?fmtPrice(pair,price):'—')+'</td>';
+    html+='<td style="color:var(--ac)">'+(stdPip>0?'A$'+displayPip.toFixed(lot===1000?3:2):'—')+'</td>';
+    html+='<td style="color:var(--mt)">'+pips100+'</td>';
+    html+='</tr>';
+  });
+  tbody.innerHTML=html;
+}
+
+function sortPipTable(col){
+  if(_calcPipSort.col===col){_calcPipSort.dir*=-1;}
+  else{_calcPipSort.col=col;_calcPipSort.dir=1;}
+  // Update sort indicator spans
+  ['pair','price','pip','pips100'].forEach(function(c){
+    var el=document.getElementById('si-'+c);
+    if(el) el.textContent=(c===_calcPipSort.col?(_calcPipSort.dir===1?' ▲':' ▼'):'');
+  });
+  renderPipTableBody();
+}
+
 function filterPipTable(group, btn){
+  _calcPipFilter=group;
   document.querySelectorAll('.pip-filter-btn').forEach(function(b){b.classList.remove('active');});
   if(btn) btn.classList.add('active');
-  document.querySelectorAll('.pip-pair-row,.pip-grp-row').forEach(function(row){
-    row.style.display=(group==='all'||row.getAttribute('data-group')===group)?'':'none';
-  });
+  renderPipTableBody();
 }
 
 function changePipLotSize(lotStr){
-  var lot=parseInt(lotStr)||10000;
-  var factor=lot/100000;
-  document.querySelectorAll('.pip-val-cell').forEach(function(cell){
-    var stdPip=parseFloat(cell.getAttribute('data-std'))||0;
-    var val=stdPip*factor;
-    cell.textContent=stdPip>0?('A$'+val.toFixed(lot===1000?3:2)):'—';
-  });
+  renderPipTableBody();
+}
+
+function updatePipAccount(){
+  renderPipTableBody();
 }
 
 /* ── Trade Planner ── */
 function initPlanner(){
   plannerData=[];
-  for(var i=0;i<PLANNER_DEFAULT_ROWS;i++) plannerData.push({pips:''});
+  for(var i=0;i<PLANNER_DEFAULT_ROWS;i++) plannerData.push({pips:'',ob:null});
   renderPlannerRows();
 }
 
@@ -3266,7 +3329,7 @@ function renderPlannerRows(){
   plannerData.forEach(function(row,i){
     html+='<div class="planner-row" style="'+cols+'" id="pr-'+i+'">';
     html+='<span style="color:var(--mt);font-size:11px">'+(i+1)+'</span>';
-    html+='<span id="pr-ob-'+i+'" style="font-size:11px;color:var(--mt)">—</span>';
+    html+='<input class="pip-inp" id="pr-ob-'+i+'" type="number" value="'+(plannerData[i].ob!=null?plannerData[i].ob:'')+'" placeholder="auto" oninput="plannerObChange('+i+',this.value)" style="font-size:11px;color:var(--mt);text-align:right" title="Override opening balance for this trade">';
     html+='<input class="pip-inp" id="pip-in-'+i+'" type="number" value="'+(row.pips||'')+'" placeholder="0" oninput="plannerPipsChange('+i+',this.value)" style="text-align:right">';
     html+='<span id="pr-pnl-'+i+'" style="text-align:right;color:var(--mt)">—</span>';
     html+='<span id="pr-bal-'+i+'" style="text-align:right;color:var(--mt)">—</span>';
@@ -3284,8 +3347,13 @@ function plannerPipsChange(i,val){
   updatePlanner();
 }
 
+function plannerObChange(i,val){
+  plannerData[i].ob=val===''?null:parseFloat(val)||null;
+  updatePlanner();
+}
+
 function addPlannerRow(){
-  plannerData.push({pips:''});
+  plannerData.push({pips:'',ob:null});
   renderPlannerRows();
   // focus new input
   setTimeout(function(){
@@ -3371,8 +3439,17 @@ function updatePlanner(){
     var balEl=document.getElementById('pr-bal-'+i);
     var pctEl=document.getElementById('pr-pct-'+i);
     var cumEl=document.getElementById('pr-cum-'+i);
-    // Always show OB for this row (what the trade started with)
-    if(obEl){obEl.textContent=hasOB?'A$'+running.toFixed(2):'—';obEl.style.color='var(--mt)';}
+    // Per-row OB override: if user typed a value, use it as the cascade reset
+    if(plannerData[i]&&plannerData[i].ob!=null){running=plannerData[i].ob;}
+    // Show current running in the OB input (only when not user-overridden)
+    if(obEl){
+      if(plannerData[i]&&plannerData[i].ob!=null){
+        obEl.style.color='var(--ac)'; // accent = user override active
+      } else {
+        obEl.value=hasOB?running.toFixed(2):'';
+        obEl.style.color='var(--mt)';
+      }
+    }
     if(pips===null||isNaN(pips)||pips===0){
       if(pnlEl){pnlEl.textContent='—';pnlEl.style.color='var(--mt)';}
       if(balEl){balEl.textContent='—';balEl.style.color='var(--mt)';}
