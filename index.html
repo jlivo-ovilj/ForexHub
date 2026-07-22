@@ -3538,12 +3538,15 @@ async function renderBriefing(force){
   // 1. Market stats (free, real-time)
   var stats={};
   try{ var d=await fetch(BRIEF_URL+'?pairs='+encodeURIComponent(BRIEF_PAIRS.join(',')),{cache:'no-store'}).then(function(r){return r.json();}); stats=(d&&d.stats)||{}; }catch(e){}
-  var rows=Object.keys(stats).map(function(p){var s=stats[p];s.pair=p;return s;}).filter(function(s){return s.movePips!=null;});
+  // Attach pair key and compute displayPips — prefer current session move (since 7am AEST), fall back to previous daily bar
+  var rows=Object.keys(stats).map(function(p){var s=stats[p];s.pair=p;s.displayPips=s.sessionMovePips!=null?s.sessionMovePips:s.movePips;return s;}).filter(function(s){return s.displayPips!=null||s.movePips!=null;});
+  rows.forEach(function(s){if(s.displayPips==null)s.displayPips=s.movePips;});
   if(!rows.length){ box.innerHTML='<div class="scan-empty"><div class="scan-icon">☕</div><div>Market data unavailable right now — tap Refresh in a moment.</div></div>'; box.setAttribute('data-loaded','0'); briefRendered=null; return; }
-  // 2. Gainers / losers by pips
-  var byMove=rows.slice().sort(function(a,b){return b.movePips-a.movePips;});
-  var gainers=byMove.filter(function(s){return s.movePips>0;}).slice(0,5);
-  var losers=byMove.filter(function(s){return s.movePips<0;}).slice(-5).reverse();
+  // 2. Gainers / losers by pips — use current session move when available
+  var hasSession=rows.some(function(s){return s.sessionMovePips!=null;});
+  var byMove=rows.slice().sort(function(a,b){return b.displayPips-a.displayPips;});
+  var gainers=byMove.filter(function(s){return s.displayPips>0;}).slice(0,5);
+  var losers=byMove.filter(function(s){return s.displayPips<0;}).slice(-5).reverse();
   // 3. Currency activity (range vs 14-day ATR — volume proxy)
   var ccy={};
   rows.forEach(function(s){var a=s.pair.slice(0,3),b=s.pair.slice(3);[a,b].forEach(function(c){if(!ccy[c])ccy[c]={c:c,act:0,n:0};ccy[c].act+=(s.activity||0);ccy[c].n++;});});
@@ -3561,20 +3564,21 @@ async function renderBriefing(force){
   // 6. Alerts (computed from the above)
   var alerts=[];
   gaps.filter(function(s){return Math.abs(s.gapPips)>pspread(s.pair)&&Math.abs(s.gapPips)>=10;}).slice(0,3).forEach(function(s){var edge=Math.abs(s.gapPips)-pspread(s.pair);alerts.push({t:'gap',x:slashPair(s.pair)+' gapped '+fmtPips(s.gapPips)+' pips at the ~7am rollover vs a ~'+pspread(s.pair).toFixed(1)+'-pip spread — tradable (edge +'+edge.toFixed(1)+' pips).'});});
-  var bigAbs=rows.slice().sort(function(a,b){return Math.abs(b.movePips)-Math.abs(a.movePips);})[0];
-  if(bigAbs) alerts.push({t:'move',x:slashPair(bigAbs.pair)+' was the biggest mover in the previous session ('+fmtPips(bigAbs.movePips)+' pips).'});
+  var bigAbs=rows.slice().sort(function(a,b){return Math.abs(b.displayPips)-Math.abs(a.displayPips);})[0];
+  if(bigAbs) alerts.push({t:'move',x:slashPair(bigAbs.pair)+' is the biggest mover '+(hasSession?'this session so far ('+fmtPips(bigAbs.displayPips)+' pips since 7am AEST).':'in the previous session ('+fmtPips(bigAbs.displayPips)+' pips).')});
   rows.filter(function(s){return s.activity>2;}).sort(function(a,b){return b.activity-a.activity;}).slice(0,2).forEach(function(s){alerts.push({t:'vol',x:slashPair(s.pair)+' traded '+s.activity.toFixed(1)+'× its normal daily range — elevated volatility.'});});
   var hot=news.match(/non-?farm|nfp|\bcpi\b|fomc|rate decision|interest rate|payroll|\bgdp\b|unemployment|inflation/i);
   if(hot) alerts.push({t:'news',x:'High-impact data on the calendar today ('+hot[0].toUpperCase()+') — expect volatility around the release; see Today\'s news below.'});
   // ── render ──
-  function moveTable(list,cls){return '<table class="brief-tbl"><tbody>'+list.map(function(s){return '<tr class="row-link" onclick="goToPair(\''+s.pair+'\')" title="Open in Analysis"><td>'+pairChip(s.pair,true)+'</td><td class="bnum '+cls+'">'+fmtPips(s.movePips)+'</td><td class="bnum bmuted">'+(s.rangePips!=null?Math.round(s.rangePips)+'p rng':'')+'</td></tr>';}).join('')+'</tbody></table>';}
+  function moveTable(list,cls){return '<table class="brief-tbl"><tbody>'+list.map(function(s){return '<tr class="row-link" onclick="goToPair(\''+s.pair+'\')" title="Open in Analysis"><td>'+pairChip(s.pair,true)+'</td><td class="bnum '+cls+'">'+fmtPips(s.displayPips)+'</td><td class="bnum bmuted">'+(s.rangePips!=null?Math.round(s.rangePips)+'p rng':'')+'</td></tr>';}).join('')+'</tbody></table>';}
   var h='';
   h+='<div class="brief-sec"><div class="brief-h">⚡ Alerts</div>';
   h+=alerts.length?('<div class="alert-list">'+alerts.map(function(a){return '<div class="alert-item alert-'+a.t+'">'+a.x+'</div>';}).join('')+'</div>'):'<div class="cb">Nothing unusual at the open — no large gaps or volatility spikes.</div>';
   h+='</div>';
   h+='<div class="brief-grid">';
-  h+='<div class="brief-sec"><div class="brief-h">📈 Top gainers <span class="muted">previous session</span></div>'+(gainers.length?moveTable(gainers,'bup'):'<div class="cb">—</div>')+'</div>';
-  h+='<div class="brief-sec"><div class="brief-h">📉 Biggest fallers</div>'+(losers.length?moveTable(losers,'bdown'):'<div class="cb">—</div>')+'</div>';
+  var sesLbl='<span class="muted">'+(hasSession?'since 7am AEST':'previous session')+'</span>';
+  h+='<div class="brief-sec"><div class="brief-h">📈 Top gainers '+sesLbl+'</div>'+(gainers.length?moveTable(gainers,'bup'):'<div class="cb">—</div>')+'</div>';
+  h+='<div class="brief-sec"><div class="brief-h">📉 Biggest fallers '+sesLbl+'</div>'+(losers.length?moveTable(losers,'bdown'):'<div class="cb">—</div>')+'</div>';
   h+='</div>';
   h+='<div class="brief-sec"><div class="brief-h">🔥 Most active currencies <span class="muted">range vs 14-day average</span></div>';
   h+='<div class="chip-row">'+mostActive.map(function(o){return '<span class="act-chip">'+ccySpan(o.c)+' <b>'+o.avg.toFixed(2)+'×</b></span>';}).join('')+'</div>';
