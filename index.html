@@ -1345,7 +1345,26 @@ function dismissBanner(){
 /* ══════════════════════════════════════
    HEADER DATE
 ══════════════════════════════════════ */
-var FH_BUILD='v5'; // bump on every delivered change — shown in the header so it's always obvious which version is loaded
+var FH_BUILD='v6'; // bump on every delivered change — shown in the header so it's always obvious which version is loaded
+/* Stale-tab killer: every so often, check whether a newer build has been deployed.
+   If so, show a can't-miss banner telling the user to reload — long-open tabs silently
+   running old code caused repeated "the fix didn't work" confusion. */
+async function checkForNewBuild(){
+  try{
+    var r=await fetch(location.pathname+'?buildcheck='+Date.now(),{cache:'no-store'});
+    if(!r.ok) return;
+    var t=await r.text();
+    var m=t.match(/FH_BUILD='([^']+)'/);
+    if(m&&m[1]!==FH_BUILD&&!document.getElementById('fh-newbuild')){
+      var b=document.createElement('div');
+      b.id='fh-newbuild';
+      b.style.cssText='position:fixed;top:0;left:0;right:0;z-index:99999;background:#4ade80;color:#06320f;font-family:monospace;font-size:13px;font-weight:700;text-align:center;padding:12px;cursor:pointer;box-shadow:0 2px 12px rgba(0,0,0,0.4)';
+      b.textContent='⬆ A newer version of ForexHub ('+m[1]+') is available — this tab is running old code ('+FH_BUILD+'). Click here to reload.';
+      b.onclick=function(){location.reload();};
+      document.body.appendChild(b);
+    }
+  }catch(e){}
+}
 function updateDate(){
   var d=new Date();
   var opts={weekday:'short',year:'numeric',month:'short',day:'numeric',timeZone:'Australia/Brisbane'};
@@ -3796,6 +3815,8 @@ document.addEventListener('DOMContentLoaded',function(){
   initTicker();
   updateDate();
   setInterval(updateDate,30000);
+  setTimeout(checkForNewBuild,20000);
+  setInterval(checkForNewBuild,10*60*1000);
   // Pre-load default pair — Weekly is default active tab
   loadW('AUDUSD',document.querySelector('#wpr .pp.active'));
   loadD('AUDUSD',document.querySelector('#dpr .pp.active'));
