@@ -753,7 +753,7 @@ body.light .chart-modal-overlay{background:rgba(0,0,0,0.55)}
 <!-- ══ SESSIONS ══ -->
 <div id="sessions" class="sec">
   <div class="st">Market sessions</div>
-  <div class="ss">Live session status · Brisbane AEST · no daylight saving</div>
+  <div class="ss">Live session status · Brisbane AEST · London &amp; New York hours auto-adjust for their daylight saving</div>
   <div class="clock-big" id="sess-clock">--:--:--</div>
   <div class="clock-tz">Brisbane AEST (UTC+10)</div>
   <!-- Timeline -->
@@ -1099,8 +1099,8 @@ body.light .chart-modal-overlay{background:rgba(0,0,0,0.55)}
         <div style="display:flex;align-items:center;gap:6px">
           <span style="font-size:10px;color:var(--mt);font-family:'DM Mono',monospace">Lot:</span>
           <select id="pip-lot-sel" onchange="changePipLotSize(this.value)" class="sel-i" style="width:auto;padding:3px 10px;font-size:11px;height:28px">
-            <option value="100000">Standard (100k)</option>
-            <option value="10000" selected>Mini (10k)</option>
+            <option value="100000" selected>Standard (100k)</option>
+            <option value="10000">Mini (10k)</option>
             <option value="1000">Micro (1k)</option>
           </select>
         </div>
@@ -1160,9 +1160,9 @@ body.light .chart-modal-overlay{background:rgba(0,0,0,0.55)}
       </div>
       <div class="fld">
         <label>Lot Size</label>
-        <select class="sel-i" id="planner-lot" onchange="updatePlanner()">
-          <option value="100000">Standard (100k)</option>
-          <option value="10000" selected>Mini (10k)</option>
+        <select class="sel-i" id="planner-lot" onchange="renderPlannerRows()">
+          <option value="100000" selected>Standard (100k)</option>
+          <option value="10000">Mini (10k)</option>
           <option value="1000">Micro (1k)</option>
         </select>
       </div>
@@ -1179,9 +1179,11 @@ body.light .chart-modal-overlay{background:rgba(0,0,0,0.55)}
 
     <!-- Trade rows table -->
     <div style="border:1px solid var(--bd);border-radius:var(--rs);overflow:hidden">
-      <div class="planner-hdr" id="planner-hdr" style="grid-template-columns:22px 1fr 80px 1fr 1fr 64px 64px 24px">
+      <div class="planner-hdr" id="planner-hdr" style="grid-template-columns:22px 1fr 96px 84px 64px 1fr 1fr 60px 60px 24px">
         <span>#</span>
         <span>Open Bal</span>
+        <span title="Currency pair for THIS trade — defaults to the Pair selected above; change it per row when you traded several pairs in one session.">Pair</span>
+        <span style="text-align:right" title="Units for this trade (contracts) — like the Trade Amount column in your Excel sheet. Blank = the Lot Size selected above.">Trade size</span>
         <span style="text-align:right">Pips</span>
         <span style="text-align:right">P&amp;L (A$)</span>
         <span style="text-align:right">Balance</span>
@@ -1190,9 +1192,11 @@ body.light .chart-modal-overlay{background:rgba(0,0,0,0.55)}
         <span></span>
       </div>
       <div id="planner-rows"></div>
-      <div class="planner-row total-row" id="planner-total" style="grid-template-columns:22px 1fr 80px 1fr 1fr 64px 64px 24px">
+      <div class="planner-row total-row" id="planner-total" style="grid-template-columns:22px 1fr 96px 84px 64px 1fr 1fr 60px 60px 24px">
         <span style="color:var(--mt)">∑</span>
         <span style="color:var(--mt)">Session</span>
+        <span></span>
+        <span></span>
         <span></span>
         <span id="pt-pnl" style="text-align:right">—</span>
         <span id="pt-bal" style="text-align:right;color:var(--tx)">—</span>
@@ -1207,7 +1211,7 @@ body.light .chart-modal-overlay{background:rgba(0,0,0,0.55)}
       <button class="sb" style="margin-top:0;padding:8px 18px;font-size:13px" onclick="addPlannerRow()">+ Add trade</button>
       <button class="pip-fccy" style="margin-left:auto" onclick="clearPlanner()">Clear</button>
     </div>
-    <div class="meta" style="margin-top:10px;line-height:1.6">Opening balance optional. <strong>Open Bal</strong> = that trade's starting balance (cascades). <strong>% trade</strong> = return for that trade vs its opening balance. <strong>Cum%</strong> = total return from your original opening balance.</div>
+    <div class="meta" style="margin-top:10px;line-height:1.6">Opening balance optional. <strong>Open Bal</strong> = that trade's starting balance (cascades). <strong>Pair</strong> = the pair for that trade — defaults to the Pair chosen above; change it on any row when you traded several pairs in one session (its $/pip is used for that row). <strong>Trade size</strong> = units (contracts) for that trade, like the Trade Amount column in your Excel sheet — leave blank to use the Lot Size above. <strong>% trade</strong> = return for that trade vs its opening balance. <strong>Cum%</strong> = total return from your original opening balance.</div>
   </div>
 </div>
 
@@ -1341,13 +1345,14 @@ function dismissBanner(){
 /* ══════════════════════════════════════
    HEADER DATE
 ══════════════════════════════════════ */
+var FH_BUILD='v4'; // bump on every delivered change — shown in the header so it's always obvious which version is loaded
 function updateDate(){
   var d=new Date();
   var opts={weekday:'short',year:'numeric',month:'short',day:'numeric',timeZone:'Australia/Brisbane'};
   var ds=d.toLocaleDateString('en-AU',opts);
   var ts=d.toLocaleTimeString('en-AU',{hour:'2-digit',minute:'2-digit',timeZone:'Australia/Brisbane',hour12:false});
   var el=document.getElementById('hdate');
-  if(el) el.textContent=ds+' · '+ts+' AEST';
+  if(el) el.textContent=ds+' · '+ts+' AEST · '+FH_BUILD;
 }
 
 /* ══════════════════════════════════════
@@ -1457,17 +1462,16 @@ async function refreshTicker(){
       if(p && !isNaN(p) && p > 0){ priceMap[pair] = p; }
       else { missing++; }
     });
-    if(missing === 0){
-      // All prices ready — update every pair at once
-      TICKER_PAIRS.forEach(function(pair){
-        var prev = (_tickerPrev[pair] != null) ? _tickerPrev[pair] : null;
-        updateTickerPair(pair, priceMap[pair], prev);
-        _tickerPrev[pair] = priceMap[pair];
-      });
-    } else {
-      // Not all ready yet — retry in 5s (keeps display at — until complete)
-      setTimeout(refreshTicker, 5000);
-    }
+    // Update every pair we HAVE a price for immediately — never hold the whole ticker
+    // hostage to one failed pair (the old all-or-nothing logic left the ticker at "—"
+    // forever if a single pair kept failing). Missing pairs retry in the background.
+    TICKER_PAIRS.forEach(function(pair){
+      if(priceMap[pair] == null) return;
+      var prev = (_tickerPrev[pair] != null) ? _tickerPrev[pair] : null;
+      updateTickerPair(pair, priceMap[pair], prev);
+      _tickerPrev[pair] = priceMap[pair];
+    });
+    if(missing > 0){ setTimeout(refreshTicker, 5000); }
   } catch(e){
     setTimeout(refreshTicker, 10000);
   }
@@ -1547,18 +1551,28 @@ var PRICE_URL=WU.replace(/\/api$/,'')+'/price';
 var _quoteCache={};
 var QUOTE_TTL=5*60*1000;   // quotes expire after 5 min so a long-open tab never feeds stale prices to the scanner/analysis
 async function liveQuotes(pairs){
-  var now=Date.now();
-  var need=pairs.filter(function(p){var e=_quoteCache[p];return !e||(now-e.ts)>QUOTE_TTL;});
-  if(need.length){
+  var fetchPairs=function(list){
     // Chunk ≤12 pairs per call: the worker does 2 Yahoo fetches per pair and Cloudflare
     // caps one request at 50 subrequests — a 28-pair call silently dropped ~3 pairs.
-    var chunks=[]; for(var i=0;i<need.length;i+=12) chunks.push(need.slice(i,i+12));
-    await Promise.all(chunks.map(function(ch){
+    var chunks=[]; for(var i=0;i<list.length;i+=12) chunks.push(list.slice(i,i+12));
+    return Promise.all(chunks.map(function(ch){
       return fetch(PRICE_URL+'?pairs='+encodeURIComponent(ch.join(',')),{cache:'no-store'})
         .then(function(r){return r.json();})
         .then(function(d){var qs=(d&&d.quotes)||{};var t=Date.now();Object.keys(qs).forEach(function(k){_quoteCache[k]={ts:t,q:qs[k]};});})
         .catch(function(e){});
     }));
+  };
+  var now=Date.now();
+  var need=pairs.filter(function(p){var e=_quoteCache[p];return !e||(now-e.ts)>QUOTE_TTL;});
+  if(need.length){
+    await fetchPairs(need);
+    // Second pass for anything Yahoo dropped — a short pause then one retry recovers most
+    // transient failures (this is what caused "No price data returned / No live data returned").
+    var missing=need.filter(function(p){return _quoteCache[p]==null;});
+    if(missing.length){
+      await new Promise(function(res){setTimeout(res,1500);});
+      await fetchPairs(missing);
+    }
   }
   var out={}; pairs.forEach(function(p){ if(_quoteCache[p]!=null) out[p]=_quoteCache[p].q; }); return out;
 }
@@ -1590,6 +1604,8 @@ async function priceContext(pair){
     return 'CURRENT LIVE MARKET ('+t+' AEST): '+p+' = '+quoteLine(pair,q)+'.\n(trend = % move over 4H/Day/Week/Month; D and today\'s range are measured from the 7am AEST session open, so early in the day D is naturally small — weight W/M more then; ▲ up, ▼ down, ▬ flat.) Anchor ALL levels to THIS live price — resistance just above, support just below, entry within a realistic distance. Never use a level price has already moved past. Trade WITH the dominant higher-timeframe trend (weekly/monthly); only call a counter-trend setup if you cite a specific reversal signal, and never fade a strong intraday move without one.\n\n';
   }catch(e){return '';}
 }
+/* Detect an AI "I can't access live data" refusal — must NEVER be rendered or cached as analysis */
+function aiRefused(t){return /don'?t have (access|real-?time)|do not have (access|real-?time)|cannot access (live|real-?time|current)|knowledge (was )?last updated|(can'?t|cannot) browse|unable to (access|browse)|I need to be transparent/i.test(t||'');}
 function freshnessNote(useSearch){
   var d=new Date().toLocaleDateString('en-AU',{timeZone:'Australia/Brisbane',weekday:'long',day:'numeric',month:'long',year:'numeric'});
   if(useSearch) return '\n\nToday is '+d+'. Use web search to confirm current catalysts. Only call an event "upcoming" if it is genuinely in the future relative to today — never describe a past election, central-bank meeting or data release as if it is still ahead.';
@@ -1610,13 +1626,18 @@ async function loadTrendScan(){
   out.innerHTML='<div class="ld" style="padding:20px"><div class="sp"></div>Loading trends…</div>';
   TREND_PAIRS.forEach(function(p){delete _quoteCache[p];});   // force fresh data on refresh
   try{
-    var q=await liveQuotes(TREND_PAIRS);
+    // Up to 3 attempts before giving up — transient Yahoo failures self-heal on retry
     var rows=[];
-    TREND_PAIRS.forEach(function(p){var d=q[p];if(!d)return;rows.push({sym:p,w:d.tw,dd:d.td,h:d.t4h,m:d.tm});});
+    for(var attempt=0;attempt<3 && !rows.length;attempt++){
+      if(attempt>0){out.innerHTML='<div class="ld" style="padding:20px"><div class="sp"></div>Data feed busy — retrying ('+(attempt+1)+'/3)…</div>';await new Promise(function(r){setTimeout(r,2500);});}
+      var q=await liveQuotes(TREND_PAIRS);
+      rows=[];
+      TREND_PAIRS.forEach(function(p){var d=q[p];if(!d)return;rows.push({sym:p,w:d.tw,dd:d.td,h:d.t4h,m:d.tm});});
+    }
     _trendData=rows;
     var t=new Date().toLocaleTimeString('en-AU',{timeZone:'Australia/Brisbane',hour:'2-digit',minute:'2-digit'});
     var mt=document.getElementById('trend-meta'); if(mt) mt.textContent=rows.length+' pairs · '+t+' AEST';
-    if(!rows.length){out.innerHTML='<div class="eb" style="padding:16px">No price data returned — try Refresh.</div>';return;}
+    if(!rows.length){out.innerHTML='<div class="eb" style="padding:16px">No price data returned after 3 attempts — the feed may be briefly down. Try Refresh in a minute.</div>';return;}
     renderTrends();
   }catch(e){out.innerHTML='<div class="eb" style="padding:16px">'+e.message+'</div>';}
 }
@@ -1665,7 +1686,7 @@ function renderTrends(){
   rows.forEach(function(r){
     var bg=r._br===2?'rgba(74,222,128,0.25)':r._br===1?'rgba(74,222,128,0.1)':r._br===-2?'rgba(248,113,113,0.25)':r._br===-1?'rgba(248,113,113,0.1)':'transparent';
     var clr=r._br>0?'#4ade80':r._br<0?'#f87171':'var(--mt)';
-    h+='<tr class="hm-row row-link" onclick="goToPair(\''+r.sym+'\')" title="Open '+r.sym+' in Analysis"><td class="hm-pair" style="color:'+pairColor(r.sym)+'">'+r.sym+'</td>';
+    h+='<tr class="hm-row row-link" onclick="goToPair(\''+r.sym+'\')" title="Open '+r.sym+' in Analysis"><td class="hm-pair">'+pairSpan(r.sym)+'</td>';
     h+=cell(r.w)+cell(r.dd)+cell(r.h);
     h+='<td style="background:'+bg+';color:'+clr+';font-weight:600">'+r._bt+'</td></tr>';
   });
@@ -1712,6 +1733,15 @@ function colorizeCcy(html){
     });
   }
   return parts.join('');
+}
+/* Dual-coloured pair text — BOTH currencies coloured (Amendment 12.8.26: colour-code pairs
+   everywhere they appear, both sides, for a consistent look site-wide) */
+function pairSpan(sym){
+  var clean=(sym||'').replace(/\s/g,'').replace('/','');
+  var a=clean.slice(0,3),b=clean.slice(3,6);
+  return '<span style="color:'+(CCY_COLORS[a]||'var(--tx)')+';font-weight:700">'+a+'</span>'
+    +'<span style="color:var(--mt)">/</span>'
+    +'<span style="color:'+(CCY_COLORS[b]||'var(--tx)')+';font-weight:700">'+b+'</span>';
 }
 /* Coloured, boundaried pair header chip for the scanner
    clickable=true → renders as <button> that navigates to Analysis */
@@ -1779,6 +1809,15 @@ function reportDocHTML(id){
   var c=document.getElementById(id);
   var el=document.querySelector(c.dataset.body);
   var clone=el.cloneNode(true);
+  // CRITICAL: clickable pair chips are <button>s — convert them to <span>s BEFORE stripping
+  // buttons, otherwise every currency-pair name vanishes from the printed/saved report.
+  clone.querySelectorAll('button.scan-pair-chip').forEach(function(b){
+    var s=document.createElement('span');
+    s.className=b.className;
+    s.setAttribute('style',b.getAttribute('style')||'');
+    s.innerHTML=b.innerHTML;
+    b.parentNode.replaceChild(s,b);
+  });
   clone.querySelectorAll('.share-bar,button,.rb').forEach(function(b){b.remove();});
   var css=Array.prototype.map.call(document.querySelectorAll('style'),function(s){return s.textContent;}).join('\n');
   var light=document.body.classList.contains('light');
@@ -1823,6 +1862,13 @@ function reportText(id){
   var c=document.getElementById(id);
   var el=document.querySelector(c.dataset.body);
   var clone=el.cloneNode(true);
+  // Same fix as reportDocHTML: keep pair-chip buttons as text before stripping buttons
+  clone.querySelectorAll('button.scan-pair-chip').forEach(function(b){
+    var s=document.createElement('span');
+    s.className=b.className;
+    s.textContent=b.textContent;
+    b.parentNode.replaceChild(s,b);
+  });
   clone.querySelectorAll('.share-bar,button,.rb').forEach(function(b){b.remove();});
   // Inject clear text dividers between scanner setup cards so they don't bleed together in plaintext
   clone.querySelectorAll('.scan-card').forEach(function(card){
@@ -2083,8 +2129,13 @@ async function loadD(pair,btn){
   var bias='';
   try{
     var pc=await priceContext(pair);
-    var prompt=pc+'You are a professional forex analyst. Provide a concise DAILY analysis for '+p+' as of today '+new Date().toISOString().split('T')[0]+' AEST. Format exactly:\nBIAS: [BULLISH/BEARISH/NEUTRAL]\n\nKEY LEVELS:\n- Resistance 1: [price]\n- Resistance 2: [price]\n- Entry zone: [price range]\n- Support 1: [price]\n- Support 2: [price]\n\nWATCH TODAY:\n[2-3 bullet points on what to watch, catalysts, and specific entry triggers. Use **bold** for key terms.]\n\nBe specific with price levels — resistances above and supports below the current price. Keep it concise.'+freshnessNote(false);
-    var txt=await ai(prompt,'d:'+pair+':'+new Date().toDateString(),{model:'claude-haiku-4-5',maxTokens:1000});
+    // If the live feed is briefly down (pc empty), let the model web-search the current price
+    // instead of refusing — a refusal must never end up rendered as the day's analysis.
+    var dSearch=!pc;
+    var prompt=pc+'You are a professional forex analyst. Provide a concise DAILY analysis for '+p+' as of today '+new Date().toISOString().split('T')[0]+' AEST. Format exactly:\nBIAS: [BULLISH/BEARISH/NEUTRAL]\n\nKEY LEVELS:\n- Resistance 1: [price]\n- Resistance 2: [price]\n- Entry zone: [price range]\n- Support 1: [price]\n- Support 2: [price]\n\nWATCH TODAY:\n[2-3 bullet points on what to watch, catalysts, and specific entry triggers. Use **bold** for key terms.]\n\nBe specific with price levels — resistances above and supports below the current price. Keep it concise. Never say you lack access to live data — '+(dSearch?'use web search to find the current price first.':'the CURRENT LIVE MARKET price is provided above.')+freshnessNote(dSearch);
+    var dKey='d:'+pair+':'+new Date().toDateString();
+    var txt=await ai(prompt,dKey,{model:'claude-haiku-4-5',maxTokens:1000,webSearch:dSearch});
+    if(aiRefused(txt)){delete cache[dKey];LS.del('fhai:'+dKey);throw new Error('The AI returned a no-data response (not cached) — tap ↻ Refresh to retry.');}
     var lines=txt.split('\n');
     function stripMd(s){return s.replace(/\*\*/g,'').replace(/\*/g,'').replace(/^#+\s*/,'').trim();}
     var biasLine=lines.find(function(l){return stripMd(l).toUpperCase().startsWith('BIAS:')}) || '';
@@ -2140,7 +2191,9 @@ async function loadW(pair,btn){
   try{
     var pc=await priceContext(pair);
     var prompt=pc+'You are a professional forex analyst. Provide a concise WEEKLY analysis for '+p+' for the week of '+new Date().toISOString().split('T')[0]+'. Format exactly:\nMACRO THEME:\n[2-3 sentences on the macro backdrop driving this pair. Use **bold** for key themes.]\n\nTREND AND STRUCTURE:\n[2-3 sentences on the weekly trend, structure, key levels. Use **bold** for level prices.]\n\nKEY EVENTS THIS WEEK:\n- [Event 1: day and what to watch]\n- [Event 2]\n- [Event 3]\n\nKeep each section tight and actionable.'+freshnessNote(true);
-    var txt=await ai(prompt,'w:'+pair+':'+weekKey(),{model:'claude-haiku-4-5',maxTokens:1200,webSearch:true});
+    var wKey='w:'+pair+':'+weekKey();
+    var txt=await ai(prompt,wKey,{model:'claude-haiku-4-5',maxTokens:1200,webSearch:true});
+    if(aiRefused(txt)){delete cache[wKey];LS.del('fhai:'+wKey);throw new Error('The AI returned a no-data response (not cached) — tap ↻ Refresh to retry.');}
     var lines=txt.split('\n');
     var sections={macro:[],trend:[],events:[]};
     var cur='';
@@ -2186,8 +2239,11 @@ async function load4hr(pair,btn){
   var hr4key=Math.floor(new Date()/14400000);
   try{
     var pc=await priceContext(pair);
-    var prompt=pc+'You are a professional forex analyst. Provide a 4-HOUR intraday analysis for '+p+' right now '+new Date().toISOString().split('T')[0]+'. Format exactly:\n4H BIAS: [BULLISH/BEARISH/NEUTRAL]\n\n4H SETUP:\n[2-3 sentences on the 4H chart structure, pattern, and context. Use **bold** for key terms.]\n\nKEY 4H LEVELS:\n- 4H Resistance: [price]\n- 4H Entry zone: [price range]\n- 4H Support: [price]\n\nENTRY TRIGGER:\n[1-2 sentences on the specific price action signal or candle pattern to watch for entry. Use **bold** for the trigger.]\n\nKeep it tight and specific — resistance above and support below the current price.'+freshnessNote(false);
-    var txt=await ai(prompt,'4h:'+pair+':'+hr4key,{model:'claude-haiku-4-5',maxTokens:1000});
+    var hSearch=!pc; // live feed down → let the model search for the price instead of refusing
+    var prompt=pc+'You are a professional forex analyst. Provide a 4-HOUR intraday analysis for '+p+' right now '+new Date().toISOString().split('T')[0]+'. Format exactly:\n4H BIAS: [BULLISH/BEARISH/NEUTRAL]\n\n4H SETUP:\n[2-3 sentences on the 4H chart structure, pattern, and context. Use **bold** for key terms.]\n\nKEY 4H LEVELS:\n- 4H Resistance: [price]\n- 4H Entry zone: [price range]\n- 4H Support: [price]\n\nENTRY TRIGGER:\n[1-2 sentences on the specific price action signal or candle pattern to watch for entry. Use **bold** for the trigger.]\n\nKeep it tight and specific — resistance above and support below the current price. Never say you lack access to live data — '+(hSearch?'use web search to find the current price first.':'the CURRENT LIVE MARKET price is provided above.')+freshnessNote(hSearch);
+    var hKey='4h:'+pair+':'+hr4key;
+    var txt=await ai(prompt,hKey,{model:'claude-haiku-4-5',maxTokens:1000,webSearch:hSearch});
+    if(aiRefused(txt)){delete cache[hKey];LS.del('fhai:'+hKey);throw new Error('The AI returned a no-data response (not cached) — tap ↻ Refresh to retry.');}
     var lines=txt.split('\n');
     function strip4(s){return s.replace(/\*\*/g,'').replace(/\*/g,'').replace(/^#+\s*/,'').trim();}
     var biasL=lines.find(function(l){return strip4(l).toUpperCase().startsWith('4H BIAS')}) || '';
@@ -2217,12 +2273,40 @@ function force4hr(){var k='4h:'+c4+':'+Math.floor(new Date()/14400000);delete ca
 /* ══════════════════════════════════════
    SESSIONS  (Amendments 4 & 5)
 ══════════════════════════════════════ */
-var SESS=[
-  {name:"Sydney",  flag:"🇦🇺", label:"08:00–17:00 AEST", start:8*60,  end:17*60, color:"#86efac"},
-  {name:"Tokyo",   flag:"🇯🇵", label:"10:00–19:00 AEST", start:10*60, end:19*60, color:"#fbbf24"},
-  {name:"London",  flag:"🇬🇧", label:"18:00–03:00 AEST", start:18*60, end:27*60, color:"#818cf8"},
-  {name:"New York",flag:"🇺🇸", label:"23:00–08:00 AEST", start:23*60, end:32*60, color:"#f87171"}
+/* Sessions are defined by their HOME-market local hours (8am–5pm local; Tokyo 9am–6pm JST)
+   and converted to Brisbane time AT RENDER TIME, so UK/US daylight-saving shifts are always
+   correct and always match Forex Factory. Brisbane has no DST — London/New York do, which is
+   why hardcoded AEST hours were wrong for half the year (e.g. NY is 22:00–07:00 AEST during
+   US summer time, 23:00–08:00 only in US winter). */
+var SESS_DEF=[
+  {name:"Sydney",  flag:"🇦🇺", tz:"Australia/Sydney",  localStart:8*60, color:"#86efac"},
+  {name:"Tokyo",   flag:"🇯🇵", tz:"Asia/Tokyo",        localStart:9*60, color:"#fbbf24"},
+  {name:"London",  flag:"🇬🇧", tz:"Europe/London",     localStart:8*60, color:"#818cf8"},
+  {name:"New York",flag:"🇺🇸", tz:"America/New_York",  localStart:8*60, color:"#f87171"}
 ];
+var SESS_LEN=9*60; // each centre trades a 9-hour local day
+function tzOffsetMin(tz){ // this timezone's current offset from UTC, in minutes
+  var d=new Date();
+  var loc=new Date(d.toLocaleString('en-US',{timeZone:tz}));
+  var utc=new Date(d.toLocaleString('en-US',{timeZone:'UTC'}));
+  return Math.round((loc-utc)/60000);
+}
+function fmtHM(m){m=((m%1440)+1440)%1440;var h=Math.floor(m/60),mm=m%60;return (h<10?'0':'')+h+':'+(mm<10?'0':'')+mm;}
+var _sessCache={ts:0,list:null};
+function getSESS(){ // DST-aware session list in Brisbane minutes, cached for 60s
+  var now=Date.now();
+  if(_sessCache.list && now-_sessCache.ts<60000) return _sessCache.list;
+  var bris=tzOffsetMin('Australia/Brisbane');
+  var list=SESS_DEF.map(function(s){
+    var diff=bris-tzOffsetMin(s.tz);                 // local wall-clock + diff = Brisbane wall-clock
+    var start=((s.localStart+diff)%1440+1440)%1440;
+    var end=start+SESS_LEN;                          // may run past midnight (>1440), like before
+    return {name:s.name,flag:s.flag,color:s.color,start:start,end:end,
+            label:fmtHM(start)+'–'+fmtHM(end)+' AEST'};
+  });
+  _sessCache={ts:now,list:list};
+  return list;
+}
 
 function getAESTMinutes(){
   var d=new Date();
@@ -2258,6 +2342,7 @@ function doRenderSessions(){
 function renderTimeline(nowMin){
   var el=document.getElementById('sess-timeline');
   if(!el) return;
+  var SESS=getSESS();
   // Window: 08:00 AEST → 06:00 AEST next day (22 hours)
   var WS=8*60,WL=22*60; // window start (mins), window length (mins)
   function wp(m){return(m-WS)/WL;} // raw 0-1 position in window
@@ -2308,15 +2393,16 @@ function renderTimeline(nowMin){
 }
 
 function colorPairTag(pairStr){
-  var c1=pairStr.slice(0,3),c2=pairStr.slice(4)||pairStr.slice(3);
+  var c1=pairStr.slice(0,3);
   var col=CCY_COLORS[c1]||'#cbd5e1';
-  var col2=CCY_COLORS[c2]||'#cbd5e1';
-  return '<span class="bp-pair-tag" style="background:'+col+'22;color:'+col+';border:1px solid '+col+'44">'+pairStr+'</span>';
+  // Both currencies coloured inside the tag (Amendment 12.8.26)
+  return '<span class="bp-pair-tag" style="background:'+col+'18;border:1px solid '+col+'44">'+pairSpan(pairStr)+'</span>';
 }
 
 function renderSessCards(m){
   var grid=document.getElementById('sess-grid');
   if(!grid) return;
+  var SESS=getSESS();
   var html='';
   SESS.forEach(function(s){
     var open=isOpen(s,m);
@@ -2714,13 +2800,18 @@ async function loadHeatMap(){
   try{
     // Live prices via the worker (Yahoo) — replaces the old ECB daily fix, which could lag 1-2 days.
     TREND_PAIRS.forEach(function(p){delete _quoteCache[p];});   // always fresh on (re)load
-    var q=await liveQuotes(TREND_PAIRS);
-    var rows=[];
-    TREND_PAIRS.forEach(function(p){
-      var d=q[p]; if(!d||d.dp==null) return;
-      rows.push({sym:p.slice(0,3)+'/'+p.slice(3), d:d.dp, w:d.wp!=null?d.wp:0, m:d.mp!=null?d.mp:0});
-    });
-    if(!rows.length){body.innerHTML='<div class="eb" style="padding:16px">No live data returned — tap the Heat Map tab again to retry.</div>';hmLoaded=false;return;}
+    // Up to 3 attempts — transient feed failures self-heal on retry
+    var rows=[],q=null;
+    for(var attempt=0;attempt<3 && !rows.length;attempt++){
+      if(attempt>0){body.innerHTML='<div class="ld" style="padding:20px"><div class="sp"></div>Data feed busy — retrying ('+(attempt+1)+'/3)…</div>';await new Promise(function(r){setTimeout(r,2500);});}
+      q=await liveQuotes(TREND_PAIRS);
+      rows=[];
+      TREND_PAIRS.forEach(function(p){
+        var d=q[p]; if(!d||d.dp==null) return;
+        rows.push({sym:p.slice(0,3)+'/'+p.slice(3), d:d.dp, w:d.wp!=null?d.wp:0, m:d.mp!=null?d.mp:0});
+      });
+    }
+    if(!rows.length){body.innerHTML='<div class="eb" style="padding:16px">No live data returned after 3 attempts — the feed may be briefly down. Tap the Heat Map tab again in a minute.</div>';hmLoaded=false;return;}
     renderHeatPips(rows);
     buildMajorsMatrixLive(q);
     var t=new Date().toLocaleTimeString('en-AU',{timeZone:'Australia/Brisbane',hour:'2-digit',minute:'2-digit'});
@@ -2783,10 +2874,9 @@ function drawPipTable(){
   html+='<th onclick="sortPips(\'m\')">Monthly'+arr('m')+'</th>';
   html+='</tr></thead><tbody>';
   rows.forEach(function(r){
-    var col=pairColor(r.sym);
     var dc=pipClass(r.d),wc=pipClass(r.w),mc=pipClass(r.m);
     var hiD=Math.abs(r.d)>30?' hi':'',hiW=Math.abs(r.w)>60?' hi':'',hiM=Math.abs(r.m)>150?' hi':'';
-    html+='<tr class="hm-row row-link" onclick="goToPair(\''+r.sym+'\')" title="Open '+r.sym+' in Analysis"><td class="hm-pair" style="color:'+col+'">'+r.sym+'</td>';
+    html+='<tr class="hm-row row-link" onclick="goToPair(\''+r.sym+'\')" title="Open '+r.sym+' in Analysis"><td class="hm-pair">'+pairSpan(r.sym)+'</td>';
     html+='<td class="hm-cell '+dc+hiD+'">'+fmtPip(r.d)+'</td>';
     html+='<td class="hm-cell '+wc+hiW+'">'+fmtPip(r.w)+'</td>';
     html+='<td class="hm-cell '+mc+hiM+'">'+fmtPip(r.m)+'</td></tr>';
@@ -2950,7 +3040,7 @@ function renderCorr(){
     list.forEach(function(it){
       var barclr=it.c>=0?'#4ade80':'#f87171';
       h+='<div style="display:flex;align-items:center;gap:8px;padding:3px 2px;cursor:pointer" onclick="sortCorrBy(\''+it.sym+'\')">';
-      h+='<div style="width:66px;font-weight:600;font-size:13px;color:'+pcol(it.sym)+'">'+it.sym+'</div>';
+      h+='<div style="width:70px;font-weight:600;font-size:13px">'+pairSpan(it.sym)+'</div>';
       h+='<div style="flex:1;height:14px;background:var(--sf2);border-radius:4px;overflow:hidden"><div style="height:100%;width:'+Math.abs(it.c)+'%;background:'+barclr+'"></div></div>';
       h+='<div style="width:46px;text-align:right;font-size:12px;color:'+barclr+'">'+(it.c>=0?'+':'')+it.c+'%</div>';
       h+='</div>';
@@ -2969,10 +3059,10 @@ function renderCorr(){
   var html=ctrlBar();
   html+='<div class="corr-wrap"><table class="corr-table"><thead><tr><th></th>';
   order.forEach(function(ci){var p=pairs[ci];var sel=ci===ref;
-    html+='<th style="color:'+pcol(p)+';cursor:pointer'+(sel?';text-decoration:underline':'')+'" onclick="sortCorrBy(\''+p+'\')">'+p+'</th>';});
+    html+='<th style="cursor:pointer'+(sel?';text-decoration:underline':'')+'" onclick="sortCorrBy(\''+p+'\')">'+pairSpan(p)+'</th>';});
   html+='</tr></thead><tbody>';
   order.forEach(function(ri){var rp=pairs[ri];var selR=ri===ref;
-    html+='<tr><td class="corr-lbl" style="color:'+pcol(rp)+';cursor:pointer'+(selR?';text-decoration:underline':'')+'" onclick="sortCorrBy(\''+rp+'\')">'+rp+'</td>';
+    html+='<tr><td class="corr-lbl" style="cursor:pointer'+(selR?';text-decoration:underline':'')+'" onclick="sortCorrBy(\''+rp+'\')">'+pairSpan(rp)+'</td>';
     order.forEach(function(ci){
       if(ri===ci){html+='<td style="color:var(--mt)">1.00</td>';return;}
       var c=corr(rets[ri],rets[ci]);
@@ -3014,19 +3104,25 @@ async function runScanner(){
     // Live intraday prices to anchor entries to the real current market (fixes stale entries)
     var priceBlock='';
     try{
-      var majors=['EURUSD','GBPUSD','USDJPY','USDCHF','USDCAD','AUDUSD','NZDUSD','EURJPY','GBPJPY','EURGBP','AUDJPY','EURAUD'];
+      // ALL 28 watched pairs — the old 12-pair list had no CHF/JPY, NZD or CAD crosses, which is
+      // why big JPY-cross / USD-wide moves produced no setups (user amendment).
+      var majors=TREND_PAIRS;
       var q=await liveQuotes(majors);
       var lines=majors.map(function(mp){return q[mp]?(mp.slice(0,3)+'/'+mp.slice(3)+' = '+quoteLine(mp,q[mp])):null;}).filter(Boolean);
       var tnow=new Date().toLocaleTimeString('en-AU',{timeZone:'Australia/Brisbane',hour:'2-digit',minute:'2-digit'});
       if(lines.length) priceBlock='CURRENT LIVE PRICES ('+tnow+' AEST, real-time). Each line: price (today\'s range, % move/momentum) | trend 4H/Day/Week/Month (▲ up ▼ down ▬ flat). "Today"/D are measured from the 7am AEST session open — early in the day D is naturally small, so weight W/M more then:\n'+lines.join('\n')+'\n\n';
     }catch(e){}
-    var prompt=priceBlock+'You are a professional forex trading analyst. Analyse the current forex market and identify the 3-5 highest-probability trade setups right now across major pairs.\n\nFor each setup use this EXACT plain-text format with no markdown, no asterisks, no bold:\n\nSETUP:\nPAIR: e.g. GBP/USD\nDIRECTION: LONG or SHORT\nPROBABILITY: HIGH or MEDIUM\nENTRY: price level\nSTOP LOSS: price level\nTAKE PROFIT: price level\nREASON: 3-5 sentences explaining the setup covering weekly trend, daily structure, 4H trigger, and catalyst.\n\nCRITICAL LEVEL RULES — base every level on the CURRENT LIVE PRICES above:\n- ENTRY must be within roughly 0.5% of the current price (a realistic pending order that has NOT already been hit), never far away.\n- Never use a level that price has already traded through — the entry must still be reachable from the current live price.\n- Respect each pair\'s momentum AND its 4H/Day/Week/Month trend shown above: prefer setups that trade WITH the dominant higher-timeframe trend (weekly/monthly direction), triggered on the 4H. Do NOT recommend fading a strong UP or DOWN move (a pair near its daily high/low with a clear % move, or aligned trends across timeframes) unless you can state a specific reversal signal. Weight the setup\'s probability by how well the timeframes align.\n- For a SHORT: ENTRY at or slightly ABOVE current price, STOP LOSS above entry, TAKE PROFIT below entry.\n- For a LONG: ENTRY at or slightly BELOW current price, STOP LOSS below entry, TAKE PROFIT above entry.\n- Direction, entry, stop and target must be internally consistent and achieve at least 1:2 risk/reward.\n- Do not contradict yourself: if the reasoning is bearish the direction must be SHORT, and vice-versa.\n\nOnly include setups with clear multi-timeframe alignment and strong technical or fundamental backing. Start each setup with exactly "SETUP:" on its own line. Do not use any markdown. Always finish the final setup completely — never cut off mid-sentence.'+freshnessNote(false);
-    var txt=await ai(prompt,'scan:'+Math.floor(Date.now()/9e5),{model:'claude-sonnet-5',maxTokens:2600,webSearch:false});
+    var prompt=priceBlock+'You are a professional forex trading analyst. Analyse the current forex market and identify the 3-5 highest-probability trade setups right now across major pairs.\n\nFor each setup use this EXACT plain-text format with no markdown, no asterisks, no bold:\n\nSETUP:\nPAIR: e.g. GBP/USD\nDIRECTION: LONG or SHORT\nPROBABILITY: HIGH or MEDIUM\nENTRY: price level\nSTOP LOSS: price level\nTAKE PROFIT: price level\nREASON: 3-5 sentences explaining the setup covering weekly trend, daily structure, 4H trigger, and catalyst.\n\nCRITICAL LEVEL RULES — base every level on the CURRENT LIVE PRICES above:\n- ENTRY must be within roughly 0.5% of the current price (a realistic pending order that has NOT already been hit), never far away.\n- Never use a level that price has already traded through — the entry must still be reachable from the current live price.\n- Respect each pair\'s momentum AND its 4H/Day/Week/Month trend shown above: prefer setups that trade WITH the dominant higher-timeframe trend (weekly/monthly direction), triggered on the 4H. Do NOT recommend fading a strong UP or DOWN move (a pair near its daily high/low with a clear % move, or aligned trends across timeframes) unless you can state a specific reversal signal. Weight the setup\'s probability by how well the timeframes align.\n- For a SHORT: ENTRY at or slightly ABOVE current price, STOP LOSS above entry, TAKE PROFIT below entry.\n- For a LONG: ENTRY at or slightly BELOW current price, STOP LOSS below entry, TAKE PROFIT above entry.\n- Direction, entry, stop and target must be internally consistent and achieve at least 1:2 risk/reward.\n- Do not contradict yourself: if the reasoning is bearish the direction must be SHORT, and vice-versa.\n\nPrefer setups with clear multi-timeframe alignment and strong technical or fundamental backing. You MUST always return at least 2 setups — when nothing is A-grade, return the best available opportunities ranked MEDIUM probability with honest reasoning, never an empty answer. Pay particular attention to whichever pairs show the largest moves in the live data above (including JPY crosses and USD pairs). Start each setup with exactly "SETUP:" on its own line. Do not use any markdown. Always finish the final setup completely — never cut off mid-sentence.'+freshnessNote(false);
+    var scanKey='scan:'+Math.floor(Date.now()/9e5);
+    var txt=await ai(prompt,scanKey,{model:'claude-sonnet-5',maxTokens:2600,webSearch:false});
     // Normalise: strip markdown so field detection works reliably
     var norm=txt.replace(/\*\*/g,'').replace(/\*/g,'').replace(/^#+\s*/gm,'').replace(/^-{3,}$/gm,'');
     // Split on SETUP: (handles variations like "SETUP 1:", "Setup:")
     var setups=norm.split(/\bSETUP\b[^:]*:/i).filter(function(s){return s.trim()&&/\bPAIR\b/i.test(s);});
     if(!setups.length){
+      // Don't cache an empty answer — otherwise every retry inside the cache window silently
+      // replays the same "no setups" result (why the scanner kept showing nothing for days).
+      delete cache[scanKey];LS.del('fhai:'+scanKey);
       res.innerHTML='<div class="scan-empty"><div class="scan-icon">🔍</div><div>No clear setups identified right now — market may be consolidating. Try again later.</div></div>';
     } else {
       var html='';
@@ -3081,8 +3177,8 @@ async function runPullbackScanner(){
   var shareEl=document.getElementById('scan-share');if(shareEl){shareEl.style.display='none';shareEl.innerHTML='';}
   res.innerHTML='<div class="ld" style="padding:20px"><div class="sp"></div>Fetching yesterday\'s top movers for pullback analysis…</div>';
   try{
-    // 1. Get live quotes — top 20 liquid pairs only (saves one Yahoo API call vs all 28)
-    var pbPairs=['EURUSD','GBPUSD','USDJPY','AUDUSD','USDCAD','USDCHF','NZDUSD','EURJPY','GBPJPY','AUDJPY','EURGBP','EURAUD','GBPAUD','EURCAD','GBPCAD','AUDNZD','EURCHF','GBPCHF','NZDJPY','CADJPY'];
+    // 1. Get live quotes — ALL 28 watched pairs so big movers (e.g. CHF/JPY, NZD & CAD crosses) are never missed
+    var pbPairs=TREND_PAIRS;
     var q=await liveQuotes(pbPairs);
     var movers=[];
     pbPairs.forEach(function(p){
@@ -3100,12 +3196,15 @@ async function runPullbackScanner(){
       return p+': daily '+(m.td>=0?'+':'')+m.td+'% | weekly '+(m.tw>=0?'+':'')+m.tw+'% | '+quoteLine(m.pair,m.q);
     }).join('\n')+'\n\n';
     // 3. AI prompt — explicitly frames entries as limit orders away from current price
-    var prompt=priceBlock+'You are a professional forex trader. The pairs above made today\'s biggest directional moves. Your job is to identify PENDING LIMIT ORDER setups for traders who missed the move — NOT market orders to enter right now.\n\nFor each valid setup, decide between two approaches:\n  A) DIP BUY / RALLY SELL (trend-continuation): The trend is strong. Wait for a normal retracement to support/resistance, then enter WITH the trend at a better price.\n  B) FADE (mean-reversion): The move is over-extended. Enter AGAINST the move expecting a significant reversal (must cite a specific reversal signal — overbought/divergence/key level rejection).\n\nUse this EXACT plain-text format (no markdown, no asterisks):\n\nSETUP:\nPAIR: e.g. AUD/JPY\nORDER TYPE: DIP BUY / RALLY SELL / FADE LONG / FADE SHORT\nDIRECTION: LONG or SHORT\nPROBABILITY: HIGH or MEDIUM\nENTRY TRIGGER: the specific price level to place a limit order (must be meaningfully away from current price — at least 0.2% for majors)\nSTOP LOSS: price level\nTAKE PROFIT: price level\nREASON: 3-5 sentences covering: (1) how far price has moved and why it needs to pause, (2) why the entry trigger level is significant (support/resistance, Fibonacci, key zone), (3) what confirms the setup and where it targets.\n\nCRITICAL: Entry trigger must be a LIMIT ORDER LEVEL the price has NOT yet reached — it must be away from the current live price shown above. Never place entry at the current market price. For a DIP BUY the entry is BELOW current price. For a RALLY SELL the entry is ABOVE current price. For FADE entries, current price is acceptable only if at a key rejection level. Aim for 2–4 setups. Always complete every setup — never cut off mid-sentence.'+freshnessNote(false);
-    var txt=await ai(prompt,'pullback:'+Math.floor(Date.now()/36e5),{model:'claude-sonnet-5',maxTokens:2200,webSearch:false});
+    var prompt=priceBlock+'You are a professional forex trader. The pairs above made today\'s biggest directional moves. Your job is to identify PENDING LIMIT ORDER setups for traders who missed the move — NOT market orders to enter right now.\n\nFor each valid setup, decide between two approaches:\n  A) DIP BUY / RALLY SELL (trend-continuation): The trend is strong. Wait for a normal retracement to support/resistance, then enter WITH the trend at a better price.\n  B) FADE (mean-reversion): The move is over-extended. Enter AGAINST the move expecting a significant reversal (must cite a specific reversal signal — overbought/divergence/key level rejection).\n\nUse this EXACT plain-text format (no markdown, no asterisks):\n\nSETUP:\nPAIR: e.g. AUD/JPY\nORDER TYPE: DIP BUY / RALLY SELL / FADE LONG / FADE SHORT\nDIRECTION: LONG or SHORT\nPROBABILITY: HIGH or MEDIUM\nENTRY TRIGGER: the specific price level to place a limit order (must be meaningfully away from current price — at least 0.2% for majors)\nSTOP LOSS: price level\nTAKE PROFIT: price level\nREASON: 3-5 sentences covering: (1) how far price has moved and why it needs to pause, (2) why the entry trigger level is significant (support/resistance, Fibonacci, key zone), (3) what confirms the setup and where it targets.\n\nCRITICAL: Entry trigger must be a LIMIT ORDER LEVEL the price has NOT yet reached — it must be away from the current live price shown above. Never place entry at the current market price. For a DIP BUY the entry is BELOW current price. For a RALLY SELL the entry is ABOVE current price. For FADE entries, current price is acceptable only if at a key rejection level. Aim for 2–4 setups. You MUST always return at least 2 setups: when a mover is still extended, that is exactly when a dip-buy/rally-sell limit level exists — pick the logical retracement level and rank it MEDIUM rather than returning nothing. "Movers still have momentum" is NOT a reason to return zero setups. Always complete every setup — never cut off mid-sentence.'+freshnessNote(false);
+    var pbKey='pullback:'+Math.floor(Date.now()/36e5);
+    var txt=await ai(prompt,pbKey,{model:'claude-sonnet-5',maxTokens:2200,webSearch:false});
     var norm=txt.replace(/\*\*/g,'').replace(/\*/g,'').replace(/^#+\s*/gm,'').replace(/^-{3,}$/gm,'');
     var setups=norm.split(/\bSETUP\b[^:]*:/i).filter(function(s){return s.trim()&&/\bPAIR\b/i.test(s);});
     if(!setups.length){
-      res.innerHTML='<div class="scan-empty"><div class="scan-icon">↩</div><div>No clear pullback setups — yesterday\'s movers appear to still have momentum. Try again later or use the main scanner.</div></div>';
+      // Never cache an empty answer — retries within the hour were replaying the same "nothing found"
+      delete cache[pbKey];LS.del('fhai:'+pbKey);
+      res.innerHTML='<div class="scan-empty"><div class="scan-icon">↩</div><div>No clear pullback setups parsed — tap Pullback scan again to retry with fresh data.</div></div>';
     } else {
       var html='<div style="background:rgba(251,191,36,0.07);border:1px solid rgba(251,191,36,0.2);border-radius:var(--rs);padding:10px 14px;margin-bottom:14px;font-size:13px;color:#fbbf24">↩ Pullback scanner — LIMIT ORDERS only. Place at the entry trigger and wait for price to come to you. Not a market-entry signal.</div>';
       setups.forEach(function(s){
@@ -3241,7 +3340,7 @@ async function loadCalculator(){
 function renderPipTableBody(){
   var tbody=document.getElementById('pip-tbody');
   if(!tbody) return;
-  var lot=parseInt((document.getElementById('pip-lot-sel')||{}).value||10000);
+  var lot=parseInt((document.getElementById('pip-lot-sel')||{}).value||100000);
   var account=parseFloat((document.getElementById('pip-account')||{}).value||1000)||1000;
   var lotFactor=lot/100000;
   // Update lot label in header
@@ -3267,19 +3366,24 @@ function renderPipTableBody(){
   }
   var html='';
   var lastGroup=null;
+  var grpCount={};
+  data.forEach(function(d){grpCount[d.group]=(grpCount[d.group]||0)+1;});
   data.forEach(function(d){
     var pair=d.pair,grp=d.group,price=d.price,stdPip=d.stdPip;
-    // Group header only in unsorted grouped view
+    // Collapsible group header — only in unsorted, unfiltered grouped view (Amendment 12.8.26)
+    var collapsible=!isSorted&&_calcPipFilter==='all';
+    var isCollapsed=collapsible&&pipGrpIsCollapsed(grp);
     if(!isSorted&&grp!==lastGroup){
-      html+='<tr class="pip-grp-row" data-group="'+grp+'"><td colspan="4"><span class="calc-grp-lbl">'+grp+'</span></td></tr>';
+      var arrow=collapsible?(isCollapsed?'▸':'▾'):'';
+      html+='<tr class="pip-grp-row" data-group="'+grp+'" '+(collapsible?'onclick="togglePipGroup(\''+grp.replace(/'/g,"\\'")+'\')" style="cursor:pointer" title="Click to '+(isCollapsed?'show':'hide')+' these pairs"':'')+'>'
+        +'<td colspan="4"><span class="calc-grp-lbl">'+arrow+' '+grp+(isCollapsed?' <span style="opacity:0.55;font-weight:400">('+grpCount[grp]+' pairs — click to show)</span>':'')+'</span></td></tr>';
       lastGroup=grp;
     }
+    if(isCollapsed) return; // group folded — skip its pair rows
     var displayPip=stdPip*lotFactor;
     var pips100=stdPip>0?(account/stdPip).toFixed(1):'—';
-    var base=pair.slice(0,3);
-    var col=CCY_COLORS[base]||'var(--tx)';
     html+='<tr class="hm-row row-link pip-pair-row" data-group="'+grp+'" onclick="loadPlannerPair(\''+pair+'\')" title="Load '+pair+' into planner">';
-    html+='<td><span style="color:'+col+';font-weight:700;font-size:13px">'+base+'</span><span style="color:var(--mt)">/'+pair.slice(3)+'</span></td>';
+    html+='<td style="font-size:13px">'+pairSpan(pair)+'</td>';
     html+='<td>'+(price!=null?fmtPrice(pair,price):'—')+'</td>';
     html+='<td style="color:var(--ac)">'+(stdPip>0?'A$'+displayPip.toFixed(lot===1000?3:2):'—')+'</td>';
     html+='<td style="color:var(--mt)">'+pips100+'</td>';
@@ -3287,6 +3391,14 @@ function renderPipTableBody(){
   });
   tbody.innerHTML=html;
 }
+/* Collapsible pip-table groups — state persisted so the layout stays how John leaves it */
+var _pipGrpCollapsed=null;
+function pipGrpState(){
+  if(!_pipGrpCollapsed){ try{_pipGrpCollapsed=JSON.parse(LS.get('fh_pipgrp')||'{}');}catch(e){_pipGrpCollapsed={};} }
+  return _pipGrpCollapsed;
+}
+function pipGrpIsCollapsed(g){ var s=pipGrpState(); return s[g]===undefined?true:!!s[g]; } // default: collapsed (click to reveal)
+function togglePipGroup(g){ var s=pipGrpState(); s[g]=!pipGrpIsCollapsed(g); LS.set('fh_pipgrp',JSON.stringify(s)); renderPipTableBody(); }
 
 function sortPipTable(col){
   if(_calcPipSort.col===col){_calcPipSort.dir*=-1;}
@@ -3317,19 +3429,30 @@ function updatePipAccount(){
 /* ── Trade Planner ── */
 function initPlanner(){
   plannerData=[];
-  for(var i=0;i<PLANNER_DEFAULT_ROWS;i++) plannerData.push({pips:'',ob:null});
+  for(var i=0;i<PLANNER_DEFAULT_ROWS;i++) plannerData.push({pips:'',ob:null,size:null,pair:null});
   renderPlannerRows();
+}
+
+/* Options list for a per-row pair select; sel = currently selected pair */
+function plannerPairOptions(sel){
+  return calcAllPairs.map(function(p){
+    return '<option value="'+p+'"'+(p===sel?' selected':'')+'>'+p.slice(0,3)+'/'+p.slice(3)+'</option>';
+  }).join('');
 }
 
 function renderPlannerRows(){
   var tbody=document.getElementById('planner-rows');
   if(!tbody) return;
-  var cols='grid-template-columns:22px 1fr 80px 1fr 1fr 64px 64px 24px';
+  var cols='grid-template-columns:22px 1fr 96px 84px 64px 1fr 1fr 60px 60px 24px';
+  var defLot=parseInt((document.getElementById('planner-lot')||{}).value||100000);
+  var mainPair=(document.getElementById('planner-pair')||{}).value||'AUDUSD';
   var html='';
   plannerData.forEach(function(row,i){
     html+='<div class="planner-row" style="'+cols+'" id="pr-'+i+'">';
     html+='<span style="color:var(--mt);font-size:11px">'+(i+1)+'</span>';
     html+='<input class="pip-inp" id="pr-ob-'+i+'" type="number" value="'+(plannerData[i].ob!=null?plannerData[i].ob:'')+'" placeholder="auto" oninput="plannerObChange('+i+',this.value)" style="font-size:11px;color:var(--mt);text-align:right" title="Override opening balance for this trade">';
+    html+='<select class="pip-inp" id="pr-pair-'+i+'" onchange="plannerRowPairChange('+i+',this.value)" style="font-size:11px;padding:2px 3px;'+(row.pair?'color:var(--ac)':'color:var(--mt)')+'" title="Pair for THIS trade — defaults to the Pair selected above">'+plannerPairOptions(row.pair||mainPair)+'</select>';
+    html+='<input class="pip-inp" id="pr-sz-'+i+'" type="number" value="'+(row.size!=null?row.size:'')+'" placeholder="'+defLot+'" step="1000" min="0" oninput="plannerSizeChange('+i+',this.value)" style="text-align:right" title="Trade size in units (contracts) for THIS trade — like the Trade Amount column in your Excel sheet. Blank = the Lot Size selected above.">';
     html+='<input class="pip-inp" id="pip-in-'+i+'" type="number" value="'+(row.pips||'')+'" placeholder="0" oninput="plannerPipsChange('+i+',this.value)" style="text-align:right">';
     html+='<span id="pr-pnl-'+i+'" style="text-align:right;color:var(--mt)">—</span>';
     html+='<span id="pr-bal-'+i+'" style="text-align:right;color:var(--mt)">—</span>';
@@ -3352,8 +3475,22 @@ function plannerObChange(i,val){
   updatePlanner();
 }
 
+function plannerSizeChange(i,val){
+  plannerData[i].size=val===''?null:parseFloat(val)||null;
+  updatePlanner();
+}
+
+function plannerRowPairChange(i,val){
+  var mainPair=(document.getElementById('planner-pair')||{}).value||'AUDUSD';
+  // Selecting the main pair clears the override so the row keeps following the Pair dropdown
+  plannerData[i].pair=(val===mainPair)?null:val;
+  var sel=document.getElementById('pr-pair-'+i);
+  if(sel){ sel.value=val; sel.style.color=plannerData[i].pair?'var(--ac)':'var(--mt)'; }
+  updatePlanner();
+}
+
 function addPlannerRow(){
-  plannerData.push({pips:'',ob:null});
+  plannerData.push({pips:'',ob:null,size:null,pair:null});
   renderPlannerRows();
   // focus new input
   setTimeout(function(){
@@ -3364,7 +3501,7 @@ function addPlannerRow(){
 
 function removePlannerRow(i){
   plannerData.splice(i,1);
-  if(!plannerData.length) plannerData.push({pips:''});
+  if(!plannerData.length) plannerData.push({pips:'',ob:null,size:null,pair:null});
   renderPlannerRows();
 }
 
@@ -3406,7 +3543,7 @@ function updatePlannerPair(){
 
 function updatePlanner(){
   var pair=(document.getElementById('planner-pair')||{}).value||'AUDUSD';
-  var lot=parseInt((document.getElementById('planner-lot')||{}).value||10000);
+  var lot=parseInt((document.getElementById('planner-lot')||{}).value||100000);
   var balInput=((document.getElementById('planner-bal')||{}).value||'').toString().trim();
   var openBal=balInput===''?0:parseFloat(balInput)||0;
   var hasOB=openBal>0;
@@ -3439,6 +3576,9 @@ function updatePlanner(){
     var balEl=document.getElementById('pr-bal-'+i);
     var pctEl=document.getElementById('pr-pct-'+i);
     var cumEl=document.getElementById('pr-cum-'+i);
+    // Rows without a per-row pair override always follow the main Pair dropdown
+    var rowSelSync=document.getElementById('pr-pair-'+i);
+    if(rowSelSync&&!row.pair&&rowSelSync.value!==pair) rowSelSync.value=pair;
     // Per-row OB override: if user typed a value, use it as the cascade reset
     if(plannerData[i]&&plannerData[i].ob!=null){running=plannerData[i].ob;}
     // Show current running in the OB input (only when not user-overridden)
@@ -3459,7 +3599,13 @@ function updatePlanner(){
     }
     hasTrades=true;
     var prevRunning=running;
-    var pnl=pips*pipVal;
+    // Per-trade pair — row override wins, otherwise the main Pair dropdown (Amendment 12.8.26)
+    var rowPair=row.pair||pair;
+    var rowStdPip=getPipValueAUD(rowPair,plannerQuotes);
+    // Per-trade size (units/contracts) — row override wins, otherwise the global Lot Size
+    var rowUnits=(row.size!=null&&row.size>0)?row.size:lot;
+    var rowPipVal=rowStdPip*(rowUnits/100000);
+    var pnl=pips*rowPipVal;
     totalPnl+=pnl;
     running+=pnl;
     // % trade = return for this trade vs its opening balance
@@ -3538,11 +3684,12 @@ async function renderBriefing(force){
   // 1. Market stats (free, real-time)
   var stats={};
   try{ var d=await fetch(BRIEF_URL+'?pairs='+encodeURIComponent(BRIEF_PAIRS.join(',')),{cache:'no-store'}).then(function(r){return r.json();}); stats=(d&&d.stats)||{}; }catch(e){}
-  // Attach pair key and compute displayPips — prefer current session move (since 7am AEST), fall back to previous daily bar
-  var rows=Object.keys(stats).map(function(p){var s=stats[p];s.pair=p;s.displayPips=s.sessionMovePips!=null?s.sessionMovePips:s.movePips;return s;}).filter(function(s){return s.displayPips!=null||s.movePips!=null;});
-  rows.forEach(function(s){if(s.displayPips==null)s.displayPips=s.movePips;});
+  // Attach pair key and compute displayPips — the PREVIOUS COMPLETED TRADING DAY, measured
+  // 7am AEST yesterday → 7am AEST today (the user-requested window), falling back to the
+  // previous daily bar if the worker hasn't been redeployed with prevDayMovePips yet.
+  var rows=Object.keys(stats).map(function(p){var s=stats[p];s.pair=p;s.displayPips=s.prevDayMovePips!=null?s.prevDayMovePips:s.movePips;s.displayRange=s.prevDayRangePips!=null?s.prevDayRangePips:s.rangePips;return s;}).filter(function(s){return s.displayPips!=null;});
   if(!rows.length){ box.innerHTML='<div class="scan-empty"><div class="scan-icon">☕</div><div>Market data unavailable right now — tap Refresh in a moment.</div></div>'; box.setAttribute('data-loaded','0'); briefRendered=null; return; }
-  // 2. Gainers / losers by pips — use current session move when available
+  // 2. Gainers / losers by pips — previous trading day (7am→7am AEST)
   var hasSession=rows.some(function(s){return s.sessionMovePips!=null;});
   var byMove=rows.slice().sort(function(a,b){return b.displayPips-a.displayPips;});
   var gainers=byMove.filter(function(s){return s.displayPips>0;}).slice(0,5);
@@ -3551,9 +3698,10 @@ async function renderBriefing(force){
   var ccy={};
   rows.forEach(function(s){var a=s.pair.slice(0,3),b=s.pair.slice(3);[a,b].forEach(function(c){if(!ccy[c])ccy[c]={c:c,act:0,n:0};ccy[c].act+=(s.activity||0);ccy[c].n++;});});
   var mostActive=Object.keys(ccy).map(function(c){var o=ccy[c];o.avg=o.n?o.act/o.n:0;return o;}).sort(function(a,b){return b.avg-a.avg;}).slice(0,4);
-  // 4. Gaps at the 5pm-NY rollover (≈7am AEST). Core rule: gap > spread = tradable. ≥10 pips w/ edge = strong; smaller edges = "worth a look".
-  // Show anything that beats the spread (floor 5 pips to cut noise), plus any 10+ pip gap even if the spread blocks it (for awareness). Rank by edge.
-  var gaps=rows.filter(function(s){if(s.gapPips==null)return false;var g=Math.abs(s.gapPips),sp=pspread(s.pair);return (g>sp&&g>=5)||g>=10;}).sort(function(a,b){return (Math.abs(b.gapPips)-pspread(b.pair))-(Math.abs(a.gapPips)-pspread(a.pair));});
+  // 4. Gaps at the 5pm-NY rollover (≈7am AEST). EVERY watched pair with gap data is listed
+  // (user amendment: gap analysis must look at ALL the currencies) — ranked by edge, with a
+  // verdict per pair. Core rule: gap > spread = tradable; ≥10 pips w/ edge = strong.
+  var gaps=rows.filter(function(s){return s.gapPips!=null;}).sort(function(a,b){return (Math.abs(b.gapPips)-pspread(b.pair))-(Math.abs(a.gapPips)-pspread(a.pair));});
   // 5. Today's news (AI, cached daily)
   var whenLong=new Date().toLocaleDateString('en-AU',{timeZone:'Australia/Brisbane',weekday:'long',day:'numeric',month:'long',year:'numeric'});
   var news='';
@@ -3564,29 +3712,30 @@ async function renderBriefing(force){
   // 6. Alerts (computed from the above)
   var alerts=[];
   gaps.filter(function(s){return Math.abs(s.gapPips)>pspread(s.pair)&&Math.abs(s.gapPips)>=10;}).slice(0,3).forEach(function(s){var edge=Math.abs(s.gapPips)-pspread(s.pair);alerts.push({t:'gap',x:slashPair(s.pair)+' gapped '+fmtPips(s.gapPips)+' pips at the ~7am rollover vs a ~'+pspread(s.pair).toFixed(1)+'-pip spread — tradable (edge +'+edge.toFixed(1)+' pips).'});});
-  var bigAbs=rows.slice().sort(function(a,b){return Math.abs(b.displayPips)-Math.abs(a.displayPips);})[0];
-  if(bigAbs) alerts.push({t:'move',x:slashPair(bigAbs.pair)+' is the biggest mover '+(hasSession?'this session so far ('+fmtPips(bigAbs.displayPips)+' pips since 7am AEST).':'in the previous session ('+fmtPips(bigAbs.displayPips)+' pips).')});
+  var sessRows=rows.filter(function(s){return s.sessionMovePips!=null;});
+  var bigAbs=(hasSession?sessRows:rows).slice().sort(function(a,b){return Math.abs((hasSession?b.sessionMovePips:b.displayPips))-Math.abs((hasSession?a.sessionMovePips:a.displayPips));})[0];
+  if(bigAbs) alerts.push({t:'move',x:slashPair(bigAbs.pair)+' is the biggest mover '+(hasSession?'this session so far ('+fmtPips(bigAbs.sessionMovePips)+' pips since 7am AEST).':'in the previous session ('+fmtPips(bigAbs.displayPips)+' pips).')});
   rows.filter(function(s){return s.activity>2;}).sort(function(a,b){return b.activity-a.activity;}).slice(0,2).forEach(function(s){alerts.push({t:'vol',x:slashPair(s.pair)+' traded '+s.activity.toFixed(1)+'× its normal daily range — elevated volatility.'});});
   var hot=news.match(/non-?farm|nfp|\bcpi\b|fomc|rate decision|interest rate|payroll|\bgdp\b|unemployment|inflation/i);
   if(hot) alerts.push({t:'news',x:'High-impact data on the calendar today ('+hot[0].toUpperCase()+') — expect volatility around the release; see Today\'s news below.'});
   // ── render ──
-  function moveTable(list,cls){return '<table class="brief-tbl"><tbody>'+list.map(function(s){return '<tr class="row-link" onclick="goToPair(\''+s.pair+'\')" title="Open in Analysis"><td>'+pairChip(s.pair,true)+'</td><td class="bnum '+cls+'">'+fmtPips(s.displayPips)+'</td><td class="bnum bmuted">'+(s.rangePips!=null?Math.round(s.rangePips)+'p rng':'')+'</td></tr>';}).join('')+'</tbody></table>';}
+  function moveTable(list,cls){return '<table class="brief-tbl"><tbody>'+list.map(function(s){return '<tr class="row-link" onclick="goToPair(\''+s.pair+'\')" title="Open in Analysis"><td>'+pairChip(s.pair,true)+'</td><td class="bnum '+cls+'">'+fmtPips(s.displayPips)+'</td><td class="bnum bmuted">'+(s.displayRange!=null?Math.round(s.displayRange)+'p rng':'')+'</td></tr>';}).join('')+'</tbody></table>';}
   var h='';
   h+='<div class="brief-sec"><div class="brief-h">⚡ Alerts</div>';
   h+=alerts.length?('<div class="alert-list">'+alerts.map(function(a){return '<div class="alert-item alert-'+a.t+'">'+a.x+'</div>';}).join('')+'</div>'):'<div class="cb">Nothing unusual at the open — no large gaps or volatility spikes.</div>';
   h+='</div>';
   h+='<div class="brief-grid">';
-  var sesLbl='<span class="muted">'+(hasSession?'since 7am AEST':'previous session')+'</span>';
+  var sesLbl='<span class="muted">previous trading day · 7am–7am AEST</span>';
   h+='<div class="brief-sec"><div class="brief-h">📈 Top gainers '+sesLbl+'</div>'+(gainers.length?moveTable(gainers,'bup'):'<div class="cb">—</div>')+'</div>';
   h+='<div class="brief-sec"><div class="brief-h">📉 Biggest fallers '+sesLbl+'</div>'+(losers.length?moveTable(losers,'bdown'):'<div class="cb">—</div>')+'</div>';
   h+='</div>';
   h+='<div class="brief-sec"><div class="brief-h">🔥 Most active currencies <span class="muted">range vs 14-day average</span></div>';
   h+='<div class="chip-row">'+mostActive.map(function(o){return '<span class="act-chip">'+ccySpan(o.c)+' <b>'+o.avg.toFixed(2)+'×</b></span>';}).join('')+'</div>';
   h+='<div class="ss" style="margin-top:8px;margin-bottom:0">FX has no public spot-volume feed, so this ranks how much each currency moved relative to its own 14-day norm — a proxy for where the action was.</div></div>';
-  h+='<div class="brief-sec"><div class="brief-h">↔️ Gap analysis <span class="muted">weekend gap (Fri→Mon) · tradable when gap &gt; spread · weekday 7am gaps are broker-specific → TradingView</span></div>';
+  h+='<div class="brief-sec"><div class="brief-h">↔️ Gap analysis <span class="muted">all '+gaps.length+' watched pairs · 7am AEST rollover · tradable when gap &gt; spread</span></div>';
   if(gaps.length){
     h+='<table class="brief-tbl"><thead><tr><th>Pair</th><th class="bnum">Gap</th><th class="bnum">Spread</th><th class="bnum">Edge</th><th>Verdict</th></tr></thead><tbody>';
-    gaps.slice(0,10).forEach(function(s){var sp=pspread(s.pair);var g=Math.abs(s.gapPips);var edge=g-sp;var verdict=edge<=0?'<span class="fill-low">Not worth it</span>':(g>=10?'<span class="fill-high">Tradable</span>':'<span class="fill-medium">Worth a look</span>');h+='<tr class="row-link" onclick="goToPair(\''+s.pair+'\')" title="Open in Analysis"><td>'+pairChip(s.pair,true)+'</td><td class="bnum '+(s.gapPips>0?'bup':'bdown')+'">'+fmtPips(s.gapPips)+'</td><td class="bnum bmuted">'+sp.toFixed(1)+'</td><td class="bnum '+(edge>0?'bup':'bdown')+'">'+(edge>=0?'+':'')+edge.toFixed(1)+'</td><td>'+verdict+'</td></tr>';});
+    gaps.forEach(function(s){var sp=pspread(s.pair);var g=Math.abs(s.gapPips);var edge=g-sp;var verdict=g<1?'<span class="bmuted">No gap</span>':edge<=0?'<span class="fill-low">Not worth it</span>':(g>=10?'<span class="fill-high">Tradable</span>':'<span class="fill-medium">Worth a look</span>');h+='<tr class="row-link" onclick="goToPair(\''+s.pair+'\')" title="Open in Analysis"><td>'+pairChip(s.pair,true)+'</td><td class="bnum '+(s.gapPips>0?'bup':'bdown')+'">'+fmtPips(s.gapPips)+'</td><td class="bnum bmuted">'+sp.toFixed(1)+'</td><td class="bnum '+(edge>0?'bup':'bdown')+'">'+(edge>=0?'+':'')+edge.toFixed(1)+'</td><td>'+verdict+'</td></tr>';});
     h+='</tbody></table><div class="ss" style="margin-top:8px;margin-bottom:0">This shows the market gap at the session rollover — mainly the <b>weekend gap</b> (Friday close → Monday open), which appears in any feed. Weekday 7am rollover gaps (e.g. a 25-pip GBP/AUD jump) are a Pepperstone-feed artifact that free market data doesn\'t contain, so those come from your <b>TradingView</b> alert. Rule: gap must beat the spread (edge &gt; 0); ≥10 pips = strong. Spread is a typical rollover estimate.</div>';
   } else { h+='<div class="cb">No significant weekend/rollover gap in the market feed right now. Weekday 7am gaps are broker-specific — those come from your TradingView alert.</div>'; }
   h+='</div>';
