@@ -1183,7 +1183,7 @@ body.light .chart-modal-overlay{background:rgba(0,0,0,0.55)}
         <span>#</span>
         <span>Open Bal</span>
         <span title="Currency pair for THIS trade — defaults to the Pair selected above; change it per row when you traded several pairs in one session.">Pair</span>
-        <span style="text-align:right" title="Units for this trade (contracts) — like the Trade Amount column in your Excel sheet. Blank = the Lot Size selected above.">Trade size</span>
+        <span style="text-align:right" title="Number of LOTS (contracts) for this trade — 1 = one lot of the selected Lot Size, 10 = ten contracts. Blank = 1 lot.">Lots</span>
         <span style="text-align:right">Pips</span>
         <span style="text-align:right">P&amp;L (A$)</span>
         <span style="text-align:right">Balance</span>
@@ -1211,7 +1211,7 @@ body.light .chart-modal-overlay{background:rgba(0,0,0,0.55)}
       <button class="sb" style="margin-top:0;padding:8px 18px;font-size:13px" onclick="addPlannerRow()">+ Add trade</button>
       <button class="pip-fccy" style="margin-left:auto" onclick="clearPlanner()">Clear</button>
     </div>
-    <div class="meta" style="margin-top:10px;line-height:1.6">Opening balance optional. <strong>Open Bal</strong> = that trade's starting balance (cascades). <strong>Pair</strong> = the pair for that trade — defaults to the Pair chosen above; change it on any row when you traded several pairs in one session (its $/pip is used for that row). <strong>Trade size</strong> = units (contracts) for that trade, like the Trade Amount column in your Excel sheet — leave blank to use the Lot Size above. <strong>% trade</strong> = return for that trade vs its opening balance. <strong>Cum%</strong> = total return from your original opening balance.</div>
+    <div class="meta" style="margin-top:10px;line-height:1.6">Opening balance optional. <strong>Open Bal</strong> = that trade's starting balance (cascades). <strong>Pair</strong> = the pair for that trade — defaults to the Pair chosen above; change it on any row when you traded several pairs in one session (its $/pip is used for that row). <strong>Lots</strong> = number of contracts for that trade at the Lot Size selected above — 1 = one standard/mini/micro lot, 10 = ten contracts, 0.5 = half a lot; leave blank for 1. <strong>% trade</strong> = return for that trade vs its opening balance. <strong>Cum%</strong> = total return from your original opening balance.</div>
   </div>
 </div>
 
@@ -1345,7 +1345,7 @@ function dismissBanner(){
 /* ══════════════════════════════════════
    HEADER DATE
 ══════════════════════════════════════ */
-var FH_BUILD='v4'; // bump on every delivered change — shown in the header so it's always obvious which version is loaded
+var FH_BUILD='v5'; // bump on every delivered change — shown in the header so it's always obvious which version is loaded
 function updateDate(){
   var d=new Date();
   var opts={weekday:'short',year:'numeric',month:'short',day:'numeric',timeZone:'Australia/Brisbane'};
@@ -3452,7 +3452,7 @@ function renderPlannerRows(){
     html+='<span style="color:var(--mt);font-size:11px">'+(i+1)+'</span>';
     html+='<input class="pip-inp" id="pr-ob-'+i+'" type="number" value="'+(plannerData[i].ob!=null?plannerData[i].ob:'')+'" placeholder="auto" oninput="plannerObChange('+i+',this.value)" style="font-size:11px;color:var(--mt);text-align:right" title="Override opening balance for this trade">';
     html+='<select class="pip-inp" id="pr-pair-'+i+'" onchange="plannerRowPairChange('+i+',this.value)" style="font-size:11px;padding:2px 3px;'+(row.pair?'color:var(--ac)':'color:var(--mt)')+'" title="Pair for THIS trade — defaults to the Pair selected above">'+plannerPairOptions(row.pair||mainPair)+'</select>';
-    html+='<input class="pip-inp" id="pr-sz-'+i+'" type="number" value="'+(row.size!=null?row.size:'')+'" placeholder="'+defLot+'" step="1000" min="0" oninput="plannerSizeChange('+i+',this.value)" style="text-align:right" title="Trade size in units (contracts) for THIS trade — like the Trade Amount column in your Excel sheet. Blank = the Lot Size selected above.">';
+    html+='<input class="pip-inp" id="pr-sz-'+i+'" type="number" value="'+(row.size!=null?row.size:'')+'" placeholder="1" step="1" min="0" oninput="plannerSizeChange('+i+',this.value)" style="text-align:right" title="Number of LOTS (contracts) for THIS trade — 1 = one lot of the Lot Size selected above, 10 = ten contracts. Halves like 0.5 work too. Blank = 1 lot.">';
     html+='<input class="pip-inp" id="pip-in-'+i+'" type="number" value="'+(row.pips||'')+'" placeholder="0" oninput="plannerPipsChange('+i+',this.value)" style="text-align:right">';
     html+='<span id="pr-pnl-'+i+'" style="text-align:right;color:var(--mt)">—</span>';
     html+='<span id="pr-bal-'+i+'" style="text-align:right;color:var(--mt)">—</span>';
@@ -3602,8 +3602,10 @@ function updatePlanner(){
     // Per-trade pair — row override wins, otherwise the main Pair dropdown (Amendment 12.8.26)
     var rowPair=row.pair||pair;
     var rowStdPip=getPipValueAUD(rowPair,plannerQuotes);
-    // Per-trade size (units/contracts) — row override wins, otherwise the global Lot Size
-    var rowUnits=(row.size!=null&&row.size>0)?row.size:lot;
+    // Per-trade size in LOTS/contracts (Amendment 12.8.26 pt2): the number entered multiplies
+    // the selected Lot Size — 1 = one lot of that size, 10 = ten contracts. Blank = 1 lot.
+    var rowLots=(row.size!=null&&row.size>0)?row.size:1;
+    var rowUnits=rowLots*lot;
     var rowPipVal=rowStdPip*(rowUnits/100000);
     var pnl=pips*rowPipVal;
     totalPnl+=pnl;
