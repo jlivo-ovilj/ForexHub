@@ -138,6 +138,17 @@ body{font-family:'Syne',sans-serif;background:var(--bg);color:var(--tx);min-heig
 .st{font-size:22px;font-weight:700;letter-spacing:-0.02em;margin-bottom:4px}
 .ss{font-size:13px;color:var(--tx);opacity:0.85;margin-bottom:18px}
 
+/* ── CALENDAR CONTROLS (Amendment 17.8.26) ── */
+.cal-controls{display:flex;flex-wrap:wrap;gap:6px;align-items:center;margin-bottom:8px}
+.cal-flbl{font-family:'DM Mono',monospace;font-size:10px;color:var(--mt);margin-right:2px}
+.cal-past{opacity:0.45}
+
+/* ── GAP FILTER (Amendment 17.8.26) ── */
+.gap-filter{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:10px}
+.gapf{background:transparent;border:1px solid var(--bd2);color:var(--mt);border-radius:100px;padding:4px 12px;font-family:'DM Mono',monospace;font-size:10px;cursor:pointer;transition:all .15s}
+.gapf:hover{border-color:var(--ac);color:var(--tx)}
+.gapf.active{background:var(--ac);border-color:var(--ac);color:#0b0b0d;font-weight:700}
+
 /* ── SESSIONS ── */
 .sess-timeline{background:var(--sf);border:1px solid var(--bd);border-radius:var(--r);padding:16px 16px 22px;margin-bottom:14px}
 .tl-title{font-family:'DM Mono',monospace;font-size:10px;letter-spacing:0.1em;text-transform:uppercase;color:var(--mt);margin-bottom:12px}
@@ -758,7 +769,7 @@ body.light .chart-modal-overlay{background:rgba(0,0,0,0.55)}
   <div class="clock-tz">Brisbane AEST (UTC+10)</div>
   <!-- Timeline -->
   <div class="sess-timeline">
-    <div class="tl-title">24-Hour session timeline (AEST)</div>
+    <div class="tl-title">24-Hour session timeline (AEST) · trading day runs 7:00am → 7:00am</div>
     <div class="tl-outer" id="sess-timeline"></div>
   </div>
   <!-- Session cards -->
@@ -792,7 +803,7 @@ body.light .chart-modal-overlay{background:rgba(0,0,0,0.55)}
 <!-- ══ CALENDAR ══ -->
 <div id="calendar" class="sec">
   <div class="st">Economic calendar</div>
-  <div class="ss">Key events this week · click any event for detail · verify at forexfactory.com</div>
+  <div class="ss">Live Forex Factory feed · every scheduled event, all currencies · times in AEST · click any event for detail</div>
   <div class="cal-legend">
     <div class="cal-leg"><span class="cal-imp-badge high">HIGH</span> High impact</div>
     <div class="cal-leg"><span class="cal-imp-badge med">MED</span> Medium</div>
@@ -1084,12 +1095,7 @@ body.light .chart-modal-overlay{background:rgba(0,0,0,0.55)}
     <div id="pip-controls" style="display:none;margin-bottom:10px">
       <div style="display:flex;flex-wrap:wrap;gap:6px;align-items:center;margin-bottom:6px">
         <span style="font-size:10px;color:var(--mt);font-family:'DM Mono',monospace;flex-shrink:0">Filter:</span>
-        <button class="pip-filter-btn active" onclick="filterPipTable('all',this)">All</button>
-        <button class="pip-filter-btn" onclick="filterPipTable('Major USD',this)">Major USD</button>
-        <button class="pip-filter-btn" onclick="filterPipTable('JPY Crosses',this)">JPY</button>
-        <button class="pip-filter-btn" onclick="filterPipTable('EUR Crosses',this)">EUR</button>
-        <button class="pip-filter-btn" onclick="filterPipTable('GBP Crosses',this)">GBP</button>
-        <button class="pip-filter-btn" onclick="filterPipTable('AUD Crosses',this)">AUD</button>
+        <span id="pip-filter-btns"></span>
       </div>
       <div style="display:flex;flex-wrap:wrap;gap:10px;align-items:center">
         <div style="display:flex;align-items:center;gap:6px">
@@ -1125,38 +1131,7 @@ body.light .chart-modal-overlay{background:rgba(0,0,0,0.55)}
       </div>
       <div class="fld">
         <label>Pair</label>
-        <select class="sel-i" id="planner-pair" onchange="updatePlannerPair()">
-          <optgroup label="Major USD">
-            <option value="EURUSD">EUR/USD</option>
-            <option value="GBPUSD">GBP/USD</option>
-            <option value="USDJPY">USD/JPY</option>
-            <option value="AUDUSD" selected>AUD/USD</option>
-            <option value="USDCAD">USD/CAD</option>
-            <option value="USDCHF">USD/CHF</option>
-            <option value="NZDUSD">NZD/USD</option>
-          </optgroup>
-          <optgroup label="JPY Crosses">
-            <option value="EURJPY">EUR/JPY</option>
-            <option value="GBPJPY">GBP/JPY</option>
-            <option value="AUDJPY">AUD/JPY</option>
-            <option value="NZDJPY">NZD/JPY</option>
-            <option value="CADJPY">CAD/JPY</option>
-          </optgroup>
-          <optgroup label="EUR / GBP Crosses">
-            <option value="EURGBP">EUR/GBP</option>
-            <option value="EURAUD">EUR/AUD</option>
-            <option value="GBPAUD">GBP/AUD</option>
-            <option value="EURCAD">EUR/CAD</option>
-            <option value="GBPCAD">GBP/CAD</option>
-            <option value="EURCHF">EUR/CHF</option>
-            <option value="GBPCHF">GBP/CHF</option>
-          </optgroup>
-          <optgroup label="AUD Crosses">
-            <option value="AUDNZD">AUD/NZD</option>
-            <option value="AUDCAD">AUD/CAD</option>
-            <option value="AUDCHF">AUD/CHF</option>
-          </optgroup>
-        </select>
+        <select class="sel-i" id="planner-pair" onchange="updatePlannerPair()"></select>
       </div>
       <div class="fld">
         <label>Lot Size</label>
@@ -1296,6 +1271,33 @@ var CCY_COLORS = {
   'CHF':'#cbd5e1','JPY':'#fbbf24','CNH':'#f472b6','XAU':'#fbbf24'
 };
 
+/* ══════════════════════════════════════════════════════════════════
+   CANONICAL PAIR UNIVERSE  (Amendment 17.8.26 #4)
+   ONE alphabetical watchlist, used by the scanner, heat map, calculator,
+   planner, briefing and gap analysis. Add a pair HERE and it appears
+   everywhere — the old per-section lists drifted apart, which is why the
+   NZD crosses were missing from some screens and not others.
+══════════════════════════════════════════════════════════════════ */
+var FH_PAIRS=['AUDCAD','AUDCHF','AUDJPY','AUDNZD','AUDUSD',
+  'CADCHF','CADJPY','CHFJPY',
+  'EURAUD','EURCAD','EURCHF','EURGBP','EURJPY','EURNZD','EURUSD',
+  'GBPAUD','GBPCAD','GBPCHF','GBPJPY','GBPNZD','GBPUSD',
+  'NZDCAD','NZDCHF','NZDJPY','NZDUSD',
+  'USDCAD','USDCHF','USDJPY'];
+/* Group a pair for the pip-value table / filters — derived, never hand-listed */
+var FH_GROUP_ORDER=['Major USD','JPY Crosses','CHF Crosses','EUR Crosses','GBP Crosses','AUD Crosses','NZD Crosses','CAD Crosses'];
+function pairGroupOf(p){
+  if(p.indexOf('USD')>-1) return 'Major USD';
+  if(p.indexOf('JPY')>-1) return 'JPY Crosses';
+  if(p.indexOf('CHF')>-1) return 'CHF Crosses';
+  return p.slice(0,3)+' Crosses';
+}
+function fhGroups(){
+  var g={};
+  FH_PAIRS.forEach(function(p){var k=pairGroupOf(p);(g[k]=g[k]||[]).push(p);});
+  return FH_GROUP_ORDER.filter(function(k){return g[k];}).map(function(k){return {label:k,pairs:g[k]};});
+}
+
 var PAIR_SESSIONS = {
   sydney:  ['AUD/USD','AUD/JPY','AUD/NZD','AUD/CAD','AUD/CHF','NZD/USD','NZD/JPY','NZD/CHF'],
   tokyo:   ['USD/JPY','EUR/JPY','GBP/JPY','AUD/JPY','CAD/JPY','CHF/JPY','NZD/JPY','XAU/USD'],
@@ -1345,7 +1347,7 @@ function dismissBanner(){
 /* ══════════════════════════════════════
    HEADER DATE
 ══════════════════════════════════════ */
-var FH_BUILD='v6'; // bump on every delivered change — shown in the header so it's always obvious which version is loaded
+var FH_BUILD='v7'; // bump on every delivered change — shown in the header so it's always obvious which version is loaded
 /* Stale-tab killer: every so often, check whether a newer build has been deployed.
    If so, show a can't-miss banner telling the user to reload — long-open tabs silently
    running old code caused repeated "the fix didn't work" confusion. */
@@ -1446,7 +1448,7 @@ function goToPair(pair, timeframe){
 /* ══════════════════════════════════════
    PRICE TICKER
 ══════════════════════════════════════ */
-var TICKER_PAIRS=['AUDJPY','AUDUSD','EURJPY','EURUSD','GBPJPY','GBPUSD','NZDUSD','USDCAD','USDCHF','USDJPY'];
+var TICKER_PAIRS=['AUDJPY','AUDUSD','EURJPY','EURUSD','GBPJPY','GBPUSD','NZDJPY','NZDUSD','USDCAD','USDCHF','USDJPY'];
 var _tickerPrev={};
 
 /* Update all 4 copies of a pair in the ticker simultaneously */
@@ -1472,7 +1474,7 @@ function updateTickerPair(pair, price, prevPrice){
 
 async function refreshTicker(){
   try {
-    var quotes = await liveQuotes(TICKER_PAIRS);
+    var quotes = await liveQuotes(TICKER_PAIRS,{allowStale:true});
     var priceMap = {};
     var missing = 0;
     TICKER_PAIRS.forEach(function(pair){
@@ -1569,31 +1571,78 @@ async function ai(prompt,cacheKey,opts){
 var PRICE_URL=WU.replace(/\/api$/,'')+'/price';
 var _quoteCache={};
 var QUOTE_TTL=5*60*1000;   // quotes expire after 5 min so a long-open tab never feeds stale prices to the scanner/analysis
-async function liveQuotes(pairs){
+var LASTQ_KEY='fh_lastquotes';
+var STALE_MAX=12*3600*1000;   // last-known prices are usable for display for 12h, never longer
+var feedState={ok:true,ts:0,stale:false};
+/* Remember the last prices this browser actually received. When the upstream feed
+   (Yahoo, via the worker) rate-limits — which is what has repeatedly taken the ticker,
+   heat map and calculator down — display screens fall back to these instead of showing
+   nothing. Analysis/scanner still refuse stale data (allowStale is opt-in). */
+function saveLastQuotes(){
+  try{
+    var o={},t=Date.now();
+    Object.keys(_quoteCache).forEach(function(k){ if(_quoteCache[k]) o[k]=_quoteCache[k].q; });
+    if(Object.keys(o).length) LS.set(LASTQ_KEY,JSON.stringify({t:t,q:o}));
+  }catch(e){}
+}
+var _lastQMemo=null;
+function lastGoodQuotes(){
+  if(_lastQMemo!==null) return _lastQMemo;
+  try{ var d=JSON.parse(LS.get(LASTQ_KEY)||'null'); _lastQMemo=(d&&d.q)?d:false; }catch(e){ _lastQMemo=false; }
+  return _lastQMemo;
+}
+function feedNote(){
+  if(!feedState.stale) return '';
+  var d=lastGoodQuotes();
+  var when=d?new Date(d.t).toLocaleTimeString('en-AU',{timeZone:'Australia/Brisbane',hour:'2-digit',minute:'2-digit'}):'';
+  return '⚠ Live feed unreachable — showing the last prices received'+(when?' ('+when+' AEST)':'')+'. Refresh in a minute.';
+}
+/* opts.allowStale — display-only screens may fall back to last-known prices */
+async function liveQuotes(pairs,opts){
+  opts=opts||{};
   var fetchPairs=function(list){
-    // Chunk ≤12 pairs per call: the worker does 2 Yahoo fetches per pair and Cloudflare
-    // caps one request at 50 subrequests — a 28-pair call silently dropped ~3 pairs.
-    var chunks=[]; for(var i=0;i<list.length;i+=12) chunks.push(list.slice(i,i+12));
+    // Chunk ≤10 pairs per call: the worker does 2 upstream fetches per pair and Cloudflare
+    // caps one request at 50 subrequests — a 28-pair call silently dropped pairs.
+    var chunks=[]; for(var i=0;i<list.length;i+=10) chunks.push(list.slice(i,i+10));
     return Promise.all(chunks.map(function(ch){
-      return fetch(PRICE_URL+'?pairs='+encodeURIComponent(ch.join(',')),{cache:'no-store'})
-        .then(function(r){return r.json();})
-        .then(function(d){var qs=(d&&d.quotes)||{};var t=Date.now();Object.keys(qs).forEach(function(k){_quoteCache[k]={ts:t,q:qs[k]};});})
+      return fetch(PRICE_URL+'?pairs='+encodeURIComponent(ch.join(','))+'&_='+Date.now(),{cache:'no-store'})
+        .then(function(r){ if(!r.ok) throw new Error('HTTP '+r.status); return r.json(); })
+        .then(function(d){var qs=(d&&d.quotes)||{};var t=Date.now();Object.keys(qs).forEach(function(k){if(qs[k]&&qs[k].p!=null)_quoteCache[k]={ts:t,q:qs[k]};});})
         .catch(function(e){});
     }));
   };
   var now=Date.now();
   var need=pairs.filter(function(p){var e=_quoteCache[p];return !e||(now-e.ts)>QUOTE_TTL;});
   if(need.length){
-    await fetchPairs(need);
-    // Second pass for anything Yahoo dropped — a short pause then one retry recovers most
-    // transient failures (this is what caused "No price data returned / No live data returned").
-    var missing=need.filter(function(p){return _quoteCache[p]==null;});
-    if(missing.length){
-      await new Promise(function(res){setTimeout(res,1500);});
-      await fetchPairs(missing);
+    // Three passes with backoff. Transient upstream rate-limits clear within a few seconds;
+    // this is what used to surface as "No price data returned / No live data returned".
+    var waits=[0,1200,3000];
+    for(var a=0;a<waits.length;a++){
+      if(waits[a]) await new Promise(function(res){setTimeout(res,waits[a]);});
+      await fetchPairs(need);
+      need=need.filter(function(p){return _quoteCache[p]==null;});
+      if(!need.length) break;
     }
   }
-  var out={}; pairs.forEach(function(p){ if(_quoteCache[p]!=null) out[p]=_quoteCache[p].q; }); return out;
+  var out={},got=0,missing=[];
+  pairs.forEach(function(p){
+    var e=_quoteCache[p];
+    if(e!=null){ out[p]=e.q; got++; } else missing.push(p);
+  });
+  if(got) saveLastQuotes();
+  // Fall back to last-known prices so display screens never go blank on a feed blip
+  var usedStale=false;
+  if(missing.length && opts.allowStale){
+    var lg=lastGoodQuotes();
+    if(lg && (Date.now()-lg.t)<STALE_MAX){
+      missing.forEach(function(p){
+        var q=lg.q[p];
+        if(q&&q.p!=null){ out[p]=Object.assign({},q,{stale:true}); usedStale=true; }
+      });
+    }
+  }
+  feedState={ok:got>0,ts:Date.now(),stale:usedStale||(got===0&&Object.keys(out).length>0)};
+  return out;
 }
 function fmtPrice(pair,v){return v.toFixed(pair.indexOf('JPY')>-1?3:pair.indexOf('XAU')>-1?2:5);}
 /* Multi-timeframe trend string: 4H / D / W / M % moves with direction arrows */
@@ -1634,10 +1683,7 @@ function freshnessNote(useSearch){
 /* ══════════════════════════════════════
    TOP-DOWN TREND SCANNER  (own page · no AI · live price data)
 ══════════════════════════════════════ */
-var TREND_PAIRS=['EURUSD','GBPUSD','USDJPY','USDCHF','USDCAD','AUDUSD','NZDUSD',
-  'EURGBP','EURJPY','EURCHF','EURAUD','EURNZD','EURCAD',
-  'GBPJPY','GBPCHF','GBPAUD','GBPNZD','GBPCAD',
-  'AUDJPY','AUDNZD','AUDCAD','AUDCHF','NZDJPY','NZDCAD','NZDCHF','CADJPY','CADCHF','CHFJPY'];
+var TREND_PAIRS=FH_PAIRS;   // canonical watchlist
 var _trendData=null,_trendSort={col:'bias',dir:-1},_trendCcy='',_trendHideMix=false;
 async function loadTrendScan(){
   trendLoaded=true;
@@ -2358,21 +2404,28 @@ function doRenderSessions(){
   renderSessCards(m);
 }
 
+function sessWindow(SESS){
+  /* Anchored on the 7am AEST rollover — the same trading-day boundary the gap
+     analysis, briefing and heat map use. Stretched to the last session close so
+     nothing is ever clipped or clamped (NY runs to 08:00 AEST in US winter). */
+  var ws=7*60, we=ws+1440;
+  SESS.forEach(function(s){ if(s.start<ws) ws=s.start; if(s.end>we) we=s.end; });
+  return {ws:ws,wl:we-ws,we:we};
+}
 function renderTimeline(nowMin){
   var el=document.getElementById('sess-timeline');
   if(!el) return;
   var SESS=getSESS();
-  // Window: 08:00 AEST → 06:00 AEST next day (22 hours)
-  var WS=8*60,WL=22*60; // window start (mins), window length (mins)
-  function wp(m){return(m-WS)/WL;} // raw 0-1 position in window
-  function cl(v){return Math.max(0,Math.min(1,v));} // clamp to [0,1]
-  // Current time mapped into window (times before 8am are next-day)
+  var W=sessWindow(SESS);
+  var WS=W.ws,WL=W.wl;
+  function wp(m){return(m-WS)/WL;}                       // 0-1 position in window
+  function cl(v){return Math.max(0,Math.min(1,v));}
+  // Times before the window start belong to the next day
   var nowM=nowMin<WS?nowMin+1440:nowMin;
   var nowWP=cl(wp(nowM));
   var RH=28,GAP=5;
   var totalH=SESS.length*(RH+GAP)-GAP;
-  // Local time in session's home timezone
-  var SESS_TZ={Sydney:'Australia/Brisbane',Tokyo:'Asia/Tokyo',London:'Europe/London','New York':'America/New_York'};
+  var SESS_TZ={Sydney:'Australia/Sydney',Tokyo:'Asia/Tokyo',London:'Europe/London','New York':'America/New_York'};
   function localTime(tz){
     try{return new Intl.DateTimeFormat('en-AU',{timeZone:tz,hour:'2-digit',minute:'2-digit',hour12:false}).format(new Date());}catch(e){return '';}
   }
@@ -2380,33 +2433,33 @@ function renderTimeline(nowMin){
   SESS.forEach(function(s,i){
     var top=i*(RH+GAP);
     var open=isOpen(s,nowMin);
-    // Session bar: s.start and s.end are in mins from midnight (end can be >1440 = next day)
     var sp=cl(wp(s.start)),ep=cl(wp(s.end));
     var bW=(ep-sp)*100;
-    // Track BG
     html+='<div style="position:absolute;left:0;right:0;top:'+top+'px;height:'+RH+'px;background:rgba(255,255,255,0.03);border-radius:3px"></div>';
-    // Bar
     var alpha=open?'0.92':'0.22';
     var txtCol=open?'rgba(0,0,0,0.9)':'rgba(255,255,255,0.45)';
     var tz=SESS_TZ[s.name]||'Australia/Brisbane';
     var timeLbl=open?localTime(tz):'';
-    html+='<div style="position:absolute;left:'+(sp*100).toFixed(2)+'%;width:'+bW.toFixed(2)+'%;top:'+top+'px;height:'+RH+'px;border-radius:3px;background:'+s.color+';opacity:'+alpha+(open?';box-shadow:0 0 10px '+s.color+'55':'')+';overflow:hidden">';
+    html+='<div title="'+s.name+' '+s.label+'" style="position:absolute;left:'+(sp*100).toFixed(2)+'%;width:'+bW.toFixed(2)+'%;top:'+top+'px;height:'+RH+'px;border-radius:3px;background:'+s.color+';opacity:'+alpha+(open?';box-shadow:0 0 10px '+s.color+'55':'')+';overflow:hidden">';
     html+='<div style="padding:0 8px;height:100%;display:flex;align-items:center;gap:6px;overflow:hidden;white-space:nowrap">';
     html+='<span style="font-family:\'DM Mono\',monospace;font-size:10px;font-weight:700;color:'+txtCol+'">'+s.flag+' '+s.name+'</span>';
-    if(timeLbl) html+='<span style="font-family:\'DM Mono\',monospace;font-size:9px;color:'+txtCol+';opacity:0.75">'+timeLbl+' local</span>';
+    html+='<span style="font-family:\'DM Mono\',monospace;font-size:9px;color:'+txtCol+';opacity:0.8">'+s.label.replace(' AEST','')+'</span>';
+    if(timeLbl) html+='<span style="font-family:\'DM Mono\',monospace;font-size:9px;color:'+txtCol+';opacity:0.75">· '+timeLbl+' local</span>';
     html+='</div></div>';
   });
-  // Hour gridlines + labels (every 2h from 8 to 6)
-  [8,10,12,14,16,18,20,22,0,2,4,6].forEach(function(h){
-    var m=h*60,m2=m<WS?m+1440:m;
-    var p=(cl(wp(m2))*100).toFixed(2);
-    html+='<div style="position:absolute;left:'+p+'%;top:0;height:'+totalH+'px;width:1px;background:rgba(255,255,255,0.07)"></div>';
-    html+='<div style="position:absolute;left:'+p+'%;top:'+(totalH+8)+'px;transform:translateX(-50%);font-family:\'DM Mono\',monospace;font-size:9px;color:var(--mt)">'+(h<10?'0':'')+h+'</div>';
-  });
-  // Now line + triangle
+  // Hour gridlines + labels every 2h across the whole window (no clipping)
+  for(var hm=Math.ceil(WS/120)*120; hm<=WS+WL; hm+=120){
+    var hh=Math.floor((hm%1440)/60);
+    var pp=(cl(wp(hm))*100).toFixed(2);
+    html+='<div style="position:absolute;left:'+pp+'%;top:0;height:'+totalH+'px;width:1px;background:rgba(255,255,255,0.07)"></div>';
+    html+='<div style="position:absolute;left:'+pp+'%;top:'+(totalH+8)+'px;transform:translateX(-50%);font-family:\'DM Mono\',monospace;font-size:9px;color:var(--mt)">'+(hh<10?'0':'')+hh+'</div>';
+  }
+  // Now line + triangle + live time label, so the marker always reads against the clock
   var np=(nowWP*100).toFixed(2);
+  var nowLbl=(Math.floor(nowMin/60)<10?'0':'')+Math.floor(nowMin/60)+':'+((nowMin%60)<10?'0':'')+(nowMin%60);
   html+='<div style="position:absolute;left:'+np+'%;top:0;height:'+totalH+'px;width:2px;background:var(--ac);transform:translateX(-50%);z-index:4;border-radius:1px"></div>';
   html+='<div style="position:absolute;left:'+np+'%;top:'+(totalH+2)+'px;transform:translateX(-50%);width:0;height:0;border-left:5px solid transparent;border-right:5px solid transparent;border-top:6px solid var(--ac);z-index:4"></div>';
+  html+='<div style="position:absolute;left:'+np+'%;top:'+(totalH+16)+'px;transform:translateX(-50%);font-family:\'DM Mono\',monospace;font-size:9px;font-weight:700;color:var(--ac);background:var(--sf);padding:0 3px;border-radius:2px;z-index:5;white-space:nowrap">'+nowLbl+'</div>';
   html+='</div>';
   el.innerHTML=html;
 }
@@ -2483,54 +2536,171 @@ var ECO_TERMS={
 };
 
 var calData=[];
+var CAL_URL=WU.replace(/\/api$/,'')+'/calendar';
+var CAL_IMP={'high':'high','medium':'med','med':'med','low':'low','holiday':'low','non-economic':'low'};
+var _calFeed={};
+
+/* Pull a week of real calendar data. Worker proxy first (cached + CORS-safe),
+   direct feed as a backstop so a worker outage can't blank the calendar. */
+async function fetchCalWeek(which){
+  var c=_calFeed[which];
+  if(c && (Date.now()-c.t)<15*60*1000) return c.e;
+  var urls=[CAL_URL+'?w='+which,'https://nfs.faireconomy.media/ff_calendar_'+which+'.json'];
+  for(var i=0;i<urls.length;i++){
+    try{
+      var r=await fetch(urls[i],{cache:'no-store'});
+      if(!r.ok) continue;
+      var d=await r.json();
+      var arr=Array.isArray(d)?d:((d&&d.events)||null);
+      if(arr&&arr.length){ _calFeed[which]={t:Date.now(),e:arr}; return arr; }
+    }catch(e){}
+  }
+  return null;
+}
+function aestKey(d){return d.toLocaleDateString('en-CA',{timeZone:'Australia/Brisbane'});}
+function aestDayLabel(d){
+  return d.toLocaleDateString('en-AU',{timeZone:'Australia/Brisbane',weekday:'short',day:'numeric',month:'short'})
+          .replace(/,/g,'').toUpperCase();
+}
+/* Feed row → the event shape the calendar UI already understands */
+function ffEvent(e){
+  if(!e||!e.date||!e.title) return null;
+  var d=new Date(e.date);
+  if(isNaN(d.getTime())) return null;
+  var imp=CAL_IMP[String(e.impact||'').toLowerCase()]||'low';
+  return {
+    day:aestDayLabel(d),
+    dayKey:aestKey(d),
+    time:d.toLocaleTimeString('en-AU',{timeZone:'Australia/Brisbane',hour:'2-digit',minute:'2-digit',hour12:false})+' AEST',
+    ts:d.getTime(),
+    ccy:String(e.country||'').toUpperCase(),
+    imp:imp,
+    rawImp:e.impact||'',
+    name:e.title,
+    forecast:(e.forecast===''||e.forecast==null)?'—':e.forecast,
+    prev:(e.previous===''||e.previous==null)?'—':e.previous,
+    desc:''
+  };
+}
+async function allCalEvents(){
+  var weeks=await Promise.all([fetchCalWeek('thisweek'),fetchCalWeek('nextweek')]);
+  var out=[],seen={};
+  weeks.forEach(function(w){
+    (w||[]).forEach(function(raw){
+      var ev=ffEvent(raw);
+      if(!ev) return;
+      var k=ev.ts+'|'+ev.ccy+'|'+ev.name;
+      if(seen[k]) return;
+      seen[k]=1; out.push(ev);
+    });
+  });
+  return out.sort(function(a,b){return a.ts-b.ts;});
+}
+/* Every event scheduled TODAY (Brisbane), earliest first */
+async function calEventsToday(){
+  var all=await allCalEvents();
+  var today=aestKey(new Date());
+  return all.filter(function(e){return e.dayKey===today;});
+}
+
+/* ── filters ── */
+var calFilter={imp:'medhigh',ccy:'',days:7};
+function calSaveFilter(){try{LS.set('fh_calfilter',JSON.stringify(calFilter));}catch(e){}}
+function calLoadFilter(){try{var d=JSON.parse(LS.get('fh_calfilter')||'null');if(d)calFilter=Object.assign(calFilter,d);}catch(e){}}
+function setCalImp(v){calFilter.imp=v;calSaveFilter();renderCalendarView();}
+function setCalCcy(v){calFilter.ccy=v;calSaveFilter();renderCalendarView();}
+function setCalDays(v){calFilter.days=v;calSaveFilter();renderCalendarView();}
+
+var _calAll=[];
 async function loadCalendar(){
   calLoaded=true;
+  calLoadFilter();
   var body=document.getElementById('cal-body');
   body.innerHTML='<div class="ld" style="padding:20px"><div class="sp"></div>Fetching economic events…</div>';
-  var wk=getWeekRange();
   try{
-    var prompt='You are an economic calendar expert. Search an economic calendar (e.g. forexfactory, investing.com) and list the major forex economic events for '+wk+' (the next 7 days). For each event provide:\nDAY|TIME AEST|CURRENCY|IMPORTANCE(high/med/low)|EVENT NAME|FORECAST|PREVIOUS|BRIEF DESCRIPTION\n\nMANDATORY CHECKLIST — you MUST explicitly check for and include, if scheduled in this window: every central-bank rate decision (FOMC/Fed, ECB, BoE, BoJ, RBA, RBNZ, BoC, SNB) and their minutes/press conferences; CPI releases; employment reports (NFP etc.); GDP. Missing a scheduled central-bank decision is a critical failure.\n\nSTART FROM TODAY: the window begins today — include TODAY\'S remaining (still upcoming) events first, then each following day. Do not skip today or the first days of the window. List 12-18 events covering USD, EUR, GBP, AUD, NZD, CAD, JPY, CHF. Focus on high and medium importance. Use the DAY column in the form "MON 30 JUN" (weekday + date + month). Output ONLY real event rows — no header row, no example row, no placeholder/dashed rows, no narration of any kind. Each event = one line with | separators; the pipe rows must be your ENTIRE output.'+freshnessNote(true);
-    function parseCalRows(t){
-      var evs=[];
-      (t||'').split('\n').forEach(function(line){
-        var p=line.split('|');
-        if(p.length>=6){
-          evs.push({
-            day:p[0].trim(),time:p[1]?p[1].trim():'TBC',ccy:p[2]?p[2].trim():'',
-            imp:p[3]?p[3].trim().toLowerCase():'med',name:p[4]?p[4].trim():'',
-            forecast:p[5]?p[5].trim():'—',prev:p[6]?p[6].trim():'—',
-            desc:p[7]?p[7].trim():''
-          });
-        }
-      });
-      return evs;
+    _calAll=await allCalEvents();
+    if(!_calAll.length){
+      body.innerHTML='<div class="eb">Calendar feed unavailable right now — tap ↺ Refresh in a minute.</div>';
+      calLoaded=false; return;
     }
-    var ck='cal:'+wk;
-    var txt=stripNarration(await ai(prompt,ck,{model:'claude-haiku-4-5',maxTokens:2600,webSearch:true}));
-    var events=parseCalRows(txt);
-    if(!events.length){
-      // Bad response (prose, no pipe rows) — purge it and retry once, and never cache a rows-less
-      // reply for the whole window (that's what left the tab stuck on "No events found").
-      delete cache[ck]; LS.del('fhai:'+ck);
-      txt=stripNarration(await ai(prompt,ck,{model:'claude-haiku-4-5',maxTokens:2600,webSearch:true}));
-      events=parseCalRows(txt);
-      if(!events.length){ delete cache[ck]; LS.del('fhai:'+ck); }
-    }
-    calData=filterCalEvents(events);
-    renderCalendar(calData);
-    document.getElementById('cal-meta').textContent='Upcoming events · next 7 days ('+wk+') · Verify at forexfactory.com · Times are approximate AEST';
-  } catch(e){
-    body.innerHTML='<div class="eb">'+e.message+'</div>';
+    renderCalendarView();
+  }catch(e){
+    body.innerHTML='<div class="eb">'+((e&&e.message)||e)+'</div>';
+    calLoaded=false;
   }
 }
-function forceCal(){var k='cal:'+getWeekRange();delete cache[k];LS.del('fhai:'+k);calLoaded=false;calData=[];loadCalendar();}
-function getWeekRange(){
-  // Rolling 7-day window from TODAY (Brisbane time) — never empties out late in the week,
-  // and avoids the old UTC/toISOString bug that shifted the range back a day.
-  function bris(d){return d.toLocaleDateString('en-CA',{timeZone:'Australia/Brisbane'});}
-  var now=new Date(), end=new Date(now.getTime()+7*864e5);
-  return bris(now)+' to '+bris(end);
+function forceCal(){_calFeed={};calLoaded=false;calData=[];loadCalendar();}
+
+function renderCalendarView(){
+  var body=document.getElementById('cal-body');
+  if(!body) return;
+  var now=Date.now();
+  var todayKey=aestKey(new Date());
+  var horizon=now+calFilter.days*86400000;
+  var evs=_calAll.filter(function(e){
+    if(e.ts>horizon) return false;
+    // keep everything from today (so a passed release still shows), plus all future days
+    if(e.dayKey<todayKey) return false;
+    if(calFilter.imp==='high'&&e.imp!=='high') return false;
+    if(calFilter.imp==='medhigh'&&e.imp==='low') return false;
+    if(calFilter.ccy&&e.ccy!==calFilter.ccy) return false;
+    return true;
+  });
+  calData=evs;
+  // controls
+  var CCYS=['AUD','CAD','CHF','CNY','EUR','GBP','JPY','NZD','USD'];
+  var c='<div class="cal-controls">';
+  c+='<span class="cal-flbl">Impact</span>';
+  [['all','All'],['medhigh','High + Med'],['high','High only']].forEach(function(o){
+    c+='<button class="gapf'+(calFilter.imp===o[0]?' active':'')+'" onclick="setCalImp(\''+o[0]+'\')">'+o[1]+'</button>';
+  });
+  c+='<span class="cal-flbl">Window</span>';
+  [[1,'Today'],[7,'7 days'],[14,'2 weeks']].forEach(function(o){
+    c+='<button class="gapf'+(calFilter.days===o[0]?' active':'')+'" onclick="setCalDays('+o[0]+')">'+o[1]+'</button>';
+  });
+  c+='</div><div class="cal-controls"><span class="cal-flbl">Currency</span>';
+  c+='<button class="gapf'+(!calFilter.ccy?' active':'')+'" onclick="setCalCcy(\'\')">All</button>';
+  CCYS.forEach(function(cc){
+    var col=CCY_COLORS[cc]||'#cbd5e1';
+    var on=calFilter.ccy===cc;
+    c+='<button class="gapf'+(on?' active':'')+'" onclick="setCalCcy(\''+cc+'\')" style="'+(on?'':'color:'+col)+'">'+cc+'</button>';
+  });
+  c+='</div>';
+  if(!evs.length){
+    body.innerHTML=c+'<div class="cb">No events match these filters in this window.</div>';
+    setCalMeta(0);
+    return;
+  }
+  var byDay=[],idx={};
+  evs.forEach(function(e){
+    if(idx[e.dayKey]==null){idx[e.dayKey]=byDay.length;byDay.push({day:e.day,key:e.dayKey,list:[]});}
+    byDay[idx[e.dayKey]].list.push(e);
+  });
+  var html=c;
+  byDay.forEach(function(grp){
+    var isToday=grp.key===todayKey;
+    html+='<div class="cal-day"><div class="cal-day-hdr">'+grp.day+(isToday?' <span style="color:var(--ac)">· today</span>':'')+' <span style="color:var(--mt);font-weight:400">'+grp.list.length+' event'+(grp.list.length>1?'s':'')+'</span></div>';
+    grp.list.forEach(function(ev){
+      var col=getCcyColor(ev.ccy);
+      var i=calData.indexOf(ev);
+      var past=ev.ts<now;
+      html+='<div class="cal-event'+(past?' cal-past':'')+'" onclick="openCalPopup('+i+')">';
+      html+='<span class="cal-imp-badge '+ev.imp+'">'+(ev.imp==='high'?'HIGH':ev.imp==='med'?'MED':'LOW')+'</span>';
+      html+='<div class="cal-text">';
+      html+='<div class="cal-title"><span class="cal-ccy-tag" style="color:'+col+';background:'+col+'22;border:1px solid '+col+'44">'+ev.ccy+'</span>'+highlightEcoTerms(ev.name)+(past?' <span style="color:var(--mt);font-size:10px">· released</span>':'')+'</div>';
+      html+='<div class="cal-detail">'+ev.time+' · Forecast: <span class="cal-val">'+ev.forecast+'</span> · Prev: <span class="cal-val">'+ev.prev+'</span></div>';
+      html+='</div></div>';
+    });
+    html+='</div>';
+  });
+  body.innerHTML=html;
+  setCalMeta(evs.length);
 }
+function setCalMeta(n){
+  var m=document.getElementById('cal-meta');
+  if(m) m.textContent=n+' events · live Forex Factory calendar feed · times converted to AEST (Brisbane) · updated '+new Date().toLocaleTimeString('en-AU',{timeZone:'Australia/Brisbane',hour:'2-digit',minute:'2-digit',hour12:false})+' AEST';
+}
+function renderCalendar(events){ _calAll=events||_calAll; renderCalendarView(); }
 function getCcyColor(ccy){
   var key=ccy.trim().toUpperCase().slice(0,3);
   return CCY_COLORS[key]||'#94a3b8';
@@ -2810,7 +2980,7 @@ async function revPastTrade(){
 /* ══════════════════════════════════════
    MAPS – HEAT MAP  (Amendment 8 – fixed pip calc)
 ══════════════════════════════════════ */
-var MAP_PAIRS=['EURUSD','GBPUSD','USDJPY','USDCHF','USDCAD','AUDUSD','NZDUSD','EURJPY','GBPJPY','EURGBP','AUDNZD','AUDCAD','AUDJPY','EURAUD','GBPAUD','EURCAD','GBPCAD'];
+var MAP_PAIRS=FH_PAIRS;     // canonical watchlist
 function hmDate(d){return d.toISOString().split('T')[0];}
 async function loadHeatMap(){
   hmLoaded=true;
@@ -2823,19 +2993,19 @@ async function loadHeatMap(){
     var rows=[],q=null;
     for(var attempt=0;attempt<3 && !rows.length;attempt++){
       if(attempt>0){body.innerHTML='<div class="ld" style="padding:20px"><div class="sp"></div>Data feed busy — retrying ('+(attempt+1)+'/3)…</div>';await new Promise(function(r){setTimeout(r,2500);});}
-      q=await liveQuotes(TREND_PAIRS);
+      q=await liveQuotes(TREND_PAIRS,{allowStale:attempt===2});
       rows=[];
       TREND_PAIRS.forEach(function(p){
         var d=q[p]; if(!d||d.dp==null) return;
         rows.push({sym:p.slice(0,3)+'/'+p.slice(3), d:d.dp, w:d.wp!=null?d.wp:0, m:d.mp!=null?d.mp:0});
       });
     }
-    if(!rows.length){body.innerHTML='<div class="eb" style="padding:16px">No live data returned after 3 attempts — the feed may be briefly down. Tap the Heat Map tab again in a minute.</div>';hmLoaded=false;return;}
+    if(!rows.length){body.innerHTML='<div class="eb" style="padding:16px">No live data returned after 3 attempts — the upstream price feed is briefly down. Tap the Heat Map tab again in a minute.</div>';hmLoaded=false;return;}
     renderHeatPips(rows);
     buildMajorsMatrixLive(q);
     var t=new Date().toLocaleTimeString('en-AU',{timeZone:'Australia/Brisbane',hour:'2-digit',minute:'2-digit'});
     var src=document.getElementById('hm-src');
-    if(src) src.textContent='Live prices · Daily = pips since the 7am AEST rollover · Weekly/Monthly vs 5/21 trading days ago · as of '+t+' AEST';
+    if(src) src.textContent=(feedState.stale?feedNote()+' · ':'')+'Live prices · Daily = pips since the 7am AEST rollover · Weekly/Monthly vs 5/21 trading days ago · as of '+t+' AEST';
   } catch(e){
     body.innerHTML='<div class="eb" style="padding:16px">'+e.message+'</div>';
     hmLoaded=false;
@@ -3274,7 +3444,7 @@ async function runPullbackScanner(){
    CALCULATOR — Pip Values + Trade Planner
 ══════════════════════════════════════ */
 var calcLoaded=false;
-var calcAllPairs=['EURUSD','GBPUSD','USDJPY','AUDUSD','USDCAD','USDCHF','NZDUSD','EURJPY','GBPJPY','AUDJPY','NZDJPY','CADJPY','EURGBP','EURAUD','GBPAUD','EURCAD','GBPCAD','AUDNZD','EURCHF','GBPCHF','AUDCAD','AUDCHF'];
+var calcAllPairs=FH_PAIRS;  // canonical watchlist — pip table + planner
 var plannerQuotes={};
 var _calcPipData=[];
 var _calcPipFilter='all';
@@ -3288,14 +3458,36 @@ function getPipValueAUD(pair,quotes){
   var isJPY=(q==='JPY');
   var pipMove=isJPY?0.01:0.0001;
   var pipInQuote=pipMove*100000; // 10 for most, 1000 for JPY
-  function r(p){var v=quotes[p];return v?(v.p||v):null;}
-  var audUsd=r('AUDUSD')||0.63;
-  var audJpy=r('AUDJPY')||97;
-  var audCad=r('AUDCAD')||0.89;
-  var audNzd=r('AUDNZD')||1.08;
-  var usdChf=r('USDCHF')||0.90;
-  var gbpUsd=r('GBPUSD')||1.27;
-  var eurUsd=r('EURUSD')||1.08;
+  quotes=quotes||{};
+  var last=lastGoodQuotes();   // last prices this browser actually saw
+  function r(p){
+    var v=quotes[p]; var n=v?(v.p||v):null;
+    if(n) return n;
+    // Cross-derive from any other watched pair before giving up
+    v=last&&last.q&&last.q[p]; n=v?(v.p||v):null;
+    return n||null;
+  }
+  /* Derive a rate from whatever we DO have, e.g. AUD/CAD from AUD/USD × USD/CAD.
+     Stops one missing quote silently poisoning every $/pip on the page. */
+  function cross(a,b){
+    var d=r(a+b); if(d) return d;
+    var i=r(b+a); if(i) return 1/i;
+    var legs=['USD','EUR','GBP','JPY','CHF','CAD','NZD','AUD'];
+    for(var k=0;k<legs.length;k++){
+      var m=legs[k]; if(m===a||m===b) continue;
+      var am=r(a+m)||(r(m+a)?1/r(m+a):null);
+      var mb=r(m+b)||(r(b+m)?1/r(b+m):null);
+      if(am&&mb) return am*mb;
+    }
+    return null;
+  }
+  var audUsd=cross('AUD','USD')||0.71;
+  var audJpy=cross('AUD','JPY')||105;
+  var audCad=cross('AUD','CAD')||0.89;
+  var audNzd=cross('AUD','NZD')||1.08;
+  var usdChf=cross('USD','CHF')||0.80;
+  var gbpUsd=cross('GBP','USD')||1.34;
+  var eurUsd=cross('EUR','USD')||1.16;
   var audPerQuote;
   if(q==='AUD')      audPerQuote=1;
   else if(q==='USD') audPerQuote=1/audUsd;
@@ -3311,6 +3503,7 @@ function getPipValueAUD(pair,quotes){
 
 async function loadCalculator(){
   calcLoaded=true;
+  buildPairControls();
   var loading=document.getElementById('calc-pip-loading');
   var tableDiv=document.getElementById('calc-pip-table');
   if(loading){loading.style.display='block';loading.textContent='Loading live prices…';}
@@ -3318,13 +3511,7 @@ async function loadCalculator(){
   try{
     var quotes=await liveQuotes(calcAllPairs);
     plannerQuotes=quotes;
-    var CCY_GROUPS=[
-      {label:'Major USD',pairs:['EURUSD','GBPUSD','AUDUSD','NZDUSD','USDCAD','USDCHF','USDJPY']},
-      {label:'JPY Crosses',pairs:['EURJPY','GBPJPY','AUDJPY','NZDJPY','CADJPY']},
-      {label:'EUR Crosses',pairs:['EURGBP','EURAUD','EURCAD','EURCHF']},
-      {label:'GBP Crosses',pairs:['GBPAUD','GBPCAD','GBPCHF']},
-      {label:'AUD Crosses',pairs:['AUDNZD','AUDCAD','AUDCHF']}
-    ];
+    var CCY_GROUPS=fhGroups();   // every watchlist pair, derived from FH_PAIRS
     // Build flat data array for sorting/filtering
     _calcPipData=[];
     CCY_GROUPS.forEach(function(grp){
@@ -3452,11 +3639,35 @@ function initPlanner(){
   renderPlannerRows();
 }
 
-/* Options list for a per-row pair select; sel = currently selected pair */
-function plannerPairOptions(sel){
-  return calcAllPairs.map(function(p){
-    return '<option value="'+p+'"'+(p===sel?' selected':'')+'>'+p.slice(0,3)+'/'+p.slice(3)+'</option>';
+/* Options list for a pair <select>; sel = currently selected pair.
+   Alphabetical (FH_PAIRS is sorted) and colour-coded by base currency using the
+   site-wide CCY_COLORS, so pair colours mean the same thing on every screen. */
+function plannerPairOptions(sel,grouped){
+  function opt(p){
+    var col=CCY_COLORS[p.slice(0,3)]||'#cbd5e1';
+    return '<option value="'+p+'"'+(p===sel?' selected':'')+' style="color:'+col+'">'+p.slice(0,3)+'/'+p.slice(3)+'</option>';
+  }
+  if(!grouped) return FH_PAIRS.map(opt).join('');
+  return fhGroups().map(function(g){
+    return '<optgroup label="'+g.label+'">'+g.pairs.map(opt).join('')+'</optgroup>';
   }).join('');
+}
+/* Fill the main Pair dropdown + the pip-table filter buttons from the canonical list */
+function buildPairControls(){
+  var sel=document.getElementById('planner-pair');
+  if(sel && !sel.options.length){
+    sel.innerHTML='<optgroup label="A–Z (all '+FH_PAIRS.length+' watched pairs)">'+plannerPairOptions('AUDUSD',false)+'</optgroup>';
+    sel.value='AUDUSD';
+  }
+  var fb=document.getElementById('pip-filter-btns');
+  if(fb && !fb.innerHTML){
+    var h='<button class="pip-filter-btn active" onclick="filterPipTable(\'all\',this)">All</button>';
+    fhGroups().forEach(function(g){
+      var col=CCY_COLORS[g.label.slice(0,3)]||'';
+      h+='<button class="pip-filter-btn" onclick="filterPipTable(\''+g.label+'\',this)"'+(col?' style="color:'+col+'"':'')+'>'+g.label.replace(' Crosses','')+'</button>';
+    });
+    fb.innerHTML=h;
+  }
 }
 
 function renderPlannerRows(){
@@ -3675,10 +3886,18 @@ function updatePlanner(){
    MORNING BRIEFING
 ══════════════════════════════════════ */
 var BRIEF_URL=WU.replace(/\/api$/,'')+'/briefing';
-var BRIEF_PAIRS=['EURUSD','GBPUSD','USDJPY','USDCHF','USDCAD','AUDUSD','NZDUSD','EURJPY','GBPJPY','EURGBP','AUDJPY','EURAUD','GBPAUD','EURCAD','GBPCAD','AUDNZD','NZDJPY','CADJPY','CHFJPY','EURCHF','GBPCHF','AUDCAD'];
+var BRIEF_PAIRS=FH_PAIRS;   // canonical watchlist — briefing + gap analysis
 /* Typical Pepperstone spreads AT THE 5pm-NY ROLLOVER (pips) — spreads widen sharply in that thin-liquidity minute,
    which is the spread that matters for gap-trading at ~7am AEST. Estimates; confirm against your own platform. */
-var PEP_SPREAD={EURUSD:3,GBPUSD:6,USDJPY:3,USDCHF:7,USDCAD:6,AUDUSD:4,NZDUSD:7,EURJPY:6,GBPJPY:14,EURGBP:4,AUDJPY:8,EURAUD:12,GBPAUD:16,EURCAD:11,GBPCAD:18,AUDNZD:9,NZDJPY:11,CADJPY:9,CHFJPY:12,EURCHF:6,GBPCHF:16,AUDCAD:9};
+/* Typical Pepperstone rollover spreads (pips) — one entry for every watchlist pair.
+   A missing entry used to silently default to 8, which flattered the wide crosses
+   (GBP/NZD is nearer 25) and produced false "tradable" gap verdicts. */
+var PEP_SPREAD={EURUSD:3,GBPUSD:6,USDJPY:3,USDCHF:7,USDCAD:6,AUDUSD:4,NZDUSD:7,
+  EURJPY:6,GBPJPY:14,AUDJPY:8,NZDJPY:11,CADJPY:9,CHFJPY:12,
+  EURGBP:4,EURAUD:12,EURCAD:11,EURCHF:6,EURNZD:18,
+  GBPAUD:16,GBPCAD:18,GBPCHF:16,GBPNZD:25,
+  AUDNZD:9,AUDCAD:9,AUDCHF:9,
+  NZDCAD:11,NZDCHF:12,CADCHF:10};
 function pspread(p){return PEP_SPREAD[p]||8;}
 function briefDayKey(){return new Date().toLocaleDateString('en-CA',{timeZone:'Australia/Brisbane'});}
 function slashPair(p){return p.slice(0,3)+'/'+p.slice(3);}
@@ -3704,7 +3923,16 @@ async function renderBriefing(force){
   box.innerHTML='<div class="scan-empty"><div class="scan-icon">☕</div><div>Building this morning\'s briefing…</div></div>';
   // 1. Market stats (free, real-time)
   var stats={};
-  try{ var d=await fetch(BRIEF_URL+'?pairs='+encodeURIComponent(BRIEF_PAIRS.join(',')),{cache:'no-store'}).then(function(r){return r.json();}); stats=(d&&d.stats)||{}; }catch(e){}
+  // Chunked ≤10 pairs per call — one 28-pair call exceeds Cloudflare's 50-subrequest cap
+  // and silently dropped pairs from the gap table.
+  try{
+    var bchunks=[]; for(var bi=0;bi<BRIEF_PAIRS.length;bi+=10) bchunks.push(BRIEF_PAIRS.slice(bi,bi+10));
+    var bres=await Promise.all(bchunks.map(function(ch){
+      return fetch(BRIEF_URL+'?pairs='+encodeURIComponent(ch.join(','))+'&_='+Date.now(),{cache:'no-store'})
+        .then(function(r){return r.json();}).catch(function(){return null;});
+    }));
+    bres.forEach(function(d){ if(d&&d.stats) Object.keys(d.stats).forEach(function(k){stats[k]=d.stats[k];}); });
+  }catch(e){}
   // Attach pair key and compute displayPips — the PREVIOUS COMPLETED TRADING DAY, measured
   // 7am AEST yesterday → 7am AEST today (the user-requested window), falling back to the
   // previous daily bar if the worker hasn't been redeployed with prevDayMovePips yet.
@@ -3725,11 +3953,13 @@ async function renderBriefing(force){
   var gaps=rows.filter(function(s){return s.gapPips!=null;}).sort(function(a,b){return (Math.abs(b.gapPips)-pspread(b.pair))-(Math.abs(a.gapPips)-pspread(a.pair));});
   // 5. Today's news (AI, cached daily)
   var whenLong=new Date().toLocaleDateString('en-AU',{timeZone:'Australia/Brisbane',weekday:'long',day:'numeric',month:'long',year:'numeric'});
-  var news='';
+  var news='',todayEvts=[];
+  try{ todayEvts=await calEventsToday(); }catch(e){}
   try{
+    if(todayEvts.length) throw {skip:1};
     news=await ai('Search an economic calendar (forexfactory, investing.com) for '+whenLong+' (today) and list ONLY today\'s scheduled economic events that could move the forex market. MANDATORY CHECKLIST — explicitly check for and never omit, if scheduled today: any central-bank rate decision, statement, minutes or press conference (FOMC/Fed, ECB, BoE, BoJ, RBA, RBNZ, BoC, SNB), CPI, employment reports (NFP etc.), GDP. Missing a scheduled central-bank decision is a critical failure. For each event, on one line: the local release time WITH its zone, then the converted AEST (Australia/Brisbane) time, then the event, the currency, and the FX pairs likely to react — e.g. "13:30 GMT / 23:30 AEST — US Non-Farm Payrolls (USD) -> EUR/USD, USD/JPY". Do NOT list yesterday\'s or past events. If the calendar is genuinely light today, say so in one short line. CRITICAL: Your response MUST start directly with the first time/event line (e.g. "13:30 GMT..."). Never begin with "Based on", "I have found", "Here are", "The following", or any other introduction. Output ONLY the raw event list — no preamble, no narration, no markdown, no closing remarks.','brief-news:'+day,{model:'claude-haiku-4-5',maxTokens:900,webSearch:true});
     news=stripNarration(news);
-  }catch(e){ news='Could not load today\'s news feed ('+((e&&e.message)||e)+').'; }
+  }catch(e){ if(!e||!e.skip) news='Could not load today\'s news feed ('+((e&&e.message)||e)+').'; }
   // 6. Alerts (computed from the above)
   var alerts=[];
   gaps.filter(function(s){return Math.abs(s.gapPips)>pspread(s.pair)&&Math.abs(s.gapPips)>=10;}).slice(0,3).forEach(function(s){var edge=Math.abs(s.gapPips)-pspread(s.pair);alerts.push({t:'gap',x:slashPair(s.pair)+' gapped '+fmtPips(s.gapPips)+' pips at the ~7am rollover vs a ~'+pspread(s.pair).toFixed(1)+'-pip spread — tradable (edge +'+edge.toFixed(1)+' pips).'});});
@@ -3737,7 +3967,8 @@ async function renderBriefing(force){
   var bigAbs=(hasSession?sessRows:rows).slice().sort(function(a,b){return Math.abs((hasSession?b.sessionMovePips:b.displayPips))-Math.abs((hasSession?a.sessionMovePips:a.displayPips));})[0];
   if(bigAbs) alerts.push({t:'move',x:slashPair(bigAbs.pair)+' is the biggest mover '+(hasSession?'this session so far ('+fmtPips(bigAbs.sessionMovePips)+' pips since 7am AEST).':'in the previous session ('+fmtPips(bigAbs.displayPips)+' pips).')});
   rows.filter(function(s){return s.activity>2;}).sort(function(a,b){return b.activity-a.activity;}).slice(0,2).forEach(function(s){alerts.push({t:'vol',x:slashPair(s.pair)+' traded '+s.activity.toFixed(1)+'× its normal daily range — elevated volatility.'});});
-  var hot=news.match(/non-?farm|nfp|\bcpi\b|fomc|rate decision|interest rate|payroll|\bgdp\b|unemployment|inflation/i);
+  var newsTxt=news+' '+todayEvts.filter(function(e){return e.imp==='high';}).map(function(e){return e.name;}).join(' ');
+  var hot=newsTxt.match(/non-?farm|nfp|\bcpi\b|fomc|rate decision|interest rate|payroll|\bgdp\b|unemployment|inflation/i);
   if(hot) alerts.push({t:'news',x:'High-impact data on the calendar today ('+hot[0].toUpperCase()+') — expect volatility around the release; see Today\'s news below.'});
   // ── render ──
   function moveTable(list,cls){return '<table class="brief-tbl"><tbody>'+list.map(function(s){return '<tr class="row-link" onclick="goToPair(\''+s.pair+'\')" title="Open in Analysis"><td>'+pairChip(s.pair,true)+'</td><td class="bnum '+cls+'">'+fmtPips(s.displayPips)+'</td><td class="bnum bmuted">'+(s.displayRange!=null?Math.round(s.displayRange)+'p rng':'')+'</td></tr>';}).join('')+'</tbody></table>';}
@@ -3753,13 +3984,9 @@ async function renderBriefing(force){
   h+='<div class="brief-sec"><div class="brief-h">🔥 Most active currencies <span class="muted">range vs 14-day average</span></div>';
   h+='<div class="chip-row">'+mostActive.map(function(o){return '<span class="act-chip">'+ccySpan(o.c)+' <b>'+o.avg.toFixed(2)+'×</b></span>';}).join('')+'</div>';
   h+='<div class="ss" style="margin-top:8px;margin-bottom:0">FX has no public spot-volume feed, so this ranks how much each currency moved relative to its own 14-day norm — a proxy for where the action was.</div></div>';
-  h+='<div class="brief-sec"><div class="brief-h">↔️ Gap analysis <span class="muted">all '+gaps.length+' watched pairs · 7am AEST rollover · tradable when gap &gt; spread</span></div>';
-  if(gaps.length){
-    h+='<table class="brief-tbl"><thead><tr><th>Pair</th><th class="bnum">Gap</th><th class="bnum">Spread</th><th class="bnum">Edge</th><th>Verdict</th></tr></thead><tbody>';
-    gaps.forEach(function(s){var sp=pspread(s.pair);var g=Math.abs(s.gapPips);var edge=g-sp;var verdict=g<1?'<span class="bmuted">No gap</span>':edge<=0?'<span class="fill-low">Not worth it</span>':(g>=10?'<span class="fill-high">Tradable</span>':'<span class="fill-medium">Worth a look</span>');h+='<tr class="row-link" onclick="goToPair(\''+s.pair+'\')" title="Open in Analysis"><td>'+pairChip(s.pair,true)+'</td><td class="bnum '+(s.gapPips>0?'bup':'bdown')+'">'+fmtPips(s.gapPips)+'</td><td class="bnum bmuted">'+sp.toFixed(1)+'</td><td class="bnum '+(edge>0?'bup':'bdown')+'">'+(edge>=0?'+':'')+edge.toFixed(1)+'</td><td>'+verdict+'</td></tr>';});
-    h+='</tbody></table><div class="ss" style="margin-top:8px;margin-bottom:0">This shows the market gap at the session rollover — mainly the <b>weekend gap</b> (Friday close → Monday open), which appears in any feed. Weekday 7am rollover gaps (e.g. a 25-pip GBP/AUD jump) are a Pepperstone-feed artifact that free market data doesn\'t contain, so those come from your <b>TradingView</b> alert. Rule: gap must beat the spread (edge &gt; 0); ≥10 pips = strong. Spread is a typical rollover estimate.</div>';
-  } else { h+='<div class="cb">No significant weekend/rollover gap in the market feed right now. Weekday 7am gaps are broker-specific — those come from your TradingView alert.</div>'; }
-  h+='</div>';
+  _gapRows=gaps;
+  h+='<div class="brief-sec"><div class="brief-h">↔️ Gap analysis <span class="muted" id="gap-sub">7am AEST rollover · tradable when gap &gt; spread</span></div>';
+  h+='<div id="gap-filter" class="gap-filter"></div><div id="gap-table"></div></div>';
   // Render news: each line as its own item with currency colour strip + delineation
   function renderNews(raw){
     if(!raw) return '<div class="cb" style="color:var(--mt)">No news loaded.</div>';
@@ -3789,13 +4016,83 @@ async function renderBriefing(force){
       return '<div style="padding:10px 14px;border-left:3px solid '+accentCol+';background:rgba(255,255,255,0.025);border-radius:0 6px 6px 0;margin-bottom:10px;font-size:13px;line-height:1.65;border-bottom:1px solid rgba(255,255,255,0.04)">'+colorizeCcy(md(line))+'</div>';
     }).join('');
   }
-  h+='<div class="brief-sec"><div class="brief-h">📰 Today\'s market-moving news <span class="muted">'+whenLong+'</span></div><div class="brief-news">'+renderNews(news)+'</div></div>';
+  /* Real calendar events for today — every scheduled release, not just what a web search found */
+  function renderTodayEvents(evs){
+    var now=Date.now();
+    var upcoming=evs.filter(function(e){return e.ts>=now;});
+    var passed=evs.filter(function(e){return e.ts<now;});
+    function row(e){
+      var col=CCY_COLORS[e.ccy]||'var(--bd2)';
+      return '<div class="cal-event'+(e.ts<now?' cal-past':'')+'" style="border-left:3px solid '+col+'">'
+        +'<span class="cal-imp-badge '+e.imp+'">'+(e.imp==='high'?'HIGH':e.imp==='med'?'MED':'LOW')+'</span>'
+        +'<div class="cal-text"><div class="cal-title"><span class="cal-ccy-tag" style="color:'+col+';background:'+col+'22;border:1px solid '+col+'44">'+e.ccy+'</span>'+highlightEcoTerms(e.name)+'</div>'
+        +'<div class="cal-detail">'+e.time+' · Forecast: <span class="cal-val">'+e.forecast+'</span> · Prev: <span class="cal-val">'+e.prev+'</span></div></div></div>';
+    }
+    var out='';
+    if(upcoming.length){ out+='<div class="cal-day"><div class="cal-day-hdr">Still to come today <span style="color:var(--mt);font-weight:400">'+upcoming.length+'</span></div>'+upcoming.map(row).join('')+'</div>'; }
+    else out+='<div class="cb">Nothing further scheduled today.</div>';
+    if(passed.length){ out+='<div class="cal-day"><div class="cal-day-hdr">Already released <span style="color:var(--mt);font-weight:400">'+passed.length+'</span></div>'+passed.map(row).join('')+'</div>'; }
+    return out;
+  }
+  var newsHtml=todayEvts.length?renderTodayEvents(todayEvts):renderNews(news);
+  var newsSrc=todayEvts.length?todayEvts.length+' scheduled events · live calendar feed':'AI summary (calendar feed unavailable)';
+  h+='<div class="brief-sec"><div class="brief-h">📰 Today\'s market-moving news <span class="muted">'+whenLong+' · '+newsSrc+'</span></div><div class="brief-news">'+newsHtml+'</div></div>';
   box.innerHTML=h;
+  renderGapTable();
   box.setAttribute('data-loaded','1');
   buildShareBar('brief-share','Morning briefing','#brief-body','Morning_Briefing');
   var tm=new Date().toLocaleTimeString('en-AU',{timeZone:'Australia/Brisbane',hour:'2-digit',minute:'2-digit'});
   var mt=document.getElementById('brief-meta'); if(mt) mt.textContent='As of '+tm+' AEST';
 }
+/* ── Gap analysis: Tradable/worth-a-look vs All (Amendment 17.8.26 #2) ──
+   Same pattern as the Maps main/all switch. Default = only pairs actually worth
+   looking at (gap ≥1 pip AND gap beats the spread). */
+var _gapRows=[];
+function gapCalc(s){
+  var sp=pspread(s.pair), g=Math.abs(s.gapPips), edge=g-sp;
+  var noGap=g<1;
+  return {sp:sp,g:g,edge:edge,
+    worth:(!noGap&&edge>0),
+    label:noGap?'No gap':(edge<=0?'Not worth it':(g>=10?'Tradable':'Worth a look')),
+    cls:noGap?'bmuted':(edge<=0?'fill-low':(g>=10?'fill-high':'fill-medium'))};
+}
+function gapFilterMode(){return LS.get('fh_gapfilter')==='all'?'all':'worth';}
+function setGapFilter(mode){LS.set('fh_gapfilter',mode);renderGapTable();}
+function renderGapTable(){
+  var wrap=document.getElementById('gap-table');
+  if(!wrap) return;
+  var mode=gapFilterMode();
+  var all=_gapRows.map(function(s){var c=gapCalc(s);c.row=s;return c;});
+  var worthCount=all.filter(function(c){return c.worth;}).length;
+  var fb=document.getElementById('gap-filter');
+  if(fb){
+    fb.innerHTML='<button class="gapf'+(mode==='worth'?' active':'')+'" onclick="setGapFilter(\'worth\')">Tradable / worth a look ('+worthCount+')</button>'
+      +'<button class="gapf'+(mode==='all'?' active':'')+'" onclick="setGapFilter(\'all\')">All pairs ('+all.length+')</button>';
+  }
+  var list=mode==='all'?all:all.filter(function(c){return c.worth;});
+  var sub=document.getElementById('gap-sub');
+  if(sub) sub.innerHTML=(mode==='all'?'all '+all.length+' watched pairs':worthCount+' of '+all.length+' watched pairs worth a look')+' · 7am AEST rollover · tradable when gap &gt; spread';
+  var h='';
+  if(!list.length){
+    h='<div class="cb">'+(mode==='worth'
+      ? 'No pair gapped by more than its spread at this rollover — nothing worth trading. Tap <b>All pairs</b> to see every pair anyway.'
+      : 'No significant weekend/rollover gap in the market feed right now. Weekday 7am gaps are broker-specific — those come from your TradingView alert.')+'</div>';
+  } else {
+    h='<table class="brief-tbl"><thead><tr><th>Pair</th><th class="bnum">Gap</th><th class="bnum">Spread</th><th class="bnum">Edge</th><th>Verdict</th></tr></thead><tbody>';
+    list.forEach(function(c){
+      var s=c.row;
+      h+='<tr class="row-link" onclick="goToPair(\''+s.pair+'\')" title="Open in Analysis"><td>'+pairChip(s.pair,true)+'</td>'
+        +'<td class="bnum '+(s.gapPips>0?'bup':'bdown')+'">'+fmtPips(s.gapPips)+'</td>'
+        +'<td class="bnum bmuted">'+c.sp.toFixed(1)+'</td>'
+        +'<td class="bnum '+(c.edge>0?'bup':'bdown')+'">'+(c.edge>=0?'+':'')+c.edge.toFixed(1)+'</td>'
+        +'<td><span class="'+c.cls+'">'+c.label+'</span></td></tr>';
+    });
+    h+='</tbody></table>';
+  }
+  h+='<div class="ss" style="margin-top:8px;margin-bottom:0">This shows the market gap at the session rollover — mainly the <b>weekend gap</b> (Friday close → Monday open), which appears in any feed. Weekday 7am rollover gaps (e.g. a 25-pip GBP/AUD jump) are a Pepperstone-feed artifact that free market data doesn\'t contain, so those come from your <b>TradingView</b> alert. Rule: gap must beat the spread (edge &gt; 0); ≥10 pips = strong. Spread is a typical rollover estimate.</div>';
+  wrap.innerHTML=h;
+}
+
 function forceBrief(){var day=briefDayKey();LS.del('fhai:brief-news:'+day);try{delete cache['brief-news:'+day];}catch(e){}var b=document.getElementById('brief-body');if(b)b.setAttribute('data-loaded','0');briefRendered=null;renderBriefing(true);}
 
 function initCache(){
@@ -3811,6 +4108,7 @@ document.addEventListener('DOMContentLoaded',function(){
   initTheme();
   initBanner();
   initCache();
+  buildPairControls();   // Pair dropdown + pip filters, built from the canonical FH_PAIRS list
   initPlanner();
   initTicker();
   updateDate();
