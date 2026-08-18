@@ -2,7 +2,9 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="description" content="ForexHub — a private forex workspace: multi-timeframe analysis, trade scanner, economic calendar, market maps, session clocks, risk calculator and trade journal, all in AEST.">
+<meta name="robots" content="noindex, nofollow">
 <meta name="theme-color" content="#0a0a0a">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-capable" content="yes">
@@ -51,6 +53,13 @@ body{font-family:'Syne',sans-serif;background:var(--bg);color:var(--tx);min-heig
 /* ── NAV ── */
 .nav{display:flex;gap:4px;padding:12px 20px;border-bottom:1px solid var(--bd);overflow-x:auto;scrollbar-width:none;justify-content:center}
 .nav::-webkit-scrollbar{display:none}
+/* Mobile: the nav scrolls sideways but gave no hint that it did. A soft fade at each end
+   signals "there's more this way" without adding a scrollbar. */
+.nav-wrap{position:relative}
+.nav-wrap::before,.nav-wrap::after{content:'';position:absolute;top:0;bottom:1px;width:26px;pointer-events:none;z-index:2}
+.nav-wrap::before{left:0;background:linear-gradient(90deg,var(--bg) 20%,transparent)}
+.nav-wrap::after{right:0;background:linear-gradient(270deg,var(--bg) 20%,transparent)}
+@media(min-width:900px){.nav-wrap::before,.nav-wrap::after{display:none}}
 .nb{white-space:nowrap;padding:7px 16px;border-radius:100px;font-family:'Syne',sans-serif;font-size:13.5px;font-weight:600;border:1px solid var(--bd2);background:transparent;color:rgba(240,237,232,0.92);cursor:pointer;flex-shrink:0;transition:color 0.15s,border-color 0.15s}
 body.light .nb{color:rgba(28,27,25,0.88)}
 .nb:hover{color:var(--tx);border-color:rgba(255,255,255,0.28)}
@@ -467,6 +476,9 @@ body.light .cpop-explain{color:#33312d}
 body.light .cpop-desc{color:#111}
 body.light #pin-gate{background:#f5f4f1}
 body.light .bn-bottom{background:rgba(255,255,255,0.97)}
+/* The install banner is fixed to the bottom of the viewport and used to cover whatever sat
+   at the end of a tab — on Journal that was the "+ Log trade" button. Reserve the space. */
+body.has-banner{padding-bottom:84px}
 body.light .bn-bottom .bnt2{color:#33312d}
 body.light .hm-table thead th{background:var(--sf)}
 body.light .corr-table thead th{background:var(--sf)}
@@ -504,7 +516,7 @@ body.light .chart-modal-overlay{background:rgba(0,0,0,0.55)}
 
 /* ── PRINT ── */
 @media print{
-  .hdr,.nav,.bn-bottom,.share-bar,.rb,.scan-controls,.theme-tog,#pin-gate,.map-tabs,.analysis-subtabs,.pair-sidebar{display:none!important}
+  .hdr,.nav,.nav-wrap,.bn-bottom,.share-bar,.rb,.scan-controls,.theme-tog,#pin-gate,.map-tabs,.analysis-subtabs,.pair-sidebar,#cal-crosscheck{display:none!important}
   body{background:#fff;color:#000}
   .sec{display:none!important}.sec.active{display:block!important}
   .card{border:1px solid #ccc;break-inside:avoid}
@@ -518,8 +530,10 @@ body.light .chart-modal-overlay{background:rgba(0,0,0,0.55)}
   <div class="pin-box">
     <div class="pin-logo">Forex<span>Hub</span></div>
     <div class="pin-sub">Enter access PIN to continue</div>
-    <input class="pin-inp" id="pin-input" type="password" maxlength="8" placeholder="••••" autocomplete="off" onkeydown="if(event.key==='Enter')checkPin()">
-    <button class="pin-btn" onclick="checkPin()">Enter</button>
+    <input class="pin-inp" id="pin-input" type="password" inputmode="numeric" maxlength="8" placeholder="••••" autocomplete="off" onkeydown="if(event.key==='Enter'){event.preventDefault();checkPin();}">
+    <!-- mousedown, not click: on mobile the input's blur used to fire first and swallow the
+         first tap, so the button appeared to do nothing until you pressed it twice. -->
+    <button class="pin-btn" type="button" onmousedown="event.preventDefault();checkPin()" ontouchstart="event.preventDefault();checkPin()">Enter</button>
     <div class="pin-err" id="pin-err"></div>
   </div>
 </div>
@@ -534,6 +548,7 @@ body.light .chart-modal-overlay{background:rgba(0,0,0,0.55)}
 </div>
 
 <!-- ══ NAV ══ -->
+<div class="nav-wrap">
 <div class="nav">
   <button class="nb active" onclick="showS('analysis',this)">Analysis</button>
   <button class="nb" onclick="showS('briefing',this)">Briefing</button>
@@ -547,6 +562,7 @@ body.light .chart-modal-overlay{background:rgba(0,0,0,0.55)}
   <button class="nb" onclick="showS('journal',this)">Journal</button>
   <button class="nb" onclick="showS('calculator',this)">Calculator</button>
   <button class="nb" onclick="showS('about',this)">About</button>
+</div>
 </div>
 
 <!-- ══ PRICE TICKER (built by initTicker) ══ -->
@@ -823,7 +839,7 @@ body.light .chart-modal-overlay{background:rgba(0,0,0,0.55)}
 <!-- ══ CALENDAR ══ -->
 <div id="calendar" class="sec">
   <div class="st">Economic calendar</div>
-  <div class="ss">Live Forex Factory feed · every scheduled event, all currencies · times in AEST · click any event for detail</div>
+  <div class="ss">Live economic calendar · every scheduled event, all currencies · times in AEST · click any event for detail</div>
   <div class="cal-legend">
     <div class="cal-leg"><span class="cal-imp-badge high">HIGH</span> High impact</div>
     <div class="cal-leg"><span class="cal-imp-badge med">MED</span> Medium</div>
@@ -832,6 +848,15 @@ body.light .chart-modal-overlay{background:rgba(0,0,0,0.55)}
   <div id="cal-body"></div>
   <div class="meta" id="cal-meta" style="margin-top:10px"></div>
   <button class="rb" style="margin-top:12px" onclick="forceCal()">↺ Refresh calendar</button>
+  <!-- Second, independent source for cross-checking. Myfxbook blocks server-side reads, so it
+       cannot be merged into the data above — but the widget loads fine in a browser, so it sits
+       here as a manual cross-check. Collapsed + lazy-loaded, so it costs nothing until opened. -->
+  <details class="card" id="cal-crosscheck" style="margin-top:14px">
+    <summary style="cursor:pointer;font-size:12px;font-weight:700;letter-spacing:0.04em;text-transform:uppercase;color:var(--ac)">⚖ Cross-check against Myfxbook</summary>
+    <div class="cb" style="margin:10px 0">A second, independent calendar. Use it to sanity-check a time or forecast before you trade it — if the two disagree, treat the event as unconfirmed. Times here are shown in Myfxbook's own timezone setting, not AEST.</div>
+    <iframe title="Myfxbook economic calendar" loading="lazy" src="https://widget.myfxbook.com/widget/calendar.html?lang=en&amp;impacts=0,1,2,3&amp;symbols=AUD,CAD,CHF,CNY,EUR,GBP,JPY,NZD,USD" style="border:0;width:100%;height:560px;border-radius:8px;background:#fff"></iframe>
+    <div class="meta" style="margin-top:8px"><a href="https://www.myfxbook.com/forex-economic-calendar" target="_blank" rel="noopener" style="color:var(--mt)">Economic Calendar</a> by Myfxbook.com</div>
+  </details>
 </div>
 
 <!-- ══ JOURNAL ══ -->
@@ -880,6 +905,7 @@ body.light .chart-modal-overlay{background:rgba(0,0,0,0.55)}
   <div style="display:flex;align-items:center;gap:8px;margin-bottom:10px;flex-wrap:wrap">
     <div class="cl" style="margin:0">Trade history</div>
     <button class="pip-fccy" style="margin-left:auto" onclick="exportJournal()">⬇ Backup</button>
+    <button class="pip-fccy" onclick="exportJournalCsv()">⬇ CSV</button>
     <button class="pip-fccy" onclick="document.getElementById('j-import').click()">⬆ Restore</button>
     <input type="file" id="j-import" accept="application/json,.json" style="display:none" onchange="importJournal(this)">
   </div>
@@ -1215,12 +1241,23 @@ body.light .chart-modal-overlay{background:rgba(0,0,0,0.55)}
   <div class="st">About ForexHub</div>
   <div class="ss">Your daily forex companion</div>
   <div class="card">
+    <div class="ai"><div class="aq">What's new in v9</div><div class="aa">
+      · The AI proxy is locked to this site and capped at a hard daily budget, so the endpoint can't be used by anyone else at your expense.<br>
+      · AI answers are now cached on the server as well as the device — the same analysis is paid for once, not once per browser.<br>
+      · The economic calendar is fixed: it fails over to a second provider and keeps a last-known-good copy, so it no longer empties out when a feed rate-limits.<br>
+      · Calendar tab has an optional Myfxbook cross-check panel for confirming a time or forecast against a second source.<br>
+      · Trade Review now has Print / PDF, Share, Email and Save — the saved record includes your setup notes, the chart you attached and the full AI feedback.<br>
+      · Journal exports to CSV as well as JSON backup.<br>
+      · Fixes: PIN button no longer needs a second tap, pinch-zoom re-enabled, briefing event times no longer truncate, session hours in this tab now follow daylight saving automatically.
+    </div></div>
     <div class="ai"><div class="aq">Estimated AI spend</div><div class="aa" id="ai-spend">—</div></div>
     <div class="ai"><div class="aq">How does the analysis work?</div><div class="aa">ForexHub sends prompts to Claude AI via a Cloudflare Worker. Analysis runs on the cheaper Haiku model and is cached per day; the scanner uses a stronger model with live prices and web search. Web search is only used where freshness matters, to keep costs down.</div></div>
-    <div class="ai"><div class="aq">How do I remove the PIN gate?</div><div class="aa">The PIN is "2025". To remove it permanently for public access, delete the pin-gate div and the checkPin() / initPin() functions from the HTML source.</div></div>
+    <div class="ai"><div class="aq">How do I remove the PIN gate?</div><div class="aa">Delete the pin-gate div and the checkPin() / initPin() functions from the HTML source. Note that the PIN is a convenience lock, not real security — it lives in the page source, so anyone determined can read past it. If you need genuine access control, put Cloudflare Access in front of the site (free for up to 50 users) and remove this gate.</div></div>
     <div class="ai"><div class="aq">How often should I refresh?</div><div class="aa">Daily tab: each morning AEST. Weekly tab: Monday before markets open. 4H tab: before intraday sessions. Calendar: once per week on Monday.</div></div>
     <div class="ai"><div class="aq">Where is my journal stored?</div><div class="aa">Your trade journal is saved in your browser's localStorage. It never leaves your device and persists across sessions.</div></div>
-    <div class="ai"><div class="aq">What session should I trade from Brisbane?</div><div class="aa">London (6pm–3am AEST) and the London/NY overlap (11pm–3am AEST) offer the highest volume. Sydney session (8am–5pm) is best for AUD and NZD pairs.</div></div>
+    <!-- Filled in by fillSessionFaq() from the same DST-aware session config the Sessions tab
+         uses. The old text was hardcoded to winter hours, so it was an hour out for half the year. -->
+    <div class="ai"><div class="aq">What session should I trade from Brisbane?</div><div class="aa" id="faq-sessions">—</div></div>
     <div class="ai"><div class="aq">Is this financial advice?</div><div class="aa">No. ForexHub is an educational tool only. Always consult a licensed financial adviser before trading.</div></div>
     <div class="ai"><div class="aq">Recommended ASIC-regulated brokers?</div><div class="aa">Pepperstone, IC Markets, and IG Markets are popular choices for Australian forex traders.</div></div>
   </div>
@@ -1269,6 +1306,11 @@ body.light .chart-modal-overlay{background:rgba(0,0,0,0.55)}
    CONFIG
 ══════════════════════════════════════ */
 var WU   = "https://forexproxy.jlivo10.workers.dev/api";
+/* App key sent with every proxy call. The proxy now refuses AI requests that don't carry
+   it (and that don't come from this site's origin), so the endpoint can no longer be used
+   as a free Claude relay by anyone who finds the URL. */
+var FH_APP_KEY = "PsTq7Jjwee9OP-TWMLOco0kU2ZKsH7oE";
+var FH_HDRS = {'Content-Type':'application/json','X-FH-App':FH_APP_KEY};
 var cache = {};
 var now  = new Date();
 var cD   = "AUDUSD";
@@ -1357,7 +1399,9 @@ function initPin(){
   }
 }
 function checkPin(){
-  var v=document.getElementById('pin-input').value.trim();
+  /* Strip anything that isn't a digit: a stray space, an autofilled character or a
+     phone keyboard's punctuation used to cause a "wrong PIN" on a correct entry. */
+  var v=(document.getElementById('pin-input').value||'').replace(/\D+/g,'');
   if(v===CORRECT_PIN){
     SS.set('fh_pin','ok');
     document.getElementById('pin-gate').style.display='none';
@@ -1374,18 +1418,19 @@ function checkPin(){
 function initBanner(){
   if(LS.get('fh_banner_dismissed')==='1') return;
   var bn=document.getElementById('ibanner');
-  if(bn) bn.style.display='flex';
+  if(bn){ bn.style.display='flex'; document.body.classList.add('has-banner'); }
 }
 function dismissBanner(){
   LS.set('fh_banner_dismissed','1');
   var bn=document.getElementById('ibanner');
   if(bn) bn.style.display='none';
+  document.body.classList.remove('has-banner');
 }
 
 /* ══════════════════════════════════════
    HEADER DATE
 ══════════════════════════════════════ */
-var FH_BUILD='v8'; // bump on every delivered change — shown in the header so it's always obvious which version is loaded
+var FH_BUILD='v9'; // bump on every delivered change — shown in the header so it's always obvious which version is loaded
 /* Stale-tab killer: every so often, check whether a newer build has been deployed.
    If so, show a can't-miss banner telling the user to reload — long-open tabs silently
    running old code caused repeated "the fix didn't work" confusion. */
@@ -1610,13 +1655,16 @@ async function ai(prompt,cacheKey,opts){
     }
   }
   var payload={prompt:prompt};
+  /* Pass the cache key up to the proxy too: identical requests are then billed once
+     server-side and shared by every device/browser, instead of once per localStorage. */
+  if(cacheKey) payload.ck=cacheKey;
   if(opts.maxTokens) payload.maxTokens=opts.maxTokens;
   if(opts.model) payload.model=opts.model;
   if(opts.webSearch) payload.webSearch=true;
   if(opts.expectJson) payload.expectJson=true;
   var res;
   try{
-    res=await fetch(WU,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(payload)});
+    res=await fetch(WU,{method:'POST',headers:FH_HDRS,body:JSON.stringify(payload)});
   }catch(e){ throw new Error(NETMSG); }
   var d=null; try{d=await res.json();}catch(e){}
   if(!res.ok) throw new Error((d&&d.error)?d.error:('The analysis service returned an error (HTTP '+res.status+'). Try again in a moment.'));
@@ -1844,8 +1892,11 @@ function renderTrends(){
   document.getElementById('trend-body').innerHTML=h;
 }
 async function aiImage(prompt,imageB64,mimeType){
-  var res=await fetch(WU,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({prompt:prompt,image:imageB64,mimeType:mimeType||'image/png'})});
-  if(!res.ok) throw new Error('API '+res.status);
+  var res=await fetch(WU,{method:'POST',headers:FH_HDRS,body:JSON.stringify({prompt:prompt,image:imageB64,mimeType:mimeType||'image/png'})});
+  if(!res.ok){
+    var ed=null; try{ ed=await res.json(); }catch(e){}
+    throw new Error((ed&&ed.error)?ed.error:('API '+res.status));
+  }
   var d=await res.json();
   return d.text||d.content&&d.content[0]&&d.content[0].text||'No response';
 }
@@ -2468,6 +2519,20 @@ function getSESS(){ // DST-aware session list in Brisbane minutes, cached for 60
   return list;
 }
 
+/* Keep the About-tab answer in step with the live, DST-aware session windows. */
+function fillSessionFaq(){
+  var el=document.getElementById('faq-sessions');
+  if(!el) return;
+  var by={};
+  getSESS().forEach(function(s){by[s.name]=s;});
+  var ldn=by['London'],ny=by['New York'],syd=by['Sydney'];
+  if(!ldn||!ny||!syd) return;
+  var ovStart=Math.max(ldn.start,ny.start), ovEnd=Math.min(ldn.end,ny.end);
+  var ov=(ovEnd>ovStart)?(fmtHM(ovStart)+'–'+fmtHM(ovEnd)+' AEST'):'';
+  el.textContent='London ('+ldn.label+')'+(ov?' and the London/New York overlap ('+ov+')':'')
+    +' carry the highest volume. The Sydney session ('+syd.label+') suits AUD and NZD pairs. '
+    +'These times track UK and US daylight saving automatically — Brisbane has no DST, so the AEST windows shift twice a year.';
+}
 function getAESTMinutes(){
   var d=new Date();
   var aest=new Date(d.toLocaleString('en-US',{timeZone:'Australia/Brisbane'}));
@@ -2524,6 +2589,7 @@ function renderTimeline(nowMin){
   function localTime(tz){
     try{return new Intl.DateTimeFormat('en-AU',{timeZone:tz,hour:'2-digit',minute:'2-digit',hour12:false}).format(new Date());}catch(e){return '';}
   }
+  var CW=el.clientWidth||360;
   var html='<div style="position:relative;height:'+(totalH+30)+'px">';
   SESS.forEach(function(s,i){
     var top=i*(RH+GAP);
@@ -2536,10 +2602,14 @@ function renderTimeline(nowMin){
     var tz=SESS_TZ[s.name]||'Australia/Brisbane';
     var timeLbl=open?localTime(tz):'';
     html+='<div title="'+s.name+' '+s.label+'" style="position:absolute;left:'+(sp*100).toFixed(2)+'%;width:'+bW.toFixed(2)+'%;top:'+top+'px;height:'+RH+'px;border-radius:3px;background:'+s.color+';opacity:'+alpha+(open?';box-shadow:0 0 10px '+s.color+'55':'')+';overflow:hidden">';
+    /* On a phone a 9-hour bar is only ~120px wide, so the old always-on labels were cut
+       mid-number ("17:0-02:0"). Only print each label if the bar is actually wide enough
+       for it; the full window is always available in the row's tooltip and title. */
+    var barPx=(bW/100)*CW;
     html+='<div style="padding:0 8px;height:100%;display:flex;align-items:center;gap:6px;overflow:hidden;white-space:nowrap">';
-    html+='<span style="font-family:\'DM Mono\',monospace;font-size:10px;font-weight:700;color:'+txtCol+'">'+s.flag+' '+s.name+'</span>';
-    html+='<span style="font-family:\'DM Mono\',monospace;font-size:9px;color:'+txtCol+';opacity:0.8">'+s.label.replace(' AEST','')+'</span>';
-    if(timeLbl) html+='<span style="font-family:\'DM Mono\',monospace;font-size:9px;color:'+txtCol+';opacity:0.75">· '+timeLbl+' local</span>';
+    html+='<span style="font-family:\'DM Mono\',monospace;font-size:10px;font-weight:700;color:'+txtCol+'">'+s.flag+(barPx>78?' '+s.name:'')+'</span>';
+    if(barPx>190) html+='<span style="font-family:\'DM Mono\',monospace;font-size:9px;color:'+txtCol+';opacity:0.8">'+s.label.replace(' AEST','')+'</span>';
+    if(timeLbl&&barPx>280) html+='<span style="font-family:\'DM Mono\',monospace;font-size:9px;color:'+txtCol+';opacity:0.75">· '+timeLbl+' local</span>';
     html+='</div></div>';
   });
   // Hour gridlines + labels every 2h across the whole window (no clipping)
@@ -2638,28 +2708,37 @@ var _calFeed={};
 /* Pull a week of real calendar data. Worker proxy first (cached + CORS-safe),
    direct feed as a backstop so a worker outage can't blank the calendar. */
 var _calStale={};
+var _calSrc={};
+var CAL_SRC_NAMES={forexfactory:'Forex Factory',tradingview:'TradingView economic calendar',stale:'last stored copy',cache:'cached feed'};
+/* The old code also tried nfs.faireconomy.media directly as a "backstop". That request can
+   never succeed from a browser (no CORS grant), so it only ever produced failed network
+   requests in the console. The worker is the single source: it now fails over from Forex
+   Factory to TradingView to its own last-known-good copy server-side, and reports which
+   one you are looking at in `src`. */
 async function fetchCalWeek(which){
   var c=_calFeed[which];
   if(c && (Date.now()-c.t)<15*60*1000) return c.e;
-  // The direct feed is cross-origin with no CORS grant and will throw — the worker is the
-  // real source. It is kept only as a last resort for a browser that somehow allows it.
-  var urls=[CAL_URL+'?w='+which,'https://nfs.faireconomy.media/ff_calendar_'+which+'.json'];
-  for(var i=0;i<urls.length;i++){
-    try{
-      var r=await fetch(urls[i],{cache:'no-store'});
-      if(!r.ok) continue;
-      var d=await r.json();
-      var arr=Array.isArray(d)?d:((d&&d.events)||null);
-      if(arr&&arr.length){
-        // D2: the worker flags a last-known-good copy served because the upstream feed
-        // was rate-limiting. Show that rather than passing off old data as current.
-        _calStale[which]=(d&&d.stale)?{ts:d.ts,why:d.error||''}:null;
-        _calFeed[which]={t:Date.now(),e:arr};
-        return arr;
-      }
-    }catch(e){}
-  }
+  try{
+    var r=await fetch(CAL_URL+'?w='+which,{cache:'no-store'});
+    if(!r.ok) return null;
+    var d=await r.json();
+    var arr=Array.isArray(d)?d:((d&&d.events)||null);
+    if(arr&&arr.length){
+      // D2: the worker flags a last-known-good copy served because the upstream feed
+      // was rate-limiting. Show that rather than passing off old data as current.
+      _calStale[which]=(d&&d.stale)?{ts:d.ts,why:d.error||''}:null;
+      _calSrc[which]=(d&&d.src)||'';
+      _calFeed[which]={t:Date.now(),e:arr};
+      return arr;
+    }
+  }catch(e){}
   return null;
+}
+/* Which provider the events on screen actually came from, in plain words. */
+function calSourceName(){
+  var k=Object.keys(_calSrc).filter(function(w){return _calSrc[w];});
+  if(!k.length) return 'economic calendar feed';
+  return CAL_SRC_NAMES[_calSrc[k[0]]]||_calSrc[k[0]];
 }
 function calStaleNote(){
   if(CAL_AI_SRC) return '<div class="eb" style="margin-bottom:10px">The economic-calendar provider is unavailable, so these events were looked up by AI web search. '
@@ -2669,7 +2748,7 @@ function calStaleNote(){
   var st=_calStale[k[0]];
   var when='';
   try{ when=new Date(st.ts).toLocaleString('en-AU',{timeZone:'Australia/Brisbane',day:'numeric',month:'short',hour:'2-digit',minute:'2-digit'}); }catch(e){}
-  return '<div class="eb" style="margin-bottom:10px">⚠ The calendar provider is rate-limiting right now, so this is the last copy received'
+  return '<div class="eb" style="margin-bottom:10px">⚠ Both calendar providers are unavailable right now, so this is the last copy received'
     +(when?' ('+when+' AEST)':'')+'. Times and forecasts are still accurate; newly added events may be missing.</div>';
 }
 function aestKey(d){return d.toLocaleDateString('en-CA',{timeZone:'Australia/Brisbane'});}
@@ -2890,7 +2969,7 @@ function renderCalendarView(){
 }
 function setCalMeta(n){
   var m=document.getElementById('cal-meta');
-  if(m) m.textContent=n+' events · live Forex Factory calendar feed · times converted to AEST (Brisbane) · updated '+new Date().toLocaleTimeString('en-AU',{timeZone:'Australia/Brisbane',hour:'2-digit',minute:'2-digit',hour12:false})+' AEST';
+  if(m) m.textContent=n+' events · '+calSourceName()+' · times converted to AEST (Brisbane) · updated '+new Date().toLocaleTimeString('en-AU',{timeZone:'Australia/Brisbane',hour:'2-digit',minute:'2-digit',hour12:false})+' AEST';
 }
 function renderCalendar(events){ _calAll=events||_calAll; renderCalendarView(); }
 function getCcyColor(ccy){
@@ -3009,6 +3088,23 @@ function exportJournal(){
   document.body.appendChild(a); a.click(); document.body.removeChild(a);
   URL.revokeObjectURL(url);
 }
+/* CSV as well as JSON: the JSON backup is for restoring into ForexHub, the CSV is for
+   opening the same trades in Excel/Sheets. */
+function exportJournalCsv(){
+  var j=loadJournal();
+  if(!j.length){showToast('No trades to export yet');return;}
+  var cols=['date','pair','dir','entry','sl','tp','result','pips','notes'];
+  var q=function(v){ v=(v==null?'':String(v)); return '"'+v.replace(/"/g,'""')+'"'; };
+  var rows=[cols.join(',')];
+  j.forEach(function(t){ rows.push(cols.map(function(c){return q(t[c]);}).join(',')); });
+  var blob=new Blob(['\ufeff'+rows.join('\r\n')],{type:'text/csv;charset=utf-8'});
+  var url=URL.createObjectURL(blob);
+  var a=document.createElement('a');
+  a.href=url; a.download='fxhub-journal-'+fileStamp()+'.csv';
+  document.body.appendChild(a); a.click(); document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+  showToast('Exported '+j.length+' trade(s) to CSV');
+}
 function importJournal(input){
   var f=input.files&&input.files[0]; if(!f) return;
   var reader=new FileReader();
@@ -3118,7 +3214,19 @@ async function revT(){
   try{
     var basePrompt='You are a professional forex trading mentor. '+(ti?'A student has this trade idea:\n\n"'+ti+'"\n\n':'Analyse the chart image provided.\n\n')+'Give structured feedback:\n\n**SETUP QUALITY: [Strong/Moderate/Weak]**\n\n**What\'s good:**\n[2-3 bullet points]\n\n**Concerns:**\n[2-3 bullet points]\n\n**Risk/Reward assessment:**\n[1-2 sentences on the R:R and whether it meets minimum 1:2]\n\n**Recommendation:**\n[PROCEED / WAIT / AVOID] — brief explanation';
     var txt=tirImageB64?await aiImage(basePrompt,tirImageB64,tirMimeType):await ai(basePrompt);
-    out.innerHTML='<div class="cb">'+md(txt)+'</div>';
+    /* Wrap everything that belongs in the record — the setup you typed, the chart you
+       attached and the AI's feedback — inside one printable block, then attach the same
+       Print / Share / Email / Save bar the Scanner and Analysis tabs use. */
+    out.innerHTML='<div id="rr-doc">'
+      +'<div class="cl" style="margin-bottom:6px">Your trade idea</div>'
+      +'<div class="cb" style="white-space:pre-wrap;margin-bottom:10px">'+esc(ti||'(no written setup — chart only)')+'</div>'
+      +(tirImageB64?'<div class="meta" style="margin-bottom:4px">Chart screenshot attached:</div><img alt="Attached chart" style="display:block;width:100%;max-width:640px;border-radius:8px;margin:0 0 12px" src="data:'+(tirMimeType||'image/png')+';base64,'+tirImageB64+'">':'')
+      +'<div class="cl" style="margin-bottom:6px">AI feedback</div>'
+      +'<div class="cb">'+md(txt)+'</div>'
+      +'<div class="meta" style="margin-top:10px">Reviewed '+stampAEST()+' · ForexHub '+FH_BUILD+' · educational only, not financial advice</div>'
+      +'</div>'
+      +'<div class="share-bar" id="rr-share" style="display:none"></div>';
+    buildShareBar('rr-share','Trade idea review','#rr-doc','trade-idea-review');
   } catch(e){out.innerHTML=errBox(e);}
   btn.disabled=false;btn.innerHTML='Review my trade';
 }
@@ -3164,7 +3272,18 @@ async function revPastTrade(){
   try{
     var prompt='You are a professional forex trading coach. Analyse this past trade chart image.'+(notes?'\n\nTrader\'s notes: '+notes:'')+'\n\nProvide structured feedback:\n\n**TRADE OUTCOME ASSESSMENT:**\n[Was this a well-executed trade or a poor one, and why?]\n\n**WHAT WENT WELL:**\n[2-3 specific observations from the chart]\n\n**WHAT COULD BE IMPROVED:**\n[2-3 specific areas with actionable suggestions]\n\n**KEY LESSON:**\n[The single most important takeaway from this trade]\n\n**OVERALL GRADE: [A/B/C/D]**\n[Brief explanation of the grade]';
     var txt=await aiImage(prompt,ptrImageB64,ptrMimeType);
-    out.innerHTML='<div class="cb">'+md(txt)+'</div>';
+    /* Same printable record as the trade-idea review: notes + chart + feedback in one block. */
+    out.innerHTML='<div id="ptr-doc">'
+      +'<div class="cl" style="margin-bottom:6px">Trade notes</div>'
+      +'<div class="cb" style="white-space:pre-wrap;margin-bottom:10px">'+esc(notes||'(no notes added)')+'</div>'
+      +'<div class="meta" style="margin-bottom:4px">Chart screenshot attached:</div>'
+      +'<img alt="Trade chart" style="display:block;width:100%;max-width:640px;border-radius:8px;margin:0 0 12px" src="data:'+(ptrMimeType||'image/png')+';base64,'+ptrImageB64+'">'
+      +'<div class="cl" style="margin-bottom:6px">AI feedback</div>'
+      +'<div class="cb">'+md(txt)+'</div>'
+      +'<div class="meta" style="margin-top:10px">Reviewed '+stampAEST()+' · ForexHub '+FH_BUILD+' · educational only, not financial advice</div>'
+      +'</div>'
+      +'<div class="share-bar" id="ptr-share" style="display:none"></div>';
+    buildShareBar('ptr-share','Past trade review','#ptr-doc','past-trade-review');
   } catch(e){out.innerHTML='<div class="eb">'+friendlyError(e)+' If this keeps happening, the image-analysis endpoint on your Cloudflare Worker may need updating.</div>';}
   btn.disabled=false;btn.innerHTML='Analyse this trade';
 }
@@ -3515,7 +3634,10 @@ async function runScanner(){
       if(lines.length) priceBlock='CURRENT LIVE PRICES ('+tnow+' AEST, real-time). Each line: price (today\'s range, % move/momentum) | trend 4H/Day/Week/Month (▲ up ▼ down ▬ flat). "Today"/D are measured from the 7am AEST session open — early in the day D is naturally small, so weight W/M more then:\n'+lines.join('\n')+'\n\n';
     }catch(e){}
     var prompt=priceBlock+'You are a professional forex trading analyst. Analyse the current forex market and identify the 3-5 highest-probability trade setups right now across major pairs.\n\nFor each setup use this EXACT plain-text format with no markdown, no asterisks, no bold:\n\nSETUP:\nPAIR: e.g. GBP/USD\nDIRECTION: LONG or SHORT\nPROBABILITY: HIGH or MEDIUM\nENTRY: price level\nSTOP LOSS: price level\nTAKE PROFIT: price level\nREASON: 3-5 sentences explaining the setup covering weekly trend, daily structure, 4H trigger, and catalyst.\n\nCRITICAL LEVEL RULES — base every level on the CURRENT LIVE PRICES above:\n- ENTRY must be within roughly 0.5% of the current price (a realistic pending order that has NOT already been hit), never far away.\n- Never use a level that price has already traded through — the entry must still be reachable from the current live price.\n- Respect each pair\'s momentum AND its 4H/Day/Week/Month trend shown above: prefer setups that trade WITH the dominant higher-timeframe trend (weekly/monthly direction), triggered on the 4H. Do NOT recommend fading a strong UP or DOWN move (a pair near its daily high/low with a clear % move, or aligned trends across timeframes) unless you can state a specific reversal signal. Weight the setup\'s probability by how well the timeframes align.\n- For a SHORT: ENTRY at or slightly ABOVE current price, STOP LOSS above entry, TAKE PROFIT below entry.\n- For a LONG: ENTRY at or slightly BELOW current price, STOP LOSS below entry, TAKE PROFIT above entry.\n- Direction, entry, stop and target must be internally consistent and achieve at least 1:2 risk/reward.\n- Do not contradict yourself: if the reasoning is bearish the direction must be SHORT, and vice-versa.\n\nPrefer setups with clear multi-timeframe alignment and strong technical or fundamental backing. You MUST always return at least 2 setups — when nothing is A-grade, return the best available opportunities ranked MEDIUM probability with honest reasoning, never an empty answer. Pay particular attention to whichever pairs show the largest moves in the live data above (including JPY crosses and USD pairs). Start each setup with exactly "SETUP:" on its own line. Do not use any markdown. Always finish the final setup completely — never cut off mid-sentence.'+freshnessNote(false);
-    var scanBucket=Math.floor(Date.now()/9e5);
+    /* 30-minute bucket (was 15). The proxy caches scanner replies for 30 minutes, so a
+       15-minute key generated a fresh paid Sonnet call that the server then had to serve
+       from cache anyway — aligning the two halves the number of scanner calls. */
+    var scanBucket=Math.floor(Date.now()/18e5);
     var scanKey='scan:'+scanBucket;
     var txt=await ai(prompt,scanKey,{model:'claude-sonnet-5',maxTokens:2600,webSearch:false});
     if(aiRefused(txt)){delete cache[scanKey];LS.del('fhai:'+scanKey);throw new Error('The AI returned a no-data response (not cached) — tap Scan again to retry.');}
@@ -4166,8 +4288,8 @@ function normaliseNewsEvents(d){
       return newsField(p,10);
     }).filter(function(p){return /^[A-Z]{3}\/?[A-Z]{3}$/.test(p);}):[];
     out.push({
-      timeLocal:newsField(e.timeLocal,24),
-      timeAEST:newsField(e.timeAEST,24),
+      timeLocal:newsField(e.timeLocal,40),
+      timeAEST:newsField(e.timeAEST,40),
       name:name, ccy:ccy, imp:imp, pairs:pairs
     });
   });
@@ -4252,6 +4374,7 @@ async function renderBriefing(force){
       +'{"events":[{"timeLocal":"13:30 GMT","timeAEST":"23:30 AEST","name":"US Non-Farm Payrolls","ccy":"USD","impact":"high","pairs":["EUR/USD","USD/JPY"]}],"note":""}\n'
       +'Rules: "ccy" is one of USD EUR GBP AUD NZD CAD JPY CHF. "impact" is one of high, med, low. '
       +'"pairs" lists the FX pairs likely to react. Every string must be plain text with no citation markers, no footnote numbers and no commentary. '
+      +'"timeLocal" and "timeAEST" must each be exactly one clock time plus its zone, e.g. "13:30 GMT" and "23:30 AEST" — never a range, never two zones in one field, never a city name in brackets. '
       +'If the calendar is genuinely light today, return an empty events array and put one short sentence in "note".';
     var nd=await ai(newsPrompt,'brief-news2:'+day,{model:'claude-haiku-4-5',maxTokens:1200,webSearch:true,expectJson:true});
     news=normaliseNewsEvents(nd);
@@ -4444,6 +4567,8 @@ function initCache(){
 }
 document.addEventListener('DOMContentLoaded',function(){
   initPin();
+  fillSessionFaq();
+  setInterval(fillSessionFaq,60*60*1000); // keeps the About answer right across a DST change
   initTheme();
   initBanner();
   initCache();
