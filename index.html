@@ -442,6 +442,27 @@ button.scan-pair-chip:hover{opacity:0.75}
 .hdr-right{display:flex;align-items:center;gap:12px}
 .theme-tog{background:var(--sf2);border:1px solid var(--bd2);color:var(--tx);width:34px;height:34px;border-radius:100px;cursor:pointer;font-size:15px;display:flex;align-items:center;justify-content:center;flex-shrink:0;transition:background 0.2s,border-color 0.2s}
 .theme-tog:hover{border-color:var(--ac)}
+/* Timezone picker — sits beside the theme toggle because every time on the
+   site depends on it, so it has to be visible from any tab. */
+.tz-tog{background:var(--sf2);border:1px solid var(--bd2);color:var(--tx);height:34px;border-radius:100px;
+  padding:0 10px;font-family:'DM Mono',monospace;font-size:11px;cursor:pointer;flex-shrink:0;max-width:150px;
+  transition:border-color 0.2s}
+.tz-tog:hover{border-color:var(--ac)}
+.tz-tog:focus-visible{outline:2px solid var(--ac);outline-offset:1px}
+/* ── Session dial (New features 19.8.26, Option A) ── */
+.sess-layout-sw{display:flex;gap:6px;justify-content:center;margin:0 0 14px}
+.sess-dial-wrap{display:flex;flex-direction:column;align-items:center;margin-bottom:18px}
+.sess-dial{width:100%;max-width:440px;margin:0 auto}
+.sess-dial svg{width:100%;height:auto;display:block;overflow:visible}
+.dial-hr{font-family:'DM Mono',monospace;fill:var(--mt);font-size:11px}
+.dial-hr.maj{fill:var(--tx);font-size:14px;font-weight:700}
+.dial-ctr-m{font-family:'DM Mono',monospace;fill:var(--tx);font-size:19px;font-weight:700}
+.dial-ctr-s{font-family:'DM Mono',monospace;fill:var(--mt);font-size:11px}
+.dial-ev{cursor:help}
+.dial-legend{display:flex;flex-wrap:wrap;gap:6px 12px;justify-content:center;margin-top:12px;
+  font-family:'DM Mono',monospace;font-size:11px;color:var(--mt)}
+.dial-legend i{width:9px;height:9px;border-radius:2px;display:inline-block;margin-right:5px;vertical-align:-1px}
+@media(max-width:600px){.tz-tog{max-width:104px;font-size:10px;padding:0 6px}}
 
 /* ── LIGHT MODE ── */
 body.light{
@@ -547,6 +568,7 @@ body.light .chart-modal-overlay{background:rgba(0,0,0,0.55)}
   <div class="logo">Forex<span>Hub</span></div>
   <div class="hdr-right">
     <div class="hdate" id="hdate"></div>
+    <select class="tz-tog" id="tz-tog" onchange="setTz(this.value)" title="Display timezone — changes how times are labelled, never what is measured" aria-label="Display timezone"></select>
     <button class="theme-tog" id="theme-tog" onclick="toggleTheme()" title="Toggle light / dark mode" aria-label="Toggle theme">🌙</button>
   </div>
 </div>
@@ -636,7 +658,7 @@ body.light .chart-modal-overlay{background:rgba(0,0,0,0.55)}
       </div>
       <div class="analysis-main">
         <div class="st" id="d-title">Daily analysis</div>
-        <div class="ss">AI-powered · live web search · Brisbane AEST</div>
+        <div class="ss">AI-powered · live web search · <span class="tz-name">times in your local zone</span></div>
         <div class="card">
           <div class="cl">Today's bias</div>
           <div id="db"></div>
@@ -808,12 +830,20 @@ body.light .chart-modal-overlay{background:rgba(0,0,0,0.55)}
 <!-- ══ SESSIONS ══ -->
 <div id="sessions" class="sec">
   <div class="st">Market sessions</div>
-  <div class="ss">Live session status · Brisbane AEST · London &amp; New York hours auto-adjust for their daylight saving</div>
+  <div class="ss">Live session status · <span class="tz-name">local time</span> · every centre auto-adjusts for its own daylight saving</div>
   <div class="clock-big" id="sess-clock">--:--:--</div>
-  <div class="clock-tz">Brisbane AEST (UTC+10)</div>
-  <!-- Timeline -->
-  <div class="sess-timeline">
-    <div class="tl-title">24-Hour session timeline (AEST) · trading day runs 7:00am → 7:00am</div>
+  <div class="clock-tz" id="clock-tz">—</div>
+  <!-- Layout switch: dial or unrolled timeline. Same data, same colour key. -->
+  <div class="sess-layout-sw" id="sess-layout-sw"></div>
+  <!-- Option A — 24-hour dial -->
+  <div class="sess-dial-wrap" id="sess-dial-wrap">
+    <div class="tl-title" id="dial-title">24-hour session dial</div>
+    <div class="sess-dial" id="sess-dial"></div>
+    <div class="dial-legend" id="dial-legend"></div>
+  </div>
+  <!-- Option B — unrolled timeline -->
+  <div class="sess-timeline" id="sess-timeline-wrap">
+    <div class="tl-title" id="tl-title">24-hour session timeline</div>
     <div class="tl-outer" id="sess-timeline"></div>
   </div>
   <!-- Session cards -->
@@ -847,7 +877,7 @@ body.light .chart-modal-overlay{background:rgba(0,0,0,0.55)}
 <!-- ══ CALENDAR ══ -->
 <div id="calendar" class="sec">
   <div class="st">Economic calendar</div>
-  <div class="ss">Live economic calendar · every scheduled event, all currencies · times in AEST · click any event for detail</div>
+  <div class="ss">Live economic calendar · every scheduled event, all currencies · <span class="tz-name">times in your local zone</span> · click any event for detail</div>
   <div class="cal-legend">
     <div class="cal-leg"><span class="cal-imp-badge high">HIGH</span> High impact</div>
     <div class="cal-leg"><span class="cal-imp-badge med">MED</span> Medium</div>
@@ -1052,9 +1082,9 @@ body.light .chart-modal-overlay{background:rgba(0,0,0,0.55)}
       <div class="card" style="padding:0;overflow:hidden">
         <div id="hm-mat-body"><div class="ld" style="padding:20px"><div class="sp"></div>Loading matrix…</div></div>
       </div>
-      <div class="meta" style="margin-top:8px">% change since the 7am AEST rollover · each row currency vs each column currency</div>
+      <div class="meta" id="mat-src" style="margin-top:8px">% change since the daily FX rollover · each row currency vs each column currency</div>
     </div>
-    <div class="map-src" id="hm-src">Live prices · Daily = pips since the 7am AEST rollover · Weekly/Monthly vs 5/21 trading days ago</div>
+    <div class="map-src" id="hm-src">Live prices · Daily = pips since the daily FX rollover · Weekly/Monthly vs 5/21 trading days ago</div>
   </div>
   <!-- Sentiment -->
   <div id="sentiment" class="map-panel">
@@ -1261,7 +1291,7 @@ body.light .chart-modal-overlay{background:rgba(0,0,0,0.55)}
     <div class="ai"><div class="aq">Estimated AI spend</div><div class="aa" id="ai-spend">—</div></div>
     <div class="ai"><div class="aq">How does the analysis work?</div><div class="aa">ForexHub sends prompts to Claude AI via a Cloudflare Worker. Analysis runs on the cheaper Haiku model and is cached per day; the scanner uses a stronger model with live prices and web search. Web search is only used where freshness matters, to keep costs down.</div></div>
     <div class="ai"><div class="aq">How do I remove the PIN gate?</div><div class="aa">Delete the pin-gate div and the checkPin() / initPin() functions from the HTML source. Note that the PIN is a convenience lock, not real security — it lives in the page source, so anyone determined can read past it. If you need genuine access control, put Cloudflare Access in front of the site (free for up to 50 users) and remove this gate.</div></div>
-    <div class="ai"><div class="aq">How often should I refresh?</div><div class="aa">Daily tab: each morning AEST. Weekly tab: Monday before markets open. 4H tab: before intraday sessions. Calendar: once per week on Monday.</div></div>
+    <div class="ai"><div class="aq">How often should I refresh?</div><div class="aa">Daily tab: each morning. Weekly tab: Monday before markets open. 4H tab: before intraday sessions. Calendar: once per week on Monday.</div></div>
     <div class="ai"><div class="aq">Where is my journal stored?</div><div class="aa">Your trade journal is saved in your browser's localStorage. It never leaves your device and persists across sessions.</div></div>
     <!-- Filled in by fillSessionFaq() from the same DST-aware session config the Sessions tab
          uses. The old text was hardcoded to winter hours, so it was an hour out for half the year. -->
@@ -1394,13 +1424,149 @@ var PAIR_SESSIONS = {
   overlap: ['EUR/USD','GBP/USD','EUR/JPY','GBP/JPY','USD/JPY','EUR/GBP','GBP/CHF','XAU/USD']
 };
 
+/* Safe storage — Web Storage can throw on file:// or in private mode. Never let it block the app. */
+var SS={get:function(k){try{return sessionStorage.getItem(k);}catch(e){return null;}},set:function(k,v){try{sessionStorage.setItem(k,v);}catch(e){}}};
+var LS={get:function(k){try{return localStorage.getItem(k);}catch(e){return null;}},set:function(k,v){try{localStorage.setItem(k,v);}catch(e){}},del:function(k){try{localStorage.removeItem(k);}catch(e){}}};
+
+/* ══════════════════════════════════════════════════════════════════
+   DISPLAY TIMEZONE  (New features 19.8.26 — item 7)
+══════════════════════════════════════════════════════════════════
+   THE RULE THIS WHOLE LAYER RESTS ON:
+
+       Timezone changes LABELS. It never changes a NUMBER.
+
+   The FX day boundary is a fixed instant — 17:00 New York. "7am AEST",
+   "22:00 London" and "17:00 New York" are the SAME MOMENT. A viewer in
+   London therefore sees the identical previous-day move and range figures
+   John sees, captioned in their own clock. The rollover is relabelled, never
+   moved. If it ever follows each viewer's local 7am instead, every figure on
+   the site starts meaning something different per user and nothing
+   reconciles — that is the one mistake this layer must never make.
+
+   So: every COMPUTATION stays on absolute timestamps and on the New York
+   rollover (see the worker's nyHour/rolloverIdx). Only formatting passes
+   through here. ══════════════════════════════════════════════════════════ */
+var TZ_KEY='fh_tz';
+var DEFAULT_TZ='Australia/Brisbane';
+/* Financial centres offered in the picker, in trading-day order. Any IANA zone
+   works — this list is only what gets one tap. */
+var TZ_CHOICES=[
+  ['auto','Automatic (this device)'],
+  ['Australia/Brisbane','Brisbane'],
+  ['Australia/Sydney','Sydney'],
+  ['Pacific/Auckland','Auckland'],
+  ['Asia/Tokyo','Tokyo'],
+  ['Asia/Hong_Kong','Hong Kong'],
+  ['Asia/Singapore','Singapore'],
+  ['Asia/Dubai','Dubai'],
+  ['Europe/London','London'],
+  ['Europe/Zurich','Zurich'],
+  ['Europe/Berlin','Frankfurt'],
+  ['America/New_York','New York'],
+  ['America/Chicago','Chicago'],
+  ['America/Los_Angeles','Los Angeles'],
+  ['UTC','UTC']
+];
+function tzDeviceZone(){
+  try{ return Intl.DateTimeFormat().resolvedOptions().timeZone||DEFAULT_TZ; }catch(e){ return DEFAULT_TZ; }
+}
+function tzIsValid(tz){
+  try{ new Intl.DateTimeFormat('en-AU',{timeZone:tz}); return true; }catch(e){ return false; }
+}
+function tzMode(){ return LS.get(TZ_KEY)||'auto'; }
+function resolveTz(){
+  var m=tzMode();
+  var tz=(m==='auto')?tzDeviceZone():m;
+  return tzIsValid(tz)?tz:DEFAULT_TZ;
+}
+var FH_TZ=resolveTz();
+function setTz(v){
+  LS.set(TZ_KEY,v);
+  FH_TZ=resolveTz();
+  _sessCache=null;            // session windows are expressed in display-zone minutes
+  _dialEvTs=0;                // "today" just moved, so the dial's event set must be rebuilt
+  _tzLabelMemo={};
+  applyTzEverywhere();
+}
+/* Short abbreviation for the active zone. Intl only returns a real abbreviation
+   when the locale knows the zone (en-AU knows AEST, en-US knows EDT), so try a
+   few and fall back to an unambiguous GMT offset. */
+var _tzLabelMemo={};
+function fhTzLabel(tz){
+  tz=tz||FH_TZ;
+  if(_tzLabelMemo[tz]) return _tzLabelMemo[tz];
+  var locs=['en-AU','en-US','en-GB','en-NZ','en-CA','en-IE','en-SG'],out=null;
+  for(var i=0;i<locs.length&&!out;i++){
+    try{
+      var v=new Intl.DateTimeFormat(locs[i],{timeZone:tz,timeZoneName:'short'})
+        .formatToParts(new Date()).find(function(p){return p.type==='timeZoneName';}).value;
+      if(v&&!/^GMT|^UTC/.test(v)) out=v;
+    }catch(e){}
+  }
+  if(!out){
+    try{
+      out=new Intl.DateTimeFormat('en-US',{timeZone:tz,timeZoneName:'short'})
+        .formatToParts(new Date()).find(function(p){return p.type==='timeZoneName';}).value;
+    }catch(e){ out=tz; }
+  }
+  _tzLabelMemo[tz]=out;
+  return out;
+}
+function fhTzCity(){
+  var m=tzMode();
+  if(m!=='auto'){ for(var i=0;i<TZ_CHOICES.length;i++) if(TZ_CHOICES[i][0]===m) return TZ_CHOICES[i][1]; }
+  for(var j=0;j<TZ_CHOICES.length;j++) if(TZ_CHOICES[j][0]===FH_TZ) return TZ_CHOICES[j][1];
+  return FH_TZ.split('/').pop().replace(/_/g,' ');
+}
+/* ── Formatters. Every displayed time in the app goes through one of these. ── */
+function fhTime(d,withSec){
+  var o={hour:'2-digit',minute:'2-digit',hour12:false,timeZone:FH_TZ};
+  if(withSec) o.second='2-digit';
+  return new Date(d==null?Date.now():d).toLocaleTimeString('en-AU',o);
+}
+function fhDate(d,opts){
+  var o=Object.assign({weekday:'short',day:'2-digit',month:'short',year:'numeric'},opts||{});
+  o.timeZone=FH_TZ;
+  return new Date(d==null?Date.now():d).toLocaleDateString('en-AU',o);
+}
+/* "Wed, 26 Aug 2026, 14:28 AEST" — the stamp on every exported report */
+function fhStamp(d){ return fhDate(d)+', '+fhTime(d)+' '+fhTzLabel(); }
+/* "14:28 AEST" — the inline form used in captions */
+function fhClock(d){ return fhTime(d)+' '+fhTzLabel(); }
+/* YYYY-MM-DD in the display zone — the day-grouping and cache-key primitive */
+function fhDayKey(d){
+  return new Date(d==null?Date.now():d).toLocaleDateString('en-CA',{timeZone:FH_TZ});
+}
+/* Minutes since midnight in the display zone */
+function fhMinutesOfDay(d){
+  var s=new Date(d==null?Date.now():d).toLocaleTimeString('en-GB',{hour:'2-digit',minute:'2-digit',hour12:false,timeZone:FH_TZ}).split(':');
+  return (+s[0])*60+(+s[1]);
+}
+/* This zone's current offset from UTC, in minutes */
+function tzOffsetMin(tz){
+  var d=new Date();
+  return Math.round((new Date(d.toLocaleString('en-US',{timeZone:tz}))-new Date(d.toLocaleString('en-US',{timeZone:'UTC'})))/60000);
+}
+/* ── The rollover, expressed in the viewer's clock ──────────────────────────
+   17:00 New York is the FX day boundary. This returns the minute-of-day that
+   instant falls on in FH_TZ — 07:00 in Brisbane, 22:00 in London (BST), 17:00
+   in New York itself. Shifts by an hour automatically across US daylight
+   saving, which is exactly why it is derived rather than written down. */
+function rolloverLocalMin(){
+  var m=17*60+(tzOffsetMin(FH_TZ)-tzOffsetMin('America/New_York'));
+  return ((m%1440)+1440)%1440;
+}
+function fmtHM(m){ m=((m%1440)+1440)%1440; return String(Math.floor(m/60)).padStart(2,'0')+':'+String(m%60).padStart(2,'0'); }
+/* "7am AEST" / "22:00 BST" — used in captions that name the rollover */
+function rolloverLabel(){ return fmtHM(rolloverLocalMin())+' '+fhTzLabel(); }
+
 /* ══════════════════════════════════════
    PIN GATE  (Amendment 2)
 ══════════════════════════════════════ */
 var CORRECT_PIN = "2025";
 /* Safe storage — Web Storage can throw on file:// or in private mode. Never let it block the app. */
-var SS={get:function(k){try{return sessionStorage.getItem(k);}catch(e){return null;}},set:function(k,v){try{sessionStorage.setItem(k,v);}catch(e){}}};
-var LS={get:function(k){try{return localStorage.getItem(k);}catch(e){return null;}},set:function(k,v){try{localStorage.setItem(k,v);}catch(e){}},del:function(k){try{localStorage.removeItem(k);}catch(e){}}};
+/* SS/LS are declared here, above the timezone block, because that block resolves
+   FH_TZ at parse time and reads the stored preference. */
 function initPin(){
   if(SS.get('fh_pin')==='ok'){
     document.getElementById('pin-gate').style.display='none';
@@ -1438,7 +1604,7 @@ function dismissBanner(){
 /* ══════════════════════════════════════
    HEADER DATE
 ══════════════════════════════════════ */
-var FH_BUILD='v10'; // bump on every delivered change — shown in the header so it's always obvious which version is loaded
+var FH_BUILD='v11'; // bump on every delivered change — shown in the header so it's always obvious which version is loaded
 /* Stale-tab killer: every so often, check whether a newer build has been deployed.
    If so, show a can't-miss banner telling the user to reload — long-open tabs silently
    running old code caused repeated "the fix didn't work" confusion. */
@@ -1460,11 +1626,9 @@ async function checkForNewBuild(){
 }
 function updateDate(){
   var d=new Date();
-  var opts={weekday:'short',year:'numeric',month:'short',day:'numeric',timeZone:'Australia/Brisbane'};
-  var ds=d.toLocaleDateString('en-AU',opts);
-  var ts=d.toLocaleTimeString('en-AU',{hour:'2-digit',minute:'2-digit',timeZone:'Australia/Brisbane',hour12:false});
+  var ds=fhDate(d,{weekday:'short',year:'numeric',month:'short',day:'numeric'});
   var el=document.getElementById('hdate');
-  if(el) el.textContent=ds+' · '+ts+' AEST · '+FH_BUILD;
+  if(el) el.textContent=ds+' · '+fhClock(d)+' · '+FH_BUILD;
 }
 
 /* ══════════════════════════════════════
@@ -1634,7 +1798,7 @@ function initTicker(){
 ══════════════════════════════════════ */
 /* Estimated AI spend tracking (USD, from the usage the worker now returns) */
 var RATES={'claude-haiku-4-5':[1,5],'claude-sonnet-4-6':[3,15],'claude-sonnet-5':[2,10]}; // [in,out] US$ per 1M tokens
-function costDayKey(){return 'fh_cost:'+new Date().toLocaleDateString('en-CA',{timeZone:'Australia/Brisbane'});}
+function costDayKey(){return 'fh_cost:'+fhDayKey();}
 function trackUsage(u,model,searched){
   if(!u) return;
   var r=RATES[model]||RATES['claude-sonnet-4-6'];
@@ -1733,8 +1897,8 @@ function lastGoodQuotes(){
 function feedNote(){
   if(!feedState.stale) return '';
   var d=lastGoodQuotes();
-  var when=d?new Date(d.t).toLocaleTimeString('en-AU',{timeZone:'Australia/Brisbane',hour:'2-digit',minute:'2-digit'}):'';
-  return '⚠ Live feed unreachable — showing the last prices received'+(when?' ('+when+' AEST)':'')+'. Refresh in a minute.';
+  var when=d?fhClock(d.t):'';
+  return '⚠ Live feed unreachable — showing the last prices received'+(when?' ('+when+')':'')+'. Refresh in a minute.';
 }
 /* opts.allowStale — display-only screens may fall back to last-known prices */
 async function liveQuotes(pairs,opts){
@@ -1809,14 +1973,14 @@ async function priceContext(pair){
     var q=(await liveQuotes([pair]))[pair];
     if(!q||q.p==null) return '';
     var p=pair.slice(0,3)+'/'+pair.slice(3);
-    var t=new Date().toLocaleTimeString('en-AU',{timeZone:'Australia/Brisbane',hour:'2-digit',minute:'2-digit'});
-    return 'CURRENT LIVE MARKET ('+t+' AEST): '+p+' = '+quoteLine(pair,q)+'.\n(trend = % move over 4H/Day/Week/Month; D and today\'s range are measured from the 7am AEST session open, so early in the day D is naturally small — weight W/M more then; ▲ up, ▼ down, ▬ flat.) Anchor ALL levels to THIS live price — resistance just above, support just below, entry within a realistic distance. Never use a level price has already moved past. Trade WITH the dominant higher-timeframe trend (weekly/monthly); only call a counter-trend setup if you cite a specific reversal signal, and never fade a strong intraday move without one.\n\n';
+    var t=fhTime();
+    return 'CURRENT LIVE MARKET ('+fhClock()+'): '+p+' = '+quoteLine(pair,q)+'.\n(trend = % move over 4H/Day/Week/Month; D and today\'s range are measured from the daily FX rollover at 17:00 New York, so early in the day D is naturally small — weight W/M more then; ▲ up, ▼ down, ▬ flat.) Anchor ALL levels to THIS live price — resistance just above, support just below, entry within a realistic distance. Never use a level price has already moved past. Trade WITH the dominant higher-timeframe trend (weekly/monthly); only call a counter-trend setup if you cite a specific reversal signal, and never fade a strong intraday move without one.\n\n';
   }catch(e){return '';}
 }
 /* Detect an AI "I can't access live data" refusal — must NEVER be rendered or cached as analysis */
 function aiRefused(t){return /don'?t have (access|real-?time)|do not have (access|real-?time)|cannot access (live|real-?time|current)|knowledge (was )?last updated|(can'?t|cannot) browse|unable to (access|browse)|I need to be transparent/i.test(t||'');}
 function freshnessNote(useSearch){
-  var d=new Date().toLocaleDateString('en-AU',{timeZone:'Australia/Brisbane',weekday:'long',day:'numeric',month:'long',year:'numeric'});
+  var d=fhDate(null,{weekday:'long',day:'numeric',month:'long',year:'numeric'});
   if(useSearch) return '\n\nToday is '+d+'. Use web search to confirm current catalysts. Only call an event "upcoming" if it is genuinely in the future relative to today — never describe a past election, central-bank meeting or data release as if it is still ahead.';
   return '\n\nToday is '+d+'. Base your analysis on the live price above and well-established context. Do not present specific scheduled events as "upcoming" unless you are certain they are still in the future.';
 }
@@ -1844,8 +2008,8 @@ async function loadTrendScan(){
                    hSpan:d.t4hSpanMin,hBreak:d.t4hSpansBreak===true,age:d.sessionAgeMin});});
     }
     _trendData=rows;
-    var t=new Date().toLocaleTimeString('en-AU',{timeZone:'Australia/Brisbane',hour:'2-digit',minute:'2-digit'});
-    var mt=document.getElementById('trend-meta'); if(mt) mt.textContent=rows.length+' pairs · '+t+' AEST';
+    var t=fhTime();
+    var mt=document.getElementById('trend-meta'); if(mt) mt.textContent=rows.length+' pairs · '+t+' '+fhTzLabel();
     if(!rows.length){out.innerHTML='<div class="eb" style="padding:16px">No price data returned after 3 attempts — the feed may be briefly down. Try Refresh in a minute.</div>';return;}
     renderTrends();
   }catch(e){out.innerHTML='<div class="eb" style="padding:16px">'+friendlyError(e)+'</div>';}
@@ -1921,7 +2085,7 @@ function renderTrends(){
     var bg=r._br===2?'rgba(74,222,128,0.25)':r._br===1?'rgba(74,222,128,0.1)':r._br===-2?'rgba(248,113,113,0.25)':r._br===-1?'rgba(248,113,113,0.1)':'transparent';
     var clr=r._br>0?'#4ade80':r._br<0?'#f87171':'var(--mt)';
     h+='<tr class="hm-row row-link" onclick="goToPair(\''+r.sym+'\')" title="Open '+r.sym+' in Analysis"><td class="hm-pair">'+pairSpan(r.sym)+'</td>';
-    var dWarn=(r.age!=null&&r.age<180)?('Daily covers only '+fhDur(r.age)+' since the 7am AEST rollover — a small number here is expected, not a flat market.'):'';
+    var dWarn=(r.age!=null&&r.age<180)?('Daily covers only '+fhDur(r.age)+' since the '+rolloverLabel()+' rollover — a small number here is expected, not a flat market.'):'';
     var hWarn=r.hBreak?('This window spans a market break: the reference price is '+fhDur(r.hSpan)+' back, not 4 hours. Monday mornings reach across the weekend.'):'';
     h+=cell(r.w,'w','')+cell(r.dd,'d',dWarn)+cell(r.h,'h',hWarn);
     h+='<td style="background:'+bg+';color:'+clr+';font-weight:600">'+r._bt+'</td></tr>';
@@ -1932,7 +2096,7 @@ function renderTrends(){
   var ages=_trendData.map(function(r){return r.age;}).filter(function(v){return v!=null;});
   var age=ages.length?ages.sort(function(a,b){return a-b;})[Math.floor(ages.length/2)]:null;
   var brk=_trendData.filter(function(r){return r.hBreak;}).length;
-  h+='<div class="ss" style="margin:10px 12px 0">Windows: <b>Weekly</b> = now vs the close 5 trading days ago · <b>Daily</b> = now vs the 7am AEST rollover'
+  h+='<div class="ss" style="margin:10px 12px 0">Windows: <b>Weekly</b> = now vs the close 5 trading days ago · <b>Daily</b> = now vs the '+rolloverLabel()+' rollover'
     +(age!=null?' (<b>'+fhDur(age)+'</b> of trading so far today)':'')
     +' · <b>4H</b> = now vs the price 4 hours back by the clock.'
     +(brk?' <span class="tr-warn">⚠</span> '+brk+' pair'+(brk>1?'s have':' has')+' a 4H window that reaches across a market break — hover the flag.':'')
@@ -2016,6 +2180,47 @@ function applyTheme(t){
   if(mc) mc.setAttribute('content',t==='light'?'#f5f4f1':'#0a0a0a');
 }
 function initTheme(){applyTheme(LS.get('fh_theme')||'dark');}
+
+/* ── Timezone UI ──────────────────────────────────────────────────────────── */
+function buildTzPicker(){
+  var sel=document.getElementById('tz-tog');
+  if(!sel) return;
+  var dev=tzDeviceZone(), mode=tzMode(), seen={};
+  var opts=TZ_CHOICES.slice();
+  /* If the device sits in a zone that is not on the shortlist, offer it too —
+     otherwise "Automatic" would be the only way to reach it. */
+  if(!opts.some(function(o){return o[0]===dev;})) opts.splice(1,0,[dev,dev.split('/').pop().replace(/_/g,' ')]);
+  sel.innerHTML=opts.map(function(o){
+    if(seen[o[0]])return '';seen[o[0]]=1;
+    var label=(o[0]==='auto')?('Auto · '+fhTzLabel(dev)):(o[1]+' · '+fhTzLabel(o[0]));
+    return '<option value="'+o[0]+'"'+(o[0]===mode?' selected':'')+'>'+esc(label)+'</option>';
+  }).join('');
+}
+/* Re-render everything whose labels depend on the zone. Figures are untouched —
+   they are computed from absolute instants and do not change. */
+function applyTzEverywhere(){
+  try{
+    buildTzPicker();
+    updateDate();
+    document.querySelectorAll('.tz-name').forEach(function(el){
+      el.textContent='times in '+fhTzCity()+' ('+fhTzLabel()+')';
+    });
+    var ct=document.getElementById('clock-tz');
+    if(ct) ct.textContent=fhTzCity()+' '+fhTzLabel()+' (UTC'+(tzOffsetMin(FH_TZ)>=0?'+':'-')+fmtHM(Math.abs(tzOffsetMin(FH_TZ))).replace(':00','')+')';
+    fillSessionFaq();
+    if(typeof doRenderSessions==='function'&&document.getElementById('sessions')) doRenderSessions();
+    if(typeof _calAll!=='undefined'&&_calAll&&_calAll.length&&typeof renderCalendarView==='function') renderCalendarView();
+    if(typeof _trendData!=='undefined'&&_trendData&&typeof renderTrends==='function') renderTrends();
+    if(typeof _gapRows!=='undefined'&&_gapRows&&_gapRows.length&&typeof renderGapTable==='function') renderGapTable();
+    /* The key-levels images bake their stamp into pixels, so they must be redrawn. */
+    [[typeof lastDaily!=='undefined'?lastDaily:null,'dl-chart','DAILY'],
+     [typeof last4hr!=='undefined'?last4hr:null,'h4-chart','4H']].forEach(function(x){
+      if(!x[0])return;
+      var cd=document.getElementById(x[1]);
+      if(cd&&cd.firstChild){cd.innerHTML='';cd.appendChild(buildMiniChart(x[0].pair,x[0].bias,x[0].lvls,null,null,{tf:x[2],when:x[0].when}));}
+    });
+  }catch(e){}
+}
 function toggleTheme(){
   var t=document.body.classList.contains('light')?'dark':'light';
   LS.set('fh_theme',t);
@@ -2039,12 +2244,12 @@ function toggleTheme(){
    PRINT / SHARE / SAVE  (date-stamped, auto-named)
 ══════════════════════════════════════ */
 function stampAEST(){
-  return new Date().toLocaleString('en-AU',{timeZone:'Australia/Brisbane',weekday:'short',day:'2-digit',month:'short',year:'numeric',hour:'2-digit',minute:'2-digit',hour12:false})+' AEST';
+  return fhStamp();
 }
 function fileStamp(){
   var d=new Date();
-  var day=d.toLocaleString('en-CA',{timeZone:'Australia/Brisbane',year:'numeric',month:'2-digit',day:'2-digit'}).replace(/-/g,'');
-  var tm=d.toLocaleString('en-GB',{timeZone:'Australia/Brisbane',hour:'2-digit',minute:'2-digit',hour12:false}).replace(':','');
+  var day=fhDayKey(d).replace(/-/g,'');
+  var tm=fhTime(d).replace(':','');
   return day+'-'+tm;
 }
 function showToast(msg){
@@ -2280,7 +2485,7 @@ function downloadCanvas(canvas){
    CALENDAR DATE HELPERS  (Amendment 6)
 ══════════════════════════════════════ */
 var MONTHS={JAN:0,FEB:1,MAR:2,APR:3,MAY:4,JUN:5,JUL:6,AUG:7,SEP:8,OCT:9,NOV:10,DEC:11};
-function nowAEST(){return new Date(new Date().toLocaleString('en-US',{timeZone:'Australia/Brisbane'}));}
+function nowAEST(){return new Date(new Date().toLocaleString('en-US',{timeZone:FH_TZ}));}
 function todayAEST(){var n=nowAEST();return new Date(n.getFullYear(),n.getMonth(),n.getDate());}
 function parseCalDay(dayStr){
   var s=(dayStr||'').toUpperCase();
@@ -2413,9 +2618,9 @@ function buildMiniChart(pair,bias,lvls,W,H,opts){
   /* Header band: timeframe, date and time the analysis was produced. */
   var HDR=28;
   var when=opts.when instanceof Date?opts.when:new Date();
-  var dStr=when.toLocaleDateString('en-AU',{timeZone:'Australia/Brisbane',weekday:'short',day:'2-digit',month:'short',year:'numeric'});
-  var tStr=when.toLocaleTimeString('en-AU',{timeZone:'Australia/Brisbane',hour:'2-digit',minute:'2-digit',hour12:false});
-  var dShort=when.toLocaleDateString('en-AU',{timeZone:'Australia/Brisbane',day:'2-digit',month:'short',year:'2-digit'});
+  var dStr=fhDate(when,{weekday:'short',day:'2-digit',month:'short',year:'numeric'});
+  var tStr=fhTime(when);
+  var dShort=fhDate(when,{weekday:undefined,day:'2-digit',month:'short',year:'2-digit'});
   var hdrCol=light?'rgba(0,0,0,0.55)':'rgba(240,237,232,0.62)';
   var tfCol=tf==='4H'?'#60a5fa':'#c8f135';
   ctx.font='bold '+Math.round(10*sy)+'px "DM Mono",monospace';
@@ -2502,7 +2707,7 @@ async function loadD(pair,btn){
     // If the live feed is briefly down (pc empty), let the model web-search the current price
     // instead of refusing — a refusal must never end up rendered as the day's analysis.
     var dSearch=!pc;
-    var prompt=pc+'You are a professional forex analyst. Provide a concise DAILY analysis for '+p+' as of today '+new Date().toISOString().split('T')[0]+' AEST. Format exactly:\nBIAS: [BULLISH/BEARISH/NEUTRAL]\n\nKEY LEVELS:\n- Resistance 1: [price]\n- Resistance 2: [price]\n- Entry zone: [price range]\n- Support 1: [price]\n- Support 2: [price]\n\nWATCH TODAY:\n[2-3 bullet points on what to watch, catalysts, and specific entry triggers. Use **bold** for key terms.]\n\nBe specific with price levels — resistances above and supports below the current price. Keep it concise. Never say you lack access to live data — '+(dSearch?'use web search to find the current price first.':'the CURRENT LIVE MARKET price is provided above.')+freshnessNote(dSearch);
+    var prompt=pc+'You are a professional forex analyst. Provide a concise DAILY analysis for '+p+' as of today '+new Date().toISOString().split('T')[0]+'. Format exactly:\nBIAS: [BULLISH/BEARISH/NEUTRAL]\n\nKEY LEVELS:\n- Resistance 1: [price]\n- Resistance 2: [price]\n- Entry zone: [price range]\n- Support 1: [price]\n- Support 2: [price]\n\nWATCH TODAY:\n[2-3 bullet points on what to watch, catalysts, and specific entry triggers. Use **bold** for key terms.]\n\nBe specific with price levels — resistances above and supports below the current price. Keep it concise. Never say you lack access to live data — '+(dSearch?'use web search to find the current price first.':'the CURRENT LIVE MARKET price is provided above.')+freshnessNote(dSearch);
     var dKey='d:'+pair+':'+new Date().toDateString();
     var txt=await ai(prompt,dKey,{model:'claude-haiku-4-5',maxTokens:1000,webSearch:dSearch});
     if(aiRefused(txt)){delete cache[dKey];LS.del('fhai:'+dKey);throw new Error('The AI returned a no-data response (not cached) — tap ↻ Refresh to retry.');}
@@ -2537,7 +2742,7 @@ async function loadD(pair,btn){
     lastDaily={pair:pair,bias:bias,lvls:lvls,when:stampedAt,tf:'DAILY'};
     var wHtml=wch.length?wch.map(function(l){return '<div class="cb" style="padding:4px 0;border-bottom:1px solid var(--bd);last-child:border-none">'+md(l)+'</div>'}).join(''):'<div class="cb">'+md(lines.slice(-3).join(' '))+'</div>';
     document.getElementById('dw').innerHTML=colorizeCcy(wHtml);
-    document.getElementById('dm').textContent='Updated '+new Date().toLocaleTimeString('en-AU',{timeZone:'Australia/Brisbane',hour:'2-digit',minute:'2-digit'})+' AEST';
+    document.getElementById('dm').textContent='Updated '+fhClock();
     buildShareBar('d-share','Daily analysis — '+p,'#analysis-daily .card',pair);
   } catch(e){
     document.getElementById('db').innerHTML=errBox(e);
@@ -2588,7 +2793,7 @@ async function loadW(pair,btn){
       :'');
     var evHtml=sections.events.map(function(e){return '<div class="cb" style="padding:4px 0;border-bottom:1px solid var(--bd)">'+md(e.replace(/^-\s*/,''))+'</div>'}).join('');
     document.getElementById('we').innerHTML=colorizeCcy(evHtml||'');
-    document.getElementById('wm').textContent='Updated '+new Date().toLocaleTimeString('en-AU',{timeZone:'Australia/Brisbane',hour:'2-digit',minute:'2-digit'})+' AEST';
+    document.getElementById('wm').textContent='Updated '+fhClock();
     buildShareBar('w-share','Weekly outlook — '+p,'#analysis-weekly .card',pair);
   } catch(e){
     document.getElementById('wt').innerHTML=errBox(e);
@@ -2653,7 +2858,7 @@ async function load4hr(pair,btn){
       c4div.title='Click to enlarge';
     }
     last4hr={pair:pair,bias:bias,lvls:lv4,when:stamped4,tf:'4H'};
-    document.getElementById('h4m').textContent='Updated '+new Date().toLocaleTimeString('en-AU',{timeZone:'Australia/Brisbane',hour:'2-digit',minute:'2-digit'})+' AEST';
+    document.getElementById('h4m').textContent='Updated '+fhClock();
     buildShareBar('h4-share','4-Hour analysis — '+p,'#analysis-4hr .card',pair);
   } catch(e){
     document.getElementById('h4b').innerHTML=errBox(e);
@@ -2676,27 +2881,30 @@ var SESS_DEF=[
   {name:"New York",flag:"🇺🇸", tz:"America/New_York",  localStart:8*60, color:"#f87171"}
 ];
 var SESS_LEN=9*60; // each centre trades a 9-hour local day
-function tzOffsetMin(tz){ // this timezone's current offset from UTC, in minutes
-  var d=new Date();
-  var loc=new Date(d.toLocaleString('en-US',{timeZone:tz}));
-  var utc=new Date(d.toLocaleString('en-US',{timeZone:'UTC'}));
-  return Math.round((loc-utc)/60000);
-}
-function fmtHM(m){m=((m%1440)+1440)%1440;var h=Math.floor(m/60),mm=m%60;return (h<10?'0':'')+h+':'+(mm<10?'0':'')+mm;}
-var _sessCache={ts:0,list:null};
-function getSESS(){ // DST-aware session list in Brisbane minutes, cached for 60s
+/* tzOffsetMin and fmtHM now live in the display-timezone block above — one
+   definition each, so the dial, the timeline and the FAQ cannot drift apart. */
+var _sessCache=null;
+function getSESS(){ // DST-aware session list, in DISPLAY-ZONE minutes, cached for 60s
   var now=Date.now();
-  if(_sessCache.list && now-_sessCache.ts<60000) return _sessCache.list;
-  var bris=tzOffsetMin('Australia/Brisbane');
+  if(_sessCache && _sessCache.list && _sessCache.tz===FH_TZ && now-_sessCache.ts<60000) return _sessCache.list;
+  var here=tzOffsetMin(FH_TZ);
   var list=SESS_DEF.map(function(s){
-    var diff=bris-tzOffsetMin(s.tz);                 // local wall-clock + diff = Brisbane wall-clock
+    var diff=here-tzOffsetMin(s.tz);                 // local wall-clock + diff = viewer wall-clock
     var start=((s.localStart+diff)%1440+1440)%1440;
     var end=start+SESS_LEN;                          // may run past midnight (>1440), like before
     return {name:s.name,flag:s.flag,color:s.color,start:start,end:end,
-            label:fmtHM(start)+'–'+fmtHM(end)+' AEST'};
+            label:fmtHM(start)+'–'+fmtHM(end)+' '+fhTzLabel()};
   });
-  _sessCache={ts:now,list:list};
+  _sessCache={ts:now,tz:FH_TZ,list:list};
   return list;
+}
+/* The London/New York overlap — the peak window, wanted by both layouts. */
+function sessOverlap(){
+  var by={}; getSESS().forEach(function(s){by[s.name]=s;});
+  var a=by['London'],b=by['New York'];
+  if(!a||!b) return null;
+  var st=Math.max(a.start,b.start), en=Math.min(a.end,b.end);
+  return (en>st)?{start:st,end:en,label:fmtHM(st)+'–'+fmtHM(en)+' '+fhTzLabel()}:null;
 }
 
 /* Keep the About-tab answer in step with the live, DST-aware session windows. */
@@ -2708,15 +2916,13 @@ function fillSessionFaq(){
   var ldn=by['London'],ny=by['New York'],syd=by['Sydney'];
   if(!ldn||!ny||!syd) return;
   var ovStart=Math.max(ldn.start,ny.start), ovEnd=Math.min(ldn.end,ny.end);
-  var ov=(ovEnd>ovStart)?(fmtHM(ovStart)+'–'+fmtHM(ovEnd)+' AEST'):'';
+  var ov=(ovEnd>ovStart)?(fmtHM(ovStart)+'–'+fmtHM(ovEnd)+' '+fhTzLabel()):'';
   el.textContent='London ('+ldn.label+')'+(ov?' and the London/New York overlap ('+ov+')':'')
     +' carry the highest volume. The Sydney session ('+syd.label+') suits AUD and NZD pairs. '
-    +'These times track UK and US daylight saving automatically — Brisbane has no DST, so the AEST windows shift twice a year.';
+    +'All times are shown in '+fhTzCity()+' ('+fhTzLabel()+') and track each centre\'s own daylight saving automatically, so these windows shift during the year.';
 }
-function getAESTMinutes(){
-  var d=new Date();
-  var aest=new Date(d.toLocaleString('en-US',{timeZone:'Australia/Brisbane'}));
-  return aest.getHours()*60+aest.getMinutes();
+function getAESTMinutes(){   // minutes since midnight in the DISPLAY zone
+  return fhMinutesOfDay();
 }
 function isOpen(s,m){
   if(s.end<=24*60) return m>=s.start&&m<s.end;
@@ -2732,24 +2938,178 @@ function renderSessions(){
   doRenderSessions();
   sessTickerInterval=setInterval(doRenderSessions,1000);
 }
+/* ══════════════════════════════════════════════════════════════════
+   SESSION DIAL — Option A  (New features 19.8.26, items 6 & 7)
+══════════════════════════════════════════════════════════════════
+   A 24-hour face: 00:00 at the top, one full turn = 24 hours, so each hour is a
+   15-degree step — 06:00 at 3 o'clock, 12:00 at the bottom, 18:00 at 9 o'clock.
+   Each centre gets its own concentric track so overlaps read as stacked arcs
+   rather than colours fighting for the same band, with the London/New York
+   overlap called out on an inner ring and a live hand sweeping the face.
+
+   It shares getSESS() with the timeline, so both layouts show the same windows,
+   both follow the viewer's timezone, and neither can drift from the other.
+   Calendar events are pinned at the minute they actually land, which is the
+   thing a table cannot show you: whether a release falls inside the overlap. */
+var DIAL_CX=200, DIAL_CY=200;
+/* Concentric tracks, outermost first. Everything inside r=74 is reserved for the
+   centre readout, so the innermost ring and its stroke must clear it. */
+var DIAL_TRACKS={'Sydney':162,'Tokyo':142,'London':122,'New York':102};
+var DIAL_OVERLAP_R=83, DIAL_EV_R=180;
+var DIAL_SHORT={'Sydney':'SYD','Tokyo':'TKY','London':'LDN','New York':'NY'};
+function dialPolar(r,deg){
+  var a=(deg-90)*Math.PI/180;
+  return {x:DIAL_CX+r*Math.cos(a), y:DIAL_CY+r*Math.sin(a)};
+}
+function minToDeg(m){ return (((m%1440)+1440)%1440)/1440*360; }
+/* Clockwise arc between two angles. Sessions are at most 9 hours (135°) and the
+   overlap at most a few, so a single A command is always enough. */
+function dialArc(r,a0,a1){
+  var p0=dialPolar(r,a0), p1=dialPolar(r,a1);
+  var sweep=((a1-a0)%360+360)%360;
+  var large=sweep>180?1:0;
+  return 'M '+p0.x.toFixed(2)+' '+p0.y.toFixed(2)+' A '+r+' '+r+' 0 '+large+' 1 '+p1.x.toFixed(2)+' '+p1.y.toFixed(2);
+}
+/* Calendar events for the dial. Fetched at most every 10 minutes — the face
+   re-renders every second and must never trigger a request. */
+var _dialEvents=[], _dialEvTs=0, _dialEvLoading=false;
+function dialEvents(){
+  if(!_dialEvLoading && Date.now()-_dialEvTs>600000){
+    _dialEvLoading=true;
+    try{
+      calEventsToday().then(function(evs){
+        _dialEvents=evs||[]; _dialEvTs=Date.now(); _dialEvLoading=false;
+      }).catch(function(){ _dialEvTs=Date.now(); _dialEvLoading=false; });
+    }catch(e){ _dialEvTs=Date.now(); _dialEvLoading=false; }
+  }
+  return _dialEvents;
+}
+function renderDial(nowMin,sec){
+  var el=document.getElementById('sess-dial');
+  if(!el) return;
+  var SESS=getSESS(), ov=sessOverlap();
+  var light=isLight();
+  var faint=light?'rgba(0,0,0,0.07)':'rgba(255,255,255,0.06)';
+  var track=light?'rgba(0,0,0,0.05)':'rgba(255,255,255,0.045)';
+  var evs=dialEvents();
+  var g='<svg viewBox="-22 -22 444 444" role="img" aria-label="24-hour session dial">';
+  // outer bezel
+  g+='<circle cx="200" cy="200" r="196" fill="none" stroke="'+faint+'" stroke-width="1"/>';
+  // hour ticks + labels
+  for(var h=0;h<24;h++){
+    var deg=minToDeg(h*60), maj=(h%3===0);
+    var t0=dialPolar(maj?188:191,deg), t1=dialPolar(196,deg);
+    g+='<line x1="'+t0.x.toFixed(1)+'" y1="'+t0.y.toFixed(1)+'" x2="'+t1.x.toFixed(1)+'" y2="'+t1.y.toFixed(1)+'" stroke="'+(maj?(light?'rgba(0,0,0,0.35)':'rgba(255,255,255,0.35)'):faint)+'" stroke-width="'+(maj?1.6:1)+'"/>';
+    var lp=dialPolar(maj?212:207,deg);
+    g+='<text x="'+lp.x.toFixed(1)+'" y="'+lp.y.toFixed(1)+'" class="dial-hr'+(maj?' maj':'')+'" text-anchor="middle" dominant-baseline="middle">'+(h<10?'0':'')+h+'</text>';
+  }
+  // empty tracks
+  SESS.forEach(function(s){
+    var r=DIAL_TRACKS[s.name]; if(!r) return;
+    g+='<circle cx="200" cy="200" r="'+r+'" fill="none" stroke="'+track+'" stroke-width="14"/>';
+  });
+  if(ov) g+='<circle cx="200" cy="200" r="'+DIAL_OVERLAP_R+'" fill="none" stroke="'+track+'" stroke-width="10"/>';
+  // session arcs
+  SESS.forEach(function(s){
+    var r=DIAL_TRACKS[s.name]; if(!r) return;
+    var open=isOpen(s,nowMin);
+    g+='<path d="'+dialArc(r,minToDeg(s.start),minToDeg(s.end))+'" fill="none" stroke="'+s.color+'" stroke-width="14" stroke-linecap="butt" opacity="'+(open?1:0.4)+'">'
+      +'<title>'+esc(s.name+' · '+s.label+(open?' · open now':''))+'</title></path>';
+  });
+  // London/New York overlap — the peak window
+  if(ov){
+    g+='<path d="'+dialArc(DIAL_OVERLAP_R,minToDeg(ov.start),minToDeg(ov.end))+'" fill="none" stroke="#f472b6" stroke-width="10" opacity="'+((nowMin>=ov.start%1440||nowMin<ov.end%1440)?1:0.5)+'">'
+      +'<title>'+esc('London / New York overlap · '+ov.label+' · peak liquidity, most news releases')+'</title></path>';
+  }
+  // calendar events, pinned at the minute they land
+  var bucket={};
+  evs.forEach(function(ev){
+    var m=fhMinutesOfDay(ev.ts), deg=minToDeg(m);
+    var k=Math.round(m/20);                       // fan out anything within ~20 min
+    bucket[k]=(bucket[k]||0)+1;
+    var r=DIAL_EV_R-(bucket[k]-1)*9;
+    var pt=dialPolar(r,deg);
+    var col=ccyCol(ev.ccy);
+    var rad=ev.imp==='high'?5:ev.imp==='med'?3.6:2.6;
+    var past=ev.ts<Date.now();
+    g+='<circle class="dial-ev" cx="'+pt.x.toFixed(1)+'" cy="'+pt.y.toFixed(1)+'" r="'+rad+'" fill="'+col+'" opacity="'+(past?0.4:1)+'" stroke="'+(light?'#fff':'#0a0a0a')+'" stroke-width="1.2">'
+      +'<title>'+esc(fhClock(ev.ts)+' · '+ev.ccy+' · '+ev.name+' ('+(ev.imp||'low').toUpperCase()+(past?', released':'')+')')+'</title></circle>';
+    if(ev.imp==='high'&&!past){
+      var i0=dialPolar(170,deg), i1=dialPolar(DIAL_EV_R-6,deg);
+      g+='<line x1="'+i0.x.toFixed(1)+'" y1="'+i0.y.toFixed(1)+'" x2="'+i1.x.toFixed(1)+'" y2="'+i1.y.toFixed(1)+'" stroke="'+col+'" stroke-width="1.4" opacity="0.65"/>';
+    }
+  });
+  /* Now-hand starts outside the centre readout so it never crosses the text. */
+  var nDeg=minToDeg(nowMin+(sec||0)/60);
+  var hStart=dialPolar(76,nDeg), hEnd=dialPolar(190,nDeg);
+  g+='<line x1="'+hStart.x.toFixed(1)+'" y1="'+hStart.y.toFixed(1)+'" x2="'+hEnd.x.toFixed(1)+'" y2="'+hEnd.y.toFixed(1)+'" stroke="var(--ac)" stroke-width="2" stroke-linecap="round"/>';
+  g+='<circle cx="'+hEnd.x.toFixed(1)+'" cy="'+hEnd.y.toFixed(1)+'" r="3.5" fill="var(--ac)"/>';
+  /* Centre readout: what is OPEN and what is NEXT. The running clock is already
+     above the dial in full, so repeating it here would only be decoration. */
+  var openNames=SESS.filter(function(s){return isOpen(s,nowMin);}).map(function(s){return DIAL_SHORT[s.name]||s.name;});
+  var inOv=ov&&(function(){var a=ov.start%1440,b=ov.end%1440;return b>a?(nowMin>=a&&nowMin<b):(nowMin>=a||nowMin<b);})();
+  g+='<text x="200" y="'+(openNames.length?190:196)+'" class="dial-ctr-m" text-anchor="middle">'+esc(openNames.length?openNames.join(' + '):'Market closed')+'</text>';
+  if(openNames.length) g+='<text x="200" y="206" class="dial-ctr-s" text-anchor="middle">'+(inOv?'peak overlap':'open now')+'</text>';
+  var next=evs.filter(function(e){return e.ts>=Date.now();}).sort(function(a,b){return a.ts-b.ts;})[0];
+  if(next){
+    g+='<text x="200" y="'+(openNames.length?226:216)+'" class="dial-ctr-s" text-anchor="middle" fill="'+ccyCol(next.ccy)+'">'+esc('next '+fhTime(next.ts)+' '+next.ccy)+'</text>';
+  }
+  g+='</svg>';
+  el.innerHTML=g;
+  var lg=document.getElementById('dial-legend');
+  if(lg){
+    var items=SESS.map(function(s){return '<span><i style="background:'+s.color+'"></i>'+s.name+'</span>';});
+    if(ov) items.push('<span><i style="background:#f472b6"></i>LDN/NY overlap</span>');
+    if(evs.length) items.push('<span><i style="background:var(--mt);border-radius:100px"></i>'+evs.length+' calendar event'+(evs.length>1?'s':'')+' today</span>');
+    lg.innerHTML=items.join('');
+  }
+  var dt=document.getElementById('dial-title');
+  if(dt) dt.textContent='24-hour dial · '+fhTzCity()+' ('+fhTzLabel()+') · 00:00 at the top';
+}
+
+/* ── Layout switch ── */
+function sessLayout(){ return LS.get('fh_sesslayout')==='timeline'?'timeline':'dial'; }
+function setSessLayout(v){ LS.set('fh_sesslayout',v); doRenderSessions(); }
+function renderSessLayoutSw(){
+  var el=document.getElementById('sess-layout-sw');
+  if(!el) return;
+  var m=sessLayout();
+  el.innerHTML='<button class="gapf'+(m==='dial'?' active':'')+'" onclick="setSessLayout(\'dial\')">◷ Dial</button>'
+    +'<button class="gapf'+(m==='timeline'?' active':'')+'" onclick="setSessLayout(\'timeline\')">▤ Timeline</button>';
+}
+
 function doRenderSessions(){
   var now=new Date();
-  var aest=new Date(now.toLocaleString('en-US',{timeZone:'Australia/Brisbane'}));
+  var aest=new Date(now.toLocaleString('en-US',{timeZone:FH_TZ}));
   var h=aest.getHours(),mi=aest.getMinutes(),sec=aest.getSeconds();
   var m=h*60+mi;
   // Clock
   var cl=document.getElementById('sess-clock');
   if(cl) cl.textContent=(h<10?'0':'')+h+':'+(mi<10?'0':'')+mi+':'+(sec<10?'0':'')+sec;
-  renderTimeline(m);
+  var mode=sessLayout();
+  renderSessLayoutSw();
+  var dw=document.getElementById('sess-dial-wrap'), tw=document.getElementById('sess-timeline-wrap');
+  if(dw) dw.style.display=(mode==='dial')?'flex':'none';
+  if(tw) tw.style.display=(mode==='timeline')?'block':'none';
+  if(mode==='dial') renderDial(m,sec); else renderTimeline(m);
   renderSessCards(m);
 }
 
 function sessWindow(SESS){
-  /* Anchored on the 7am AEST rollover — the same trading-day boundary the gap
-     analysis, briefing and heat map use. Stretched to the last session close so
-     nothing is ever clipped or clamped (NY runs to 08:00 AEST in US winter). */
-  var ws=7*60, we=ws+1440;
-  SESS.forEach(function(s){ if(s.start<ws) ws=s.start; if(s.end>we) we=s.end; });
+  /* Anchored on the daily FX rollover expressed in the VIEWER's clock — 07:00
+     in Brisbane, 22:00 in London, 17:00 in New York. Same instant everywhere;
+     only the number on the axis changes. Stretched to the last session close so
+     nothing is ever clipped or clamped. */
+  var ws=rolloverLocalMin(), we=ws+1440;
+  SESS.forEach(function(s){
+    var st=s.start, en=s.end;
+    /* Express every session on the same turn of the clock as the window start,
+       or a centre that opens before the rollover lands a day behind it. */
+    while(st<ws){ st+=1440; en+=1440; }
+    while(st>=ws+1440){ st-=1440; en-=1440; }
+    if(st<ws) ws=st;
+    if(en>we) we=en;
+  });
   return {ws:ws,wl:we-ws,we:we};
 }
 function renderTimeline(nowMin){
@@ -2774,12 +3134,17 @@ function renderTimeline(nowMin){
   SESS.forEach(function(s,i){
     var top=i*(RH+GAP);
     var open=isOpen(s,nowMin);
-    var sp=cl(wp(s.start)),ep=cl(wp(s.end));
+    /* Put every bar on the same turn of the clock as the window start; without
+       this a centre that opens before the rollover lands a full day off-axis. */
+    var st=s.start,en=s.end;
+    while(st<WS){st+=1440;en+=1440;}
+    while(st>=WS+1440){st-=1440;en-=1440;}
+    var sp=cl(wp(st)),ep=cl(wp(en));
     var bW=(ep-sp)*100;
     html+='<div style="position:absolute;left:0;right:0;top:'+top+'px;height:'+RH+'px;background:rgba(255,255,255,0.03);border-radius:3px"></div>';
     var alpha=open?'0.92':'0.22';
     var txtCol=open?'rgba(0,0,0,0.9)':'rgba(255,255,255,0.45)';
-    var tz=SESS_TZ[s.name]||'Australia/Brisbane';
+    var tz=SESS_TZ[s.name]||FH_TZ;
     var timeLbl=open?localTime(tz):'';
     html+='<div title="'+s.name+' '+s.label+'" style="position:absolute;left:'+(sp*100).toFixed(2)+'%;width:'+bW.toFixed(2)+'%;top:'+top+'px;height:'+RH+'px;border-radius:3px;background:'+s.color+';opacity:'+alpha+(open?';box-shadow:0 0 10px '+s.color+'55':'')+';overflow:hidden">';
     /* On a phone a 9-hour bar is only ~120px wide, so the old always-on labels were cut
@@ -2788,7 +3153,7 @@ function renderTimeline(nowMin){
     var barPx=(bW/100)*CW;
     html+='<div style="padding:0 8px;height:100%;display:flex;align-items:center;gap:6px;overflow:hidden;white-space:nowrap">';
     html+='<span style="font-family:\'DM Mono\',monospace;font-size:10px;font-weight:700;color:'+txtCol+'">'+s.flag+(barPx>78?' '+s.name:'')+'</span>';
-    if(barPx>190) html+='<span style="font-family:\'DM Mono\',monospace;font-size:9px;color:'+txtCol+';opacity:0.8">'+s.label.replace(' AEST','')+'</span>';
+    if(barPx>190) html+='<span style="font-family:\'DM Mono\',monospace;font-size:9px;color:'+txtCol+';opacity:0.8">'+s.label.replace(' '+fhTzLabel(),'')+'</span>';
     if(timeLbl&&barPx>280) html+='<span style="font-family:\'DM Mono\',monospace;font-size:9px;color:'+txtCol+';opacity:0.75">· '+timeLbl+' local</span>';
     html+='</div></div>';
   });
@@ -2927,14 +3292,30 @@ function calStaleNote(){
   if(!k.length) return '';
   var st=_calStale[k[0]];
   var when='';
-  try{ when=new Date(st.ts).toLocaleString('en-AU',{timeZone:'Australia/Brisbane',day:'numeric',month:'short',hour:'2-digit',minute:'2-digit'}); }catch(e){}
+  try{ when=fhDate(st.ts,{weekday:undefined,day:'numeric',month:'short',year:undefined})+' '+fhTime(st.ts); }catch(e){}
   return '<div class="eb" style="margin-bottom:10px">⚠ Both calendar providers are unavailable right now, so this is the last copy received'
-    +(when?' ('+when+' AEST)':'')+'. Times and forecasts are still accurate; newly added events may be missing.</div>';
+    +(when?' ('+when+')':'')+'. Times and forecasts are still accurate; newly added events may be missing.</div>';
 }
-function aestKey(d){return d.toLocaleDateString('en-CA',{timeZone:'Australia/Brisbane'});}
+function aestKey(d){return fhDayKey(d);}
 function aestDayLabel(d){
-  return d.toLocaleDateString('en-AU',{timeZone:'Australia/Brisbane',weekday:'short',day:'numeric',month:'short'})
+  return d.toLocaleDateString('en-AU',{timeZone:FH_TZ,weekday:'short',day:'numeric',month:'short'})
           .replace(/,/g,'').toUpperCase();
+}
+/* ── Re-stamp events into the CURRENT display zone ──────────────────────────
+   ffEvent/aiCalEvent bake day, dayKey and time when the feed is parsed. Change
+   the timezone afterwards and those strings are stale — an event would keep the
+   old clock and stay grouped under the old day. `ts` is the absolute instant and
+   is always right, so everything derived from it is re-stamped before any render
+   rather than re-fetching the feed. */
+function retimeEvents(list){
+  (list||[]).forEach(function(e){
+    if(!e||!e.ts) return;
+    var d=new Date(e.ts);
+    e.time=fhClock(d);
+    e.dayKey=fhDayKey(d);
+    e.day=aestDayLabel(d);
+  });
+  return list||[];
 }
 /* Feed row → the event shape the calendar UI already understands */
 function ffEvent(e){
@@ -2945,7 +3326,7 @@ function ffEvent(e){
   return {
     day:aestDayLabel(d),
     dayKey:aestKey(d),
-    time:d.toLocaleTimeString('en-AU',{timeZone:'Australia/Brisbane',hour:'2-digit',minute:'2-digit',hour12:false})+' AEST',
+    time:fhClock(d),
     ts:d.getTime(),
     ccy:String(e.country||'').toUpperCase(),
     imp:imp,
@@ -2982,7 +3363,7 @@ function aiCalEvent(e){
   if(['high','med','low'].indexOf(imp)<0) imp='low';
   return {
     day:aestDayLabel(d), dayKey:aestKey(d),
-    time:d.toLocaleTimeString('en-AU',{timeZone:'Australia/Brisbane',hour:'2-digit',minute:'2-digit',hour12:false})+' AEST',
+    time:fhClock(d),
     ts:d.getTime(), ccy:ccy, imp:imp, rawImp:imp, name:name,
     forecast:newsField(e.forecast,20)||'—', prev:newsField(e.previous,20)||'—',
     desc:'', aiSourced:true
@@ -2990,7 +3371,7 @@ function aiCalEvent(e){
 }
 async function aiCalEvents(){
   var today=new Date();
-  var from=today.toLocaleDateString('en-AU',{timeZone:'Australia/Brisbane',weekday:'long',day:'numeric',month:'long',year:'numeric'});
+  var from=fhDate(today,{weekday:'long',day:'numeric',month:'long',year:'numeric'});
   var prompt='Search economic calendars (Forex Factory, Investing.com, DailyFX, Trading Economics) and list every scheduled economic event over the NEXT 7 DAYS starting '+from+' that could move the forex market.\n'
     +'MANDATORY — never omit if scheduled: central-bank rate decisions, statements, minutes and press conferences (FOMC/Fed, ECB, BoE, BoJ, RBA, RBNZ, BoC, SNB), CPI/inflation, employment reports (NFP, unemployment), GDP, PMI.\n'
     +'Only future events. Do not invent events you cannot find.\n\n'
@@ -3033,8 +3414,8 @@ async function allCalEvents(){
 }
 /* Every event scheduled TODAY (Brisbane), earliest first */
 async function calEventsToday(){
-  var all=await allCalEvents();
-  var today=aestKey(new Date());
+  var all=retimeEvents(await allCalEvents());   // re-stamp into the current display zone
+  var today=fhDayKey();
   return all.filter(function(e){return e.dayKey===today;});
 }
 
@@ -3080,6 +3461,7 @@ function startCalTicker(){
 }
 
 function renderCalendarView(){
+  retimeEvents(_calAll);   // timezone may have changed since the feed was parsed
   var body=document.getElementById('cal-body');
   if(!body) return;
   var now=Date.now();
@@ -3149,7 +3531,7 @@ function renderCalendarView(){
 }
 function setCalMeta(n){
   var m=document.getElementById('cal-meta');
-  if(m) m.textContent=n+' events · '+calSourceName()+' · times converted to AEST (Brisbane) · updated '+new Date().toLocaleTimeString('en-AU',{timeZone:'Australia/Brisbane',hour:'2-digit',minute:'2-digit',hour12:false})+' AEST';
+  if(m) m.textContent=n+' events · '+calSourceName()+' · times shown in '+fhTzCity()+' ('+fhTzLabel()+') · updated '+fhTime();
 }
 function renderCalendar(events){ _calAll=events||_calAll; renderCalendarView(); }
 function getCcyColor(ccy){
@@ -3196,7 +3578,7 @@ function openCalPopup(idx){
   document.getElementById('cpop-title').textContent=ev.name;
   document.getElementById('cpop-badge').innerHTML='<span class="cal-imp-badge '+ev.imp+'">'+(ev.imp==='high'?'HIGH':ev.imp==='med'?'MED':'LOW')+'</span>';
   document.getElementById('cpop-ccy-tag').innerHTML='<span class="cal-ccy-tag" style="color:'+col+';background:'+col+'22;border:1px solid '+col+'44;padding:2px 8px;border-radius:100px">'+ev.ccy+'</span>';
-  document.getElementById('cpop-time').textContent=(ev.day?ev.day+' · ':'')+ev.time+' AEST';
+  document.getElementById('cpop-time').textContent=(ev.day?ev.day+' · ':'')+ev.time;
   var desc=ev.desc?ev.desc:'Forecast: '+ev.forecast+' · Previous: '+ev.prev;
   document.getElementById('cpop-desc').innerHTML=highlightEcoTerms(desc);
   // Look up eco term explanation
@@ -3252,7 +3634,7 @@ function addTrade(){
     else pips=slPips.toFixed(1);
   }
   var j=loadJournal();
-  j.push({pair,dir,entry,sl,tp,result,pips,notes,date:new Date().toLocaleDateString('en-AU',{timeZone:'Australia/Brisbane'})});
+  j.push({pair,dir,entry,sl,tp,result,pips,notes,date:new Date().toLocaleDateString('en-AU',{timeZone:FH_TZ})});
   saveJournal(j);
   ['j-entry','j-sl','j-tp','j-pips','j-notes'].forEach(function(id){document.getElementById(id).value='';});
   document.getElementById('j-result').value='open';
@@ -3496,15 +3878,15 @@ async function loadHeatMap(){
     if(!rows.length){body.innerHTML='<div class="eb" style="padding:16px">No live data returned after 3 attempts — the upstream price feed is briefly down. Tap the Heat Map tab again in a minute.</div>';hmLoaded=false;return;}
     renderHeatPips(rows);
     buildMajorsMatrixLive(q);
-    var t=new Date().toLocaleTimeString('en-AU',{timeZone:'Australia/Brisbane',hour:'2-digit',minute:'2-digit'});
+    var t=fhTime();
     var src=document.getElementById('hm-src');
     // D6: only claim the 7am rollover if the worker actually anchored to it.
     var offRollover=rows.some(function(r){return r.refSrc&&r.refSrc!=='rollover';});
     var dailyLbl=offRollover
-      ? 'Daily = pips since the last available reference (7am AEST rollover unavailable for some pairs)'
-      : 'Daily = pips since the 7am AEST rollover';
+      ? 'Daily = pips since the last available reference ('+rolloverLabel()+' rollover unavailable for some pairs)'
+      : 'Daily = pips since the '+rolloverLabel()+' rollover';
     markSectionLoaded('maps');
-    if(src) src.textContent=(feedState.stale?feedNote()+' · ':'')+'Live prices · '+dailyLbl+' · Weekly/Monthly vs 5/21 trading days ago · — = no data · as of '+t+' AEST';
+    if(src) src.textContent=(feedState.stale?feedNote()+' · ':'')+'Live prices · '+dailyLbl+' · Weekly/Monthly vs 5/21 trading days ago · — = no data · as of '+t+' '+fhTzLabel();
   } catch(e){
     body.innerHTML='<div class="eb" style="padding:16px">'+friendlyError(e)+'</div>';
     hmLoaded=false;
@@ -3871,8 +4253,8 @@ async function runScanner(){
       var majors=TREND_PAIRS;
       var q=await liveQuotes(majors);
       var lines=majors.map(function(mp){return q[mp]?(mp.slice(0,3)+'/'+mp.slice(3)+' = '+quoteLine(mp,q[mp])):null;}).filter(Boolean);
-      var tnow=new Date().toLocaleTimeString('en-AU',{timeZone:'Australia/Brisbane',hour:'2-digit',minute:'2-digit'});
-      if(lines.length) priceBlock='CURRENT LIVE PRICES ('+tnow+' AEST, real-time). Each line: price (today\'s range, % move/momentum) | trend 4H/Day/Week/Month (▲ up ▼ down ▬ flat). "Today"/D are measured from the 7am AEST session open — early in the day D is naturally small, so weight W/M more then:\n'+lines.join('\n')+'\n\n';
+      var tnow=fhTime();
+      if(lines.length) priceBlock='CURRENT LIVE PRICES ('+fhClock()+', real-time). Each line: price (today\'s range, % move/momentum) | trend 4H/Day/Week/Month (▲ up ▼ down ▬ flat). "Today"/D are measured from the daily FX rollover at 17:00 New York — early in the day D is naturally small, so weight W/M more then:\n'+lines.join('\n')+'\n\n';
     }catch(e){}
     var prompt=priceBlock+'You are a professional forex trading analyst. Analyse the current forex market and identify the 3-5 highest-probability trade setups right now across major pairs.\n\nFor each setup use this EXACT plain-text format with no markdown, no asterisks, no bold:\n\nSETUP:\nPAIR: e.g. GBP/USD\nDIRECTION: LONG or SHORT\nPROBABILITY: HIGH or MEDIUM\nENTRY: price level\nSTOP LOSS: price level\nTAKE PROFIT: price level\nREASON: 3-5 sentences explaining the setup covering weekly trend, daily structure, 4H trigger, and catalyst.\n\nCRITICAL LEVEL RULES — base every level on the CURRENT LIVE PRICES above:\n- ENTRY must be within roughly 0.5% of the current price (a realistic pending order that has NOT already been hit), never far away.\n- Never use a level that price has already traded through — the entry must still be reachable from the current live price.\n- Respect each pair\'s momentum AND its 4H/Day/Week/Month trend shown above: prefer setups that trade WITH the dominant higher-timeframe trend (weekly/monthly direction), triggered on the 4H. Do NOT recommend fading a strong UP or DOWN move (a pair near its daily high/low with a clear % move, or aligned trends across timeframes) unless you can state a specific reversal signal. Weight the setup\'s probability by how well the timeframes align.\n- For a SHORT: ENTRY at or slightly ABOVE current price, STOP LOSS above entry, TAKE PROFIT below entry.\n- For a LONG: ENTRY at or slightly BELOW current price, STOP LOSS below entry, TAKE PROFIT above entry.\n- Direction, entry, stop and target must be internally consistent and achieve at least 1:2 risk/reward.\n- Do not contradict yourself: if the reasoning is bearish the direction must be SHORT, and vice-versa.\n\nPrefer setups with clear multi-timeframe alignment and strong technical or fundamental backing. You MUST always return at least 2 setups — when nothing is A-grade, return the best available opportunities ranked MEDIUM probability with honest reasoning, never an empty answer. Pay particular attention to whichever pairs show the largest moves in the live data above (including JPY crosses and USD pairs). Start each setup with exactly "SETUP:" on its own line. Do not use any markdown.\n\nCOMPLETENESS RULES — a setup missing any of these is discarded before it reaches the screen, so it is wasted output:\n- Every setup MUST carry all seven fields: PAIR, DIRECTION, PROBABILITY, ENTRY, STOP LOSS, TAKE PROFIT, REASON.\n- For LONG, STOP LOSS must be BELOW entry and TAKE PROFIT ABOVE it. For SHORT, STOP LOSS ABOVE entry and TAKE PROFIT BELOW it. No exceptions.\n- Keep REASON to 3-4 sentences and at most 70 words so every setup finishes inside the reply. Prefer 3 complete setups over 5 truncated ones. Always finish the final setup completely — never cut off mid-sentence.'+freshnessNote(false);
     /* 30-minute bucket (was 15). The proxy caches scanner replies for 30 minutes, so a
@@ -3891,7 +4273,7 @@ async function runScanner(){
       // replays the same "no setups" result (why the scanner kept showing nothing for days).
       delete cache[scanKey];LS.del('fhai:'+scanKey);
       res.innerHTML='<div class="scan-empty"><div class="scan-icon">🔍</div><div>The analysis came back in an unexpected shape and no setups could be read from it. Tap Run scanner to try again.</div></div>';
-      meta.textContent='Attempted '+new Date().toLocaleTimeString('en-AU',{timeZone:'Australia/Brisbane',hour:'2-digit',minute:'2-digit',hour12:false})+' AEST · nothing parsed';
+      meta.textContent='Attempted '+fhClock()+' · nothing parsed';
     } else {
       var html='',shown=0,dropped=[];
       setups.forEach(function(s){
@@ -3927,8 +4309,8 @@ async function runScanner(){
          so the stamp read roughly half the epoch — a 08:28 clock showed
          "Analysis from 09:00". Same constant on both sides, and the caption
          states the real cadence. */
-      var scanAt=new Date(scanBucket*18e5).toLocaleTimeString('en-AU',{timeZone:'Australia/Brisbane',hour:'2-digit',minute:'2-digit',hour12:false});
-      meta.textContent='Analysis from '+scanAt+' AEST (new analysis every 30 min) · Not financial advice';
+      var scanAt=fhTime(scanBucket*18e5);
+      meta.textContent='Analysis from '+scanAt+' '+fhTzLabel()+' (new analysis every 30 min) · Not financial advice';
       if(shown) buildShareBar('scan-share','Trade scanner','#scan-results','scanner');
     }
   } catch(e){
@@ -3947,7 +4329,7 @@ async function runPullbackScanner(){
   btn.disabled=true;btn.innerHTML='<div class="sp"></div> Scanning…';
   meta.textContent='';
   var shareEl=document.getElementById('scan-share');if(shareEl){shareEl.style.display='none';shareEl.innerHTML='';}
-  res.innerHTML='<div class="ld" style="padding:20px"><div class="sp"></div>Fetching today\'s top movers (since the 7am AEST rollover) for pullback analysis…</div>';
+  res.innerHTML='<div class="ld" style="padding:20px"><div class="sp"></div>Fetching today\'s top movers (since the '+rolloverLabel()+' rollover) for pullback analysis…</div>';
   try{
     // 1. Get live quotes — ALL 28 watched pairs so big movers (e.g. CHF/JPY, NZD & CAD crosses) are never missed
     var pbPairs=TREND_PAIRS;
@@ -3962,8 +4344,8 @@ async function runPullbackScanner(){
     var top=movers.slice(0,8);
     if(!top.length){res.innerHTML='<div class="scan-empty"><div class="scan-icon">📊</div><div>No price data available — try again in a moment.</div></div>';btn.disabled=false;btn.innerHTML='↩ Pullback scan';return;}
     // 2. Build price block for context
-    var tnow=new Date().toLocaleTimeString('en-AU',{timeZone:'Australia/Brisbane',hour:'2-digit',minute:'2-digit'});
-    var priceBlock='TODAY\'S TOP MOVERS — LIVE DATA ('+tnow+' AEST):\n'+top.map(function(m){
+    var tnow=fhTime();
+    var priceBlock='TODAY\'S TOP MOVERS — LIVE DATA ('+fhClock()+'):\n'+top.map(function(m){
       var p=m.pair.slice(0,3)+'/'+m.pair.slice(3);
       return p+': daily '+(m.td>=0?'+':'')+m.td+'% | weekly '+(m.tw>=0?'+':'')+m.tw+'% | '+quoteLine(m.pair,m.q);
     }).join('\n')+'\n\n';
@@ -3980,7 +4362,7 @@ async function runPullbackScanner(){
       // Never cache an empty answer — retries within the hour were replaying the same "nothing found"
       delete cache[pbKey];LS.del('fhai:'+pbKey);
       res.innerHTML='<div class="scan-empty"><div class="scan-icon">↩</div><div>The analysis came back in an unexpected shape and no pullback setups could be read from it. Tap Pullback scan to try again.</div></div>';
-      meta.textContent='Attempted '+new Date().toLocaleTimeString('en-AU',{timeZone:'Australia/Brisbane',hour:'2-digit',minute:'2-digit',hour12:false})+' AEST · nothing parsed';
+      meta.textContent='Attempted '+fhClock()+' · nothing parsed';
     } else {
       var html='<div style="background:rgba(251,191,36,0.07);border:1px solid rgba(251,191,36,0.2);border-radius:var(--rs);padding:10px 14px;margin-bottom:14px;font-size:13px;color:#fbbf24">↩ Pullback scanner — LIMIT ORDERS only. Place at the entry trigger and wait for price to come to you. Not a market-entry signal.</div>';
       var shown=0,dropped=[];
@@ -4020,7 +4402,7 @@ async function runPullbackScanner(){
       } else {
         res.innerHTML=html+droppedNote(dropped);
       }
-      meta.textContent='Pullback scan · '+new Date().toLocaleTimeString('en-AU',{timeZone:'Australia/Brisbane',hour:'2-digit',minute:'2-digit',hour12:false})+' AEST · Not financial advice';
+      meta.textContent='Pullback scan · '+fhClock()+' · Not financial advice';
       if(shown) buildShareBar('scan-share','Pullback scanner','#scan-results','pullback_scanner');
     }
   } catch(e){
@@ -4488,7 +4870,7 @@ var PEP_SPREAD={EURUSD:3,GBPUSD:6,USDJPY:3,USDCHF:7,USDCAD:6,AUDUSD:4,NZDUSD:7,
   AUDNZD:9,AUDCAD:9,AUDCHF:9,
   NZDCAD:11,NZDCHF:12,CADCHF:10};
 function pspread(p){return PEP_SPREAD[p]||8;}
-function briefDayKey(){return new Date().toLocaleDateString('en-CA',{timeZone:'Australia/Brisbane'});}
+function briefDayKey(){return fhDayKey();}
 function slashPair(p){return p.slice(0,3)+'/'+p.slice(3);}
 function fmtPips(v){return v==null?'—':((v>0?'+':'')+v.toFixed(1));}
 var briefRendered=null;
@@ -4605,7 +4987,7 @@ async function renderBriefing(force){
   var gapEdge=function(s){return s.gapPips==null?-1e9:(Math.abs(s.gapPips)-pspread(s.pair));};
   var gaps=rows.slice().sort(function(a,b){return gapEdge(b)-gapEdge(a);});
   // 5. Today's news (AI, cached daily)
-  var whenLong=new Date().toLocaleDateString('en-AU',{timeZone:'Australia/Brisbane',weekday:'long',day:'numeric',month:'long',year:'numeric'});
+  var whenLong=fhDate(null,{weekday:'long',day:'numeric',month:'long',year:'numeric'});
   /* D3 — AI narration and citation tags leaking into the news list.
      Fixed by contract, not by cleanup: the model is asked for JSON, the worker parses it,
      and the renderer reads named fields and escapes them. Narration and [cite_start]/[1]
@@ -4633,7 +5015,7 @@ async function renderBriefing(force){
   gaps.filter(function(s){return s.gapPips!=null&&s.gapMeasurable!==false&&Math.abs(s.gapPips)>pspread(s.pair)&&Math.abs(s.gapPips)>=10;}).slice(0,3).forEach(function(s){var edge=Math.abs(s.gapPips)-pspread(s.pair);alerts.push({t:'gap',x:slashPair(s.pair)+' gapped '+fmtPips(s.gapPips)+' pips at the ~7am rollover vs a ~'+pspread(s.pair).toFixed(1)+'-pip spread — tradable (edge +'+edge.toFixed(1)+' pips).'});});
   var sessRows=rows.filter(function(s){return s.sessionMovePips!=null;});
   var bigAbs=(hasSession?sessRows:rows).slice().sort(function(a,b){return Math.abs((hasSession?b.sessionMovePips:b.displayPips))-Math.abs((hasSession?a.sessionMovePips:a.displayPips));})[0];
-  if(bigAbs) alerts.push({t:'move',x:slashPair(bigAbs.pair)+' is the biggest mover '+(hasSession?'this session so far ('+fmtPips(bigAbs.sessionMovePips)+' pips since 7am AEST).':'in the previous session ('+fmtPips(bigAbs.displayPips)+' pips).')});
+  if(bigAbs) alerts.push({t:'move',x:slashPair(bigAbs.pair)+' is the biggest mover '+(hasSession?'this session so far ('+fmtPips(bigAbs.sessionMovePips)+' pips since the '+rolloverLabel()+' rollover).':'in the previous session ('+fmtPips(bigAbs.displayPips)+' pips).')});
   rows.filter(function(s){return s.activity>2;}).sort(function(a,b){return b.activity-a.activity;}).slice(0,2).forEach(function(s){alerts.push({t:'vol',x:slashPair(s.pair)+' traded '+s.activity.toFixed(1)+'× its normal daily range — elevated volatility.'});});
   var newsTxt=news.map(function(e){return e.name||e.note||'';}).join(' ')+' '+todayEvts.filter(function(e){return e.imp==='high';}).map(function(e){return e.name;}).join(' ');
   var hot=newsTxt.match(/non-?farm|nfp|\bcpi\b|fomc|rate decision|interest rate|payroll|\bgdp\b|unemployment|inflation/i);
@@ -4680,7 +5062,7 @@ async function renderBriefing(force){
   var sesLbl='<span class="muted">'+(
       srcSet.dailyClose&&srcSet.prevSession7am ? 'previous trading day · mixed source — see note below'
     : srcSet.dailyClose ? 'previous daily close-to-close (7am session data unavailable)'
-    : 'previous trading day · 7am–7am AEST')+'</span>';
+    : 'previous trading day · '+fmtHM(rolloverLocalMin())+'–'+fmtHM(rolloverLocalMin())+' '+fhTzLabel())+'</span>';
   var ivSet={};rows.forEach(function(s){if(s.barIv)ivSet[s.barIv]=1;});
   var ivList=Object.keys(ivSet);
   var partialN=rows.filter(function(s){return s.prevPartial;}).length;
@@ -4700,7 +5082,7 @@ async function renderBriefing(force){
   h+='<div class="chip-row">'+mostActive.map(function(o){return '<span class="act-chip">'+ccySpan(o.c)+' <b>'+o.avg.toFixed(2)+'×</b></span>';}).join('')+'</div>';
   h+='<div class="ss" style="margin-top:8px;margin-bottom:0">FX has no public spot-volume feed, so this ranks how much each currency moved relative to its own 14-day norm — a proxy for where the action was.</div></div>';
   _gapRows=gaps;
-  h+='<div class="brief-sec"><div class="brief-h">↔️ Gap analysis <span class="muted" id="gap-sub">7am AEST rollover · tradable when gap &gt; spread</span></div>';
+  h+='<div class="brief-sec"><div class="brief-h">↔️ Gap analysis <span class="muted" id="gap-sub">'+rolloverLabel()+' rollover · tradable when gap &gt; spread</span></div>';
   h+='<div id="gap-filter" class="gap-filter"></div><div id="gap-table"></div></div>';
   /* D3: renders from validated fields only. No sentence parsing, no denylist. */
   function renderNews(evs){
@@ -4774,8 +5156,8 @@ async function renderBriefing(force){
   renderGapTable();
   box.setAttribute('data-loaded','1');
   buildShareBar('brief-share','Morning briefing','#brief-body','Morning_Briefing');
-  var tm=new Date().toLocaleTimeString('en-AU',{timeZone:'Australia/Brisbane',hour:'2-digit',minute:'2-digit'});
-  var mt=document.getElementById('brief-meta'); if(mt) mt.textContent='As of '+tm+' AEST';
+  var tm=fhTime();
+  var mt=document.getElementById('brief-meta'); if(mt) mt.textContent='As of '+tm+' '+fhTzLabel();
   markSectionLoaded('briefing');
 }
 /* ── Gap analysis: Tradable/worth-a-look vs All (Amendment 17.8.26 #2) ──
@@ -4835,7 +5217,7 @@ function renderGapTable(){
   var naCount=all.filter(function(c){return c.na;}).length;
   var sub=document.getElementById('gap-sub');
   if(sub) sub.innerHTML=(mode==='all'?'all '+all.length+' watched pairs':worthCount+' of '+all.length+' watched pairs worth a look')
-    +' · 7am AEST rollover · tradable when gap &gt; spread'
+    +' · '+rolloverLabel()+' rollover · tradable when gap &gt; spread'
     +(naCount?' · '+naCount+' not measurable from this feed':'');
   var h='';
   if(!list.length){
@@ -4861,8 +5243,8 @@ function renderGapTable(){
     h+='</tbody></table>';
   }
   var wkN=list.filter(function(c){return c.weekend;}).length;
-  h+='<div class="ss" style="margin-top:8px;margin-bottom:0">Gap = the last price before the 17:00 New York rollover (≈7am AEST) against the first price after it. '
-    +'<b>Hover any row</b> to see both prices, their AEST timestamps and how long the market was shut across the gap.'
+  h+='<div class="ss" style="margin-top:8px;margin-bottom:0">Gap = the last price before the 17:00 New York rollover ('+rolloverLabel()+' your time) against the first price after it. '
+    +'<b>Hover any row</b> to see both prices, their timestamps and how long the market was shut across the gap.'
     +(list.length?(wkN===list.length?' All rows shown are <b>weekend</b> gaps (Friday close → Monday open) — the only rollover a free stitched feed can actually measure.'
                   :(wkN?' '+wkN+' of these are weekend gaps; the rest are weekday rollovers, flagged <span class="fh-flag">⚠</span>.'
                        :' These are weekday rollovers <span class="fh-flag">⚠</span> — a stitched feed cannot see those reliably, so treat them as indicative only.')):'')
@@ -4884,6 +5266,8 @@ function initCache(){
 }
 document.addEventListener('DOMContentLoaded',function(){
   initPin();
+  /* Timezone first — every later render reads FH_TZ for its labels. */
+  applyTzEverywhere();
   fillSessionFaq();
   setInterval(fillSessionFaq,60*60*1000); // keeps the About answer right across a DST change
   initTheme();
@@ -4900,9 +5284,9 @@ document.addEventListener('DOMContentLoaded',function(){
   loadW('AUDUSD',document.querySelector('#wpr .pp.active'));
   loadD('AUDUSD',document.querySelector('#dpr .pp.active'));
   renderJournal();
-  // Pre-warm the morning briefing after 8am AEST so it's ready when opened
+  // Pre-warm the morning briefing after 8am local so it's ready when opened
   try{
-    var bh=parseInt(new Date().toLocaleString('en-AU',{timeZone:'Australia/Brisbane',hour:'2-digit',hour12:false}).replace(/\D/g,''),10);
+    var bh=Math.floor(fhMinutesOfDay()/60);
     if(bh>=8) setTimeout(function(){renderBriefing(false);},1800);
   }catch(e){}
 });
