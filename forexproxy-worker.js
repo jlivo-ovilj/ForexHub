@@ -1,4 +1,14 @@
 /* ForexHub data + AI proxy — Cloudflare Worker
+   v10.0 26.8.26 (amendments 19.8.26):
+     • /briefing and /price now measure on 15-minute bars (60m fallback). Yahoo's
+       hourly bars under-report a session's true high/low, which is why the
+       briefing's "117p rng" read far below the range on the chart.
+     • Every window figure now ships the evidence that produced it — the two
+       prices used, their AEST timestamps and the bar count — so a number that
+       disagrees with the broker chart can be attributed instead of argued about.
+     • The 4H trend figure is chosen by TIMESTAMP, not by counting 48 bars back.
+       Counting bars walked across the weekend on a Monday morning and reported
+       "4H" figures that actually spanned Friday.
    v9.0 19.8.26: cost + abuse hardening, calendar failover.
      • /api is no longer an open Anthropic relay: it requires the app key AND an
        allow-listed Origin, and it stops dead at a hard daily budget.
@@ -8,7 +18,7 @@
        Cache API which is per-colo) and backs off when Forex Factory rate-limits.
    Bindings required: ANTHROPIC_API_KEY (secret), FH_APP_KEY (secret), FH_KV (KV).  */
 
-const WORKER_VERSION = "9.0";
+const WORKER_VERSION = "10.0";
 const YF_HOSTS = ["https://query1.finance.yahoo.com", "https://query2.finance.yahoo.com"];
 const UA = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0 Safari/537.36";
 const NY_HOUR_FMT = new Intl.DateTimeFormat("en-US", { timeZone: "America/New_York", hour: "numeric", hourCycle: "h23" });
@@ -100,6 +110,57 @@ function series(d) {
     });
   }
   return { meta: res0.meta || {}, bars: bars };
+}
+
+/* ── Amendment 19.8.26 (briefing accuracy) ────────────────────────────────────
+   Yahoo's 60-minute FX bars smooth away intraday extremes: a session that ran
+   165 pips on the broker chart measured 117 on hourly bars because the true high
+   and low sat inside a bar whose own high/low Yahoo had already rounded off.
+   Intraday work therefore asks for 15-minute bars first and only falls back to
+   60m when the finer series is unavailable. `iv` travels with the response so
+   the UI can say which resolution produced a figure. */
+async function intraBars(sym, ttl) {
+  const tries = [["5d", "15m"], ["5d", "30m"], ["5d", "60m"]];
+  for (let i = 0; i < tries.length; i++) {
+    const d = await yChart(sym, tries[i][0], tries[i][1], ttl);
+    const s = series(d);
+    if (s.bars.length > 30) { s.iv = tries[i][1]; return s; }
+  }
+  return { meta: {}, bars: [], iv: null };
+}
+
+const AEST_FMT = new Intl.DateTimeFormat("en-AU", {
+  timeZone: "Australia/Brisbane", weekday: "short", day: "2-digit", month: "short",
+  hour: "2-digit", minute: "2-digit", hourCycle: "h23"
+});
+const aestStamp = function (t) { return t ? AEST_FMT.format(new Date(t * 1000)) + " AEST" : null; };
+
+/* Index of every bar that opens a new trading day, i.e. the first bar at or after
+   the 17:00 New York rollover (= 07:00 Brisbane, DST-correct in both directions
+   because it is derived from the New York clock rather than a fixed offset). */
+function rolloverIdx(bars) {
+  const out = [];
+  for (let z = 1; z < bars.length; z++) {
+    if (nyHour(bars[z].t) === 17 && nyHour(bars[z - 1].t) !== 17) out.push(z);
+  }
+  return out;
+}
+
+/* The reference bar 'mins' minutes before the last bar, chosen by TIMESTAMP.
+   Returns null when the only candidate sits on the far side of a market break
+   (weekend or holiday) — a "4H" figure that silently spans a 65-hour weekend is
+   worse than no figure, so the caller is told it could not be measured. */
+function barBack(bars, mins) {
+  if (!bars.length) return null;
+  const lastT = bars[bars.length - 1].t, want = lastT - mins * 60;
+  let ref = null;
+  for (let i = bars.length - 1; i >= 0; i--) { if (bars[i].t <= want) { ref = bars[i]; break; } }
+  if (!ref) return null;
+  /* How much wall-clock the window actually covers. Allow 50% slack for thin
+     periods; beyond that the window has jumped a session break. */
+  const span = lastT - ref.t;
+  if (span > mins * 60 * 1.5) return { bar: ref, spansBreak: true, spanMin: Math.round(span / 60) };
+  return { bar: ref, spansBreak: false, spanMin: Math.round(span / 60) };
 }
 
 /* ── Calendar failover source ──────────────────────────────────────────────────
@@ -346,10 +407,8 @@ export default {
               : (ib.length ? ib[ib.length - 1].c : (db.length ? db[db.length - 1].c : null));
             if (price == null) { failed.push(p); return; }
             const pip = pipOf(p);
-            let roIdx = -1;
-            for (let z = ib.length - 1; z > 0; z--) {
-              if (nyHour(ib[z].t) === 17 && nyHour(ib[z - 1].t) !== 17) { roIdx = z; break; }
-            }
+            const roAll = rolloverIdx(ib);
+            const roIdx = roAll.length ? roAll[roAll.length - 1] : -1;
             // D6: record WHICH reference we actually used, so the UI can label the
             // figure honestly instead of hardcoding "since the 7am AEST rollover".
             let refSrc;
@@ -369,7 +428,20 @@ export default {
             let hi = price, lo = price;
             for (let y = 0; y < span.length; y++) { if (span[y].h > hi) hi = span[y].h; if (span[y].l < lo) lo = span[y].l; }
             const chg = pctOf(price, ref);
-            const t4h = ib.length > 48 ? pctOf(price, ib[ib.length - 1 - 48].c) : null;
+            /* Amendment 19.8.26 — the 4H figure used to count back 48 five-minute
+               bars. Bars only exist while the market is open, so on a Monday
+               morning 48 bars reached back across the whole weekend into Friday
+               and the column headed "4H" reported a weekend move. Pick the
+               reference by clock time and report when the window is not a clean
+               four hours instead of quietly widening it. */
+            const b4 = barBack(ib, 240);
+            const t4h = b4 ? pctOf(price, b4.bar.c) : null;
+            const t4hSpanMin = b4 ? b4.spanMin : null;
+            const t4hSpansBreak = b4 ? b4.spansBreak : false;
+            /* Minutes of trading elapsed since the 7am AEST rollover, so the UI can
+               say "Daily covers 1h 56m" rather than implying a full day. */
+            const sessionAgeMin = roIdx > 0 && ib.length
+              ? Math.round((ib[ib.length - 1].t - ib[roIdx].t) / 60) : null;
             let j = -1;
             for (let k = db.length - 1; k >= 0; k--) { if (dayStr(db[k].t) < today) { j = k; break; } }
             if (j < 0) j = db.length - 1;
@@ -382,7 +454,13 @@ export default {
               wp: wRef != null ? r1((price - wRef) / pip) : null,
               mp: mRef != null ? r1((price - mRef) / pip) : null,
               refSrc: refSrc,   // rollover | prevClose | windowStart | none
-              spanSrc: spanSrc  // session | trailing24h | wholeWindow
+              spanSrc: spanSrc, // session | trailing24h | wholeWindow
+              /* Amendment 19.8.26 — evidence travelling with the figures */
+              t4hSpanMin: t4hSpanMin,       // minutes the "4H" column really covers
+              t4hSpansBreak: t4hSpansBreak, // true ⇒ that window jumped a market break
+              sessionAgeMin: sessionAgeMin, // minutes since the 7am AEST rollover
+              refPrice: ref,
+              refAt: roIdx > 0 ? aestStamp(ib[roIdx - 1].t) : null
             };
           } catch (e) { failed.push(p); }
         }));
@@ -402,11 +480,15 @@ export default {
         await Promise.all(bp.map(async function (p) {
           try {
             const sym = p.replace("/", "") + "=X";
+            /* 15-minute bars where Yahoo has them (60m is the last resort). The
+               previous-session high/low is the number the user cross-checks
+               against a broker chart, and hourly bars consistently under-report
+               it — 118 pips against a charted 165. */
             const two = await Promise.all([
               yChart(sym, "3mo", "1d", 1800),
-              yChart(sym, "5d", "60m", 300)
+              intraBars(sym, 300)
             ]);
-            const dd = series(two[0]), hh = series(two[1]);
+            const dd = series(two[0]), hh = two[1];
             const bars = dd.bars, meta = dd.meta || {};
             if (bars.length < 3) { failed.push(p); return; }
             const pip = pipOf(p);
@@ -420,32 +502,66 @@ export default {
             const atr = n ? sum / n : rangePips;
             let gapPips = null, sessionMovePips = null, prevDayMovePips = null, prevDayRangePips = null;
             let gapSrc = null, gapMeasurable = false;
+            /* Amendment 19.8.26 — every window figure now carries the evidence that
+               produced it: the two prices compared, their AEST timestamps, and how
+               many bars the window contained. When a briefing number disagrees with
+               the broker chart the UI can show exactly what was measured instead of
+               leaving the user to guess whether it is a bug or a feed difference. */
+            let prevFrom = null, prevTo = null, prevHigh = null, prevLow = null;
+            let prevOpenRef = null, prevCloseRef = null, prevBars = 0, prevPartial = false;
+            let gapFrom = null, gapTo = null, gapFromAt = null, gapToAt = null;
+            let gapWeekend = false, gapBreakMin = null;
+            const barIv = hh.iv;
+            /* Bars in a full 7am→7am session at this resolution — used to tell a
+               complete window from one the feed only partly covered. */
+            const perHour = barIv === "15m" ? 4 : barIv === "30m" ? 2 : 1;
             try {
               const hb = hh.bars;
-              /* D7: Yahoo's 60m FX bars are stitched contiguous — every bar opens exactly
-                 where the last one closed — so a "gap" computed from them is always ~0 and
-                 means "this feed cannot see gaps", NOT "there was no gap". Detect that up
-                 front so the UI can say so instead of printing a fake "No gap". */
+              /* D7: Yahoo stitches its intraday FX bars contiguous — every bar opens
+                 exactly where the last one closed — so a gap computed across a weekday
+                 rollover is always ~0 and means "this feed cannot see gaps", NOT
+                 "there was no gap". Detect that up front so the UI never prints a
+                 fake "No gap". The weekend break is the exception: no bars exist over
+                 the weekend, so the Friday-close → Monday-open gap IS real here. */
               let joins = 0, flat = 0;
-              for (let s = Math.max(1, hb.length - 40); s < hb.length; s++) {
+              for (let s2 = Math.max(1, hb.length - 40); s2 < hb.length; s2++) {
                 joins++;
-                if (Math.abs(hb[s].o - hb[s - 1].c) < pip * 0.05) flat++;
+                if (Math.abs(hb[s2].o - hb[s2 - 1].c) < pip * 0.05) flat++;
               }
               gapMeasurable = !(joins >= 10 && flat / joins > 0.9);
-              const ro = [];
-              for (let z = 1; z < hb.length; z++) { if (nyHour(hb[z].t) === 17 && nyHour(hb[z - 1].t) !== 17) ro.push(z); }
+              const ro = rolloverIdx(hb);
               if (ro.length) {
                 const z1 = ro[ro.length - 1];
-                gapPips = (hb[z1].o - hb[z1 - 1].c) / pip;
-                gapSrc = "hourly";
+                gapFrom = hb[z1 - 1].c; gapTo = hb[z1].o;
+                gapFromAt = aestStamp(hb[z1 - 1].t); gapToAt = aestStamp(hb[z1].t);
+                gapBreakMin = Math.round((hb[z1].t - hb[z1 - 1].t) / 60);
+                /* A break longer than 12 hours can only be the weekend, and that is
+                   the one rollover whose gap this feed can actually see. */
+                gapWeekend = gapBreakMin > 12 * 60;
+                if (gapWeekend) gapMeasurable = true;
+                gapPips = (gapTo - gapFrom) / pip;
+                gapSrc = barIv || "hourly";
                 const livePrice = meta.regularMarketPrice != null ? meta.regularMarketPrice : prev.c;
                 sessionMovePips = r1((livePrice - hb[z1 - 1].c) / pip);
                 if (ro.length >= 2) {
                   const z0 = ro[ro.length - 2];
-                  prevDayMovePips = r1((hb[z1 - 1].c - hb[z0 - 1].c) / pip);
+                  prevOpenRef = hb[z0 - 1].c;   // last print of the session before it
+                  prevCloseRef = hb[z1 - 1].c;  // last print of the session measured
+                  prevDayMovePips = r1((prevCloseRef - prevOpenRef) / pip);
                   let phi = null, plo = null;
-                  for (let w = z0; w < z1; w++) { if (phi == null || hb[w].h > phi) phi = hb[w].h; if (plo == null || hb[w].l < plo) plo = hb[w].l; }
-                  if (phi != null && plo != null) prevDayRangePips = r1((phi - plo) / pip);
+                  for (let w = z0; w < z1; w++) {
+                    if (phi == null || hb[w].h > phi) phi = hb[w].h;
+                    if (plo == null || hb[w].l < plo) plo = hb[w].l;
+                  }
+                  prevBars = z1 - z0;
+                  prevFrom = aestStamp(hb[z0].t);
+                  prevTo = aestStamp(hb[z1 - 1].t);
+                  if (phi != null && plo != null) { prevHigh = phi; prevLow = plo; prevDayRangePips = r1((phi - plo) / pip); }
+                  /* A 7am→7am FX session is ~24 hours. Materially fewer bars than
+                     that means the feed had holes, and a high/low taken from a holed
+                     window will read low against the broker chart — say so rather
+                     than presenting it as a complete session. */
+                  prevPartial = prevBars < 20 * perHour;
                 }
               }
             } catch (e) { /* fall back to daily */ }
@@ -466,8 +582,19 @@ export default {
               atrPips: r1(atr),
               activity: atr ? Number((rangePips / atr).toFixed(2)) : null,
               gapPips: r1(gapPips),
-              gapSrc: gapSrc,               // hourly | daily | null
+              gapSrc: gapSrc,               // 15m | 30m | 60m | daily | null
               gapMeasurable: gapMeasurable, // false ⇒ feed is stitched, gap cannot be seen
+              /* Amendment 19.8.26 — the working behind the gap number */
+              gapFrom: gapFrom, gapTo: gapTo,
+              gapFromAt: gapFromAt, gapToAt: gapToAt,
+              gapWeekend: gapWeekend,       // true ⇒ Friday close → Monday open
+              gapBreakMin: gapBreakMin,     // minutes of market closure across the gap
+              /* Amendment 19.8.26 — the working behind the mover / range numbers */
+              barIv: barIv,                 // resolution the window was measured on
+              prevFrom: prevFrom, prevTo: prevTo,
+              prevHigh: prevHigh, prevLow: prevLow,
+              prevOpenRef: prevOpenRef, prevCloseRef: prevCloseRef,
+              prevBars: prevBars, prevPartial: prevPartial,
               // D6: which window sessionMove/prevDayMove actually came from
               moveSrc: sessionMovePips != null ? "session7am"
                 : (prevDayMovePips != null ? "prevSession7am" : "dailyClose")
@@ -502,7 +629,10 @@ export default {
         if (body.image && String(body.image).length > BUDGET.maxImageBytes) {
           return J({ error: "That image is too large — please crop or downscale it below about 1MB." }, 413);
         }
-        const maxTokens = Math.max(300, Math.min(3000, parseInt(body.maxTokens, 10) || 1200));
+        /* Raised from 3000 (19.8.26): the scanners were being cut off mid-setup at
+           the old ceiling, which is what produced the half-rendered "ENTRY TRI"
+           card. Output tokens are still bounded by BUDGET.outTokens per day. */
+        const maxTokens = Math.max(300, Math.min(3500, parseInt(body.maxTokens, 10) || 1200));
         const ALLOWED = ["claude-haiku-4-5", "claude-sonnet-4-6", "claude-sonnet-5"];
         const model = ALLOWED.indexOf(body.model) > -1 ? body.model : "claude-haiku-4-5";
         const useSearch = body.webSearch === true && !body.image;
