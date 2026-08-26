@@ -1604,6 +1604,10 @@ function dismissBanner(){
 /* ══════════════════════════════════════
    HEADER DATE
 ══════════════════════════════════════ */
+/* Redeployed 27.8.26: the original v11 commit (3aab6ca) landed during GitHub's
+   Actions outage of 26 Aug and its Pages build was stranded "waiting for runner
+   assignment" — it never started a job and could not be re-run. This commit
+   exists to trigger a fresh build; the code is unchanged. */
 var FH_BUILD='v11'; // bump on every delivered change — shown in the header so it's always obvious which version is loaded
 /* Stale-tab killer: every so often, check whether a newer build has been deployed.
    If so, show a can't-miss banner telling the user to reload — long-open tabs silently
