@@ -184,6 +184,21 @@ body.light .nb{color:rgba(28,27,25,0.88)}
 .sess-badge.b-overlap{background:rgba(200,241,53,0.12);color:#c8f135;border:1px solid rgba(200,241,53,0.3)}
 .sess-lbl{font-family:'DM Mono',monospace;font-size:9px;color:var(--mt);margin-bottom:2px}
 .sess-cd{font-family:'DM Mono',monospace;font-size:12px;color:var(--tx);font-weight:600}
+/* v12 — news + pairs inside each session box (Amendment 8.9.26 #10) */
+.sess-sub{font-family:'DM Mono',monospace;font-size:9px;letter-spacing:0.08em;text-transform:uppercase;color:var(--mt);margin:10px 0 4px;padding-top:8px;border-top:1px solid var(--bd)}
+.sess-none{font-size:11px;color:var(--mt);opacity:0.8}
+.sess-ev-list{display:flex;flex-direction:column;gap:2px}
+.sess-ev{display:flex;align-items:center;gap:6px;width:100%;text-align:left;background:transparent;border:0;border-radius:4px;padding:3px 4px;cursor:pointer;color:var(--tx);font-family:'DM Mono',monospace;font-size:10.5px;line-height:1.3}
+.sess-ev:hover{background:var(--sf2)}
+.sess-ev.past{opacity:0.45}
+.sess-ev-t{color:var(--mt);flex-shrink:0}
+.sess-ev-c{font-weight:700;flex-shrink:0;width:28px}
+.sess-ev-n{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.sess-ev-i{flex-shrink:0;font-size:7px;letter-spacing:1px;color:var(--mt)}
+.sess-ev.imp-high .sess-ev-i{color:#f87171}.sess-ev.imp-med .sess-ev-i{color:#fbbf24}
+.sess-pairs{display:flex;flex-wrap:wrap;gap:4px}
+.cal-event.cal-hit{outline:2px solid var(--ac);outline-offset:2px;transition:outline-color 1s}
+.dial-ev{cursor:pointer}
 .clock-big{font-family:'DM Mono',monospace;font-size:32px;font-weight:500;color:var(--ac);text-align:center;margin-bottom:4px;letter-spacing:3px}
 .clock-tz{font-family:'DM Mono',monospace;font-size:11px;color:var(--mt);text-align:center;margin-bottom:16px}
 /* Best pairs card with colour-coded pairs */
@@ -425,6 +440,14 @@ button.scan-pair-chip:hover{opacity:0.75}
 .scan-level-lbl{font-family:'DM Mono',monospace;font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:0.08em;color:var(--tx);opacity:0.75;margin-bottom:4px}
 .scan-level-val{font-family:'DM Mono',monospace;font-size:13px;font-weight:700;color:var(--tx)}
 .scan-rr{font-family:'DM Mono',monospace;font-size:11px;color:var(--ac);margin-top:8px}
+/* v12 — each setup card carries its own copyable chart (Amendment 8.9.26 #9) */
+.scan-body{display:flex;gap:14px;align-items:flex-start}
+.scan-main{flex:1;min-width:0}
+.scan-side{flex-shrink:0;width:150px;display:flex;flex-direction:column;gap:6px;align-items:stretch}
+.scan-chart{cursor:zoom-in;border-radius:8px;overflow:hidden}
+.scan-chart canvas{width:100%!important;height:auto!important}
+.scan-copy{font-size:11px;padding:5px 8px;text-align:center}
+@media(max-width:640px){.scan-body{flex-direction:column}.scan-side{width:100%;flex-direction:row}.scan-chart{width:150px}.scan-copy{align-self:flex-end}}
 .scan-empty{text-align:center;padding:50px 20px;color:#b0aba3;font-size:15px}
 .scan-empty .scan-icon{font-size:40px;margin-bottom:12px}
 
@@ -458,7 +481,6 @@ button.scan-pair-chip:hover{opacity:0.75}
 .dial-hr.maj{fill:var(--tx);font-size:14px;font-weight:700}
 .dial-ctr-m{font-family:'DM Mono',monospace;fill:var(--tx);font-size:19px;font-weight:700}
 .dial-ctr-s{font-family:'DM Mono',monospace;fill:var(--mt);font-size:11px}
-.dial-ev{cursor:help}
 .dial-legend{display:flex;flex-wrap:wrap;gap:6px 12px;justify-content:center;margin-top:12px;
   font-family:'DM Mono',monospace;font-size:11px;color:var(--mt)}
 .dial-legend i{width:9px;height:9px;border-radius:2px;display:inline-block;margin-right:5px;vertical-align:-1px}
@@ -849,24 +871,9 @@ body.light .chart-modal-overlay{background:rgba(0,0,0,0.55)}
   <!-- Session cards -->
   <div class="sess-grid" id="sess-grid"></div>
   <!-- Best pairs -->
+  <!-- v12: each session's pairs now sit inside its own box above; only the overlap list remains here -->
   <div class="bp-card">
-    <div class="cl">Best pairs by session</div>
-    <div class="bp-row">
-      <div class="bp-name">🇦🇺 Sydney</div>
-      <div class="bp-pairs" id="bp-sydney"></div>
-    </div>
-    <div class="bp-row">
-      <div class="bp-name">🇯🇵 Tokyo</div>
-      <div class="bp-pairs" id="bp-tokyo"></div>
-    </div>
-    <div class="bp-row">
-      <div class="bp-name">🇬🇧 London</div>
-      <div class="bp-pairs" id="bp-london"></div>
-    </div>
-    <div class="bp-row">
-      <div class="bp-name">🇺🇸 New York</div>
-      <div class="bp-pairs" id="bp-ny"></div>
-    </div>
+    <div class="cl">Best pairs · London / New York overlap</div>
     <div class="bp-row">
       <div class="bp-name">⚡ Overlap</div>
       <div class="bp-pairs" id="bp-overlap"></div>
@@ -1123,7 +1130,7 @@ body.light .chart-modal-overlay{background:rgba(0,0,0,0.55)}
   <div class="card" style="padding:0;overflow:hidden">
     <div id="trend-body"><div class="ld" style="padding:20px"><div class="sp"></div>Loading trends…</div></div>
   </div>
-  <div class="map-src">Live price data, no AI. Tap a column header to sort; filter by currency or hide the mixed ones. The exact measurement window for each column is stated under the table.</div>
+  <div class="map-src">Live price data, no AI. Tap a column header to sort; filter by currency. Only Buy and Sell biases are shown by default — tap <b>Show mixed</b> to include the rest. The exact measurement window for each column is stated under the table.</div>
 </div>
 
 <!-- ══ SCANNER ══ -->
@@ -1279,6 +1286,24 @@ body.light .chart-modal-overlay{background:rgba(0,0,0,0.55)}
   <div class="st">About ForexHub</div>
   <div class="ss">Your daily forex companion</div>
   <div class="card">
+    <div class="ai"><div class="aq">What's new in v12 (7 Sep 2026)</div><div class="aa">
+      · Trade Scanner and Pullback Scanner: every setup card now carries its own chart image — tap it to enlarge, or hit <b>Copy chart</b> to paste it straight onto your trading chart. The image is stamped with the date and time it was produced.<br>
+      · Setup levels are now ordered 1 Entry · 2 Take profit · 3 Stop loss, the same order as the TradingView long/short position tool.<br>
+      · Trend scanner shows Buy and Sell biases only by default; <b>Show mixed</b> reveals the rest.<br>
+      · Sessions: the dial and the session boxes now know about the weekend — every centre is closed Saturday and Sunday in its own local time, and the countdown runs to Monday's open.<br>
+      · Sessions: calendar dots on the dial are larger and easier to hover; each session box lists that session's news releases (tap one to open it in the Calendar) and its tradable pairs.
+    </div></div>
+    <div class="ai"><div class="aq">What's new in v11 (27 Aug 2026)</div><div class="aa">
+      · Timezone layer: pick the city you are viewing from and every time on the site — sessions, calendar, briefing, scanner stamps — follows it.<br>
+      · Sessions tab gained a 24-hour dial with the London/New York overlap on its own ring, calendar events pinned at the minute they land, and a live hand; the timeline view is still there on a switch.
+    </div></div>
+    <div class="ai"><div class="aq">What's new in v10 (26 Aug 2026)</div><div class="aa">
+      · Daily / 4H key levels: the parser no longer depends on how the AI bulleted its answer, so the AUD crosses (and gold) show their levels again. The copyable key-levels image carries the timeframe, date and time, and the 4H tab has its own.<br>
+      · Scanner and Pullback Scanner: a setup is only shown when it is complete and self-consistent; anything cut off or contradictory is discarded and counted, never shown as a trade. Analysis times now line up with the clock.<br>
+      · Morning briefing: gainers and pip ranges are measured on 15-minute bars over the stated 7am→7am window; hover any row for the evidence.<br>
+      · Gap analysis shows what was compared (from / to / market-closed duration) and flags weekday rollovers that a stitched feed cannot measure.<br>
+      · Trend scanner: the 4H column is chosen by timestamp (a Monday-morning 4H no longer spans the weekend), thresholds are per window, and STRONG is withheld until the session is three hours old.
+    </div></div>
     <div class="ai"><div class="aq">What's new in v9</div><div class="aa">
       · The AI proxy is locked to this site and capped at a hard daily budget, so the endpoint can't be used by anyone else at your expense.<br>
       · AI answers are now cached on the server as well as the device — the same analysis is paid for once, not once per browser.<br>
@@ -1604,11 +1629,7 @@ function dismissBanner(){
 /* ══════════════════════════════════════
    HEADER DATE
 ══════════════════════════════════════ */
-/* Redeployed 27.8.26: the original v11 commit (3aab6ca) landed during GitHub's
-   Actions outage of 26 Aug and its Pages build was stranded "waiting for runner
-   assignment" — it never started a job and could not be re-run. This commit
-   exists to trigger a fresh build; the code is unchanged. */
-var FH_BUILD='v11'; // bump on every delivered change — shown in the header so it's always obvious which version is loaded
+var FH_BUILD='v12'; // 7 Sep 2026 — amendments 8.9.26 items 7, 9, 9.1, 10 // bump on every delivered change — shown in the header so it's always obvious which version is loaded
 /* Stale-tab killer: every so often, check whether a newer build has been deployed.
    If so, show a can't-miss banner telling the user to reload — long-open tabs silently
    running old code caused repeated "the fix didn't work" confusion. */
@@ -1993,7 +2014,8 @@ function freshnessNote(useSearch){
    TOP-DOWN TREND SCANNER  (own page · no AI · live price data)
 ══════════════════════════════════════ */
 var TREND_PAIRS=FH_PAIRS;   // canonical watchlist
-var _trendData=null,_trendSort={col:'bias',dir:-1},_trendCcy='',_trendHideMix=false;
+/* 8.9.26 #7 — Buy/Sell only by default; Mixed is opt-in via the button. */
+var _trendData=null,_trendSort={col:'bias',dir:-1},_trendCcy='',_trendHideMix=true;
 async function loadTrendScan(){
   trendLoaded=true;markSectionLoaded('trends');
   var out=document.getElementById('trend-body');
@@ -2068,7 +2090,7 @@ function renderTrends(){
   f+='<button class="pip-fccy'+(!_trendCcy?' all-active':'')+'" onclick="setTrendCcy(\'\')">All</button>';
   CCYS.forEach(function(c){var col=ccyCol(c),a=_trendCcy===c;
     f+='<button class="pip-fccy" onclick="setTrendCcy(\''+c+'\')" style="color:'+col+';border-color:'+(a?col:'var(--bd2)')+';background:'+(a?col+'22':'transparent')+'">'+c+'</button>';});
-  f+='<button class="pip-fccy'+(_trendHideMix?' all-active':'')+'" style="margin-left:auto" onclick="toggleTrendMix()">'+(_trendHideMix?'Show all':'Hide Mixed')+'</button>';
+  f+='<button class="pip-fccy'+(_trendHideMix?' all-active':'')+'" style="margin-left:auto" onclick="toggleTrendMix()">'+(_trendHideMix?'Show mixed':'Hide mixed')+'</button>';
   f+='</div>';
   function arr(col){if(_trendSort.col!==col)return '<span style="opacity:0.3;font-size:9px"> ⇅</span>';return '<span style="font-size:9px"> '+(_trendSort.dir===1?'▲':'▼')+'</span>';}
   function cell(v,tf,warn){
@@ -2085,6 +2107,10 @@ function renderTrends(){
   h+='<th onclick="sortTrend(\'h\')">4H'+arr('h')+'</th>';
   h+='<th onclick="sortTrend(\'bias\')">Bias'+arr('bias')+'</th>';
   h+='</tr></thead><tbody>';
+  if(!rows.length){
+    h+='<tr><td colspan="5" style="text-align:center;padding:18px;color:var(--mt);font-size:12px">'
+      +(_trendHideMix?'No pair has a clear Buy or Sell bias right now'+(_trendCcy?' for '+_trendCcy:'')+' — tap <b>Show mixed</b> to see them all.':'No pairs match this filter.')+'</td></tr>';
+  }
   rows.forEach(function(r){
     var bg=r._br===2?'rgba(74,222,128,0.25)':r._br===1?'rgba(74,222,128,0.1)':r._br===-2?'rgba(248,113,113,0.25)':r._br===-1?'rgba(248,113,113,0.1)':'transparent';
     var clr=r._br>0?'#4ade80':r._br<0?'#f87171':'var(--mt)';
@@ -2275,6 +2301,13 @@ function reportDocHTML(id){
   var c=document.getElementById(id);
   var el=document.querySelector(c.dataset.body);
   var clone=el.cloneNode(true);
+  /* cloneNode copies a <canvas> element but NOT its pixels, so the setup charts
+     (v12) would print as blank boxes. Swap each one for a real image, matched by
+     position to the live canvases. */
+  var liveCv=el.querySelectorAll('canvas');
+  Array.prototype.forEach.call(clone.querySelectorAll('canvas'),function(cv,i){
+    try{var im=document.createElement('img');im.src=liveCv[i].toDataURL('image/png');im.style.cssText=cv.style.cssText;im.style.width=liveCv[i].width+'px';cv.replaceWith(im);}catch(e){cv.remove();}
+  });
   // CRITICAL: clickable pair chips are <button>s — convert them to <span>s BEFORE stripping
   // buttons, otherwise every currency-pair name vanishes from the printed/saved report.
   clone.querySelectorAll('button.scan-pair-chip').forEach(function(b){
@@ -2338,7 +2371,7 @@ function reportText(id){
     s.textContent=b.textContent;
     b.parentNode.replaceChild(s,b);
   });
-  clone.querySelectorAll('.share-bar,button,.rb').forEach(function(b){b.remove();});
+  clone.querySelectorAll('.share-bar,button,.rb,.scan-chart').forEach(function(b){b.remove();});
   // Inject clear text dividers between scanner setup cards so they don't bleed together in plaintext
   clone.querySelectorAll('.scan-card').forEach(function(card){
     var sep=document.createElement('div');
@@ -2449,6 +2482,7 @@ function doPrint(id){
 var lastDaily=null,last4hr=null,_chartTf='daily';
 /* which='daily' | '4hr' — Amendment 19.8.26 gave the 4H tab its own copyable image */
 function openChartModal(which){
+  if(which==='setup'){ return; } // setup charts open through openSetupModal()
   _chartTf=(which==='4hr')?'4hr':'daily';
   var src=_chartTf==='4hr'?last4hr:lastDaily;
   if(!src) return;
@@ -2478,11 +2512,145 @@ function downloadCanvas(canvas){
   try{
     var a=document.createElement('a');
     a.href=canvas.toDataURL('image/png');
-    var src=_chartTf==='4hr'?last4hr:lastDaily;
-    a.download='chart-'+(src?src.pair:'fxhub')+'-'+(src?(src.tf||'').toLowerCase():'')+'-'+fileStamp()+'.png';
+    var src=_chartTf==='setup'?_lastSetup:_chartTf==='4hr'?last4hr:lastDaily;
+    a.download='chart-'+(src?String(src.pair).replace('/',''):'fxhub')+'-'+(src?(src.tf||'setup').toLowerCase():'')+'-'+fileStamp()+'.png';
     document.body.appendChild(a);a.click();a.remove();
     showToast('Copy unavailable here — image downloaded instead');
   }catch(e){ showToast('Could not copy the chart'); }
+}
+
+/* ══════════════════════════════════════
+   SCANNER SETUP CHART  (Amendment 8.9.26 #9 / #9.1)
+══════════════════════════════════════
+   "Can we make it so that each individual panel of the particular currency pair
+   can be copied like you can do in the analysis tab, so it can be copied onto a
+   chart" — and the levels ordered 1 Entry · 2 Take profit · 3 Stop loss to match
+   the TradingView long/short position tool.
+
+   Each scanner / pullback card keeps its parsed setup in _setupStore so the same
+   picture can be rebuilt at thumbnail size inside the card and at modal size for
+   copying. The image is placed by PRICE: the highest level sits at the top, so a
+   LONG reads TP / Entry / SL and a SHORT reads SL / Entry / TP — exactly how the
+   rails land on the chart it is pasted onto. The numbers on the rails are the
+   TradingView tool's order (1 = Entry, 2 = Take profit, 3 = Stop loss). */
+var _setupStore={},_setupSeq=0,_lastSetup=null;
+function buildSetupChart(o,W,H){
+  W=W||188;H=H||248;
+  var sx=W/188, sy=H/248;
+  var light=document.body.classList.contains('light');
+  var bg=light?'#eceae5':'#111827';
+  var pair=String(o.pair||'').replace(/[^A-Za-z]/g,'').toUpperCase();
+  var c=document.createElement('canvas');
+  c.width=W;c.height=H;
+  c.style.cssText='border-radius:8px;background:'+bg+';display:block;width:100%';
+  var ctx=c.getContext('2d');
+  ctx.fillStyle=bg;ctx.fillRect(0,0,W,H);
+  var isLong=!!o._isLong;
+  /* Header band — same contract as the key-levels image: WHAT it is and WHEN. */
+  var HDR=28;
+  var when=o.when instanceof Date?o.when:new Date();
+  var dStr=fhDate(when,{weekday:'short',day:'2-digit',month:'short',year:'numeric'});
+  var tStr=fhTime(when);
+  var dShort=fhDate(when,{weekday:undefined,day:'2-digit',month:'short',year:'2-digit'});
+  var hdrCol=light?'rgba(0,0,0,0.55)':'rgba(240,237,232,0.62)';
+  var tag=o.src==='pullback'?'PULLBACK':'SETUP';
+  ctx.font='bold '+Math.round(10*sy)+'px "DM Mono",monospace';
+  ctx.textAlign='left';ctx.fillStyle=o.src==='pullback'?'#fbbf24':'#c8f135';
+  ctx.fillText(tag,8*sx,14*sy);
+  var tagW=ctx.measureText(tag).width;
+  ctx.font=Math.round(9*sy)+'px "DM Mono",monospace';ctx.fillStyle=hdrCol;
+  var avail=W-8*sx-tagW-8*sx;
+  var cands=[' · '+dStr+' · '+tStr+' AEST',' · '+dShort+' · '+tStr+' AEST',' · '+dShort+' '+tStr,' · '+tStr];
+  var stampTxt=cands[cands.length-1];
+  for(var ci=0;ci<cands.length;ci++){ if(ctx.measureText(cands[ci]).width<=avail){ stampTxt=cands[ci]; break; } }
+  ctx.fillText(stampTxt,8*sx+tagW,14*sy);
+  ctx.strokeStyle=light?'rgba(0,0,0,0.10)':'rgba(255,255,255,0.10)';ctx.lineWidth=1;
+  ctx.beginPath();ctx.moveTo(6*sx,20*sy);ctx.lineTo(W-6*sx,20*sy);ctx.stroke();
+  ctx.strokeStyle=light?'rgba(0,0,0,0.05)':'rgba(255,255,255,0.04)';
+  for(var g=0;g<5;g++){var gy=(HDR+30+g*38)*sy;ctx.beginPath();ctx.moveTo(0,gy);ctx.lineTo(W,gy);ctx.stroke();}
+  /* Three rails placed by price: top = highest. */
+  var tpRow={lbl:'2 TAKE PROFIT',col:'rgba(74,222,128,0.95)',lw:1.5,dash:[3,3],p:o._tp};
+  var slRow={lbl:'3 STOP LOSS',col:'rgba(248,113,113,0.95)',lw:1.5,dash:[3,3],p:o._sl};
+  var enRow={lbl:'1 ENTRY',col:'rgba(200,241,53,1)',lw:2.5,dash:[],p:o._e};
+  var rows=isLong?[tpRow,enRow,slRow]:[slRow,enRow,tpRow];
+  var ys=[HDR+48,HDR+110,HDR+172];
+  var lblFont='bold '+Math.round(10*sy)+'px "DM Mono",monospace';
+  var pFont=Math.round(10*sy)+'px "DM Mono",monospace';
+  rows.forEach(function(r,i){
+    var y=ys[i]*sy;
+    ctx.strokeStyle=r.col;ctx.lineWidth=r.lw;ctx.setLineDash(r.dash.map(function(d){return d*sy;}));
+    ctx.beginPath();ctx.moveTo(6*sx,y);ctx.lineTo(W-6*sx,y);ctx.stroke();
+    ctx.setLineDash([]);
+    ctx.font=lblFont;ctx.fillStyle=r.col;ctx.textAlign='left';
+    ctx.fillText(r.lbl,8*sx,y-4*sy);
+    if(r.p!=null){ctx.font=pFont;ctx.fillStyle=r.col;ctx.textAlign='right';ctx.fillText(fmtPrice(pair,r.p),W-6*sx,y-4*sy);}
+  });
+  /* Shaded reward (green) and risk (red) zones between the rails, then the
+     direction arrow from entry toward target — the picture reads at a glance. */
+  var yTop=ys[0]*sy,yMid=ys[1]*sy,yBot=ys[2]*sy;
+  ctx.fillStyle=isLong?'rgba(74,222,128,0.07)':'rgba(248,113,113,0.07)';ctx.fillRect(6*sx,yTop,W-12*sx,yMid-yTop);
+  ctx.fillStyle=isLong?'rgba(248,113,113,0.07)':'rgba(74,222,128,0.07)';ctx.fillRect(6*sx,yMid,W-12*sx,yBot-yMid);
+  var dirCol=isLong?'#4ade80':'#f87171';
+  var hw=9*sx,hh=14*sy,ax=W/2,ay=isLong?yMid-10*sy:yMid+10*sy;
+  ctx.fillStyle=dirCol;
+  if(isLong){ctx.beginPath();ctx.moveTo(ax,ay-hh);ctx.lineTo(ax-hw,ay);ctx.lineTo(ax+hw,ay);ctx.closePath();ctx.fill();}
+  else{ctx.beginPath();ctx.moveTo(ax,ay+hh);ctx.lineTo(ax-hw,ay);ctx.lineTo(ax+hw,ay);ctx.closePath();ctx.fill();}
+  /* R:R under the arrow so the image carries the whole trade. */
+  ctx.font=Math.round(9*sy)+'px "DM Mono",monospace';ctx.fillStyle=hdrCol;ctx.textAlign='center';
+  if(o._rr!=null&&isFinite(o._rr)) ctx.fillText('R:R 1:'+o._rr.toFixed(1),ax,(HDR+200)*sy);
+  // Pair (in its currency colour) + direction at the bottom
+  var a=pair.slice(0,3),b=pair.slice(3);
+  var pairCol=CCY_COLORS[a]?(light?(CCY_COLORS_LIGHT[a]||'#333'):CCY_COLORS[a]):(light?'#333':'#ccc');
+  var dirTxt=isLong?'▲ LONG':'▼ SHORT';
+  ctx.font='bold '+Math.round(11*sy)+'px "Syne",sans-serif';
+  var pairText=a+'/'+b+'  ';
+  var wPair=ctx.measureText(pairText).width, wDir=ctx.measureText(dirTxt).width;
+  var startX=(W-(wPair+wDir))/2;
+  ctx.textAlign='left';
+  ctx.fillStyle=pairCol;ctx.fillText(pairText,startX,H-6*sy);
+  ctx.fillStyle=dirCol;ctx.fillText(dirTxt,startX+wPair,H-6*sy);
+  return c;
+}
+/* Register a validated setup and return the card's chart block (the canvas is
+   attached by fillSetupCharts() once the cards are in the DOM). */
+function setupChartSlot(o,src){
+  var id=++_setupSeq;
+  o.when=new Date();o.src=src;o.tf=src==='pullback'?'PULLBACK':'SETUP';
+  _setupStore[id]=o;
+  return '<div class="scan-chart" data-sid="'+id+'" title="Tap to enlarge · copy onto your chart" onclick="openSetupModal('+id+')"></div>'
+    +'<button class="pip-fccy scan-copy" onclick="event.stopPropagation();copySetupChart('+id+')" title="Copy this setup as an image">📋 Copy chart</button>';
+}
+function fillSetupCharts(root){
+  (root||document).querySelectorAll('.scan-chart[data-sid]').forEach(function(d){
+    var o=_setupStore[d.getAttribute('data-sid')];
+    if(!o||d.firstChild) return;
+    d.appendChild(buildSetupChart(o));
+  });
+}
+function openSetupModal(id){
+  var o=_setupStore[id]; if(!o) return;
+  _chartTf='setup';_lastSetup=o;
+  var pr=String(o.pair).replace(/[^A-Za-z]/g,'').toUpperCase();
+  document.getElementById('chart-modal-title').innerHTML=pairChip(pr)+'<span style="font-size:13px;color:var(--mt);margin-left:8px">'+(o.src==='pullback'?'pullback':'scanner')+' setup · '+(o._isLong?'long':'short')+'</span>';
+  var body=document.getElementById('chart-modal-body');
+  body.innerHTML='';
+  body.appendChild(buildSetupChart(o,392,512));
+  document.getElementById('chart-modal').style.display='flex';
+}
+/* One-tap copy straight from the card — no modal needed. Falls back to download. */
+function copySetupChart(id){
+  var o=_setupStore[id]; if(!o){showToast('No chart to copy');return;}
+  _chartTf='setup';_lastSetup=o;
+  var canvas=buildSetupChart(o,392,512);
+  if(navigator.clipboard && window.ClipboardItem && canvas.toBlob){
+    canvas.toBlob(function(blob){
+      try{
+        navigator.clipboard.write([new ClipboardItem({'image/png':blob})]).then(function(){
+          showToast('Setup chart copied — paste it onto your chart');
+        }).catch(function(){ downloadCanvas(canvas); });
+      }catch(e){ downloadCanvas(canvas); }
+    },'image/png');
+  } else { downloadCanvas(canvas); }
 }
 
 /* ══════════════════════════════════════
@@ -2896,7 +3064,7 @@ function getSESS(){ // DST-aware session list, in DISPLAY-ZONE minutes, cached f
     var diff=here-tzOffsetMin(s.tz);                 // local wall-clock + diff = viewer wall-clock
     var start=((s.localStart+diff)%1440+1440)%1440;
     var end=start+SESS_LEN;                          // may run past midnight (>1440), like before
-    return {name:s.name,flag:s.flag,color:s.color,start:start,end:end,
+    return {name:s.name,flag:s.flag,color:s.color,tz:s.tz,start:start,end:end,
             label:fmtHM(start)+'–'+fmtHM(end)+' '+fhTzLabel()};
   });
   _sessCache={ts:now,tz:FH_TZ,list:list};
@@ -2928,11 +3096,58 @@ function fillSessionFaq(){
 function getAESTMinutes(){   // minutes since midnight in the DISPLAY zone
   return fhMinutesOfDay();
 }
-function isOpen(s,m){
+/* ── Weekend awareness (Amendment 8.9.26 #10) ──
+   "On the weekends it shows markets are open but they are not." The old test
+   only looked at the time of day, so every Saturday and Sunday the dial and the
+   cards ran through the same open/closed cycle as a weekday. A centre trades its
+   9-hour window on ITS OWN Monday–Friday, so the check is now: inside the window
+   AND a weekday in that centre's timezone. Sydney's Monday 08:00 is Sunday 22:00
+   UTC — exactly the weekly FX open — and New York's Friday 17:00 is the close,
+   so the four local weekdays reproduce the real trading week with no extra rule. */
+var _wdCache={};
+function tzWeekday(tz,d){ // 0=Sun … 6=Sat in the given zone, cached per minute
+  var t=d==null?Date.now():+d, k=tz+':'+Math.floor(t/60000);
+  if(_wdCache[k]!=null) return _wdCache[k];
+  var wd;
+  try{
+    var name=new Intl.DateTimeFormat('en-US',{timeZone:tz,weekday:'short'}).format(new Date(t));
+    wd={Sun:0,Mon:1,Tue:2,Wed:3,Thu:4,Fri:5,Sat:6}[name];
+  }catch(e){ wd=new Date(t).getDay(); }
+  if(wd==null) wd=new Date(t).getDay();
+  _wdCache={}; _wdCache[k]=wd;   // keep the cache tiny — only "now" is ever asked
+  return wd;
+}
+function isWeekday(tz,d){ var w=tzWeekday(tz,d); return w>=1&&w<=5; }
+function inWindow(s,m){
   if(s.end<=24*60) return m>=s.start&&m<s.end;
   if(m>=s.start) return true;
   if(m<(s.end-24*60)) return true;
   return false;
+}
+function isOpen(s,m,when){
+  if(!inWindow(s,m)) return false;
+  return s.tz?isWeekday(s.tz,when):true;
+}
+/* Minutes until this centre next opens, skipping its weekend. */
+function minsToNextOpen(s,m,when){
+  var t=when==null?Date.now():+when;
+  var diff=(s.start-m+1440)%1440; if(diff===0) diff=1440;
+  var cand=t+diff*60000, guard=0;
+  while(s.tz&&!isWeekday(s.tz,cand)&&guard++<4) cand+=86400000;
+  return Math.round((cand-t)/60000);
+}
+function fmtCountdown(mins){
+  var d=Math.floor(mins/1440), h=Math.floor((mins%1440)/60), mm=mins%60;
+  return (d?d+'d ':'')+h+'h '+mm+'m';
+}
+/* True when NO centre is trading and the next open is more than a normal
+   intra-day gap away — i.e. the weekend (or a holiday-like full stop). */
+function fxWeekendNow(m,when){
+  var SESS=getSESS();
+  if(SESS.some(function(s){return isOpen(s,m,when);})) return null;
+  var best=null;
+  SESS.forEach(function(s){var n=minsToNextOpen(s,m,when);if(best==null||n<best.mins)best={mins:n,s:s};});
+  return best;   // {mins, s} of the first centre to reopen
 }
 function pctOfDay(mins){return (mins%1440)/1440;}
 
@@ -3031,13 +3246,18 @@ function renderDial(nowMin,sec){
     var m=fhMinutesOfDay(ev.ts), deg=minToDeg(m);
     var k=Math.round(m/20);                       // fan out anything within ~20 min
     bucket[k]=(bucket[k]||0)+1;
-    var r=DIAL_EV_R-(bucket[k]-1)*9;
+    var r=DIAL_EV_R-(bucket[k]-1)*13;
     var pt=dialPolar(r,deg);
     var col=ccyCol(ev.ccy);
-    var rad=ev.imp==='high'?5:ev.imp==='med'?3.6:2.6;
+    /* 8.9.26 #10 — dots enlarged (were 5 / 3.6 / 2.6) and wrapped in a 12px
+       invisible hit circle so the tooltip appears without pixel-hunting. */
+    var rad=ev.imp==='high'?7:ev.imp==='med'?5.5:4.2;
     var past=ev.ts<Date.now();
-    g+='<circle class="dial-ev" cx="'+pt.x.toFixed(1)+'" cy="'+pt.y.toFixed(1)+'" r="'+rad+'" fill="'+col+'" opacity="'+(past?0.4:1)+'" stroke="'+(light?'#fff':'#0a0a0a')+'" stroke-width="1.2">'
-      +'<title>'+esc(fhClock(ev.ts)+' · '+ev.ccy+' · '+ev.name+' ('+(ev.imp||'low').toUpperCase()+(past?', released':'')+')')+'</title></circle>';
+    var tip=fhClock(ev.ts)+' · '+ev.ccy+' · '+ev.name+' ('+(ev.imp||'low').toUpperCase()+(past?', released':'')+')';
+    g+='<g class="dial-ev" onclick="goToCalEvent(\''+esc(String(ev.ts)+'|'+String(ev.name).replace(/'/g,'’'))+'\')">'
+      +'<circle cx="'+pt.x.toFixed(1)+'" cy="'+pt.y.toFixed(1)+'" r="12" fill="'+col+'" opacity="0.001"/>'
+      +'<circle cx="'+pt.x.toFixed(1)+'" cy="'+pt.y.toFixed(1)+'" r="'+rad+'" fill="'+col+'" opacity="'+(past?0.4:1)+'" stroke="'+(light?'#fff':'#0a0a0a')+'" stroke-width="1.4"/>'
+      +'<title>'+esc(tip+' · tap to open in the calendar')+'</title></g>';
     if(ev.imp==='high'&&!past){
       var i0=dialPolar(170,deg), i1=dialPolar(DIAL_EV_R-6,deg);
       g+='<line x1="'+i0.x.toFixed(1)+'" y1="'+i0.y.toFixed(1)+'" x2="'+i1.x.toFixed(1)+'" y2="'+i1.y.toFixed(1)+'" stroke="'+col+'" stroke-width="1.4" opacity="0.65"/>';
@@ -3052,11 +3272,13 @@ function renderDial(nowMin,sec){
      above the dial in full, so repeating it here would only be decoration. */
   var openNames=SESS.filter(function(s){return isOpen(s,nowMin);}).map(function(s){return DIAL_SHORT[s.name]||s.name;});
   var inOv=ov&&(function(){var a=ov.start%1440,b=ov.end%1440;return b>a?(nowMin>=a&&nowMin<b):(nowMin>=a||nowMin<b);})();
+  var wk=openNames.length?null:fxWeekendNow(nowMin);
   g+='<text x="200" y="'+(openNames.length?190:196)+'" class="dial-ctr-m" text-anchor="middle">'+esc(openNames.length?openNames.join(' + '):'Market closed')+'</text>';
   if(openNames.length) g+='<text x="200" y="206" class="dial-ctr-s" text-anchor="middle">'+(inOv?'peak overlap':'open now')+'</text>';
+  else if(wk) g+='<text x="200" y="212" class="dial-ctr-s" text-anchor="middle">'+esc((wk.mins>=720?'weekend · ':'')+(DIAL_SHORT[wk.s.name]||wk.s.name)+' opens in '+fmtCountdown(wk.mins))+'</text>';
   var next=evs.filter(function(e){return e.ts>=Date.now();}).sort(function(a,b){return a.ts-b.ts;})[0];
   if(next){
-    g+='<text x="200" y="'+(openNames.length?226:216)+'" class="dial-ctr-s" text-anchor="middle" fill="'+ccyCol(next.ccy)+'">'+esc('next '+fhTime(next.ts)+' '+next.ccy)+'</text>';
+    g+='<text x="200" y="'+(openNames.length?226:(wk?228:216))+'" class="dial-ctr-s" text-anchor="middle" fill="'+ccyCol(next.ccy)+'">'+esc('next '+fhTime(next.ts)+' '+next.ccy)+'</text>';
   }
   g+='</svg>';
   el.innerHTML=g;
@@ -3185,10 +3407,76 @@ function colorPairTag(pairStr){
   return '<span class="bp-pair-tag" style="background:'+col+'18;border:1px solid '+col+'44">'+pairSpan(pairStr)+'</span>';
 }
 
+/* Events that land inside a session's window today. The window is in display
+   minutes and may run past midnight (London 17:00–02:00 AEST), so compare on the
+   same turn of the clock. */
+function sessEventsFor(s,evs){
+  return (evs||[]).filter(function(ev){
+    var em=fhMinutesOfDay(ev.ts);
+    return inWindow(s,em);
+  }).sort(function(a,b){return a.ts-b.ts;});
+}
+function sessBoxEvents(s,evs){
+  var list=sessEventsFor(s,evs);
+  var h='<div class="sess-sub">News this session</div>';
+  if(!list.length) return h+'<div class="sess-none">'+(evs&&evs.length?'No scheduled releases in this window today':'Calendar loading…')+'</div>';
+  var now=Date.now();
+  h+='<div class="sess-ev-list">';
+  list.forEach(function(ev){
+    var col=ccyCol(ev.ccy), past=ev.ts<now;
+    var key=String(ev.ts)+'|'+String(ev.name).replace(/'/g,'’');
+    h+='<button type="button" class="sess-ev imp-'+(ev.imp||'low')+(past?' past':'')+'" onclick="goToCalEvent(\''+esc(key)+'\')" title="'+esc(ev.name+' · '+(ev.imp||'low').toUpperCase()+' impact · open in calendar')+'">'
+      +'<span class="sess-ev-t">'+fhTime(ev.ts)+'</span>'
+      +'<span class="sess-ev-c" style="color:'+col+'">'+esc(ev.ccy)+'</span>'
+      +'<span class="sess-ev-n">'+esc(shortEvName(ev.name))+'</span>'
+      +'<span class="sess-ev-i">'+(ev.imp==='high'?'●●●':ev.imp==='med'?'●●':'●')+'</span></button>';
+  });
+  return h+'</div>';
+}
+/* Abbreviate the long feed names so they fit a session box on one line. */
+function shortEvName(n){
+  var s=String(n||'');
+  var R=[[/Consumer Price Index/i,'CPI'],[/Producer Price Index/i,'PPI'],[/Gross Domestic Product/i,'GDP'],[/Purchasing Managers.? Index/i,'PMI'],[/Non-?Farm Payrolls?/i,'NFP'],[/Unemployment Rate/i,'Unemp.'],[/Retail Sales/i,'Retail'],[/Interest Rate Decision/i,'Rate decision'],[/Monetary Policy/i,'Mon. policy'],[/Employment Change/i,'Emp. change'],[/Manufacturing/i,'Mfg'],[/Services/i,'Svcs'],[/Preliminary/i,'Prelim'],[/Speaks|Speech/i,'speaks'],[/\s*\((MoM|YoY|QoQ)\)/i,' $1'],[/Building Permits/i,'Bldg permits'],[/Trade Balance/i,'Trade bal.'],[/Current Account/i,'Curr. acct'],[/Crude Oil Inventories/i,'Crude inv.'],[/Initial Jobless Claims/i,'Jobless claims'],[/Consumer Confidence/i,'Cons. conf.'],[/Sentiment/i,'sent.']];
+  R.forEach(function(r){s=s.replace(r[0],r[1]);});
+  return s.length>34?s.slice(0,32)+'…':s;
+}
+var SESS_PAIR_KEY={'Sydney':'sydney','Tokyo':'tokyo','London':'london','New York':'ny'};
+function sessBoxPairs(s){
+  var list=(PAIR_SESSIONS[SESS_PAIR_KEY[s.name]]||[]);
+  if(!list.length) return '';
+  return '<div class="sess-sub">Tradable pairs</div><div class="sess-pairs">'+list.map(colorPairTag).join('')+'</div>';
+}
+/* Jump from a session box (or a dial dot) to that event in the Calendar tab. */
+function goToCalEvent(key){
+  var nb=null;
+  document.querySelectorAll('.nb').forEach(function(b){var oc=b.getAttribute('onclick')||'';if(oc.indexOf("'calendar'")>-1)nb=b;});
+  showS('calendar',nb);
+  var tries=0,widened=false;
+  function keyOf(e){return String(e.ts)+'|'+String(e.name).replace(/'/g,'’');}
+  (function find(){
+    var i=-1;
+    for(var k=0;k<calData.length;k++){ if(keyOf(calData[k])===key){i=k;break;} }
+    if(i<0&&!widened&&_calAll.length){
+      /* Hidden by the impact / currency filter — widen once so it can be shown. */
+      if(_calAll.some(function(e){return keyOf(e)===key;})){
+        widened=true; calFilter.imp='all'; calFilter.ccy=''; calSaveFilter(); renderCalendarView();
+        return find();
+      }
+    }
+    if(i>=0){
+      var row=document.querySelector('.cal-event[onclick="openCalPopup('+i+')"]');
+      if(row){ row.scrollIntoView({block:'center',behavior:'smooth'}); row.classList.add('cal-hit'); setTimeout(function(){row.classList.remove('cal-hit');},2500); }
+      openCalPopup(i);
+      return;
+    }
+    if(tries++<24) setTimeout(find,250);
+  })();
+}
 function renderSessCards(m){
   var grid=document.getElementById('sess-grid');
   if(!grid) return;
   var SESS=getSESS();
+  var evs=dialEvents();
   var html='';
   SESS.forEach(function(s){
     var open=isOpen(s,m);
@@ -3209,11 +3497,16 @@ function renderSessCards(m){
       if(diff<=0) diff=0;
       cdVal=Math.floor(diff/60)+'h '+(diff%60)+'m';
     } else {
-      cdLabel='Opens in';
-      var diff=(s.start-m+1440)%1440;
-      cdVal=Math.floor(diff/60)+'h '+(diff%60)+'m';
+      /* Day-aware: on a Saturday this counts to MONDAY's open, not to a phantom
+         Sunday session (8.9.26 #10). */
+      var nmin=minsToNextOpen(s,m);
+      cdLabel=nmin>1440?'Weekend · opens in':'Opens in';
+      cdVal=fmtCountdown(nmin);
     }
-    html+='<div class="'+cls+'"><div class="sess-name">'+s.flag+' '+s.name+'</div><div class="sess-time">'+s.label+'</div>'+badge+'<div class="sess-lbl">'+cdLabel+'</div><div class="sess-cd">'+cdVal+'</div></div>';
+    html+='<div class="'+cls+'"><div class="sess-name">'+s.flag+' '+s.name+'</div><div class="sess-time">'+s.label+'</div>'+badge+'<div class="sess-lbl">'+cdLabel+'</div><div class="sess-cd">'+cdVal+'</div>';
+    /* 8.9.26 #10 — what matters INSIDE this session: its news and its pairs. */
+    html+=sessBoxEvents(s,evs)+sessBoxPairs(s);
+    html+='</div>';
   });
   grid.innerHTML=html;
   // Best pairs
@@ -3221,10 +3514,6 @@ function renderSessCards(m){
     var el=document.getElementById(id);
     if(el) el.innerHTML=list.map(colorPairTag).join('');
   }
-  fillPairs('bp-sydney',PAIR_SESSIONS.sydney);
-  fillPairs('bp-tokyo',PAIR_SESSIONS.tokyo);
-  fillPairs('bp-london',PAIR_SESSIONS.london);
-  fillPairs('bp-ny',PAIR_SESSIONS.ny);
   fillPairs('bp-overlap',PAIR_SESSIONS.overlap);
 }
 
@@ -4293,11 +4582,13 @@ async function runScanner(){
         var cardClass=isHigh?'prob-high':'prob-med';
         html+='<div class="scan-card '+cardClass+'"><div class="scan-hdr">'+pairChip(o.pair,true)+'<span class="scan-dir '+(o._isLong?'long':'short')+'">'+esc(o.dir)+'</span><span class="scan-prob '+(isHigh?'high':'med')+'">'+esc(o.prob||'MEDIUM')+' PROB</span></div>';
         html+='<div class="scan-reason">'+colorizeCcy(md(o.reason))+'</div>';
-        html+='<div class="scan-levels">'
-          +'<div class="scan-level"><div class="scan-level-lbl">Entry</div><div class="scan-level-val">'+esc(o.entry)+'</div></div>'
-          +'<div class="scan-level"><div class="scan-level-lbl">Stop loss</div><div class="scan-level-val" style="color:#f87171">'+esc(o.sl)+'</div></div>'
-          +'<div class="scan-level"><div class="scan-level-lbl">Take profit</div><div class="scan-level-val" style="color:#4ade80">'+esc(o.tp)+'</div></div>'
-          +'</div><div class="scan-rr">R:R = 1:'+o._rr.toFixed(1)+'</div>';
+        /* 8.9.26 #9.1 — Entry · Take profit · Stop loss, the TradingView position-tool order. */
+        html+='<div class="scan-body"><div class="scan-main"><div class="scan-levels">'
+          +'<div class="scan-level"><div class="scan-level-lbl">1 · Entry</div><div class="scan-level-val">'+esc(o.entry)+'</div></div>'
+          +'<div class="scan-level"><div class="scan-level-lbl">2 · Take profit</div><div class="scan-level-val" style="color:#4ade80">'+esc(o.tp)+'</div></div>'
+          +'<div class="scan-level"><div class="scan-level-lbl">3 · Stop loss</div><div class="scan-level-val" style="color:#f87171">'+esc(o.sl)+'</div></div>'
+          +'</div><div class="scan-rr">R:R = 1:'+o._rr.toFixed(1)+'</div></div>'
+          +'<div class="scan-side">'+setupChartSlot(o,'scanner')+'</div></div>';
         html+='</div>';
       });
       if(!shown){
@@ -4307,6 +4598,7 @@ async function runScanner(){
         res.innerHTML='<div class="scan-empty"><div class="scan-icon">⚠️</div><div>'+setups.length+' candidate setup'+(setups.length>1?'s came':' came')+' back but none were complete and self-consistent, so none are shown. Tap Run scanner to try again.</div></div>'+droppedNote(dropped);
       } else {
         res.innerHTML=html+droppedNote(dropped);
+        fillSetupCharts(res);
       }
       /* D1 / Amendment 19.8.26 #4 ("times not quite lining up"): the bucket is
          30 minutes (18e5 ms) but the label multiplied it by 15 minutes (9e5),
@@ -4393,11 +4685,12 @@ async function runPullbackScanner(){
         if(pd&&pd.p!=null) nowPrice=' <span style="font-size:11px;color:rgba(240,237,232,0.45);font-weight:400">now '+fmtPrice(o.pair.replace('/',''),pd.p)+'</span>';
         html+='<div class="scan-card '+cardClass+'"><div class="scan-hdr">'+pairChip(o.pair,true)+'<span class="scan-dir '+(o._isLong?'long':'short')+'">'+esc(o.dir)+'</span><span class="scan-prob '+(isHigh?'high':'med')+'">'+esc(o.prob||'MEDIUM')+' PROB</span><span style="font-size:11px;padding:2px 8px;border-radius:100px;background:rgba(255,255,255,0.06);color:'+orderCol+';margin-left:4px;border:1px solid '+orderCol+'40">'+esc(orderLabel)+'</span></div>';
         html+='<div class="scan-reason">'+colorizeCcy(md(o.reason))+'</div>';
-        html+='<div class="scan-levels">'
-          +'<div class="scan-level"><div class="scan-level-lbl">Entry trigger (limit)'+nowPrice+'</div><div class="scan-level-val">'+esc(o.entry)+'</div></div>'
-          +'<div class="scan-level"><div class="scan-level-lbl">Stop loss</div><div class="scan-level-val" style="color:#f87171">'+esc(o.sl)+'</div></div>'
-          +'<div class="scan-level"><div class="scan-level-lbl">Take profit</div><div class="scan-level-val" style="color:#4ade80">'+esc(o.tp)+'</div></div>'
-          +'</div><div class="scan-rr">R:R = 1:'+o._rr.toFixed(1)+'</div>';
+        html+='<div class="scan-body"><div class="scan-main"><div class="scan-levels">'
+          +'<div class="scan-level"><div class="scan-level-lbl">1 · Entry trigger (limit)'+nowPrice+'</div><div class="scan-level-val">'+esc(o.entry)+'</div></div>'
+          +'<div class="scan-level"><div class="scan-level-lbl">2 · Take profit</div><div class="scan-level-val" style="color:#4ade80">'+esc(o.tp)+'</div></div>'
+          +'<div class="scan-level"><div class="scan-level-lbl">3 · Stop loss</div><div class="scan-level-val" style="color:#f87171">'+esc(o.sl)+'</div></div>'
+          +'</div><div class="scan-rr">R:R = 1:'+o._rr.toFixed(1)+'</div></div>'
+          +'<div class="scan-side">'+setupChartSlot(o,'pullback')+'</div></div>';
         html+='</div>';
       });
       if(!shown){
@@ -4405,6 +4698,7 @@ async function runPullbackScanner(){
         res.innerHTML='<div class="scan-empty"><div class="scan-icon">⚠️</div><div>'+setups.length+' candidate setup'+(setups.length>1?'s came':' came')+' back but none were complete and self-consistent, so none are shown. Tap Pullback scan to try again.</div></div>'+droppedNote(dropped);
       } else {
         res.innerHTML=html+droppedNote(dropped);
+        fillSetupCharts(res);
       }
       meta.textContent='Pullback scan · '+fhClock()+' · Not financial advice';
       if(shown) buildShareBar('scan-share','Pullback scanner','#scan-results','pullback_scanner');
