@@ -1,4 +1,5 @@
 /* ForexHub data + AI proxy — Cloudflare Worker
+   v11.3 8.9.26: /setups feed for the MT5 EA and cTrader cBot (v15).
    v11.2 8.9.26: 12-hour cache for the v14 IQ event outlooks (iq:o: keys).
    v11.1 8.9.26: /strength 1Y figure tolerates Yahoo's slightly-short 1y window.
    v11.0 8.9.26 (new features 19.8.26 #1, 28.8.26 #1 & #2):
@@ -28,7 +29,7 @@
        Cache API which is per-colo) and backs off when Forex Factory rate-limits.
    Bindings required: ANTHROPIC_API_KEY (secret), FH_APP_KEY (secret), FH_KV (KV).  */
 
-const WORKER_VERSION = "11.2";
+const WORKER_VERSION = "11.3";
 const YF_HOSTS = ["https://query1.finance.yahoo.com", "https://query2.finance.yahoo.com"];
 const UA = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0 Safari/537.36";
 const NY_HOUR_FMT = new Intl.DateTimeFormat("en-US", { timeZone: "America/New_York", hour: "numeric", hourCycle: "h23" });
@@ -946,6 +947,45 @@ export default {
       }
     }
 
+    /* ── Setup feed for the terminals: POST /setups (site) · GET /setups?k= (EA / cBot) ──
+       v11.3 (New features 28.8.26 #3). The site publishes every validated scanner
+       and pullback setup here; the MT5 EA and cTrader cBot poll it and draw the
+       entry / TP / SL box on the matching chart. TradingView cannot be driven
+       this way (no drawing API), which is why the site also offers copy-as-text.
+       The read side takes the app key as a query parameter because a terminal
+       cannot send custom headers or an Origin. */
+    if (url.pathname === "/setups" && req.method === "POST") {
+      try {
+        if (!env.FH_APP_KEY) return J({ error: "Proxy is not configured (missing app key)." }, 503);
+        if ((req.headers.get("X-FH-App") || "") !== env.FH_APP_KEY) return J({ error: "Not authorised for this proxy." }, 401);
+        if (origin && !originOk) return J({ error: "Origin not allowed." }, 403);
+        if (!KV) return J({ error: "No KV binding — setups cannot be stored." }, 503);
+        const body = await req.json();
+        const src = body.src === "pullback" ? "pullback" : "scanner";
+        const list = Array.isArray(body.setups) ? body.setups.slice(0, 12).map(function (s) {
+          const pair = String(s.pair || "").replace(/[^A-Za-z]/g, "").toUpperCase();
+          const n = function (v) { const x = parseFloat(v); return isFinite(x) ? x : null; };
+          return { pair: pair, dir: /LONG|BUY/i.test(String(s.dir || "")) ? "LONG" : "SHORT", entry: n(s.entry), sl: n(s.sl), tp: n(s.tp), rr: n(s.rr), prob: String(s.prob || "").slice(0, 12), order: String(s.order || "").slice(0, 16) };
+        }).filter(function (s) { return /^[A-Z]{6}$/.test(s.pair) && s.entry != null && s.sl != null && s.tp != null; }) : [];
+        const rec = { src: src, ts: new Date().toISOString(), count: list.length, setups: list };
+        await KV.put("setups:" + src, JSON.stringify(rec), { expirationTtl: 86400 });
+        return J({ ok: true, stored: list.length, src: src, ts: rec.ts });
+      } catch (e) { return J({ error: e.message }, 500); }
+    }
+    if (url.pathname === "/setups" && req.method === "GET") {
+      try {
+        if (!env.FH_APP_KEY || (url.searchParams.get("k") || "") !== env.FH_APP_KEY) return J({ error: "Not authorised." }, 401);
+        if (!KV) return J({ error: "No KV binding." }, 503);
+        const both = await Promise.all([KV.get("setups:scanner"), KV.get("setups:pullback")]);
+        const sc = both[0] ? JSON.parse(both[0]) : null, pb = both[1] ? JSON.parse(both[1]) : null;
+        const all = [];
+        if (sc) sc.setups.forEach(function (s) { s.src = "scanner"; s.at = sc.ts; all.push(s); });
+        if (pb) pb.setups.forEach(function (s) { s.src = "pullback"; s.at = pb.ts; all.push(s); });
+        return new Response(JSON.stringify({ ts: new Date().toISOString(), scannerAt: sc ? sc.ts : null, pullbackAt: pb ? pb.ts : null, setups: all }),
+          { status: 200, headers: { "Content-Type": "application/json", "Cache-Control": "no-store", "Access-Control-Allow-Origin": "*" } });
+      } catch (e) { return J({ error: e.message }, 500); }
+    }
+
     if (url.pathname === "/api" && req.method === "POST") {
       try {
         if (!env.FH_APP_KEY) return J({ error: "Proxy is not configured (missing app key)." }, 503);
@@ -1057,6 +1097,13 @@ export default {
             for (let i3 = 0; i3 < data.content.length; i3++) if (data.content[i3].type === "text") text += data.content[i3].text;
           }
         }
+        /* v11.3: a reply cut off at max_tokens cannot contain a complete outer
+           object — extractJson would otherwise return the first INNER object that
+           happens to close (one pair), which the caller then mistakes for the
+           answer. Report it as a truncation so the client can retry leaner. */
+        if (body.expectJson === true && data && data.stop_reason === "max_tokens") {
+          return J({ text: text, json: null, jsonError: "truncated at max_tokens", stop: "max_tokens", usage: data.usage || null, model: model, searched: useSearch, cached: false });
+        }
         /* D3: when the caller asks for structured output (body.expectJson), pull the
            JSON value out of the reply and return it parsed. This is the real fix for
            AI narration and [cite_start]/[1] tags leaking into the news list: the news
@@ -1079,7 +1126,7 @@ export default {
         }
 
         return J({
-          text: text, json: parsed, jsonError: jsonError,
+          text: text, json: parsed, jsonError: jsonError, stop: data && data.stop_reason ? data.stop_reason : null,
           usage: data.usage || null, model: model, searched: useSearch, cached: false
         });
       } catch (e) {

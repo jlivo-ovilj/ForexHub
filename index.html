@@ -200,6 +200,8 @@ body.light .nb{color:rgba(28,27,25,0.88)}
 .sess-ev.imp-high .sess-ev-i{color:#f87171}.sess-ev.imp-med .sess-ev-i{color:#fbbf24}
 .sess-pairs{display:flex;flex-wrap:wrap;gap:4px}
 .cal-event.cal-hit{outline:2px solid var(--ac);outline-offset:2px;transition:outline-color 1s}
+.cal-iq{margin-left:auto;align-self:center;flex-shrink:0;background:rgba(251,146,60,0.12);border:1px solid rgba(251,146,60,0.45);color:#fb923c;border-radius:100px;padding:4px 10px;font-family:'DM Mono',monospace;font-size:11px;cursor:pointer;white-space:nowrap}
+.cal-iq:hover{background:#fb923c;color:#0a0a0a}
 .dial-ev{cursor:pointer}
 .clock-big{font-family:'DM Mono',monospace;font-size:32px;font-weight:500;color:var(--ac);text-align:center;margin-bottom:4px;letter-spacing:3px}
 .clock-tz{font-family:'DM Mono',monospace;font-size:11px;color:var(--mt);text-align:center;margin-bottom:16px}
@@ -1264,6 +1266,7 @@ body.light .chart-modal-overlay{background:rgba(0,0,0,0.55)}
       <div class="iq-row">
         <select class="iq-sel" id="iq-o-ev" onchange="iqOutlookPick()"><option value="">Loading calendar…</option></select>
       </div>
+      <div id="iq-o-chip" class="iq-row" style="display:none"></div>
       <div id="iq-o-custom" class="iq-row" style="display:none">
         <input class="iq-in" id="iq-o-name" placeholder="Event, e.g. US Treasury announces bond buybacks" style="flex:1">
         <select class="iq-sel" id="iq-o-ccy" style="width:110px"><option>USD</option><option>EUR</option><option>GBP</option><option>JPY</option><option>AUD</option><option>NZD</option><option>CAD</option><option>CHF</option><option>CNY</option></select>
@@ -1284,6 +1287,7 @@ body.light .chart-modal-overlay{background:rgba(0,0,0,0.55)}
       <div class="cl">What happened?</div>
       <div class="cb" style="margin-bottom:10px">Pick the release, enter the actual figure if the feed doesn't have it, and drop in a screenshot of your briefing or heat map. The review explains the first-order move, which currencies were bought instead, and why the crosses split — and saves it to your library.</div>
       <div class="iq-row"><select class="iq-sel" id="iq-r-ev" onchange="iqReviewPick()"><option value="">Loading calendar…</option></select></div>
+      <div id="iq-r-chip" class="iq-row" style="display:none"></div>
       <div id="iq-r-custom" class="iq-row" style="display:none">
         <input class="iq-in" id="iq-r-name" placeholder="Event name" style="flex:1">
         <select class="iq-sel" id="iq-r-ccy" style="width:110px"><option>USD</option><option>EUR</option><option>GBP</option><option>JPY</option><option>AUD</option><option>NZD</option><option>CAD</option><option>CHF</option><option>CNY</option></select>
@@ -1400,12 +1404,21 @@ body.light .chart-modal-overlay{background:rgba(0,0,0,0.55)}
             <option value="1000">Micro (1k)</option>
           </select>
         </div>
+        <div style="display:flex;align-items:center;gap:6px">
+          <span style="font-size:10px;color:var(--mt);font-family:'DM Mono',monospace">Leverage:</span>
+          <select id="pip-lev-sel" onchange="changePipLeverage(this.value)" class="sel-i" style="width:auto;padding:3px 10px;font-size:11px;height:28px">
+            <option value="mine">My account · 500:1</option>
+            <option value="retail">ASIC retail · 30:1 / 20:1</option>
+            <option value="custom">Custom…</option>
+          </select>
+          <input id="pip-lev-custom" type="number" value="500" min="1" max="2000" step="1" oninput="changePipLeverage('custom')" class="inp" style="display:none;width:64px;padding:3px 8px;font-size:11px;height:28px;text-align:right" title="Leverage ratio, e.g. 200 for 200:1">
+        </div>
         <span style="font-size:10px;color:var(--mt);font-family:'DM Mono',monospace;margin-left:4px">↑ click column headers to sort</span>
       </div>
     </div>
     <div id="calc-pip-loading" style="text-align:center;padding:28px;color:var(--mt);font-size:13px">Loading live prices…</div>
     <div id="calc-pip-table" style="overflow-x:auto;display:none"></div>
-    <div class="meta" style="margin-top:8px;line-height:1.5">† <strong>Pips/100%</strong> — pips needed for 1 lot to return 100% on your set account size · change <em>Account A$</em> above to recalculate</div>
+    <div class="meta" style="margin-top:8px;line-height:1.5">† <strong>Pips/100%</strong> — pips needed for 1 lot to return 100% on your set account size · change <em>Account A$</em> above to recalculate<br>‡ <strong>Notional</strong> — the full value of one lot of the selected size in A$ (units × price × quote-to-AUD rate). <strong>Margin</strong> — notional ÷ leverage: what the broker locks up to open it. <strong>% acct</strong> — that margin against your Account A$. <em>My account</em> is a flat 500:1 (from your Currency Pairs Value sheet); <em>ASIC retail</em> caps are 30:1 when both currencies are majors (AUD CAD CHF EUR GBP JPY USD — NZD is not), 20:1 for other pairs and gold.</div>
   </div>
 
   <!-- Trade Planner -->
@@ -1485,6 +1498,12 @@ body.light .chart-modal-overlay{background:rgba(0,0,0,0.55)}
   <div class="st">About ForexHub</div>
   <div class="ss">Your daily forex companion</div>
   <div class="card">
+    <div class="ai"><div class="aq">What's new in v15 (8 Sep 2026)</div><div class="aa">
+      · Calculator: the pip table now shows <b>Notional A$</b>, <b>Margin</b> and <b>% of account</b> for the selected lot size, with a leverage picker — <em>My account</em> (500:1, from your Currency Pairs Value sheet), <em>ASIC retail</em> (30:1 majors / 20:1 others, NZD counted as non-major, gold 20:1) or a custom ratio. Your choice is remembered.<br>
+      · Scanner setups now go to a feed that the new <b>FxHubSetupSync</b> MT5 expert advisor and cTrader cBot poll: attach one to a chart and every current setup for that pair is drawn as a risk/reward box with 1 Entry · 2 TP · 3 SL lines, optionally placing the pending order. Files are in your MT4 MT5 Bot and cTrader Bot folders with setup notes at the top of each. TradingView can't be driven this way, so each card also has <b>Copy levels</b> — one line of text in the position-tool order.<br>
+      · Calendar: every event has a <b>🧠 IQ</b> button (and the detail popup has one) that opens Market IQ with that event selected — the outlook if it's coming up, the review if it has been released.<br>
+      · Market IQ: the selected event is echoed under the picker in the site's colour code (currency badge + HIGH/MED impact); the outlook header carries the impact badge too. Fixed the "unexpected shape" error — long replies were being cut off at the token limit and a fragment was mistaken for the answer; replies are now kept short and retried leaner if cut off.
+    </div></div>
     <div class="ai"><div class="aq">What's new in v14 (8 Sep 2026)</div><div class="aa">
       · New <b>IQ</b> tab. <b>Event outlook</b>: pick an upcoming release (or describe something that isn't on the calendar) and get what it means for its currency under each outcome, the pairs it moves first, the crosses that move second and <em>why they split</em>, a mud map of direction by outcome, what to watch in the first 15 minutes, and the caveats. One analysis per event, shared for 12 hours.<br>
       · <b>Event review</b>: after a release, pick it, add the actual figure and a screenshot of your briefing or heat map, and get the post-mortem in the same layers — including the percentage arithmetic that explains why two "safe havens" can go opposite ways. Every review is saved to the <b>Library</b> in this browser.<br>
@@ -1558,6 +1577,7 @@ body.light .chart-modal-overlay{background:rgba(0,0,0,0.55)}
     </div>
     <div class="cpop-desc" id="cpop-desc"></div>
     <div class="cpop-explain" id="cpop-explain" style="display:none"></div>
+    <div style="margin-top:12px;display:flex;justify-content:flex-end"><button class="sb" id="cpop-iq" style="margin-top:0;padding:8px 16px;font-size:13px">🧠 Open in Market IQ</button></div>
   </div>
 </div>
 
@@ -1839,7 +1859,7 @@ function dismissBanner(){
 /* ══════════════════════════════════════
    HEADER DATE
 ══════════════════════════════════════ */
-var FH_BUILD='v14'; // 8 Sep 2026 — Market IQ: event outlook engine + review library // bump on every delivered change — shown in the header so it's always obvious which version is loaded
+var FH_BUILD='v15'; // 8 Sep 2026 — leverage columns, MT5/cTrader setup feed, calendar→IQ, IQ fixes // bump on every delivered change — shown in the header so it's always obvious which version is loaded
 /* Stale-tab killer: every so often, check whether a newer build has been deployed.
    If so, show a can't-miss banner telling the user to reload — long-open tabs silently
    running old code caused repeated "the fix didn't work" confusion. */
@@ -2086,7 +2106,7 @@ async function ai(prompt,cacheKey,opts){
       if(cacheKey){ try{ var js=JSON.stringify(d.json); cache[cacheKey]=js; LS.set('fhai:'+cacheKey,js); }catch(e){} }
       return d.json;
     }
-    throw new Error('AI_JSON_FAILED');
+    throw new Error(d&&d.stop==='max_tokens'?'AI_JSON_TRUNCATED':'AI_JSON_FAILED');
   }
   if(cacheKey){ cache[cacheKey]=txt; LS.set('fhai:'+cacheKey,txt); }
   return txt;
@@ -2831,7 +2851,8 @@ function setupChartSlot(o,src){
   o.when=new Date();o.src=src;o.tf=src==='pullback'?'PULLBACK':'SETUP';
   _setupStore[id]=o;
   return '<div class="scan-chart" data-sid="'+id+'" title="Tap to enlarge · copy onto your chart" onclick="openSetupModal('+id+')"></div>'
-    +'<button class="pip-fccy scan-copy" onclick="event.stopPropagation();copySetupChart('+id+')" title="Copy this setup as an image">📋 Copy chart</button>';
+    +'<button class="pip-fccy scan-copy" onclick="event.stopPropagation();copySetupChart('+id+')" title="Copy this setup as an image">📋 Copy chart</button>'
+    +'<button class="pip-fccy scan-copy" onclick="event.stopPropagation();copySetupText('+id+')" title="Copy the levels as one line of text — paste into the TradingView position tool or a note">📝 Copy levels</button>';
 }
 function fillSetupCharts(root){
   (root||document).querySelectorAll('.scan-chart[data-sid]').forEach(function(d){
@@ -2849,6 +2870,33 @@ function openSetupModal(id){
   body.innerHTML='';
   body.appendChild(buildSetupChart(o,392,512));
   document.getElementById('chart-modal').style.display='flex';
+}
+/* v15 — the levels as one line of text, in the TradingView position-tool
+   order (1 Entry · 2 Take profit · 3 Stop loss). TradingView has no way for a
+   website to place a drawing, so this is the fastest honest hand-off there. */
+function setupText(o){
+  var pr=String(o.pair).replace(/[^A-Za-z]/g,'').toUpperCase();
+  return slashPair(pr)+' '+(o._isLong?'LONG':'SHORT')+' · 1 Entry '+fmtPrice(pr,o._e)+' · 2 Take profit '+fmtPrice(pr,o._tp)+' · 3 Stop loss '+fmtPrice(pr,o._sl)+' · R:R 1:'+(o._rr!=null?o._rr.toFixed(1):'—')+' · ForexHub '+(o.src==='pullback'?'pullback':'scanner')+' '+fhDate(o.when||new Date(),{day:'2-digit',month:'short'})+' '+fhClock(o.when||new Date());
+}
+function copySetupText(id){
+  var o=_setupStore[id]; if(!o){showToast('Nothing to copy');return;}
+  var t=setupText(o);
+  if(navigator.clipboard&&navigator.clipboard.writeText){navigator.clipboard.writeText(t).then(function(){showToast('Levels copied');}).catch(function(){copyText(t);showToast('Levels copied');});}
+  else{copyText(t);showToast('Levels copied');}
+}
+/* v15 — publish the validated setups to the worker so the MT5 EA / cTrader
+   cBot (FxHubSetupSync) can draw them on the matching chart. Fire-and-forget:
+   a failure here never affects the cards. */
+var SETUPS_URL=WU.replace(/\/api$/,'')+'/setups';
+function publishSetups(src,list){
+  try{
+    var payload={src:src,setups:list.map(function(o){return {pair:String(o.pair).replace(/[^A-Za-z]/g,'').toUpperCase(),dir:o._isLong?'LONG':'SHORT',entry:o._e,sl:o._sl,tp:o._tp,rr:o._rr,prob:o.prob||'',order:o.orderType||''};})};
+    return fetch(SETUPS_URL,{method:'POST',headers:FH_HDRS,body:JSON.stringify(payload)}).then(function(r){return r.ok?r.json():null;}).then(function(d){
+      var m=document.getElementById('scan-meta');
+      if(d&&d.ok&&m) m.textContent+=' · sent to MT5/cTrader feed ('+d.stored+')';
+      return d;
+    }).catch(function(){return null;});
+  }catch(e){ return Promise.resolve(null); }
 }
 /* One-tap copy straight from the card — no modal needed. Falls back to download. */
 function copySetupChart(id){
@@ -4028,7 +4076,7 @@ function renderCalendarView(){
       html+='<div class="cal-text">';
       html+='<div class="cal-title"><span class="cal-ccy-tag" style="color:'+col+';background:'+col+'22;border:1px solid '+col+'44">'+ev.ccy+'</span>'+highlightEcoTerms(ev.name)+(past?' <span style="color:var(--mt);font-size:10px">· released</span>':'')+'</div>';
       html+='<div class="cal-detail">'+ev.time+' · Forecast: <span class="cal-val">'+ev.forecast+'</span> · Prev: <span class="cal-val">'+ev.prev+'</span></div>';
-      html+='</div></div>';
+      html+='</div><button class="cal-iq" onclick="event.stopPropagation();openIqFor('+ev.ts+',\''+ev.ccy+'\',\''+esc(String(ev.name).replace(/'/g,'’'))+'\')" title="'+(ev.ts<=Date.now()?'Review this event in Market IQ':'Build the outlook for this event in Market IQ')+'">🧠 IQ</button></div>';
     });
     html+='</div>';
   });
@@ -4095,6 +4143,8 @@ function openCalPopup(idx){
   var expEl=document.getElementById('cpop-explain');
   if(explain){expEl.innerHTML=explain;expEl.style.display='block';}
   else expEl.style.display='none';
+  var iqb=document.getElementById('cpop-iq');
+  if(iqb){iqb.textContent=ev.ts<=Date.now()?'🧠 Review in Market IQ':'🧠 Outlook in Market IQ';iqb.onclick=function(){openIqFor(ev.ts,ev.ccy,ev.name);};}
   document.getElementById('cal-popup').style.display='flex';
 }
 function closeCalPopup(){document.getElementById('cal-popup').style.display='none';}
@@ -4789,7 +4839,7 @@ async function runScanner(){
       res.innerHTML='<div class="scan-empty"><div class="scan-icon">🔍</div><div>The analysis came back in an unexpected shape and no setups could be read from it. Tap Run scanner to try again.</div></div>';
       meta.textContent='Attempted '+fhClock()+' · nothing parsed';
     } else {
-      var html='',shown=0,dropped=[];
+      var html='',shown=0,dropped=[],pub=[];
       setups.forEach(function(s){
         var o={pair:scanField(s,'PAIR'),dir:scanField(s,'DIRECTION'),prob:scanField(s,'PROBABILITY'),
                entry:scanField(s,'ENTRY')||scanField(s,'ENTRY TRIGGER'),
@@ -4798,7 +4848,7 @@ async function runScanner(){
                reason:scanReason(s)};
         var bad=validateSetup(o);
         if(bad){dropped.push(bad);return;}
-        shown++;
+        shown++; pub.push(o);
         var isHigh=o.prob.toUpperCase().indexOf('HIGH')>-1;
         var cardClass=isHigh?'prob-high':'prob-med';
         html+='<div class="scan-card '+cardClass+'"><div class="scan-hdr">'+pairChip(o.pair,true)+'<span class="scan-dir '+(o._isLong?'long':'short')+'">'+esc(o.dir)+'</span><span class="scan-prob '+(isHigh?'high':'med')+'">'+esc(o.prob||'MEDIUM')+' PROB</span></div>';
@@ -4829,6 +4879,7 @@ async function runScanner(){
       var scanAt=fhTime(scanBucket*18e5);
       meta.textContent='Analysis from '+scanAt+' '+fhTzLabel()+' (new analysis every 30 min) · Not financial advice';
       if(shown) buildShareBar('scan-share','Trade scanner','#scan-results','scanner');
+      if(shown) publishSetups('scanner',pub);
     }
   } catch(e){
     res.innerHTML='<div class="eb" style="margin:10px">'+friendlyError(e)+'</div>';
@@ -4882,7 +4933,7 @@ async function runPullbackScanner(){
       meta.textContent='Attempted '+fhClock()+' · nothing parsed';
     } else {
       var html='<div style="background:rgba(251,191,36,0.07);border:1px solid rgba(251,191,36,0.2);border-radius:var(--rs);padding:10px 14px;margin-bottom:14px;font-size:13px;color:#fbbf24">↩ Pullback scanner — LIMIT ORDERS only. Place at the entry trigger and wait for price to come to you. Not a market-entry signal.</div>';
-      var shown=0,dropped=[];
+      var shown=0,dropped=[],pub=[];
       setups.forEach(function(s){
         var o={pair:scanField(s,'PAIR'),orderType:scanField(s,'ORDER TYPE'),dir:scanField(s,'DIRECTION'),
                prob:scanField(s,'PROBABILITY'),
@@ -4894,7 +4945,7 @@ async function runPullbackScanner(){
            card: no complete levels or no reasoning ⇒ not a setup. */
         var bad=validateSetup(o);
         if(bad){dropped.push(bad);return;}
-        shown++;
+        shown++; pub.push(o);
         var isHigh=o.prob.toUpperCase().indexOf('HIGH')>-1;
         var isFade=/fade/i.test(o.orderType);
         var orderCol=isFade?'#f472b6':'#fbbf24';
@@ -4923,6 +4974,7 @@ async function runPullbackScanner(){
       }
       meta.textContent='Pullback scan · '+fhClock()+' · Not financial advice';
       if(shown) buildShareBar('scan-share','Pullback scanner','#scan-results','pullback_scanner');
+      if(shown) publishSetups('pullback',pub);
     }
   } catch(e){
     res.innerHTML='<div class="eb" style="margin:10px">'+friendlyError(e)+'</div>';
@@ -5018,10 +5070,15 @@ async function loadCalculator(){
     html+='<th class="sortable" onclick="sortPipTable(\'price\')" id="pip-th-price">Live Price <span class="sort-ind" id="si-price"></span></th>';
     html+='<th class="sortable" style="color:var(--ac)" onclick="sortPipTable(\'pip\')" id="pip-th-pip"><span id="pip-lot-lbl">Mini </span>$/pip <span class="sort-ind" id="si-pip"></span></th>';
     html+='<th class="sortable" onclick="sortPipTable(\'pips100\')" id="pip-th-pips100">Pips/100%† <span class="sort-ind" id="si-pips100"></span></th>';
+    /* v15 — leverage columns (New features 19.8.26 #4, ratios from John's sheet 8 Sep) */
+    html+='<th class="sortable" onclick="sortPipTable(\'notional\')" id="pip-th-notional">Notional A$‡ <span class="sort-ind" id="si-notional"></span></th>';
+    html+='<th class="sortable" onclick="sortPipTable(\'margin\')" id="pip-th-margin">Margin <span id="pip-lev-lbl" style="opacity:0.7"></span> <span class="sort-ind" id="si-margin"></span></th>';
+    html+='<th class="sortable" onclick="sortPipTable(\'pct\')" id="pip-th-pct">% acct <span class="sort-ind" id="si-pct"></span></th>';
     html+='</tr></thead><tbody id="pip-tbody"></tbody></table>';
     if(tableDiv){tableDiv.innerHTML=html;tableDiv.style.display='block';}
     var controls=document.getElementById('pip-controls');
     if(controls) controls.style.display='';
+    initPipLeverage();
     if(loading) loading.style.display='none';
     // Reset sort on refresh (filter persists)
     _calcPipSort={col:null,dir:1};
@@ -5042,6 +5099,18 @@ function renderPipTableBody(){
   // Update lot label in header
   var lblEl=document.getElementById('pip-lot-lbl');
   if(lblEl){var lbl=lot===100000?'Std ':lot===10000?'Mini ':'Micro ';lblEl.textContent=lbl;}
+  var levLbl=document.getElementById('pip-lev-lbl'); if(levLbl) levLbl.textContent='@ '+pipLevLabel();
+  /* Notional in A$ for the selected lot: units × price × (quote→AUD). The
+     quote→AUD rate is already inside stdPip (= pip-in-quote × quote→AUD), so it
+     is recovered from there rather than looked up again. */
+  _calcPipData.forEach(function(d){
+    var isJPY=d.pair.slice(3)==='JPY', pipInQuote=isJPY?1000:10;
+    d.q2aud=(d.stdPip>0)?d.stdPip/pipInQuote:null;
+    d.notional=(d.price!=null&&d.q2aud!=null)?lot*d.price*d.q2aud:null;
+    d.lev=pipLeverageFor(d.pair);
+    d.margin=(d.notional!=null&&d.lev)?d.notional/d.lev:null;
+    d.pct=(d.margin!=null)?d.margin/account*100:null;
+  });
   // Filter
   var data=_calcPipData.filter(function(d){return _calcPipFilter==='all'||d.group===_calcPipFilter;});
   // Sort
@@ -5055,6 +5124,11 @@ function renderPipTableBody(){
       if(_calcPipSort.col==='pips100'){
         va=a.stdPip>0?account/a.stdPip:9999999;
         vb=b.stdPip>0?account/b.stdPip:9999999;
+        return _calcPipSort.dir*(va-vb);
+      }
+      if(_calcPipSort.col==='notional'||_calcPipSort.col==='margin'||_calcPipSort.col==='pct'){
+        va=a[_calcPipSort.col];vb=b[_calcPipSort.col];
+        if(va==null&&vb==null)return 0;if(va==null)return 1;if(vb==null)return -1;
         return _calcPipSort.dir*(va-vb);
       }
       return 0;
@@ -5072,7 +5146,7 @@ function renderPipTableBody(){
     if(!isSorted&&grp!==lastGroup){
       var arrow=collapsible?(isCollapsed?'▸':'▾'):'';
       html+='<tr class="pip-grp-row" data-group="'+grp+'" '+(collapsible?'onclick="togglePipGroup(\''+grp.replace(/'/g,"\\'")+'\')" style="cursor:pointer" title="Click to '+(isCollapsed?'show':'hide')+' these pairs"':'')+'>'
-        +'<td colspan="4"><span class="calc-grp-lbl">'+arrow+' '+grp+(isCollapsed?' <span style="opacity:0.55;font-weight:400">('+grpCount[grp]+' pairs — click to show)</span>':'')+'</span></td></tr>';
+        +'<td colspan="7"><span class="calc-grp-lbl">'+arrow+' '+grp+(isCollapsed?' <span style="opacity:0.55;font-weight:400">('+grpCount[grp]+' pairs — click to show)</span>':'')+'</span></td></tr>';
       lastGroup=grp;
     }
     if(isCollapsed) return; // group folded — skip its pair rows
@@ -5083,9 +5157,49 @@ function renderPipTableBody(){
     html+='<td>'+(price!=null?fmtPrice(pair,price):'—')+'</td>';
     html+='<td style="color:var(--ac)">'+(stdPip>0?'A$'+displayPip.toFixed(lot===1000?3:2):'—')+'</td>';
     html+='<td style="color:var(--mt)">'+pips100+'</td>';
+    var fmtA=function(v,dp){return v==null?'—':'A$'+v.toLocaleString('en-AU',{minimumFractionDigits:dp==null?0:dp,maximumFractionDigits:dp==null?0:dp});};
+    var pctCol=d.pct==null?'var(--mt)':d.pct>50?'#f87171':d.pct>20?'#fbbf24':'var(--tx)';
+    html+='<td style="color:var(--mt)" title="'+(d.q2aud!=null?'1 '+pair.slice(3)+' = A$'+d.q2aud.toFixed(4):'')+'">'+fmtA(d.notional)+'</td>';
+    html+='<td title="'+(d.lev?d.lev+':1 on this pair':'')+'">'+fmtA(d.margin,2)+'</td>';
+    html+='<td style="color:'+pctCol+'">'+(d.pct==null?'—':d.pct.toFixed(1)+'%')+'</td>';
     html+='</tr>';
   });
   tbody.innerHTML=html;
+}
+/* ── Leverage (v15) ──
+   From John's "Currency Pairs Value" sheet (8 Sep 2026): his account is a flat
+   500:1 on every pair (Margin = Notional ÷ E2 = 500). The RETAIL columns in red
+   apply the ASIC caps: 30:1 when BOTH currencies are in the major list
+   (AUD CAD CHF EUR GBP JPY USD — NZD is deliberately not), 20:1 for any other
+   FX pair, 20:1 for gold, 10:1 for other metals. */
+var LEV_MAJORS={AUD:1,CAD:1,CHF:1,EUR:1,GBP:1,JPY:1,USD:1};
+function pipLevState(){ try{ return JSON.parse(LS.get('fh_leverage')||'null')||{mode:'mine',custom:500}; }catch(e){ return {mode:'mine',custom:500}; } }
+function pipLeverageFor(pair){
+  var st=pipLevState();
+  if(st.mode==='custom') return Math.max(1,parseFloat(st.custom)||500);
+  if(st.mode==='retail'){
+    var a=pair.slice(0,3),b=pair.slice(3);
+    if(a==='XAU'||b==='XAU') return 20;
+    if(/^X(AG|PT|PD)/.test(a)) return 10;
+    return (LEV_MAJORS[a]&&LEV_MAJORS[b])?30:20;
+  }
+  return 500;
+}
+function pipLevLabel(){var st=pipLevState();return st.mode==='retail'?'ASIC retail':st.mode==='custom'?(Math.max(1,parseFloat(st.custom)||500)+':1'):'500:1';}
+function changePipLeverage(mode){
+  var st=pipLevState();
+  st.mode=mode;
+  var inp=document.getElementById('pip-lev-custom');
+  if(mode==='custom'){ if(inp){inp.style.display='';st.custom=parseFloat(inp.value)||st.custom||500;} }
+  else if(inp) inp.style.display='none';
+  LS.set('fh_leverage',JSON.stringify(st));
+  renderPipTableBody();
+}
+function initPipLeverage(){
+  var st=pipLevState();
+  var sel=document.getElementById('pip-lev-sel'),inp=document.getElementById('pip-lev-custom');
+  if(sel) sel.value=st.mode;
+  if(inp){inp.value=st.custom||500;inp.style.display=st.mode==='custom'?'':'none';}
 }
 /* Collapsible pip-table groups — state persisted so the layout stays how John leaves it */
 var _pipGrpCollapsed=null;
@@ -6197,15 +6311,30 @@ async function iqFillPickers(){
   }
 }
 function iqFind(key){for(var i=0;i<_iqEvents.length;i++){if(iqEvKey(_iqEvents[i])===key)return _iqEvents[i];}return null;}
+/* The <select> cannot colour its options, so the chosen event is echoed
+   underneath in the site's colour code: currency badge + HIGH / MED impact. */
+function iqChip(id,ev){
+  var el=document.getElementById(id); if(!el) return;
+  if(!ev){el.style.display='none';el.innerHTML='';return;}
+  var col=ccyCol(ev.ccy);
+  el.style.display='flex';
+  el.innerHTML='<span class="cal-imp-badge '+(ev.imp||'low')+'">'+(ev.imp==='high'?'HIGH':ev.imp==='med'?'MED':'LOW')+'</span>'
+    +'<span class="cal-ccy-tag" style="color:'+col+';background:'+col+'22;border:1px solid '+col+'44;padding:2px 8px;border-radius:100px;font-family:\'DM Mono\',monospace;font-size:11px;font-weight:700">'+esc(ev.ccy)+'</span>'
+    +'<span style="font-family:\'Syne\',sans-serif;font-weight:600">'+esc(ev.name)+'</span>'
+    +(ev.ts?'<span class="meta" style="margin:0">'+esc(fhDate(new Date(ev.ts),{weekday:'short',day:'2-digit',month:'short'})+' '+fhClock(ev.ts))+'</span>':'')
+    +((ev.forecast&&ev.forecast!=='—')?'<span class="meta" style="margin:0">forecast '+esc(ev.forecast)+'</span>':'');
+}
 function iqOutlookPick(){
   var v=document.getElementById('iq-o-ev').value;
   document.getElementById('iq-o-custom').style.display=v==='__custom'?'flex':'none';
   _iqOutlookSel=v&&v!=='__custom'?iqFind(v):null;
+  iqChip('iq-o-chip',_iqOutlookSel);
 }
 function iqReviewPick(){
   var v=document.getElementById('iq-r-ev').value;
   document.getElementById('iq-r-custom').style.display=v==='__custom'?'flex':'none';
   _iqReviewSel=v&&v!=='__custom'?iqFind(v):null;
+  iqChip('iq-r-chip',_iqReviewSel);
   var ev=_iqReviewSel;
   document.getElementById('iq-r-actual').value=ev&&ev.actual?ev.actual:'';
   document.getElementById('iq-r-forecast').value=ev&&ev.forecast&&ev.forecast!=='—'?ev.forecast:'';
@@ -6239,8 +6368,21 @@ async function runIqOutlook(){
       +'\n\n'+IQ_PAIRS_NOTE
       +'\n\nThink in LAYERS, the way the market actually trades it:\n1. What the event changes for '+ev.ccy+' — expected rates, yields, growth, risk appetite. Say which OUTCOME is good and which is bad for '+ev.ccy+', and why.\n2. FIRST ORDER: the direct '+ev.ccy+' pairs from the watchlist and which way each goes under each outcome.\n3. SECOND ORDER: the crosses that do NOT contain '+ev.ccy+' but move anyway, because the money leaving or entering '+ev.ccy+' is not spread evenly — some currencies receive more of the flow (yield, safe-haven type, carry funding status, commodity link, intervention risk). Name 3-5 such crosses and explain WHY they diverge. Remember that two "safe havens" can move differently (CHF vs JPY: JPY is also a funding currency and carries intervention risk), and that the same pip move on a low-priced pair is a bigger percentage move.\n4. Give a MUD MAP: for 8-12 watchlist pairs, the likely direction under "stronger than forecast", "in line", and "weaker than forecast" — use ▲ up, ▼ down, ▬ little change. For a pure announcement with no forecast, treat the outcomes as "hawkish / bigger", "as expected", "dovish / smaller".\n5. What to watch in the first 15 minutes, and 2-3 caveats (what would make the usual reaction fail — e.g. already priced in, risk-off overriding rates).\n\nBe concise and concrete. Use the word "potentially" where a direction is conditional. Never claim certainty.\n\nReturn ONLY a JSON object with exactly this shape:\n{"event":"…","ccy":"'+ev.ccy+'","whyItMatters":"2-3 sentences","goodFor":"which outcome is bullish for the currency, one sentence","badFor":"which outcome is bearish, one sentence","scenarios":[{"outcome":"Stronger than forecast","ccyEffect":"bullish '+ev.ccy+'","firstOrder":[{"pair":"EUR/USD","dir":"down","why":"…"}],"secondOrder":[{"pair":"CHF/JPY","dir":"up","why":"…"}]},{"outcome":"In line","ccyEffect":"…","firstOrder":[],"secondOrder":[]},{"outcome":"Weaker than forecast","ccyEffect":"…","firstOrder":[],"secondOrder":[]}],"mudMap":[{"pair":"AUD/USD","stronger":"▼","inline":"▬","weaker":"▲"}],"divergence":"3-4 sentences on why the crosses split unevenly for THIS event","watch":["…","…"],"caveats":["…","…"]}\nDirections in firstOrder/secondOrder must be one of up, down, flat.';
     var key='iq:o:'+(ev.ts||'x')+':'+ev.ccy+':'+ev.name.replace(/[^A-Za-z0-9]+/g,'-').slice(0,60);
-    var j=await ai(prompt,key,{model:'claude-sonnet-5',maxTokens:3000,webSearch:false,expectJson:true});
-    if(!j||!j.scenarios){delete cache[key];LS.del('fhai:'+key);throw new Error('The analysis came back in an unexpected shape — tap Build the outlook to try again.');}
+    /* Size discipline: the first version of this prompt let the model write until
+       it hit the token ceiling, and a cut-off JSON reply came back as a fragment
+       ("unexpected shape"). Keep every list short; retry once, leaner, if the
+       reply is still cut off. */
+    var sizeRule='\n\nSIZE LIMITS (strict, the reply is rejected if cut off): at most 3 firstOrder and 3 secondOrder pairs per scenario; each "why" at most 14 words; mudMap at most 8 pairs; whyItMatters and divergence at most 3 sentences; 2 watch items; 2 caveats. No text outside the JSON.';
+    var j=null,attempt=0;
+    while(attempt<2){
+      try{ j=await ai(prompt+sizeRule+(attempt?'\nBe even briefer: 2 pairs per list, 6 mudMap pairs, "why" under 10 words.':''),key+(attempt?':lean':''),{model:'claude-sonnet-5',maxTokens:3500,webSearch:false,expectJson:true}); }
+      catch(err){ if(String(err.message).indexOf('AI_JSON')<0) throw err; j=null; }
+      if(j&&!j.scenarios){ var kk=Object.keys(j); for(var q=0;q<kk.length;q++){ if(j[kk[q]]&&j[kk[q]].scenarios){ j=j[kk[q]]; break; } } }
+      if(j&&j.scenarios) break;
+      delete cache[key];LS.del('fhai:'+key); attempt++;
+      if(attempt<2) out.innerHTML='<div class="ld" style="padding:16px"><div class="sp"></div>The first reply was cut off — asking for a tighter version…</div>';
+    }
+    if(!j||!j.scenarios) throw new Error('The analysis came back incomplete twice — tap Build the outlook to try again in a moment.');
     _iqLast={type:'outlook',ev:ev,json:j};
     out.innerHTML='<div id="iq-o-doc">'+renderIqOutlook(ev,j)+'</div>';
     meta.textContent='Built '+fhClock()+' · cached 12h';
@@ -6256,7 +6398,7 @@ function iqPairList(list){
 }
 function renderIqOutlook(ev,j){
   var col=ccyCol(ev.ccy);
-  var h='<div class="card"><div class="iq-hdr"><span class="iq-badge" style="background:'+col+'22;color:'+col+';border:1px solid '+col+'55">'+esc(ev.ccy)+'</span><div style="font-family:\'Syne\',sans-serif;font-weight:700;font-size:16px">'+esc(j.event||ev.name)+'</div>'+(ev.ts?'<span class="meta" style="margin:0">'+esc(fhDate(new Date(ev.ts),{weekday:'short',day:'2-digit',month:'short'})+' '+fhClock(ev.ts))+'</span>':'')+'</div>';
+  var h='<div class="card"><div class="iq-hdr"><span class="cal-imp-badge '+(ev.imp||'low')+'">'+(ev.imp==='high'?'HIGH':ev.imp==='med'?'MED':'LOW')+'</span><span class="iq-badge" style="background:'+col+'22;color:'+col+';border:1px solid '+col+'55">'+esc(ev.ccy)+'</span><div style="font-family:\'Syne\',sans-serif;font-weight:700;font-size:16px">'+esc(j.event||ev.name)+'</div>'+(ev.ts?'<span class="meta" style="margin:0">'+esc(fhDate(new Date(ev.ts),{weekday:'short',day:'2-digit',month:'short'})+' '+fhClock(ev.ts))+'</span>':'')+'</div>';
   h+='<div class="cb">'+colorizeCcy(esc(j.whyItMatters||''))+'</div>';
   h+='<div class="iq-scn" style="grid-template-columns:repeat(auto-fit,minmax(240px,1fr))"><div class="iq-scn-card" style="border-color:rgba(74,222,128,0.35)"><div class="iq-scn-t iq-up">Good for '+esc(ev.ccy)+'</div><div style="font-size:12.5px">'+colorizeCcy(esc(j.goodFor||''))+'</div></div><div class="iq-scn-card" style="border-color:rgba(248,113,113,0.35)"><div class="iq-scn-t iq-dn">Bad for '+esc(ev.ccy)+'</div><div style="font-size:12.5px">'+colorizeCcy(esc(j.badFor||''))+'</div></div></div></div>';
   h+='<div class="card"><div class="cl">Scenarios · first order, then the crosses</div><div class="iq-scn">';
@@ -6398,6 +6540,26 @@ function deleteIqEntry(id){
   renderIqLibrary();
 }
 function initIq(){ updateIqCount(); iqFillPickers(); }
+/* Calendar → IQ hand-off. Upcoming events open the Outlook, released ones the
+   Review, with the event already selected. */
+async function openIqFor(ts,ccy,name){
+  var nb=null;document.querySelectorAll('.nb').forEach(function(b){if((b.getAttribute('onclick')||'').indexOf("'iq'")>-1)nb=b;});
+  showS('iq',nb);
+  closeCalPopup();
+  await iqFillPickers();
+  var key=ts+'|'+ccy+'|'+name, past=ts<=Date.now();
+  var subId=past?'iq-review':'iq-outlook', selId=past?'iq-r-ev':'iq-o-ev';
+  showIqSub(subId,document.querySelectorAll('#iq .rsub')[past?1:0]);
+  var sel=document.getElementById(selId);
+  var found=false;
+  for(var i=0;i<sel.options.length;i++){ if(sel.options[i].value===key){ sel.value=key; found=true; break; } }
+  if(!found){
+    sel.value='__custom';
+    if(past){ iqReviewPick(); document.getElementById('iq-r-name').value=name; document.getElementById('iq-r-ccy').value=ccy; }
+    else { iqOutlookPick(); document.getElementById('iq-o-name').value=name; document.getElementById('iq-o-ccy').value=ccy; }
+  } else { if(past) iqReviewPick(); else iqOutlookPick(); }
+  var card=document.querySelector('#'+subId+' .card'); if(card) card.scrollIntoView({behavior:'smooth',block:'start'});
+}
 
 document.addEventListener('DOMContentLoaded',function(){
   initPin();
