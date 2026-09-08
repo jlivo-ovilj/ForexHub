@@ -1,4 +1,5 @@
 /* ForexHub data + AI proxy — Cloudflare Worker
+   v11.1 8.9.26: /strength 1Y figure tolerates Yahoo's slightly-short 1y window.
    v11.0 8.9.26 (new features 19.8.26 #1, 28.8.26 #1 & #2):
      • GET /tech — RSI, SMA 9/20/50/100/200, EMA 20/50, MACD, stochastic, CCI,
        SuperTrend and TradingView-style MA / oscillator / overall ratings per pair
@@ -26,7 +27,7 @@
        Cache API which is per-colo) and backs off when Forex Factory rate-limits.
    Bindings required: ANTHROPIC_API_KEY (secret), FH_APP_KEY (secret), FH_KV (KV).  */
 
-const WORKER_VERSION = "11.0";
+const WORKER_VERSION = "11.1";
 const YF_HOSTS = ["https://query1.finance.yahoo.com", "https://query2.finance.yahoo.com"];
 const UA = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0 Safari/537.36";
 const NY_HOUR_FMT = new Intl.DateTimeFormat("en-US", { timeZone: "America/New_York", hour: "numeric", hourCycle: "h23" });
@@ -489,7 +490,14 @@ function perfOf(bars) {
   const last = bars[n - 1].c;
   const back = function (days) { return n - 1 - days >= 0 ? pctOf(last, bars[n - 1 - days].c) : null; };
   const lastT = bars[n - 1].t;
-  const byTime = function (secs) { for (let i = n - 1; i >= 0; i--) { if (lastT - bars[i].t >= secs) return pctOf(last, bars[i].c); } return null; };
+  /* A "1y" Yahoo window is often a day or two short of 365 days; accept the
+     first bar when the series covers at least 95% of the span rather than
+     printing a blank 1Y column. */
+  const byTime = function (secs) {
+    for (let i = n - 1; i >= 0; i--) { if (lastT - bars[i].t >= secs) return pctOf(last, bars[i].c); }
+    if (lastT - bars[0].t >= secs * 0.95) return pctOf(last, bars[0].c);
+    return null;
+  };
   const yr = new Date(lastT * 1000).getUTCFullYear();
   let ytd = null;
   for (let i = 0; i < n; i++) { if (new Date(bars[i].t * 1000).getUTCFullYear() === yr) { ytd = i > 0 ? pctOf(last, bars[i - 1].c) : null; break; } }
