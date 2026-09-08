@@ -33,6 +33,7 @@ body[data-sect="briefing"]  {--ac:#eab308;--adm:rgba(234,179,8,0.12)}
 body[data-sect="trends"]    {--ac:#10b981;--adm:rgba(16,185,129,0.12)}
 body[data-sect="calculator"]{--ac:#06b6d4;--adm:rgba(6,182,212,0.12)}
 body[data-sect="indices"]   {--ac:#f472b6;--adm:rgba(244,114,182,0.12)}
+body[data-sect="iq"]        {--ac:#fb923c;--adm:rgba(251,146,60,0.12)}
 *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
 body{font-family:'Syne',sans-serif;background:var(--bg);color:var(--tx);min-height:100vh;overflow-x:hidden}
 
@@ -505,6 +506,7 @@ body.light[data-sect="review"]    {--ac:#c2410c;--adm:rgba(194,65,12,0.10)}
 body.light[data-sect="maps"]      {--ac:#0369a1;--adm:rgba(3,105,161,0.10)}
 body.light[data-sect="scanner"]   {--ac:#a21caf;--adm:rgba(162,28,175,0.10)}
 body.light[data-sect="indices"]   {--ac:#be185d;--adm:rgba(190,24,93,0.10)}
+body.light[data-sect="iq"]        {--ac:#c2410c;--adm:rgba(194,65,12,0.10)}
 body.light[data-sect="about"]     {--ac:#475569;--adm:rgba(71,85,105,0.10)}
 body.light[data-sect="briefing"]  {--ac:#a16207;--adm:rgba(161,98,7,0.10)}
 body.light[data-sect="trends"]    {--ac:#047857;--adm:rgba(4,120,87,0.10)}
@@ -595,6 +597,34 @@ body.light .chart-modal-overlay{background:rgba(0,0,0,0.55)}
 .tm-legend{display:flex;align-items:center;gap:8px;font-family:'DM Mono',monospace;font-size:10px;color:var(--mt);margin-left:auto}
 .tm-legend i{display:inline-block;width:80px;height:8px;border-radius:4px;background:linear-gradient(90deg,#ef4444,#2e2e34,#22c55e)}
 @media(max-width:640px){.tm-body{height:420px}}
+/* ── v14: IQ ── */
+.iq-sub{display:none}.iq-sub.active{display:block}
+.iq-row{display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-bottom:10px}
+.iq-nums{gap:12px}.iq-nums .fld{flex:1;min-width:120px;margin-bottom:0}
+.iq-sel,.iq-in{background:var(--sf2);border:1px solid var(--bd2);border-radius:var(--rs);padding:9px 12px;font-family:'DM Mono',monospace;font-size:12.5px;color:var(--tx);outline:none;min-width:0}
+.iq-sel{flex:1;max-width:100%}
+.iq-sel:focus,.iq-in:focus{border-color:var(--ac)}
+.iq-count{font-family:'DM Mono',monospace;font-size:10px;opacity:0.8;margin-left:4px}
+.iq-hdr{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:8px}
+.iq-badge{display:inline-flex;align-items:center;padding:3px 10px;border-radius:100px;font-family:'DM Mono',monospace;font-size:11px;font-weight:700}
+.iq-scn{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:10px;margin:10px 0}
+.iq-scn-card{background:var(--sf2);border:1px solid var(--bd);border-radius:var(--rs);padding:12px 14px}
+.iq-scn-card .iq-scn-t{font-family:'Syne',sans-serif;font-weight:700;font-size:13.5px;margin-bottom:6px}
+.iq-pairs{display:flex;flex-direction:column;gap:4px;margin-top:6px}
+.iq-pair{display:flex;gap:8px;align-items:flex-start;font-size:12.5px;line-height:1.45}
+.iq-pair .iq-dir{font-family:'DM Mono',monospace;font-weight:700;flex-shrink:0;width:64px}
+.iq-up{color:#4ade80}.iq-dn{color:#f87171}.iq-flat{color:var(--mt)}
+.iq-mud{width:100%;border-collapse:collapse;margin-top:8px}
+.iq-mud th{font-family:'DM Mono',monospace;font-size:10px;text-transform:uppercase;letter-spacing:0.08em;color:var(--mt);padding:8px 10px;text-align:center;border-bottom:1px solid var(--bd2)}
+.iq-mud th:first-child,.iq-mud td:first-child{text-align:left}
+.iq-mud td{padding:7px 10px;border-bottom:1px solid var(--bd);font-family:'DM Mono',monospace;font-size:12px;text-align:center}
+.iq-lib-item{display:flex;gap:12px;align-items:center;background:var(--sf);border:1px solid var(--bd);border-radius:var(--rs);padding:10px 14px;margin-bottom:6px;cursor:pointer}
+.iq-lib-item:hover{border-color:var(--ac)}
+.iq-lib-item img{width:64px;height:40px;object-fit:cover;border-radius:4px;flex-shrink:0}
+.iq-lib-item .iq-lib-t{font-family:'Syne',sans-serif;font-weight:600;font-size:13.5px}
+.iq-lib-item .iq-lib-s{font-family:'DM Mono',monospace;font-size:11px;color:var(--mt)}
+.iq-lib-del{margin-left:auto;background:transparent;border:1px solid var(--bd2);color:var(--mt);border-radius:100px;padding:3px 10px;font-size:11px;cursor:pointer}
+.iq-lib-del:hover{border-color:#f87171;color:#f87171}
 /* ── v13: indices ── */
 .idx-vtab{padding:7px 18px;border-radius:100px;font-family:'Syne',sans-serif;font-size:13px;font-weight:500;border:1px solid rgba(244,114,182,0.3);background:transparent;color:rgba(244,114,182,0.75);cursor:pointer;transition:all .15s}
 .idx-vtab.active{background:#f472b6;color:#0a0a0a;border-color:#f472b6}
@@ -656,6 +686,7 @@ body.light .chart-modal-overlay{background:rgba(0,0,0,0.55)}
   <button class="nb" onclick="showS('scanner',this)">Scanner</button>
   <button class="nb" onclick="showS('trends',this)">Trends</button>
   <button class="nb" onclick="showS('indices',this)">Indices</button>
+  <button class="nb" onclick="showS('iq',this)">IQ</button>
   <button class="nb" onclick="showS('maps',this)">Maps</button>
   <button class="nb" onclick="showS('sessions',this)">Sessions</button>
   <button class="nb" onclick="showS('calendar',this)">Calendar</button>
@@ -1215,6 +1246,78 @@ body.light .chart-modal-overlay{background:rgba(0,0,0,0.55)}
   <div class="map-src" style="text-align:left" id="idx-src">Each currency is an equal-weight basket of its seven watchlist pairs, rebased to 100 one year ago — it rises when the currency gains against the rest. The US Dollar Index row is the real ICE DXY. The TradingView currency indices (EXY, BXY…) are licensed products not on the free feed; the baskets move the same way without pretending to be them.</div>
 </div>
 
+<!-- ══ IQ — news outcomes engine + event review library (New features 19.8.26 #2, #3, #5) ══ -->
+<div id="iq" class="sec">
+  <div class="st">Market IQ</div>
+  <div class="ss">What a news event means for its currency, the pairs it moves first, and the crosses that diverge — before it lands, and reviewed after</div>
+  <div class="review-subtabs">
+    <button class="rsub active" onclick="showIqSub('iq-outlook',this)">Event outlook</button>
+    <button class="rsub" onclick="showIqSub('iq-review',this)">Event review</button>
+    <button class="rsub" onclick="showIqSub('iq-library',this)">Library <span id="iq-lib-count" class="iq-count"></span></button>
+  </div>
+
+  <!-- Outlook: before the event -->
+  <div id="iq-outlook" class="iq-sub active">
+    <div class="card">
+      <div class="cl">Pick an event</div>
+      <div class="cb" style="margin-bottom:10px">Choose an upcoming release from the calendar, or describe something that isn't on it (a Treasury announcement, a surprise intervention).</div>
+      <div class="iq-row">
+        <select class="iq-sel" id="iq-o-ev" onchange="iqOutlookPick()"><option value="">Loading calendar…</option></select>
+      </div>
+      <div id="iq-o-custom" class="iq-row" style="display:none">
+        <input class="iq-in" id="iq-o-name" placeholder="Event, e.g. US Treasury announces bond buybacks" style="flex:1">
+        <select class="iq-sel" id="iq-o-ccy" style="width:110px"><option>USD</option><option>EUR</option><option>GBP</option><option>JPY</option><option>AUD</option><option>NZD</option><option>CAD</option><option>CHF</option><option>CNY</option></select>
+      </div>
+      <div class="iq-row">
+        <button class="sb" id="iq-o-btn" onclick="runIqOutlook()">Build the outlook</button>
+        <span class="meta" id="iq-o-meta" style="margin-top:0"></span>
+      </div>
+    </div>
+    <div id="iq-o-out"></div>
+    <div class="share-bar" id="iq-o-share" style="display:none"></div>
+    <div class="map-src" style="text-align:left">One structured analysis per event, shared across your devices for 12 hours. Directions are <em>potentials</em> conditional on the outcome — the market prices the change in expected returns, not the headline. Educational only, not financial advice.</div>
+  </div>
+
+  <!-- Review: after the event -->
+  <div id="iq-review" class="iq-sub">
+    <div class="card">
+      <div class="cl">What happened?</div>
+      <div class="cb" style="margin-bottom:10px">Pick the release, enter the actual figure if the feed doesn't have it, and drop in a screenshot of your briefing or heat map. The review explains the first-order move, which currencies were bought instead, and why the crosses split — and saves it to your library.</div>
+      <div class="iq-row"><select class="iq-sel" id="iq-r-ev" onchange="iqReviewPick()"><option value="">Loading calendar…</option></select></div>
+      <div id="iq-r-custom" class="iq-row" style="display:none">
+        <input class="iq-in" id="iq-r-name" placeholder="Event name" style="flex:1">
+        <select class="iq-sel" id="iq-r-ccy" style="width:110px"><option>USD</option><option>EUR</option><option>GBP</option><option>JPY</option><option>AUD</option><option>NZD</option><option>CAD</option><option>CHF</option><option>CNY</option></select>
+      </div>
+      <div class="iq-row iq-nums">
+        <div class="fld"><label>Actual</label><input class="iq-in" id="iq-r-actual" placeholder="e.g. 3.85%"></div>
+        <div class="fld"><label>Forecast</label><input class="iq-in" id="iq-r-forecast" placeholder="—"></div>
+        <div class="fld"><label>Previous</label><input class="iq-in" id="iq-r-prev" placeholder="—"></div>
+      </div>
+      <div class="img-drop" id="iq-dropzone" onclick="document.getElementById('iq-img').click()" ondragover="event.preventDefault();this.classList.add('dragover')" ondragleave="this.classList.remove('dragover')" ondrop="handleIqDrop(event)">
+        <div class="img-drop-icon">🧠</div>
+        <div class="img-drop-lbl">Optional: tap to add a screenshot (briefing, heat map, chart)</div>
+        <div class="img-drop-sub">PNG or JPG · stored downscaled in your library</div>
+      </div>
+      <input type="file" id="iq-img" accept="image/*" onchange="handleIqFile(this)" style="display:none">
+      <img id="iq-preview" class="img-preview" alt="Screenshot preview" style="display:none">
+      <div class="fld" style="margin-top:4px"><label>Your notes / what surprised you (optional)</label><textarea class="ta" id="iq-r-notes" placeholder="e.g. CHF/JPY went up even though both are safe havens — why?" style="min-height:64px"></textarea></div>
+      <div class="iq-row">
+        <button class="sb" id="iq-r-btn" onclick="runIqReview()">Review and save</button>
+        <span class="meta" id="iq-r-meta" style="margin-top:0"></span>
+      </div>
+    </div>
+    <div id="iq-r-out"></div>
+  </div>
+
+  <!-- Library: saved reviews -->
+  <div id="iq-library" class="iq-sub">
+    <div id="iq-lib-list"></div>
+    <div id="iq-lib-view"></div>
+    <div class="share-bar" id="iq-lib-share" style="display:none"></div>
+    <div class="map-src" style="text-align:left">Saved in this browser (like the Journal). Export the Journal backup to keep a copy — the library is included from v14.</div>
+  </div>
+</div>
+
 <!-- ══ TRENDS (top-down scanner) ══ -->
 <div id="trends" class="sec">
   <div class="st">Top-down trend scanner</div>
@@ -1382,6 +1485,11 @@ body.light .chart-modal-overlay{background:rgba(0,0,0,0.55)}
   <div class="st">About ForexHub</div>
   <div class="ss">Your daily forex companion</div>
   <div class="card">
+    <div class="ai"><div class="aq">What's new in v14 (8 Sep 2026)</div><div class="aa">
+      · New <b>IQ</b> tab. <b>Event outlook</b>: pick an upcoming release (or describe something that isn't on the calendar) and get what it means for its currency under each outcome, the pairs it moves first, the crosses that move second and <em>why they split</em>, a mud map of direction by outcome, what to watch in the first 15 minutes, and the caveats. One analysis per event, shared for 12 hours.<br>
+      · <b>Event review</b>: after a release, pick it, add the actual figure and a screenshot of your briefing or heat map, and get the post-mortem in the same layers — including the percentage arithmetic that explains why two "safe havens" can go opposite ways. Every review is saved to the <b>Library</b> in this browser.<br>
+      · The Journal backup file now includes the IQ library, and restores it.
+    </div></div>
     <div class="ai"><div class="aq">What's new in v13 (8 Sep 2026)</div><div class="aa">
       · The Analysis tab is now <b>Watchlist</b>, with a new <b>Technicals</b> view: every pair rated across 15m · 1H · 4H · Daily · Weekly from live bars (moving averages, RSI, MACD, stochastic, CCI, SuperTrend). Tap a row for the full indicator grid; tap the pair name to jump to its analysis. No AI, so it's free to refresh.<br>
       · Maps → Heat Map has a <b>Tree Map</b>: tile size is how active a pair is, colour is its move over 4H / Daily / Weekly / Monthly, with a USD-majors filter. Tap a tile to open the pair. (v13.1: labels are fitted to the tile and stack the two currencies when a tile is narrow, so the pair is always readable; v13.2: brighter reds and greens.)<br>
@@ -1731,7 +1839,7 @@ function dismissBanner(){
 /* ══════════════════════════════════════
    HEADER DATE
 ══════════════════════════════════════ */
-var FH_BUILD='v13.2'; // 8 Sep 2026 — brighter tree map colours // bump on every delivered change — shown in the header so it's always obvious which version is loaded
+var FH_BUILD='v14'; // 8 Sep 2026 — Market IQ: event outlook engine + review library // bump on every delivered change — shown in the header so it's always obvious which version is loaded
 /* Stale-tab killer: every so often, check whether a newer build has been deployed.
    If so, show a can't-miss banner telling the user to reload — long-open tabs silently
    running old code caused repeated "the fix didn't work" confusion. */
@@ -1785,6 +1893,7 @@ function showS(id,btn){
   }
   if(id==='trends'&&(!trendLoaded||sectionStale('trends',REFRESH_AFTER))) loadTrendScan();
   if(id==='indices') loadStrength(false);
+  if(id==='iq') initIq();
   if(id==='calculator'&&(!calcLoaded||sectionStale('calculator',REFRESH_AFTER))) loadCalculator();
 }
 /* D1: per-section freshness clock. Marked on every successful load; read on tab entry. */
@@ -4039,7 +4148,9 @@ function addTrade(){
 }
 function delTrade(i){var j=loadJournal();j.splice(i,1);saveJournal(j);renderJournal();}
 function exportJournal(){
-  var data=LS.get('fh_journal')||'[]';
+  /* v14: one backup file carries the journal AND the IQ review library. Old
+     backups (a bare array) still restore. */
+  var data=JSON.stringify({fxhub:FH_BUILD,exported:new Date().toISOString(),journal:loadJournal(),iq:loadIq()});
   var blob=new Blob([data],{type:'application/json'});
   var url=URL.createObjectURL(blob);
   var a=document.createElement('a');
@@ -4070,6 +4181,12 @@ function importJournal(input){
   reader.onload=function(e){
     try{
       var imp=JSON.parse(e.target.result);
+      var iqAdded=0;
+      if(imp&&!Array.isArray(imp)&&imp.journal){
+        /* v14 envelope: restore the IQ library too, skipping entries already present */
+        if(Array.isArray(imp.iq)){var lib=loadIq(),have={};lib.forEach(function(x){have[x.id]=1;});imp.iq.forEach(function(x){if(x&&x.id&&!have[x.id]){lib.push(x);have[x.id]=1;iqAdded++;}});lib.sort(function(a,b){return (b.at||0)-(a.at||0);});saveIq(lib);updateIqCount();}
+        imp=imp.journal;
+      }
       if(!Array.isArray(imp)) throw new Error('not an array');
       var cur=loadJournal();
       var sig=function(t){return [t.pair,t.dir,t.entry,t.sl,t.tp,t.date,t.pips].join('|');};
@@ -4077,7 +4194,7 @@ function importJournal(input){
       var added=0;
       imp.forEach(function(t){ if(t&&!seen[sig(t)]){cur.push(t);seen[sig(t)]=1;added++;} });
       saveJournal(cur); renderJournal();
-      alert('Restored '+added+' trade(s). Your journal now has '+cur.length+'.');
+      alert('Restored '+added+' trade(s). Your journal now has '+cur.length+'.'+(iqAdded?' Also restored '+iqAdded+' IQ review(s).':''));
     }catch(err){ alert('Could not read that file — pick a FxHub journal backup (.json).'); }
     input.value='';
   };
@@ -6013,6 +6130,274 @@ function renderIdx(){
   body.innerHTML=h;
 }
 function pctOf2(a,b){return (b==null||!b)?null:Number(((a-b)/b*100).toFixed(2));}
+
+/* ══════════════════════════════════════════════════════════════════
+   v14 — MARKET IQ  (New features 19.8.26 #2 "IQ tab", #3 "X's analysis",
+   #5 "News outcomes / mud map" — one engine, per John's clarification)
+══════════════════════════════════════════════════════════════════
+   The idea, in his words: a news event hits one currency; the majors move
+   first-order, but the CROSSES move second-order and unevenly — the Treasury
+   buyback sold USD, the money went into CHF more than JPY, so CHF/JPY ROSE
+   although both are "safe havens". So:
+     OUTLOOK  (before): event → good/bad for the currency under each outcome →
+                        first-order pairs → second-order crosses and WHY they
+                        diverge → a mud map of direction by outcome.
+     REVIEW   (after):  what actually happened, in the same layers, with the
+                        percentage-move arithmetic that explains the crosses —
+                        saved to a library because the value is in looking back.
+   The outlook is structured JSON (expectJson) so it renders as cards and a
+   table rather than prose; it is cached per event on the worker for 12 hours
+   and on the device, so a second look costs nothing. */
+var IQ_KEY='fh_iq';
+var _iqEvents=[],_iqEvAt=0,_iqOutlookSel=null,_iqReviewSel=null,_iqImgB64=null,_iqImgMime=null,_iqLast=null;
+function showIqSub(id,btn){
+  document.querySelectorAll('.iq-sub').forEach(function(s){s.classList.remove('active');});
+  document.querySelectorAll('#iq .rsub').forEach(function(b){b.classList.remove('active');});
+  var el=document.getElementById(id); if(el) el.classList.add('active');
+  if(btn) btn.classList.add('active');
+  if(id==='iq-library') renderIqLibrary();
+}
+/* Events for the pickers: last week, this week and next week from the same
+   feed the Calendar uses, re-stamped into the display zone. */
+async function iqLoadEvents(force){
+  if(!force&&_iqEvents.length&&Date.now()-_iqEvAt<15*60*1000) return _iqEvents;
+  var weeks=[];
+  try{ weeks=await Promise.all([fetchCalWeek('lastweek'),fetchCalWeek('thisweek'),fetchCalWeek('nextweek')]); }catch(e){}
+  var out=[],seen={};
+  weeks.forEach(function(w){(w||[]).forEach(function(raw){
+    var ev=ffEvent(raw); if(!ev) return;
+    ev.actual=(raw.actual===''||raw.actual==null)?'':String(raw.actual);
+    var k=ev.ts+'|'+ev.ccy+'|'+ev.name; if(seen[k]) return; seen[k]=1; out.push(ev);
+  });});
+  retimeEvents(out);
+  _iqEvents=out.sort(function(a,b){return a.ts-b.ts;}); _iqEvAt=Date.now();
+  return _iqEvents;
+}
+function iqEvKey(ev){return ev.ts+'|'+ev.ccy+'|'+ev.name;}
+function iqEvLabel(ev){
+  return fhDate(new Date(ev.ts),{weekday:'short',day:'2-digit',month:'short'})+' '+fhTime(ev.ts)+' · '+ev.ccy+' · '+ev.name+(ev.imp==='high'?' ●●●':ev.imp==='med'?' ●●':'');
+}
+async function iqFillPickers(){
+  var evs=await iqLoadEvents(false);
+  var now=Date.now();
+  var o=document.getElementById('iq-o-ev'), r=document.getElementById('iq-r-ev');
+  if(o){
+    var up=evs.filter(function(e){return e.ts>=now-3600000&&e.imp!=='low';});
+    var h='<option value="">— choose an upcoming release —</option>';
+    up.forEach(function(e){h+='<option value="'+esc(iqEvKey(e))+'">'+esc(iqEvLabel(e))+'</option>';});
+    h+='<option value="__custom">✎ Something not on the calendar…</option>';
+    o.innerHTML=h;
+  }
+  if(r){
+    var past=evs.filter(function(e){return e.ts<=now&&e.imp!=='low';}).sort(function(a,b){return b.ts-a.ts;});
+    var h2='<option value="">— choose a release that has happened —</option>';
+    past.forEach(function(e){h2+='<option value="'+esc(iqEvKey(e))+'">'+esc(iqEvLabel(e))+(e.actual?' · actual '+esc(e.actual):'')+'</option>';});
+    h2+='<option value="__custom">✎ Something not on the calendar…</option>';
+    r.innerHTML=h2;
+  }
+}
+function iqFind(key){for(var i=0;i<_iqEvents.length;i++){if(iqEvKey(_iqEvents[i])===key)return _iqEvents[i];}return null;}
+function iqOutlookPick(){
+  var v=document.getElementById('iq-o-ev').value;
+  document.getElementById('iq-o-custom').style.display=v==='__custom'?'flex':'none';
+  _iqOutlookSel=v&&v!=='__custom'?iqFind(v):null;
+}
+function iqReviewPick(){
+  var v=document.getElementById('iq-r-ev').value;
+  document.getElementById('iq-r-custom').style.display=v==='__custom'?'flex':'none';
+  _iqReviewSel=v&&v!=='__custom'?iqFind(v):null;
+  var ev=_iqReviewSel;
+  document.getElementById('iq-r-actual').value=ev&&ev.actual?ev.actual:'';
+  document.getElementById('iq-r-forecast').value=ev&&ev.forecast&&ev.forecast!=='—'?ev.forecast:'';
+  document.getElementById('iq-r-prev').value=ev&&ev.prev&&ev.prev!=='—'?ev.prev:'';
+}
+/* The event as the prompt sees it — from the picker or the custom fields. */
+function iqSubject(which){
+  var sel=which==='o'?_iqOutlookSel:_iqReviewSel;
+  var pick=document.getElementById('iq-'+which+'-ev').value;
+  if(pick==='__custom'){
+    var name=(document.getElementById('iq-'+which+'-name').value||'').trim();
+    var ccy=document.getElementById('iq-'+which+'-ccy').value;
+    if(!name) return null;
+    return {name:name,ccy:ccy,ts:null,custom:true,forecast:'',prev:'',imp:'high'};
+  }
+  return sel;
+}
+var IQ_PAIRS_NOTE='The watchlist is these 28 pairs: '+FH_PAIRS.join(', ')+'. Use only these. Write pairs as XXX/YYY.';
+
+/* ── OUTLOOK ─────────────────────────────────────────────────────── */
+async function runIqOutlook(){
+  var ev=iqSubject('o');
+  var out=document.getElementById('iq-o-out'),btn=document.getElementById('iq-o-btn'),meta=document.getElementById('iq-o-meta');
+  if(!ev){out.innerHTML='<div class="eb">Pick an event first (or describe one).</div>';return;}
+  btn.disabled=true;btn.innerHTML='<div class="sp"></div> Thinking…';meta.textContent='';
+  out.innerHTML='<div class="ld" style="padding:16px"><div class="sp"></div>Working out what '+esc(ev.name)+' means for '+esc(ev.ccy)+' and the crosses…</div>';
+  var share=document.getElementById('iq-o-share'); if(share){share.style.display='none';share.innerHTML='';}
+  try{
+    var when=ev.ts?fhDate(new Date(ev.ts),{weekday:'long',day:'2-digit',month:'long'})+' '+fhClock(ev.ts):'date not fixed';
+    var prompt='You are a senior FX strategist explaining a scheduled event to a retail trader before it happens.\n\nEVENT: '+ev.name+'\nCURRENCY: '+ev.ccy+'\nWHEN: '+when+(ev.forecast&&ev.forecast!=='—'?'\nFORECAST: '+ev.forecast:'')+(ev.prev&&ev.prev!=='—'?'\nPREVIOUS: '+ev.prev:'')
+      +'\n\n'+IQ_PAIRS_NOTE
+      +'\n\nThink in LAYERS, the way the market actually trades it:\n1. What the event changes for '+ev.ccy+' — expected rates, yields, growth, risk appetite. Say which OUTCOME is good and which is bad for '+ev.ccy+', and why.\n2. FIRST ORDER: the direct '+ev.ccy+' pairs from the watchlist and which way each goes under each outcome.\n3. SECOND ORDER: the crosses that do NOT contain '+ev.ccy+' but move anyway, because the money leaving or entering '+ev.ccy+' is not spread evenly — some currencies receive more of the flow (yield, safe-haven type, carry funding status, commodity link, intervention risk). Name 3-5 such crosses and explain WHY they diverge. Remember that two "safe havens" can move differently (CHF vs JPY: JPY is also a funding currency and carries intervention risk), and that the same pip move on a low-priced pair is a bigger percentage move.\n4. Give a MUD MAP: for 8-12 watchlist pairs, the likely direction under "stronger than forecast", "in line", and "weaker than forecast" — use ▲ up, ▼ down, ▬ little change. For a pure announcement with no forecast, treat the outcomes as "hawkish / bigger", "as expected", "dovish / smaller".\n5. What to watch in the first 15 minutes, and 2-3 caveats (what would make the usual reaction fail — e.g. already priced in, risk-off overriding rates).\n\nBe concise and concrete. Use the word "potentially" where a direction is conditional. Never claim certainty.\n\nReturn ONLY a JSON object with exactly this shape:\n{"event":"…","ccy":"'+ev.ccy+'","whyItMatters":"2-3 sentences","goodFor":"which outcome is bullish for the currency, one sentence","badFor":"which outcome is bearish, one sentence","scenarios":[{"outcome":"Stronger than forecast","ccyEffect":"bullish '+ev.ccy+'","firstOrder":[{"pair":"EUR/USD","dir":"down","why":"…"}],"secondOrder":[{"pair":"CHF/JPY","dir":"up","why":"…"}]},{"outcome":"In line","ccyEffect":"…","firstOrder":[],"secondOrder":[]},{"outcome":"Weaker than forecast","ccyEffect":"…","firstOrder":[],"secondOrder":[]}],"mudMap":[{"pair":"AUD/USD","stronger":"▼","inline":"▬","weaker":"▲"}],"divergence":"3-4 sentences on why the crosses split unevenly for THIS event","watch":["…","…"],"caveats":["…","…"]}\nDirections in firstOrder/secondOrder must be one of up, down, flat.';
+    var key='iq:o:'+(ev.ts||'x')+':'+ev.ccy+':'+ev.name.replace(/[^A-Za-z0-9]+/g,'-').slice(0,60);
+    var j=await ai(prompt,key,{model:'claude-sonnet-5',maxTokens:3000,webSearch:false,expectJson:true});
+    if(!j||!j.scenarios){delete cache[key];LS.del('fhai:'+key);throw new Error('The analysis came back in an unexpected shape — tap Build the outlook to try again.');}
+    _iqLast={type:'outlook',ev:ev,json:j};
+    out.innerHTML='<div id="iq-o-doc">'+renderIqOutlook(ev,j)+'</div>';
+    meta.textContent='Built '+fhClock()+' · cached 12h';
+    buildShareBar('iq-o-share','Event outlook — '+ev.name,'#iq-o-doc','iq-outlook');
+  }catch(e){ out.innerHTML='<div class="eb">'+friendlyError(e)+'</div>'; }
+  btn.disabled=false;btn.innerHTML='Build the outlook';
+}
+function iqDir(d){d=String(d||'').toLowerCase();return d==='up'||d==='▲'?'<span class="iq-dir iq-up">▲ up</span>':d==='down'||d==='▼'?'<span class="iq-dir iq-dn">▼ down</span>':'<span class="iq-dir iq-flat">▬ flat</span>';}
+function iqArrowCell(v){v=String(v||'▬');var c=v.indexOf('▲')>-1?'iq-up':v.indexOf('▼')>-1?'iq-dn':'iq-flat';return '<span class="'+c+'" style="font-weight:700">'+esc(v)+'</span>';}
+function iqPairList(list){
+  if(!list||!list.length) return '<div class="iq-flat" style="font-size:12px">—</div>';
+  return '<div class="iq-pairs">'+list.map(function(p){return '<div class="iq-pair">'+iqDir(p.dir)+'<div>'+colorizeCcy('<b>'+esc(p.pair||'')+'</b>')+' <span style="color:var(--tx);opacity:0.9">'+esc(p.why||'')+'</span></div></div>';}).join('')+'</div>';
+}
+function renderIqOutlook(ev,j){
+  var col=ccyCol(ev.ccy);
+  var h='<div class="card"><div class="iq-hdr"><span class="iq-badge" style="background:'+col+'22;color:'+col+';border:1px solid '+col+'55">'+esc(ev.ccy)+'</span><div style="font-family:\'Syne\',sans-serif;font-weight:700;font-size:16px">'+esc(j.event||ev.name)+'</div>'+(ev.ts?'<span class="meta" style="margin:0">'+esc(fhDate(new Date(ev.ts),{weekday:'short',day:'2-digit',month:'short'})+' '+fhClock(ev.ts))+'</span>':'')+'</div>';
+  h+='<div class="cb">'+colorizeCcy(esc(j.whyItMatters||''))+'</div>';
+  h+='<div class="iq-scn" style="grid-template-columns:repeat(auto-fit,minmax(240px,1fr))"><div class="iq-scn-card" style="border-color:rgba(74,222,128,0.35)"><div class="iq-scn-t iq-up">Good for '+esc(ev.ccy)+'</div><div style="font-size:12.5px">'+colorizeCcy(esc(j.goodFor||''))+'</div></div><div class="iq-scn-card" style="border-color:rgba(248,113,113,0.35)"><div class="iq-scn-t iq-dn">Bad for '+esc(ev.ccy)+'</div><div style="font-size:12.5px">'+colorizeCcy(esc(j.badFor||''))+'</div></div></div></div>';
+  h+='<div class="card"><div class="cl">Scenarios · first order, then the crosses</div><div class="iq-scn">';
+  (j.scenarios||[]).forEach(function(s){
+    h+='<div class="iq-scn-card"><div class="iq-scn-t">'+esc(s.outcome||'')+'</div><div class="meta" style="margin:0 0 6px">'+colorizeCcy(esc(s.ccyEffect||''))+'</div>'
+      +'<div class="cl" style="margin:8px 0 2px;font-size:9px">First order</div>'+iqPairList(s.firstOrder)
+      +'<div class="cl" style="margin:10px 0 2px;font-size:9px">Second order · crosses</div>'+iqPairList(s.secondOrder)+'</div>';
+  });
+  h+='</div></div>';
+  if(j.mudMap&&j.mudMap.length){
+    var sc=j.scenarios||[];
+    h+='<div class="card"><div class="cl">Mud map · direction by outcome</div><div class="scroller-x"><table class="iq-mud"><thead><tr><th>Pair</th><th>'+esc(sc[0]?sc[0].outcome:'Stronger')+'</th><th>'+esc(sc[1]?sc[1].outcome:'In line')+'</th><th>'+esc(sc[2]?sc[2].outcome:'Weaker')+'</th></tr></thead><tbody>';
+    j.mudMap.forEach(function(m){h+='<tr><td>'+colorizeCcy('<b>'+esc(m.pair||'')+'</b>')+'</td><td>'+iqArrowCell(m.stronger)+'</td><td>'+iqArrowCell(m.inline)+'</td><td>'+iqArrowCell(m.weaker)+'</td></tr>';});
+    h+='</tbody></table></div></div>';
+  }
+  h+='<div class="card"><div class="cl">Why the crosses split</div><div class="cb">'+colorizeCcy(esc(j.divergence||''))+'</div>';
+  if(j.watch&&j.watch.length) h+='<div class="cl" style="margin-top:12px">Watch in the first 15 minutes</div><div class="cb">'+j.watch.map(function(w){return '<div style="padding:3px 0 3px 12px;border-left:2px solid var(--bd2)">'+colorizeCcy(esc(w))+'</div>';}).join('')+'</div>';
+  if(j.caveats&&j.caveats.length) h+='<div class="cl" style="margin-top:12px">Caveats</div><div class="cb">'+j.caveats.map(function(w){return '<div style="padding:3px 0 3px 12px;border-left:2px solid rgba(251,191,36,0.5)">'+colorizeCcy(esc(w))+'</div>';}).join('')+'</div>';
+  h+='<div class="meta" style="margin-top:10px">ForexHub '+FH_BUILD+' · potentials, not predictions · educational only</div></div>';
+  return h;
+}
+
+/* ── REVIEW + LIBRARY ────────────────────────────────────────────── */
+function handleIqFile(input){
+  var file=input.files[0]; if(!file) return;
+  if(file.size>5*1024*1024){alert('Image too large. Max 5MB.');return;}
+  var reader=new FileReader();
+  reader.onload=function(e){
+    /* Downscale once for BOTH the AI call and the saved entry: a phone
+       screenshot is 3-5MB of base64, the worker caps at ~1.4MB, and localStorage
+       has ~5MB in total for the whole library. 1280px JPEG keeps a heat map or
+       briefing perfectly legible at ~150-250KB. */
+    var img=new Image();
+    img.onload=function(){
+      var W=img.width,H=img.height,mx=1280,sc=Math.min(1,mx/Math.max(W,H));
+      var c=document.createElement('canvas');c.width=Math.round(W*sc);c.height=Math.round(H*sc);
+      c.getContext('2d').drawImage(img,0,0,c.width,c.height);
+      var d=c.toDataURL('image/jpeg',0.82);
+      _iqImgB64=d.split(',')[1];_iqImgMime='image/jpeg';
+      var pv=document.getElementById('iq-preview');pv.src=d;pv.style.display='block';
+      var dz=document.getElementById('iq-dropzone');
+      dz.querySelector('.img-drop-icon').textContent='✅';dz.querySelector('.img-drop-lbl').textContent='Screenshot loaded – tap to replace';
+    };
+    img.src=e.target.result;
+  };
+  reader.readAsDataURL(file);
+}
+function handleIqDrop(event){
+  event.preventDefault();document.getElementById('iq-dropzone').classList.remove('dragover');
+  var file=event.dataTransfer.files[0];
+  if(file){var dt=new DataTransfer();dt.items.add(file);var inp=document.getElementById('iq-img');inp.files=dt.files;handleIqFile(inp);}
+}
+function loadIq(){try{return JSON.parse(LS.get(IQ_KEY)||'[]');}catch(e){return [];}}
+function saveIq(list){
+  try{ localStorage.setItem(IQ_KEY,JSON.stringify(list)); return true; }
+  catch(e){ showToast('Library is full — delete an older review to make room'); return false; }
+}
+async function runIqReview(){
+  var ev=iqSubject('r');
+  var out=document.getElementById('iq-r-out'),btn=document.getElementById('iq-r-btn'),meta=document.getElementById('iq-r-meta');
+  if(!ev){out.innerHTML='<div class="eb">Pick the release first (or describe one).</div>';return;}
+  var actual=document.getElementById('iq-r-actual').value.trim(),forecast=document.getElementById('iq-r-forecast').value.trim(),prev=document.getElementById('iq-r-prev').value.trim(),notes=document.getElementById('iq-r-notes').value.trim();
+  btn.disabled=true;btn.innerHTML='<div class="sp"></div> Reviewing…';meta.textContent='';
+  out.innerHTML='<div class="ld" style="padding:16px"><div class="sp"></div>Reading what the market did with '+esc(ev.name)+'…</div>';
+  try{
+    var when=ev.ts?fhDate(new Date(ev.ts),{weekday:'long',day:'2-digit',month:'long'})+' '+fhClock(ev.ts):'recent';
+    var prompt='You are a senior FX strategist reviewing a news event AFTER the fact for a retail trader who wants to understand the mechanics, not just the headline.\n\nEVENT: '+ev.name+'\nCURRENCY: '+ev.ccy+'\nWHEN: '+when+(actual?'\nACTUAL: '+actual:'')+(forecast?'\nFORECAST: '+forecast:'')+(prev?'\nPREVIOUS: '+prev:'')+(notes?'\n\nTRADER\'S NOTES / QUESTION: '+notes:'')
+      +(_iqImgB64?'\n\nA screenshot is attached (a morning briefing, heat map or chart). READ THE NUMBERS IN IT and use them as the evidence — quote the pairs and moves you can see.':'\n\nNo screenshot is attached; reason from the figures above and typical market behaviour, and say clearly where you are inferring.')
+      +'\n\n'+IQ_PAIRS_NOTE
+      +'\n\nWrite the review in these sections, in markdown with ## headings, concise but concrete:\n## What the market actually did\nThe first-order move: was this primarily a '+ev.ccy+' move? Which direct pairs moved and how much.\n## Where the money went\nWhich currencies were bought or sold against '+ev.ccy+' and why THOSE (yield, safe-haven type, carry funding, commodity link, intervention risk).\n## Why the crosses split\nPick the 2-3 most interesting crosses. Show the arithmetic: the same pip move on a lower-priced pair is a bigger PERCENTAGE move, and a cross = one pair ÷ another, so explain each cross\'s direction from the two legs. If two "safe havens" diverged, explain the different personalities (e.g. JPY is also a funding currency with intervention risk).\n## The framework to remember\nA short table (markdown) of "event type → which currency of a pair tends to benefit" for this kind of release.\n## What surprised, and the lesson\n2-4 bullet points, including a direct answer to the trader\'s notes if given.\n\nUse "potentially" where a mechanism is conditional. No preamble, no closing summary.';
+    var txt;
+    if(_iqImgB64){ txt=await aiImage(prompt,_iqImgB64,_iqImgMime); }
+    else { var k='iq:r:'+Date.now(); txt=await ai(prompt,k,{model:'claude-sonnet-5',maxTokens:3000,webSearch:false}); delete cache[k]; LS.del('fhai:'+k); }
+    if(!txt||txt.replace(/\s/g,'').length<80) throw new Error('The review came back empty — tap Review and save to try again.');
+    var entry={id:'iq'+Date.now(),at:Date.now(),name:ev.name,ccy:ev.ccy,evTs:ev.ts||null,actual:actual,forecast:forecast,prev:prev,notes:notes,img:_iqImgB64?('data:'+_iqImgMime+';base64,'+_iqImgB64):null,text:txt,build:FH_BUILD};
+    var list=loadIq(); list.unshift(entry);
+    var saved=saveIq(list);
+    if(!saved&&entry.img){ entry.img=null; entry.imgDropped=true; saved=saveIq(list); }
+    out.innerHTML='<div id="iq-r-doc">'+renderIqEntry(entry)+'</div><div class="share-bar" id="iq-r-share" style="display:none"></div>';
+    buildShareBar('iq-r-share','Event review — '+ev.name,'#iq-r-doc','iq-review');
+    meta.textContent=(saved?'Saved to your library':'NOT saved — library full')+' · '+fhClock();
+    updateIqCount();
+  }catch(e){ out.innerHTML='<div class="eb">'+friendlyError(e)+'</div>'; }
+  btn.disabled=false;btn.innerHTML='Review and save';
+}
+function renderIqEntry(en){
+  var col=ccyCol(en.ccy);
+  var h='<div class="card"><div class="iq-hdr"><span class="iq-badge" style="background:'+col+'22;color:'+col+';border:1px solid '+col+'55">'+esc(en.ccy)+'</span><div style="font-family:\'Syne\',sans-serif;font-weight:700;font-size:16px">'+esc(en.name)+'</div><span class="meta" style="margin:0">'+esc(en.evTs?fhDate(new Date(en.evTs),{weekday:'short',day:'2-digit',month:'short'})+' '+fhClock(en.evTs):'')+'</span></div>';
+  var nums=[];if(en.actual)nums.push('Actual <b>'+esc(en.actual)+'</b>');if(en.forecast)nums.push('Forecast <b>'+esc(en.forecast)+'</b>');if(en.prev)nums.push('Previous <b>'+esc(en.prev)+'</b>');
+  if(nums.length) h+='<div class="meta" style="margin:0 0 8px">'+nums.join(' · ')+'</div>';
+  if(en.notes) h+='<div class="cl" style="margin-bottom:4px">Your notes</div><div class="cb" style="white-space:pre-wrap;margin-bottom:10px">'+esc(en.notes)+'</div>';
+  if(en.img) h+='<img alt="Screenshot" style="display:block;width:100%;max-width:720px;border-radius:8px;margin:0 0 12px" src="'+en.img+'">';
+  else if(en.imgDropped) h+='<div class="meta" style="margin-bottom:8px">Screenshot not stored — library was full.</div>';
+  h+='<div class="cl" style="margin-bottom:6px">Review</div><div class="cb">'+colorizeCcy(mdTable(en.text))+'</div>';
+  h+='<div class="meta" style="margin-top:10px">Reviewed '+esc(fhDate(new Date(en.at),{weekday:'short',day:'2-digit',month:'short',year:'numeric'})+' '+fhClock(en.at))+' · ForexHub '+esc(en.build||'')+' · educational only, not financial advice</div></div>';
+  return h;
+}
+/* md() has no table support; the review's framework section is a markdown
+   table, so convert those blocks first and hand the rest to md(). */
+function mdTable(t){
+  var lines=String(t||'').split('\n'),out=[],tables=[],i=0;
+  while(i<lines.length){
+    if(/^\s*\|/.test(lines[i])&&i+1<lines.length&&/^\s*\|?\s*:?-{2,}/.test(lines[i+1])){
+      var rows=[];while(i<lines.length&&/^\s*\|/.test(lines[i])){rows.push(lines[i]);i++;}
+      var cells=function(r){return r.replace(/^\s*\|/,'').replace(/\|\s*$/,'').split('|').map(function(c){return c.trim();});};
+      var h='<div class="scroller-x"><table class="iq-mud" style="margin:8px 0"><thead><tr>'+cells(rows[0]).map(function(c){return '<th style="text-align:left">'+md(c)+'</th>';}).join('')+'</tr></thead><tbody>';
+      rows.slice(2).forEach(function(r){h+='<tr>'+cells(r).map(function(c){return '<td style="text-align:left;font-family:\'Syne\',sans-serif;font-size:12.5px">'+md(c)+'</td>';}).join('')+'</tr>';});
+      tables.push(h+'</tbody></table></div>');
+      out.push('\u0001'+(tables.length-1)+'\u0001');
+    } else { out.push(lines[i]); i++; }
+  }
+  return md(out.join('\n')).replace(/\u0001(\d+)\u0001/g,function(m,n){return tables[+n]||'';});
+}
+function updateIqCount(){var n=loadIq().length;var el=document.getElementById('iq-lib-count');if(el)el.textContent=n?'('+n+')':'';}
+function renderIqLibrary(){
+  var list=loadIq(),box=document.getElementById('iq-lib-list'),view=document.getElementById('iq-lib-view');
+  if(!box) return;
+  updateIqCount();
+  if(!list.length){box.innerHTML='<div class="scan-empty"><div class="scan-icon">🧠</div><div>No reviews saved yet. Run one from <b>Event review</b> — it lands here so you can look back at how each release actually traded.</div></div>';view.innerHTML='';return;}
+  box.innerHTML=list.map(function(en){
+    var col=ccyCol(en.ccy);
+    return '<div class="iq-lib-item" onclick="openIqEntry(\''+en.id+'\')">'+(en.img?'<img src="'+en.img+'" alt="">':'<span class="iq-badge" style="background:'+col+'22;color:'+col+';border:1px solid '+col+'55">'+esc(en.ccy)+'</span>')
+      +'<div><div class="iq-lib-t">'+esc(en.name)+'</div><div class="iq-lib-s">'+esc(en.ccy)+(en.evTs?' · '+fhDate(new Date(en.evTs),{weekday:'short',day:'2-digit',month:'short'}):'')+(en.actual?' · actual '+esc(en.actual):'')+' · reviewed '+fhDate(new Date(en.at),{day:'2-digit',month:'short'})+'</div></div>'
+      +'<button class="iq-lib-del" onclick="event.stopPropagation();deleteIqEntry(\''+en.id+'\')">Delete</button></div>';
+  }).join('');
+}
+function openIqEntry(id){
+  var en=loadIq().filter(function(e){return e.id===id;})[0]; if(!en) return;
+  var view=document.getElementById('iq-lib-view');
+  view.innerHTML='<div id="iq-lib-doc">'+renderIqEntry(en)+'</div>';
+  buildShareBar('iq-lib-share','Event review — '+en.name,'#iq-lib-doc','iq-review');
+  view.scrollIntoView({behavior:'smooth',block:'start'});
+}
+function deleteIqEntry(id){
+  if(!confirm('Delete this review from your library?')) return;
+  saveIq(loadIq().filter(function(e){return e.id!==id;}));
+  document.getElementById('iq-lib-view').innerHTML='';
+  var sh=document.getElementById('iq-lib-share'); if(sh){sh.style.display='none';sh.innerHTML='';}
+  renderIqLibrary();
+}
+function initIq(){ updateIqCount(); iqFillPickers(); }
 
 document.addEventListener('DOMContentLoaded',function(){
   initPin();

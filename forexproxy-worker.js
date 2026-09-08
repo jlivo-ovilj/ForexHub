@@ -1,4 +1,5 @@
 /* ForexHub data + AI proxy — Cloudflare Worker
+   v11.2 8.9.26: 12-hour cache for the v14 IQ event outlooks (iq:o: keys).
    v11.1 8.9.26: /strength 1Y figure tolerates Yahoo's slightly-short 1y window.
    v11.0 8.9.26 (new features 19.8.26 #1, 28.8.26 #1 & #2):
      • GET /tech — RSI, SMA 9/20/50/100/200, EMA 20/50, MACD, stochastic, CCI,
@@ -27,7 +28,7 @@
        Cache API which is per-colo) and backs off when Forex Factory rate-limits.
    Bindings required: ANTHROPIC_API_KEY (secret), FH_APP_KEY (secret), FH_KV (KV).  */
 
-const WORKER_VERSION = "11.1";
+const WORKER_VERSION = "11.2";
 const YF_HOSTS = ["https://query1.finance.yahoo.com", "https://query2.finance.yahoo.com"];
 const UA = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0 Safari/537.36";
 const NY_HOUR_FMT = new Intl.DateTimeFormat("en-US", { timeZone: "America/New_York", hour: "numeric", hourCycle: "h23" });
@@ -64,7 +65,8 @@ const AI_TTL = [
   ["w:", 259200],         // weekly outlook — 3 days
   ["sent:", 86400],
   ["cal-ai:", 21600],
-  ["brief-news2:", 21600]
+  ["brief-news2:", 21600],
+  ["iq:o:", 43200]         // v14 event outlook — stable until the event lands
 ];
 const ttlFor = function (key) {
   for (let i = 0; i < AI_TTL.length; i++) if (key.indexOf(AI_TTL[i][0]) === 0) return AI_TTL[i][1];
