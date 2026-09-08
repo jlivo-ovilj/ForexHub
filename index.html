@@ -589,7 +589,7 @@ body.light .chart-modal-overlay{background:rgba(0,0,0,0.55)}
 .tm-body{position:relative;width:100%;height:520px;border-radius:8px;overflow:hidden;background:var(--sf2)}
 .tm-tile{position:absolute;box-sizing:border-box;border:2px solid var(--sf);border-radius:4px;display:flex;flex-direction:column;align-items:center;justify-content:center;overflow:hidden;cursor:pointer;color:#fff;text-shadow:0 1px 2px rgba(0,0,0,0.6);transition:filter .15s}
 .tm-tile:hover{filter:brightness(1.15);z-index:2}
-.tm-sym{font-family:'Syne',sans-serif;font-weight:800;line-height:1.05}
+.tm-sym{font-family:'Syne',sans-serif;font-weight:800;line-height:1.05;text-align:center;white-space:nowrap}
 .tm-chg{font-family:'DM Mono',monospace;font-weight:700;line-height:1.1}
 .tm-act{font-family:'DM Mono',monospace;opacity:0.85;line-height:1.1}
 .tm-legend{display:flex;align-items:center;gap:8px;font-family:'DM Mono',monospace;font-size:10px;color:var(--mt);margin-left:auto}
@@ -1380,7 +1380,7 @@ body.light .chart-modal-overlay{background:rgba(0,0,0,0.55)}
   <div class="card">
     <div class="ai"><div class="aq">What's new in v13 (8 Sep 2026)</div><div class="aa">
       · The Analysis tab is now <b>Watchlist</b>, with a new <b>Technicals</b> view: every pair rated across 15m · 1H · 4H · Daily · Weekly from live bars (moving averages, RSI, MACD, stochastic, CCI, SuperTrend). Tap a row for the full indicator grid; tap the pair name to jump to its analysis. No AI, so it's free to refresh.<br>
-      · Maps → Heat Map has a <b>Tree Map</b>: tile size is how active a pair is, colour is its move over 4H / Daily / Weekly / Monthly, with a USD-majors filter. Tap a tile to open the pair.<br>
+      · Maps → Heat Map has a <b>Tree Map</b>: tile size is how active a pair is, colour is its move over 4H / Daily / Weekly / Monthly, with a USD-majors filter. Tap a tile to open the pair. (v13.1: labels are fitted to the tile and stack the two currencies when a tile is narrow, so the pair is always readable.)<br>
       · New <b>Indices</b> tab: a strength index for each of the eight majors built from the watchlist pairs, plus the real ICE DXY — Overview, Performance (1D to 1Y) and Technicals views, sortable.<br>
       · Worker 11.0 adds the <code>/tech</code> and <code>/strength</code> endpoints that power these; results are shared across devices so repeat views cost nothing.
     </div></div>
@@ -1727,7 +1727,7 @@ function dismissBanner(){
 /* ══════════════════════════════════════
    HEADER DATE
 ══════════════════════════════════════ */
-var FH_BUILD='v13'; // 8 Sep 2026 — new features: technicals table, tree map, currency indices // bump on every delivered change — shown in the header so it's always obvious which version is loaded
+var FH_BUILD='v13.1'; // 8 Sep 2026 — tree map labels stack in narrow tiles // bump on every delivered change — shown in the header so it's always obvious which version is loaded
 /* Stale-tab killer: every so often, check whether a newer build has been deployed.
    If so, show a can't-miss banner telling the user to reload — long-open tabs silently
    running old code caused repeated "the fix didn't work" confusion. */
@@ -5858,6 +5858,13 @@ function squarify(items,W,H){
   if(row.length) layoutRow(row,rowSum/scale);
   return out;
 }
+/* Real text width in the tile font, so labels are fitted rather than estimated. */
+var _tmCtx=null;
+function tmTextW(txt,fs){
+  if(!_tmCtx){_tmCtx=document.createElement('canvas').getContext('2d');}
+  _tmCtx.font='800 '+fs+'px "Syne",sans-serif';
+  return _tmCtx.measureText(txt).width||fs*txt.length*0.6;
+}
 function tmColor(v,maxAbs){
   if(v==null) return '#3a3a3f';
   var t=Math.max(-1,Math.min(1,v/(maxAbs||1)));
@@ -5886,13 +5893,20 @@ function renderTreeMap(){
   var h='';
   lay.forEach(function(t){
     var r=t.it.r, v=r[_tmTf];
-    var fs=Math.max(9,Math.min(22,Math.sqrt(t.w*t.h)/6));
-    var small=t.w<70||t.h<44;
+    /* Size the label by WIDTH, not area: a tall narrow tile was getting a font
+       that fitted its area but not its width, so "GBP/USD" spilled off the edge.
+       If one line won't fit at a readable size, stack the two currencies. */
+    var lbl=slashPair(r.sym);
+    var oneLine=Math.min(22,22*(t.w-10)/tmTextW(lbl,22));   // measured, not guessed
+    var stack=oneLine<11&&t.h>=30;
+    var fs=stack?Math.max(8,Math.min(20,20*(t.w-8)/tmTextW(r.sym.slice(0,3),20),(t.h-6)/2.6)):Math.max(8,oneLine);
+    var symHtml=stack?(r.sym.slice(0,3)+'<br>'+r.sym.slice(3)):slashPair(r.sym);
+    var small=stack?(t.h<fs*2.4+14):(t.w<70||t.h<44);
     var tip=slashPair(r.sym)+' · '+(v==null?'no data':(v>=0?'+':'')+v.toFixed(2)+'% '+TM_TFS.filter(function(x){return x[0]===_tmTf;})[0][1].toLowerCase())+' · activity '+(r.act!=null?r.act.toFixed(2)+'× its 14-day range':'n/a')+(r.rangePips!=null?' ('+Math.round(r.rangePips)+'p vs '+Math.round(r.atrPips)+'p avg)':'')+(_tmTf==='t4h'&&r.t4hSpansBreak?' · ⚠ 4H window spans a market break':'');
     h+='<div class="tm-tile" style="left:'+t.x.toFixed(1)+'px;top:'+t.y.toFixed(1)+'px;width:'+t.w.toFixed(1)+'px;height:'+t.h.toFixed(1)+'px;background:'+tmColor(v,maxAbs)+'" title="'+esc(tip)+'" onclick="goToPair(\''+r.sym+'\')">'
-      +'<div class="tm-sym" style="font-size:'+fs+'px">'+slashPair(r.sym)+'</div>'
-      +(small?'':'<div class="tm-chg" style="font-size:'+Math.max(9,fs*0.8)+'px">'+(v==null?'—':(v>=0?'+':'')+v.toFixed(2)+'%')+'</div>')
-      +(small||t.h<64?'':'<div class="tm-act" style="font-size:'+Math.max(8,fs*0.55)+'px">'+(r.act!=null?r.act.toFixed(1)+'× activity':'')+'</div>')
+      +'<div class="tm-sym" style="font-size:'+fs.toFixed(1)+'px">'+symHtml+'</div>'
+      +(small?'':'<div class="tm-chg" style="font-size:'+Math.max(8,Math.min(fs*0.8,(t.w-8)/4.2)).toFixed(1)+'px">'+(v==null?'—':(v>=0?'+':'')+v.toFixed(2)+'%')+'</div>')
+      +(small||t.h<64||t.w<60?'':'<div class="tm-act" style="font-size:'+Math.max(8,fs*0.55).toFixed(1)+'px">'+(r.act!=null?r.act.toFixed(1)+'× activity':'')+'</div>')
       +'</div>';
   });
   body.innerHTML=h;
