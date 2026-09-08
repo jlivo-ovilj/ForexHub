@@ -593,7 +593,7 @@ body.light .chart-modal-overlay{background:rgba(0,0,0,0.55)}
 .tm-chg{font-family:'DM Mono',monospace;font-weight:700;line-height:1.1}
 .tm-act{font-family:'DM Mono',monospace;opacity:0.85;line-height:1.1}
 .tm-legend{display:flex;align-items:center;gap:8px;font-family:'DM Mono',monospace;font-size:10px;color:var(--mt);margin-left:auto}
-.tm-legend i{display:inline-block;width:80px;height:8px;border-radius:4px;background:linear-gradient(90deg,#c0392b,#3a3a3f,#1e8f4e)}
+.tm-legend i{display:inline-block;width:80px;height:8px;border-radius:4px;background:linear-gradient(90deg,#ef4444,#2e2e34,#22c55e)}
 @media(max-width:640px){.tm-body{height:420px}}
 /* ── v13: indices ── */
 .idx-vtab{padding:7px 18px;border-radius:100px;font-family:'Syne',sans-serif;font-size:13px;font-weight:500;border:1px solid rgba(244,114,182,0.3);background:transparent;color:rgba(244,114,182,0.75);cursor:pointer;transition:all .15s}
@@ -1384,7 +1384,7 @@ body.light .chart-modal-overlay{background:rgba(0,0,0,0.55)}
   <div class="card">
     <div class="ai"><div class="aq">What's new in v13 (8 Sep 2026)</div><div class="aa">
       · The Analysis tab is now <b>Watchlist</b>, with a new <b>Technicals</b> view: every pair rated across 15m · 1H · 4H · Daily · Weekly from live bars (moving averages, RSI, MACD, stochastic, CCI, SuperTrend). Tap a row for the full indicator grid; tap the pair name to jump to its analysis. No AI, so it's free to refresh.<br>
-      · Maps → Heat Map has a <b>Tree Map</b>: tile size is how active a pair is, colour is its move over 4H / Daily / Weekly / Monthly, with a USD-majors filter. Tap a tile to open the pair. (v13.1: labels are fitted to the tile and stack the two currencies when a tile is narrow, so the pair is always readable.)<br>
+      · Maps → Heat Map has a <b>Tree Map</b>: tile size is how active a pair is, colour is its move over 4H / Daily / Weekly / Monthly, with a USD-majors filter. Tap a tile to open the pair. (v13.1: labels are fitted to the tile and stack the two currencies when a tile is narrow, so the pair is always readable; v13.2: brighter reds and greens.)<br>
       · New <b>Indices</b> tab: a strength index for each of the eight majors built from the watchlist pairs, plus the real ICE DXY — Overview, Performance (1D to 1Y) and Technicals views, sortable.<br>
       · Worker 11.0 adds the <code>/tech</code> and <code>/strength</code> endpoints that power these; results are shared across devices so repeat views cost nothing.
     </div></div>
@@ -1731,7 +1731,7 @@ function dismissBanner(){
 /* ══════════════════════════════════════
    HEADER DATE
 ══════════════════════════════════════ */
-var FH_BUILD='v13.1'; // 8 Sep 2026 — tree map labels stack in narrow tiles // bump on every delivered change — shown in the header so it's always obvious which version is loaded
+var FH_BUILD='v13.2'; // 8 Sep 2026 — brighter tree map colours // bump on every delivered change — shown in the header so it's always obvious which version is loaded
 /* Stale-tab killer: every so often, check whether a newer build has been deployed.
    If so, show a can't-miss banner telling the user to reload — long-open tabs silently
    running old code caused repeated "the fix didn't work" confusion. */
@@ -5872,9 +5872,11 @@ function tmTextW(txt,fs){
 function tmColor(v,maxAbs){
   if(v==null) return '#3a3a3f';
   var t=Math.max(-1,Math.min(1,v/(maxAbs||1)));
-  /* red (−) → slate (0) → green (+), TradingView-like */
-  var neg=[192,57,43], mid=[58,58,63], pos=[30,143,78];
-  var a=t<0?neg:pos, k=Math.abs(t);
+  /* red (−) → slate (0) → green (+). v13.1: brighter ends (site red/green) and a
+     0.65 power curve so a mid-sized move already reads as clearly red or green
+     rather than only the extremes lighting up. */
+  var neg=[239,68,68], mid=[46,46,52], pos=[34,197,94];
+  var a=t<0?neg:pos, k=Math.pow(Math.abs(t),0.65);
   var r=Math.round(mid[0]+(a[0]-mid[0])*k), g=Math.round(mid[1]+(a[1]-mid[1])*k), b=Math.round(mid[2]+(a[2]-mid[2])*k);
   return 'rgb('+r+','+g+','+b+')';
 }
