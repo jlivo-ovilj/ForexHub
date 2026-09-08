@@ -1,4 +1,12 @@
 /* ForexHub data + AI proxy — Cloudflare Worker
+   v11.0 8.9.26 (new features 19.8.26 #1, 28.8.26 #1 & #2):
+     • GET /tech — RSI, SMA 9/20/50/100/200, EMA 20/50, MACD, stochastic, CCI,
+       SuperTrend and TradingView-style MA / oscillator / overall ratings per pair
+       per timeframe (15m, 1h, 4h built from 60m bars, 1d, 1w). Feeds the
+       Watchlist technicals table.
+     • GET /strength — equal-weight currency-strength baskets for the eight
+       majors from the 28-pair watchlist, plus the real DXY, with 1W…1Y
+       performance and the same technicals. Feeds the Indices tab.
    v10.0 26.8.26 (amendments 19.8.26):
      • /briefing and /price now measure on 15-minute bars (60m fallback). Yahoo's
        hourly bars under-report a session's true high/low, which is why the
@@ -18,7 +26,7 @@
        Cache API which is per-colo) and backs off when Forex Factory rate-limits.
    Bindings required: ANTHROPIC_API_KEY (secret), FH_APP_KEY (secret), FH_KV (KV).  */
 
-const WORKER_VERSION = "10.0";
+const WORKER_VERSION = "11.0";
 const YF_HOSTS = ["https://query1.finance.yahoo.com", "https://query2.finance.yahoo.com"];
 const UA = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0 Safari/537.36";
 const NY_HOUR_FMT = new Intl.DateTimeFormat("en-US", { timeZone: "America/New_York", hour: "numeric", hourCycle: "h23" });
@@ -248,6 +256,246 @@ function extractJson(raw) {
     }
   }
   return null;
+}
+
+/* ── v11.0 (New features 19.8.26 #1 + 28.8.26 #1/#2) — TECHNICAL INDICATORS ─────
+   One indicator library serves three panels: the Watchlist technicals table, the
+   currency heat map and the currency-strength matrix. Everything is computed
+   from Yahoo bars inside the worker so the browser never has to download 28
+   price histories, and every figure travels with the bar count it was measured
+   on so a thin series is labelled rather than trusted.
+
+   Bars are {t,o,h,l,c}. All functions tolerate short series and return null
+   where the maths cannot be done, rather than a made-up number. */
+function sma(c, n, i) { // simple MA ending at index i (default last)
+  if (i == null) i = c.length - 1;
+  if (i + 1 < n) return null;
+  let s = 0; for (let k = i - n + 1; k <= i; k++) s += c[k];
+  return s / n;
+}
+function emaSeries(c, n) {
+  const out = new Array(c.length).fill(null);
+  if (c.length < n) return out;
+  let s = 0; for (let k = 0; k < n; k++) s += c[k];
+  out[n - 1] = s / n;
+  const a = 2 / (n + 1);
+  for (let k = n; k < c.length; k++) out[k] = c[k] * a + out[k - 1] * (1 - a);
+  return out;
+}
+function rsi(c, n) { // Wilder RSI
+  n = n || 14;
+  if (c.length < n + 1) return null;
+  let g = 0, l = 0;
+  for (let k = 1; k <= n; k++) { const d = c[k] - c[k - 1]; if (d > 0) g += d; else l -= d; }
+  g /= n; l /= n;
+  for (let k = n + 1; k < c.length; k++) {
+    const d = c[k] - c[k - 1];
+    g = (g * (n - 1) + (d > 0 ? d : 0)) / n;
+    l = (l * (n - 1) + (d < 0 ? -d : 0)) / n;
+  }
+  if (l === 0) return 100;
+  return 100 - 100 / (1 + g / l);
+}
+function macd(c) { // 12/26/9
+  const f = emaSeries(c, 12), s = emaSeries(c, 26);
+  const line = c.map(function (_, i) { return (f[i] != null && s[i] != null) ? f[i] - s[i] : null; });
+  const start = line.findIndex(function (v) { return v != null; });
+  if (start < 0 || c.length - start < 9) return null;
+  const sig = emaSeries(line.slice(start), 9);
+  const i = c.length - 1, si = sig[sig.length - 1];
+  if (si == null) return null;
+  return { line: line[i], signal: si, hist: line[i] - si, prevHist: (sig.length > 1 && sig[sig.length - 2] != null) ? line[i - 1] - sig[sig.length - 2] : null };
+}
+function stoch(bars, n, dN) { // %K(n) smoothed 3, %D(dN)
+  n = n || 14; dN = dN || 3;
+  if (bars.length < n + 5) return null;
+  const raw = [];
+  for (let i = n - 1; i < bars.length; i++) {
+    let hi = -Infinity, lo = Infinity;
+    for (let k = i - n + 1; k <= i; k++) { if (bars[k].h > hi) hi = bars[k].h; if (bars[k].l < lo) lo = bars[k].l; }
+    raw.push(hi === lo ? 50 : (bars[i].c - lo) / (hi - lo) * 100);
+  }
+  const kS = []; for (let i = 2; i < raw.length; i++) kS.push((raw[i] + raw[i - 1] + raw[i - 2]) / 3);
+  if (kS.length < dN) return null;
+  let d = 0; for (let i = kS.length - dN; i < kS.length; i++) d += kS[i];
+  return { k: kS[kS.length - 1], d: d / dN };
+}
+function cci(bars, n) {
+  n = n || 20;
+  if (bars.length < n) return null;
+  const tp = bars.map(function (b) { return (b.h + b.l + b.c) / 3; });
+  const i = tp.length - 1;
+  let m = 0; for (let k = i - n + 1; k <= i; k++) m += tp[k]; m /= n;
+  let md = 0; for (let k = i - n + 1; k <= i; k++) md += Math.abs(tp[k] - m); md /= n;
+  return md === 0 ? 0 : (tp[i] - m) / (0.015 * md);
+}
+function atrSeries(bars, n) { // Wilder ATR
+  n = n || 14;
+  const out = new Array(bars.length).fill(null);
+  if (bars.length < n + 1) return out;
+  const tr = bars.map(function (b, i) {
+    if (i === 0) return b.h - b.l;
+    const pc = bars[i - 1].c;
+    return Math.max(b.h - b.l, Math.abs(b.h - pc), Math.abs(b.l - pc));
+  });
+  let a = 0; for (let k = 1; k <= n; k++) a += tr[k]; a /= n;
+  out[n] = a;
+  for (let k = n + 1; k < bars.length; k++) { a = (a * (n - 1) + tr[k]) / n; out[k] = a; }
+  return out;
+}
+/* SuperTrend(10, 3): +1 while price holds above the trailing support band,
+   -1 while it holds below the trailing resistance band. */
+function superTrend(bars, n, mult) {
+  n = n || 10; mult = mult || 3;
+  const atr = atrSeries(bars, n);
+  if (bars.length < n + 2) return null;
+  let fUp = null, fDn = null, dir = 1;
+  for (let i = n; i < bars.length; i++) {
+    const b = bars[i], mid = (b.h + b.l) / 2;
+    let up = mid + mult * atr[i], dn = mid - mult * atr[i];
+    if (fUp != null && !(up < fUp || bars[i - 1].c > fUp)) up = fUp;
+    if (fDn != null && !(dn > fDn || bars[i - 1].c < fDn)) dn = fDn;
+    if (fUp != null) {
+      if (dir === 1 && b.c < dn) dir = -1;
+      else if (dir === -1 && b.c > up) dir = 1;
+    }
+    fUp = up; fDn = dn;
+  }
+  return dir;
+}
+/* Aggregate 60-minute bars into 4-hour bars on the New York day: the first 4H bar
+   of each FX day opens at the 17:00 NY rollover, so the bars line up with what a
+   broker chart shows rather than with UTC midnight. */
+function to4h(h1) {
+  const out = [];
+  let cur = null, count = 0;
+  for (let i = 0; i < h1.length; i++) {
+    const b = h1[i];
+    const hr = nyHour(b.t);
+    const slot = Math.floor(((hr - 17 + 24) % 24) / 4);
+    if (!cur || count >= 4 || slot !== cur.slot) {
+      if (cur) out.push({ t: cur.t, o: cur.o, h: cur.h, l: cur.l, c: cur.c });
+      cur = { t: b.t, o: b.o, h: b.h, l: b.l, c: b.c, slot: slot }; count = 1;
+    } else { cur.h = Math.max(cur.h, b.h); cur.l = Math.min(cur.l, b.l); cur.c = b.c; count++; }
+  }
+  if (cur) out.push({ t: cur.t, o: cur.o, h: cur.h, l: cur.l, c: cur.c });
+  return out;
+}
+/* Ratings in the TradingView style: each moving average votes by the close
+   against it; each oscillator votes by its own rule; the overall rating is the
+   mean of the two. Score −1…+1; label thresholds ±0.5 strong, ±0.1 lean. */
+function rateLabel(s) {
+  if (s == null) return "—";
+  return s >= 0.5 ? "STRONG BUY" : s >= 0.1 ? "BUY" : s <= -0.5 ? "STRONG SELL" : s <= -0.1 ? "SELL" : "NEUTRAL";
+}
+function technicals(bars, opts) {
+  opts = opts || {};
+  const c = bars.map(function (b) { return b.c; });
+  const n = c.length, last = n ? c[n - 1] : null;
+  if (n < 15) return { n: n, ok: false };
+  const smaP = [9, 20, 50, 100, 200], smas = {}, maVotes = [];
+  smaP.forEach(function (p) {
+    const v = sma(c, p);
+    smas["s" + p] = v == null ? null : { v: v, above: last > v };
+    if (v != null) maVotes.push(last > v ? 1 : last < v ? -1 : 0);
+  });
+  const e = { e20: null, e50: null };
+  const e20 = emaSeries(c, 20)[n - 1], e50 = emaSeries(c, 50)[n - 1];
+  if (e20 != null) { e.e20 = { v: e20, above: last > e20 }; maVotes.push(last > e20 ? 1 : -1); }
+  if (e50 != null) { e.e50 = { v: e50, above: last > e50 }; maVotes.push(last > e50 ? 1 : -1); }
+  const r = rsi(c, 14), m = macd(c), st = stoch(bars, 14, 3), cc = cci(bars, 20), sup = superTrend(bars, 10, 3);
+  const mom = n > 10 ? last - c[n - 11] : null;
+  const osc = [];
+  if (r != null) osc.push(r < 30 ? 1 : r > 70 ? -1 : 0);           // oversold ⇒ buy vote
+  if (st) osc.push(st.k < 20 && st.k > st.d ? 1 : st.k > 80 && st.k < st.d ? -1 : 0);
+  if (cc != null) osc.push(cc < -100 ? 1 : cc > 100 ? -1 : 0);
+  if (m) osc.push(m.hist > 0 ? 1 : m.hist < 0 ? -1 : 0);
+  if (mom != null) osc.push(mom > 0 ? 1 : mom < 0 ? -1 : 0);
+  const mean = function (a) { return a.length ? a.reduce(function (x, y) { return x + y; }, 0) / a.length : null; };
+  const maScore = mean(maVotes), oscScore = mean(osc);
+  const overall = (maScore != null && oscScore != null) ? (maScore + oscScore) / 2 : (maScore != null ? maScore : oscScore);
+  const atr = atrSeries(bars, 14)[n - 1];
+  const prev = n > 1 ? c[n - 2] : null;
+  let hi = -Infinity, lo = Infinity;
+  for (let k = Math.max(0, n - 20); k < n; k++) { if (bars[k].h > hi) hi = bars[k].h; if (bars[k].l < lo) lo = bars[k].l; }
+  return {
+    ok: true, n: n, c: last, prev: prev, chg: pctOf(last, prev), t: bars[n - 1].t,
+    rsi: r == null ? null : Number(r.toFixed(1)),
+    sma: smas, ema: e,
+    macd: m ? { line: m.line, signal: m.signal, hist: m.hist, rising: m.prevHist != null ? m.hist > m.prevHist : null } : null,
+    stoch: st ? { k: Number(st.k.toFixed(1)), d: Number(st.d.toFixed(1)) } : null,
+    cci: cc == null ? null : Number(cc.toFixed(1)),
+    mom: mom, superTrend: sup, atr: atr,
+    hi20: hi, lo20: lo,
+    rating: { ma: maScore, osc: oscScore, all: overall, label: rateLabel(overall), maLabel: rateLabel(maScore), oscLabel: rateLabel(oscScore) }
+  };
+}
+/* Which Yahoo request feeds each timeframe, and how long the answer may be
+   cached. 4H has no native interval — it is built from 60m bars. */
+const TF_SRC = {
+  "15m": { range: "10d", iv: "15m", ttl: 300 },
+  "1h": { range: "1mo", iv: "60m", ttl: 600 },
+  "4h": { range: "3mo", iv: "60m", ttl: 600, agg: "4h" },
+  "1d": { range: "1y", iv: "1d", ttl: 3600 },
+  "1w": { range: "5y", iv: "1wk", ttl: 3600 }
+};
+async function techFor(sym, tf) {
+  const src = TF_SRC[tf]; if (!src) return null;
+  const d = await yChart(sym, src.range, src.iv, src.ttl);
+  let s = series(d), bars = s.bars;
+  if (src.agg === "4h") bars = to4h(bars);
+  const t = technicals(bars);
+  t.iv = src.agg || src.iv;
+  if (s.meta && s.meta.regularMarketPrice != null) t.live = s.meta.regularMarketPrice;
+  return t;
+}
+/* ── Currency-strength baskets (28.8.26 #2) ───────────────────────────────────
+   The TradingView currency indices (EXY, BXY, …) are ICE products the free feed
+   does not carry. Each currency here is an equal-weight basket of its seven
+   pairs: strength(t) = exp(mean of ±ln(pair(t)/pair(t0))), + where the currency
+   is the base, − where it is the quote, rebased to 100 at the start of the
+   window. It moves the way the real index moves — a currency that rises against
+   everything rises here — without pretending to be a licensed index. DXY itself
+   IS on the feed (DX-Y.NYB) and is included as the real thing. */
+const STRENGTH_CCYS = ["USD", "EUR", "GBP", "JPY", "AUD", "NZD", "CAD", "CHF"];
+function strengthSeries(closesByPair, dates) {
+  const out = {};
+  STRENGTH_CCYS.forEach(function (ccy) {
+    const rel = [];
+    Object.keys(closesByPair).forEach(function (p) {
+      const a = p.slice(0, 3), b = p.slice(3);
+      if (a === ccy) rel.push({ s: closesByPair[p], sign: 1 });
+      else if (b === ccy) rel.push({ s: closesByPair[p], sign: -1 });
+    });
+    if (!rel.length) return;
+    const bars = [];
+    for (let i = 0; i < dates.length; i++) {
+      let sum = 0, k = 0;
+      rel.forEach(function (r) { if (r.s[i] != null && r.s[0] != null) { sum += r.sign * Math.log(r.s[i] / r.s[0]); k++; } });
+      if (k) { const v = 100 * Math.exp(sum / k); bars.push({ t: dates[i], o: v, h: v, l: v, c: v }); }
+    }
+    /* Give the synthetic series a little intrabar range from neighbouring closes
+       so ATR/stochastic/CCI have something to measure. */
+    for (let i = 1; i < bars.length; i++) {
+      const a = bars[i - 1].c, b = bars[i].c;
+      bars[i].o = a; bars[i].h = Math.max(a, b); bars[i].l = Math.min(a, b);
+    }
+    out[ccy] = bars;
+  });
+  return out;
+}
+function perfOf(bars) {
+  const n = bars.length; if (!n) return null;
+  const last = bars[n - 1].c;
+  const back = function (days) { return n - 1 - days >= 0 ? pctOf(last, bars[n - 1 - days].c) : null; };
+  const lastT = bars[n - 1].t;
+  const byTime = function (secs) { for (let i = n - 1; i >= 0; i--) { if (lastT - bars[i].t >= secs) return pctOf(last, bars[i].c); } return null; };
+  const yr = new Date(lastT * 1000).getUTCFullYear();
+  let ytd = null;
+  for (let i = 0; i < n; i++) { if (new Date(bars[i].t * 1000).getUTCFullYear() === yr) { ytd = i > 0 ? pctOf(last, bars[i - 1].c) : null; break; } }
+  let vol = null;
+  if (n > 21) { const r = []; for (let i = n - 20; i < n; i++) r.push(Math.log(bars[i].c / bars[i - 1].c)); const m = r.reduce(function (a, b) { return a + b; }, 0) / r.length; vol = Number((Math.sqrt(r.reduce(function (a, b) { return a + (b - m) * (b - m); }, 0) / r.length) * 100).toFixed(2)); }
+  return { d1: back(1), w1: byTime(7 * 86400), m1: byTime(30 * 86400), m3: byTime(91 * 86400), m6: byTime(182 * 86400), ytd: ytd, y1: byTime(365 * 86400), vol: vol };
 }
 
 export default {
@@ -616,6 +864,78 @@ export default {
          3. a hard daily budget on calls, searches and tokens
        Layer 3 is the one that matters: even a leaked key cannot produce an
        open-ended bill. KV-cached replies bypass all of it — they cost nothing. */
+    /* ── Technicals: GET /tech?pairs=EURUSD,…(≤10)&tf=15m|1h|4h|1d|1w ──
+       v11.0 — feeds the Watchlist technicals table. One Yahoo fetch per pair, so
+       a 10-pair call is 10 subrequests; the browser chunks the 28-pair list the
+       same way it does for /price. The assembled reply is cached in KV for the
+       timeframe's TTL so a second viewer within the window costs nothing. */
+    if (url.pathname === "/tech" && req.method === "GET") {
+      try {
+        const tf = (url.searchParams.get("tf") || "1d").toLowerCase();
+        if (!TF_SRC[tf]) return J({ error: "tf must be one of " + Object.keys(TF_SRC).join(", ") }, 400);
+        const pairs = (url.searchParams.get("pairs") || "").split(",").map(function (p) { return p.trim().toUpperCase().replace("/", ""); }).filter(function (p) { return /^[A-Z]{6}$/.test(p); }).slice(0, 10);
+        if (!pairs.length) return J({ error: "pairs required" }, 400);
+        const key = "tech:" + tf + ":" + pairs.slice().sort().join(",");
+        if (KV) { try { const hit = await KV.get(key); if (hit) { const o = JSON.parse(hit); o.cached = true; return J(o); } } catch (e) { } }
+        const out = {}, failed = [];
+        await Promise.all(pairs.map(async function (p) {
+          try {
+            const t = await techFor(p + "=X", tf);
+            if (t && t.ok) out[p] = t; else failed.push(p);
+          } catch (e) { failed.push(p); }
+        }));
+        const resp = { tf: tf, tech: out, missing: failed, src: "yahoo", ts: new Date().toISOString(), cached: false };
+        if (KV && Object.keys(out).length) { try { await KV.put(key, JSON.stringify(resp), { expirationTtl: TF_SRC[tf].ttl }); } catch (e) { } }
+        return J(resp);
+      } catch (e) {
+        return J({ error: e.message, tech: {}, missing: [] }, 500);
+      }
+    }
+
+    /* ── Currency strength: GET /strength ──
+       v11.0 — eight equal-weight baskets built from the 28-pair watchlist plus
+       the real DXY. One year of daily closes for 28 pairs is 29 subrequests, so
+       the whole answer is built once and held in KV for an hour. */
+    if (url.pathname === "/strength" && req.method === "GET") {
+      try {
+        const key = "strength:v1";
+        const force = url.searchParams.get("force") === "1";
+        if (KV && !force) { try { const hit = await KV.get(key); if (hit) { const o = JSON.parse(hit); o.cached = true; return J(o); } } catch (e) { } }
+        const PAIRS28 = ["AUDCAD", "AUDCHF", "AUDJPY", "AUDNZD", "AUDUSD", "CADCHF", "CADJPY", "CHFJPY", "EURAUD", "EURCAD", "EURCHF", "EURGBP", "EURJPY", "EURNZD", "EURUSD", "GBPAUD", "GBPCAD", "GBPCHF", "GBPJPY", "GBPNZD", "GBPUSD", "NZDCAD", "NZDCHF", "NZDJPY", "NZDUSD", "USDCAD", "USDCHF", "USDJPY"];
+        const byPair = {}, failed = [];
+        let dxy = null;
+        await Promise.all(PAIRS28.map(async function (p) {
+          try { const s = series(await yChart(p + "=X", "1y", "1d", 3600)); if (s.bars.length > 30) byPair[p] = s.bars; else failed.push(p); }
+          catch (e) { failed.push(p); }
+        }).concat([(async function () { try { dxy = series(await yChart("DX-Y.NYB", "1y", "1d", 3600)); } catch (e) { dxy = null; } })()]));
+        /* Align every pair on one date axis (Yahoo can drop a day here and there). */
+        const dateSet = {};
+        Object.keys(byPair).forEach(function (p) { byPair[p].forEach(function (b) { dateSet[new Date(b.t * 1000).toISOString().slice(0, 10)] = b.t; }); });
+        const days = Object.keys(dateSet).sort();
+        const dates = days.map(function (d) { return dateSet[d]; });
+        const closes = {};
+        Object.keys(byPair).forEach(function (p) {
+          const m = {}; byPair[p].forEach(function (b) { m[new Date(b.t * 1000).toISOString().slice(0, 10)] = b.c; });
+          let lastV = null;
+          closes[p] = days.map(function (d) { if (m[d] != null) lastV = m[d]; return lastV; }); // forward-fill gaps
+        });
+        const baskets = strengthSeries(closes, dates);
+        const out = {};
+        Object.keys(baskets).forEach(function (ccy) {
+          const bars = baskets[ccy];
+          out[ccy] = { kind: "basket", name: ccy + " strength (basket of " + (Object.keys(closes).filter(function (p) { return p.indexOf(ccy) > -1; }).length) + " pairs)", perf: perfOf(bars), tech: technicals(bars), spark: bars.slice(-60).map(function (b) { return Number(b.c.toFixed(2)); }) };
+        });
+        if (dxy && dxy.bars.length > 30) {
+          out.DXY = { kind: "index", name: "U.S. Dollar Index (ICE, real)", perf: perfOf(dxy.bars), tech: technicals(dxy.bars), spark: dxy.bars.slice(-60).map(function (b) { return Number(b.c.toFixed(2)); }), live: dxy.meta && dxy.meta.regularMarketPrice };
+        }
+        const resp = { strength: out, pairsUsed: Object.keys(closes).length, missing: failed, from: days[0] || null, to: days[days.length - 1] || null, ts: new Date().toISOString(), cached: false };
+        if (KV && Object.keys(out).length >= 8) { try { await KV.put(key, JSON.stringify(resp), { expirationTtl: 3600 }); } catch (e) { } }
+        return J(resp);
+      } catch (e) {
+        return J({ error: e.message, strength: {} }, 500);
+      }
+    }
+
     if (url.pathname === "/api" && req.method === "POST") {
       try {
         if (!env.FH_APP_KEY) return J({ error: "Proxy is not configured (missing app key)." }, 503);

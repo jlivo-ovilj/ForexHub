@@ -32,6 +32,7 @@ body[data-sect="about"]     {--ac:#94a3b8;--adm:rgba(148,163,184,0.12)}
 body[data-sect="briefing"]  {--ac:#eab308;--adm:rgba(234,179,8,0.12)}
 body[data-sect="trends"]    {--ac:#10b981;--adm:rgba(16,185,129,0.12)}
 body[data-sect="calculator"]{--ac:#06b6d4;--adm:rgba(6,182,212,0.12)}
+body[data-sect="indices"]   {--ac:#f472b6;--adm:rgba(244,114,182,0.12)}
 *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
 body{font-family:'Syne',sans-serif;background:var(--bg);color:var(--tx);min-height:100vh;overflow-x:hidden}
 
@@ -503,6 +504,7 @@ body.light[data-sect="checklist"] {--ac:#4d7c0f;--adm:rgba(77,124,15,0.10)}
 body.light[data-sect="review"]    {--ac:#c2410c;--adm:rgba(194,65,12,0.10)}
 body.light[data-sect="maps"]      {--ac:#0369a1;--adm:rgba(3,105,161,0.10)}
 body.light[data-sect="scanner"]   {--ac:#a21caf;--adm:rgba(162,28,175,0.10)}
+body.light[data-sect="indices"]   {--ac:#be185d;--adm:rgba(190,24,93,0.10)}
 body.light[data-sect="about"]     {--ac:#475569;--adm:rgba(71,85,105,0.10)}
 body.light[data-sect="briefing"]  {--ac:#a16207;--adm:rgba(161,98,7,0.10)}
 body.light[data-sect="trends"]    {--ac:#047857;--adm:rgba(4,120,87,0.10)}
@@ -559,6 +561,53 @@ body.light .chart-modal-overlay{background:rgba(0,0,0,0.55)}
 /* Amendment 19.8.26: a figure that is real but measured over an unusual window
    stays on screen and carries this flag, rather than disappearing. */
 .tr-warn{color:#fbbf24;font-size:11px;margin-left:4px;cursor:help}
+/* ── v13: Watchlist technicals ── */
+.asub-tech{border-color:rgba(232,121,249,0.45);color:#e879f9}
+.asub-tech.active{background:rgba(232,121,249,0.13);border-color:#e879f9}
+.scroller-x{overflow-x:auto;-webkit-overflow-scrolling:touch}
+.tech-filters{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:10px;align-items:center}
+.tech-table{width:100%;border-collapse:collapse;min-width:640px}
+.tech-table thead th{font-family:'DM Mono',monospace;font-size:10px;text-transform:uppercase;letter-spacing:0.08em;color:var(--mt);padding:10px 8px;text-align:center;border-bottom:1px solid var(--bd2);position:sticky;top:0;background:var(--sf);cursor:pointer;user-select:none}
+.tech-table thead th:first-child{text-align:left;padding-left:12px}
+.tech-row{cursor:pointer}
+.tech-row:hover{background:rgba(255,255,255,0.025)}
+.tech-row td{padding:7px 8px;border-bottom:1px solid var(--bd);font-family:'DM Mono',monospace;font-size:12px;text-align:center}
+.tech-row td:first-child{text-align:left;padding-left:12px}
+.tr-cell{display:inline-flex;align-items:center;gap:5px;justify-content:center;padding:3px 8px;border-radius:6px;min-width:96px;font-size:11px;font-weight:600;white-space:nowrap}
+.tr-sb{background:rgba(74,222,128,0.22);color:#4ade80}.tr-b{background:rgba(74,222,128,0.09);color:#4ade80}
+.tr-ss{background:rgba(248,113,113,0.22);color:#f87171}.tr-s{background:rgba(248,113,113,0.09);color:#f87171}
+.tr-n{background:rgba(255,255,255,0.05);color:var(--mt)}.tr-na{color:var(--mt);opacity:0.5}
+.tech-detail td{padding:0!important;border-bottom:1px solid var(--bd2)}
+.tech-grid{display:grid;grid-template-columns:130px repeat(5,1fr);gap:1px;background:var(--bd);margin:0}
+.tech-grid>div{background:var(--sf2);padding:6px 8px;font-family:'DM Mono',monospace;font-size:11px;text-align:center}
+.tech-grid .tg-h{color:var(--mt);font-size:9.5px;text-transform:uppercase;letter-spacing:0.08em;font-weight:600}
+.tech-grid .tg-l{text-align:left;color:var(--mt)}
+.tg-up{color:#4ade80}.tg-dn{color:#f87171}.tg-flat{color:var(--mt)}
+.tech-detail .tech-grid>div.tg-cell{padding:5px 6px;line-height:1.35}
+/* ── v13: tree map ── */
+.tm-controls{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:10px;align-items:center}
+.tm-body{position:relative;width:100%;height:520px;border-radius:8px;overflow:hidden;background:var(--sf2)}
+.tm-tile{position:absolute;box-sizing:border-box;border:2px solid var(--sf);border-radius:4px;display:flex;flex-direction:column;align-items:center;justify-content:center;overflow:hidden;cursor:pointer;color:#fff;text-shadow:0 1px 2px rgba(0,0,0,0.6);transition:filter .15s}
+.tm-tile:hover{filter:brightness(1.15);z-index:2}
+.tm-sym{font-family:'Syne',sans-serif;font-weight:800;line-height:1.05}
+.tm-chg{font-family:'DM Mono',monospace;font-weight:700;line-height:1.1}
+.tm-act{font-family:'DM Mono',monospace;opacity:0.85;line-height:1.1}
+.tm-legend{display:flex;align-items:center;gap:8px;font-family:'DM Mono',monospace;font-size:10px;color:var(--mt);margin-left:auto}
+.tm-legend i{display:inline-block;width:80px;height:8px;border-radius:4px;background:linear-gradient(90deg,#c0392b,#3a3a3f,#1e8f4e)}
+@media(max-width:640px){.tm-body{height:420px}}
+/* ── v13: indices ── */
+.idx-vtab{padding:7px 18px;border-radius:100px;font-family:'Syne',sans-serif;font-size:13px;font-weight:500;border:1px solid rgba(244,114,182,0.3);background:transparent;color:rgba(244,114,182,0.75);cursor:pointer;transition:all .15s}
+.idx-vtab.active{background:#f472b6;color:#0a0a0a;border-color:#f472b6}
+.idx-table{width:100%;border-collapse:collapse;min-width:720px}
+.idx-table thead th{font-family:'DM Mono',monospace;font-size:10px;text-transform:uppercase;letter-spacing:0.08em;color:var(--mt);padding:10px 10px;text-align:right;border-bottom:1px solid var(--bd2);position:sticky;top:0;background:var(--sf);cursor:pointer;user-select:none;white-space:nowrap}
+.idx-table thead th:first-child{text-align:left;padding-left:12px}
+.idx-table td{padding:8px 10px;border-bottom:1px solid var(--bd);font-family:'DM Mono',monospace;font-size:12px;text-align:right;white-space:nowrap}
+.idx-table td:first-child{text-align:left;padding-left:12px}
+.idx-row:hover{background:rgba(255,255,255,0.025)}
+.idx-name{display:flex;align-items:center;gap:10px}
+.idx-badge{display:inline-flex;align-items:center;justify-content:center;width:34px;height:22px;border-radius:6px;font-family:'DM Mono',monospace;font-size:10.5px;font-weight:700;color:#0a0a0a}
+.idx-sub{font-size:10.5px;color:var(--mt);font-family:'DM Mono',monospace}
+.idx-spark{vertical-align:middle}
 .fh-flag{color:#fbbf24;font-size:11px;margin-left:3px;cursor:help}
 
 /* ── PRINT ── */
@@ -598,10 +647,11 @@ body.light .chart-modal-overlay{background:rgba(0,0,0,0.55)}
 <!-- ══ NAV ══ -->
 <div class="nav-wrap">
 <div class="nav">
-  <button class="nb active" onclick="showS('analysis',this)">Analysis</button>
+  <button class="nb active" onclick="showS('analysis',this)">Watchlist</button>
   <button class="nb" onclick="showS('briefing',this)">Briefing</button>
   <button class="nb" onclick="showS('scanner',this)">Scanner</button>
   <button class="nb" onclick="showS('trends',this)">Trends</button>
+  <button class="nb" onclick="showS('indices',this)">Indices</button>
   <button class="nb" onclick="showS('maps',this)">Maps</button>
   <button class="nb" onclick="showS('sessions',this)">Sessions</button>
   <button class="nb" onclick="showS('calendar',this)">Calendar</button>
@@ -623,11 +673,26 @@ body.light .chart-modal-overlay{background:rgba(0,0,0,0.55)}
 <!-- ══ ANALYSIS ══ -->
 <div id="analysis" class="sec active">
   <div class="analysis-subtabs">
+    <button class="asub asub-tech" onclick="showAnalysisSub('analysis-tech',this)">Technicals</button>
     <button class="asub asub-weekly active" onclick="showAnalysisSub('analysis-weekly',this)">Weekly</button>
     <button class="asub asub-daily" onclick="showAnalysisSub('analysis-daily',this)">Daily</button>
     <button class="asub asub-4hr" onclick="showAnalysisSub('analysis-4hr',this)">4 Hour</button>
   </div>
 
+  <!-- Technicals table (New features 28.8.26 #1) -->
+  <div id="analysis-tech" class="analysis-sub">
+    <div class="st">Watchlist technicals</div>
+    <div class="ss">Trend and indicator readings for every pair across five timeframes · live bars · no AI</div>
+    <div class="scan-controls" style="margin-bottom:10px;flex-wrap:wrap;gap:8px;align-items:center">
+      <button class="sb" onclick="loadTech(true)">↺ Refresh</button>
+      <span class="meta" id="tech-meta" style="margin-top:0"></span>
+    </div>
+    <div id="tech-filters" class="tech-filters"></div>
+    <div class="card" style="padding:0;overflow:hidden">
+      <div class="scroller-x"><div id="tech-body"><div class="ld" style="padding:20px"><div class="sp"></div>Loading technicals…</div></div></div>
+    </div>
+    <div class="map-src" style="text-align:left">Each cell is the overall rating for that timeframe: moving averages (SMA 9/20/50/100/200, EMA 20/50) vote by where price sits against them; oscillators (RSI, stochastic, CCI, MACD, momentum) vote by their own rule; the two are averaged. Tap a pair to open its full indicator grid; tap the pair name to open its analysis. 4H bars are built from hourly bars on the New York day.</div>
+  </div>
   <!-- Daily -->
   <div id="analysis-daily" class="analysis-sub">
     <div class="analysis-layout">
@@ -1079,6 +1144,14 @@ body.light .chart-modal-overlay{background:rgba(0,0,0,0.55)}
     <div style="display:flex;gap:6px;margin-bottom:12px">
       <button class="hm-vtab active" onclick="showHMView('hm-pips',this)">Pip Changes</button>
       <button class="hm-vtab" onclick="showHMView('hm-matrix',this)">Majors Matrix</button>
+      <button class="hm-vtab" onclick="showHMView('hm-tree',this);loadTreeMap()">Tree Map</button>
+    </div>
+    <div id="hm-tree" class="hm-view">
+      <div class="tm-controls" id="tm-controls"></div>
+      <div class="card" style="padding:8px">
+        <div id="tm-body" class="tm-body"><div class="ld" style="padding:20px"><div class="sp"></div>Loading tree map…</div></div>
+      </div>
+      <div class="map-src" id="tm-src" style="text-align:left">Tile size = how active the pair is (its last session's range ÷ its own 14-day average range — FX has no volume feed, so activity is the honest stand-in). Colour = % change over the chosen window. Tap a tile to open its analysis.</div>
     </div>
     <div id="hm-pips" class="hm-view active">
       <div class="card" style="padding:0;overflow:hidden">
@@ -1117,6 +1190,25 @@ body.light .chart-modal-overlay{background:rgba(0,0,0,0.55)}
     </div>
     <div class="map-src">Rates: <a href="https://frankfurter.dev/" target="_blank" rel="noopener">Frankfurter API (ECB)</a></div>
   </div>
+</div>
+
+<!-- ══ INDICES (currency strength) — New features 28.8.26 #2 ══ -->
+<div id="indices" class="sec">
+  <div class="st">Currency indices</div>
+  <div class="ss">Strength of each major against the rest of the watchlist · daily bars · one year · no AI</div>
+  <div class="scan-controls" style="margin-bottom:10px;align-items:center">
+    <button class="sb" onclick="loadStrength(true)">↺ Refresh</button>
+    <span class="meta" id="idx-meta" style="margin-top:0"></span>
+  </div>
+  <div class="map-tabs" style="margin-bottom:10px">
+    <button class="idx-vtab active" onclick="showIdxView('overview',this)">Overview</button>
+    <button class="idx-vtab" onclick="showIdxView('performance',this)">Performance</button>
+    <button class="idx-vtab" onclick="showIdxView('technicals',this)">Technicals</button>
+  </div>
+  <div class="card" style="padding:0;overflow:hidden">
+    <div class="scroller-x"><div id="idx-body"><div class="ld" style="padding:20px"><div class="sp"></div>Loading currency strength…</div></div></div>
+  </div>
+  <div class="map-src" style="text-align:left" id="idx-src">Each currency is an equal-weight basket of its seven watchlist pairs, rebased to 100 one year ago — it rises when the currency gains against the rest. The US Dollar Index row is the real ICE DXY. The TradingView currency indices (EXY, BXY…) are licensed products not on the free feed; the baskets move the same way without pretending to be them.</div>
 </div>
 
 <!-- ══ TRENDS (top-down scanner) ══ -->
@@ -1286,6 +1378,12 @@ body.light .chart-modal-overlay{background:rgba(0,0,0,0.55)}
   <div class="st">About ForexHub</div>
   <div class="ss">Your daily forex companion</div>
   <div class="card">
+    <div class="ai"><div class="aq">What's new in v13 (8 Sep 2026)</div><div class="aa">
+      · The Analysis tab is now <b>Watchlist</b>, with a new <b>Technicals</b> view: every pair rated across 15m · 1H · 4H · Daily · Weekly from live bars (moving averages, RSI, MACD, stochastic, CCI, SuperTrend). Tap a row for the full indicator grid; tap the pair name to jump to its analysis. No AI, so it's free to refresh.<br>
+      · Maps → Heat Map has a <b>Tree Map</b>: tile size is how active a pair is, colour is its move over 4H / Daily / Weekly / Monthly, with a USD-majors filter. Tap a tile to open the pair.<br>
+      · New <b>Indices</b> tab: a strength index for each of the eight majors built from the watchlist pairs, plus the real ICE DXY — Overview, Performance (1D to 1Y) and Technicals views, sortable.<br>
+      · Worker 11.0 adds the <code>/tech</code> and <code>/strength</code> endpoints that power these; results are shared across devices so repeat views cost nothing.
+    </div></div>
     <div class="ai"><div class="aq">What's new in v12 (7 Sep 2026)</div><div class="aa">
       · Trade Scanner and Pullback Scanner: every setup card now carries its own chart image — tap it to enlarge, or hit <b>Copy chart</b> to paste it straight onto your trading chart. The image is stamped with the date and time it was produced.<br>
       · Setup levels are now ordered 1 Entry · 2 Take profit · 3 Stop loss, the same order as the TradingView long/short position tool.<br>
@@ -1629,7 +1727,7 @@ function dismissBanner(){
 /* ══════════════════════════════════════
    HEADER DATE
 ══════════════════════════════════════ */
-var FH_BUILD='v12'; // 7 Sep 2026 — amendments 8.9.26 items 7, 9, 9.1, 10 // bump on every delivered change — shown in the header so it's always obvious which version is loaded
+var FH_BUILD='v13'; // 8 Sep 2026 — new features: technicals table, tree map, currency indices // bump on every delivered change — shown in the header so it's always obvious which version is loaded
 /* Stale-tab killer: every so often, check whether a newer build has been deployed.
    If so, show a can't-miss banner telling the user to reload — long-open tabs silently
    running old code caused repeated "the fix didn't work" confusion. */
@@ -1682,6 +1780,7 @@ function showS(id,btn){
     if(!corrLoaded) loadCorrelation();        // 60-day daily rates — no intraday component
   }
   if(id==='trends'&&(!trendLoaded||sectionStale('trends',REFRESH_AFTER))) loadTrendScan();
+  if(id==='indices') loadStrength(false);
   if(id==='calculator'&&(!calcLoaded||sectionStale('calculator',REFRESH_AFTER))) loadCalculator();
 }
 /* D1: per-section freshness clock. Marked on every successful load; read on tab entry. */
@@ -1704,6 +1803,7 @@ function showAnalysisSub(id,btn){
   if(id==='analysis-daily'){activatePairPill('#dpr',curPair);loadD(curPair,document.querySelector('#dpr .pp.active'));}
   if(id==='analysis-weekly'){activatePairPill('#wpr',curPair);loadW(curPair,document.querySelector('#wpr .pp.active'));}
   if(id==='analysis-4hr'){activatePairPill('#hpr',curPair);load4hr(curPair,document.querySelector('#hpr .pp.active'));}
+  if(id==='analysis-tech'){loadTech(false);}
 }
 /* Review sub-tabs (Amendment 9) */
 function showReviewSub(id,btn){
@@ -5562,6 +5662,338 @@ function initCache(){
   }catch(e){}
   updateSpend();
 }
+/* ══════════════════════════════════════════════════════════════════
+   v13 — WATCHLIST TECHNICALS  (New features 28.8.26 #1)
+══════════════════════════════════════════════════════════════════
+   "A table that shows trend direction by using arrows, similar to the Top Down
+   Scanner, that could also incorporate technical tools." One row per pair, one
+   column per timeframe; each cell is the overall rating computed by the worker
+   from real bars (see /tech). Tap a row for the full indicator grid — RSI, the
+   moving averages, MACD, stochastic, CCI, SuperTrend — across all five
+   timeframes, the layout of the MTF dashboards in John's screenshots. */
+var TECH_URL=WU.replace(/\/api$/,'')+'/tech';
+var TECH_TFS=[['15m','15m'],['1h','1H'],['4h','4H'],['1d','Daily'],['1w','Weekly']];
+var _tech={},_techAt=0,_techLoading=false,_techCcy='',_techMajors=false,_techSort={col:'sym',dir:1},_techOpen={};
+function techScore(t){return (t&&t.rating&&t.rating.all!=null)?t.rating.all:null;}
+function techCls(s){return s==null?'tr-na':s>=0.5?'tr-sb':s>=0.1?'tr-b':s<=-0.5?'tr-ss':s<=-0.1?'tr-s':'tr-n';}
+function techArrow(s){return s==null?'–':s>=0.1?'▲':s<=-0.1?'▼':'▬';}
+function techShort(l){return l==='STRONG BUY'?'Strong buy':l==='STRONG SELL'?'Strong sell':l==='BUY'?'Buy':l==='SELL'?'Sell':l==='NEUTRAL'?'Neutral':'—';}
+async function fetchTech(tf,pairs){
+  var chunks=[];for(var i=0;i<pairs.length;i+=10)chunks.push(pairs.slice(i,i+10));
+  var res=await Promise.all(chunks.map(function(ch){
+    return fetch(TECH_URL+'?tf='+tf+'&pairs='+encodeURIComponent(ch.join(','))+'&_='+Math.floor(Date.now()/60000),{cache:'no-store'})
+      .then(function(r){if(!r.ok)throw new Error('HTTP '+r.status);return r.json();}).catch(function(){return null;});
+  }));
+  var out={};res.forEach(function(d){if(d&&d.tech)Object.keys(d.tech).forEach(function(k){out[k]=d.tech[k];});});
+  return out;
+}
+async function loadTech(force){
+  var body=document.getElementById('tech-body'); if(!body) return;
+  if(_techLoading) return;
+  if(!force&&_techAt&&Date.now()-_techAt<REFRESH_AFTER&&Object.keys(_tech).length){renderTech();return;}
+  _techLoading=true;
+  var meta=document.getElementById('tech-meta'); if(meta) meta.textContent='Loading…';
+  if(!Object.keys(_tech).length) body.innerHTML='<div class="ld" style="padding:20px"><div class="sp"></div>Loading technicals for '+FH_PAIRS.length+' pairs…</div>';
+  try{
+    /* Daily first (the reading most people look at), then the rest; the table
+       fills column by column rather than waiting for the slowest fetch. */
+    var order=['1d','4h','1h','15m','1w'];
+    for(var i=0;i<order.length;i++){
+      var tf=order[i];
+      _tech[tf]=await fetchTech(tf,FH_PAIRS);
+      renderTech();
+      if(meta) meta.textContent='Loaded '+(i+1)+'/'+order.length+' timeframes…';
+    }
+    _techAt=Date.now(); markSectionLoaded('tech');
+    if(meta) meta.textContent='As of '+fhClock()+' · '+FH_PAIRS.length+' pairs · 15m/1H/4H refresh every 5–10 min, Daily/Weekly hourly';
+  }catch(e){
+    body.innerHTML='<div class="eb" style="padding:16px">'+friendlyError(e)+'</div>';
+  }
+  _techLoading=false;
+}
+function setTechCcy(c){_techCcy=c;renderTech();}
+function toggleTechMajors(){_techMajors=!_techMajors;renderTech();}
+function sortTech(col){if(_techSort.col===col){_techSort.dir*=-1;}else{_techSort.col=col;_techSort.dir=col==='sym'?1:-1;}renderTech();}
+function toggleTechRow(p){_techOpen[p]=!_techOpen[p];renderTech();}
+function renderTech(){
+  var body=document.getElementById('tech-body'); if(!body) return;
+  var filt=document.getElementById('tech-filters');
+  if(filt){
+    var f='<button class="pip-fccy'+(_techCcy===''?' all-active':'')+'" onclick="setTechCcy(\'\')">All</button>';
+    ['AUD','CAD','CHF','EUR','GBP','JPY','NZD','USD','XAU'].forEach(function(c){f+='<button class="pip-fccy'+(_techCcy===c?' all-active':'')+'" style="color:'+ccyCol(c)+'" onclick="setTechCcy(\''+c+'\')">'+c+'</button>';});
+    f+='<button class="pip-fccy'+(_techMajors?' all-active':'')+'" style="margin-left:auto" onclick="toggleTechMajors()">'+(_techMajors?'Majors only ✓':'Majors only')+'</button>';
+    filt.innerHTML=f;
+  }
+  var pairs=FH_PAIRS.filter(function(p){
+    if(_techCcy&&p.indexOf(_techCcy)<0) return false;
+    if(_techMajors&&p.indexOf('USD')<0) return false;
+    return true;
+  });
+  var rows=pairs.map(function(p){
+    var r={sym:p};
+    TECH_TFS.forEach(function(tf){r[tf[0]]=techScore(_tech[tf[0]]&&_tech[tf[0]][p]);});
+    var sc=TECH_TFS.map(function(tf){return r[tf[0]];}).filter(function(v){return v!=null;});
+    r.avg=sc.length?sc.reduce(function(a,b){return a+b;},0)/sc.length:null;
+    return r;
+  });
+  var sc=_techSort.col,sd=_techSort.dir;
+  rows.sort(function(a,b){
+    if(sc==='sym') return sd*a.sym.localeCompare(b.sym);
+    var av=a[sc],bv=b[sc]; if(av==null&&bv==null)return 0; if(av==null)return 1; if(bv==null)return -1;
+    return sd*(av-bv);
+  });
+  function arr(col){if(_techSort.col!==col)return '<span style="opacity:0.3;font-size:9px"> ⇅</span>';return '<span style="font-size:9px"> '+(_techSort.dir===1?'▲':'▼')+'</span>';}
+  var h='<table class="tech-table"><thead><tr><th onclick="sortTech(\'sym\')">Pair'+arr('sym')+'</th>';
+  TECH_TFS.forEach(function(tf){h+='<th onclick="sortTech(\''+tf[0]+'\')">'+tf[1]+arr(tf[0])+'</th>';});
+  h+='<th onclick="sortTech(\'avg\')">All TFs'+arr('avg')+'</th></tr></thead><tbody>';
+  if(!rows.length) h+='<tr><td colspan="7" style="text-align:center;padding:18px;color:var(--mt)">No pairs match this filter.</td></tr>';
+  rows.forEach(function(r){
+    h+='<tr class="tech-row" onclick="toggleTechRow(\''+r.sym+'\')" title="Tap for the full indicator grid"><td><span onclick="event.stopPropagation();goToPair(\''+r.sym+'\')" title="Open '+r.sym+' in Analysis" style="cursor:pointer">'+pairSpan(r.sym)+'</span> <span style="color:var(--mt);font-size:10px">'+(_techOpen[r.sym]?'▾':'▸')+'</span></td>';
+    TECH_TFS.forEach(function(tf){
+      var t=_tech[tf[0]]&&_tech[tf[0]][r.sym], s=techScore(t);
+      var loaded=!!_tech[tf[0]];
+      var tip=t&&t.ok?('RSI '+t.rsi+' · MA '+techShort(t.rating.maLabel)+' · Osc '+techShort(t.rating.oscLabel)+' · '+t.n+' bars'):(loaded?'No data for this timeframe':'Loading…');
+      h+='<td><span class="tr-cell '+techCls(s)+'" title="'+esc(tip)+'">'+techArrow(s)+' '+(t&&t.ok?techShort(t.rating.label):(loaded?'—':'…'))+'</span></td>';
+    });
+    h+='<td><span class="tr-cell '+techCls(r.avg)+'">'+techArrow(r.avg)+' '+(r.avg==null?'—':techShort(rateLabelUI(r.avg)))+'</span></td></tr>';
+    if(_techOpen[r.sym]) h+='<tr class="tech-detail"><td colspan="7">'+techGrid(r.sym)+'</td></tr>';
+  });
+  h+='</tbody></table>';
+  body.innerHTML=h;
+}
+function rateLabelUI(s){return s==null?'—':s>=0.5?'STRONG BUY':s>=0.1?'BUY':s<=-0.5?'STRONG SELL':s<=-0.1?'SELL':'NEUTRAL';}
+/* The per-pair indicator grid: rows are indicators, columns are timeframes. */
+function techGrid(p){
+  var fx=function(v){return v==null?'—':fmtPrice(p,v);};
+  var ud=function(b){return b==null?'<span class="tg-flat">—</span>':b?'<span class="tg-up">▲ Bull</span>':'<span class="tg-dn">▼ Bear</span>';};
+  var rows=[
+    ['Price',function(t){return fx(t.c);}],
+    ['Rating',function(t){return '<span class="'+(t.rating.all>=0.1?'tg-up':t.rating.all<=-0.1?'tg-dn':'tg-flat')+'">'+techShort(t.rating.label)+'</span>';}],
+    ['MA rating',function(t){return '<span class="'+(t.rating.ma>=0.1?'tg-up':t.rating.ma<=-0.1?'tg-dn':'tg-flat')+'">'+techShort(t.rating.maLabel)+'</span>';}],
+    ['Osc rating',function(t){return '<span class="'+(t.rating.osc>=0.1?'tg-up':t.rating.osc<=-0.1?'tg-dn':'tg-flat')+'">'+techShort(t.rating.oscLabel)+'</span>';}],
+    ['RSI (14)',function(t){return t.rsi==null?'—':'<span class="'+(t.rsi>70?'tg-dn':t.rsi<30?'tg-up':'')+'">'+t.rsi+'</span>';}],
+    ['SMA 9',function(t){return ud(t.sma.s9&&t.sma.s9.above)+'<br><span class="idx-sub">'+fx(t.sma.s9&&t.sma.s9.v)+'</span>';}],
+    ['SMA 20',function(t){return ud(t.sma.s20&&t.sma.s20.above)+'<br><span class="idx-sub">'+fx(t.sma.s20&&t.sma.s20.v)+'</span>';}],
+    ['SMA 50',function(t){return ud(t.sma.s50&&t.sma.s50.above)+'<br><span class="idx-sub">'+fx(t.sma.s50&&t.sma.s50.v)+'</span>';}],
+    ['SMA 100',function(t){return ud(t.sma.s100&&t.sma.s100.above)+'<br><span class="idx-sub">'+fx(t.sma.s100&&t.sma.s100.v)+'</span>';}],
+    ['SMA 200',function(t){return ud(t.sma.s200&&t.sma.s200.above)+'<br><span class="idx-sub">'+fx(t.sma.s200&&t.sma.s200.v)+'</span>';}],
+    ['EMA 20 / 50',function(t){return ud(t.ema.e20&&t.ema.e20.above)+' <span class="idx-sub">/</span> '+ud(t.ema.e50&&t.ema.e50.above);}],
+    ['MACD hist',function(t){return !t.macd?'—':'<span class="'+(t.macd.hist>0?'tg-up':'tg-dn')+'">'+(t.macd.hist>0?'▲':'▼')+' '+(t.macd.rising===true?'rising':t.macd.rising===false?'falling':'')+'</span>';}],
+    ['Stoch %K/%D',function(t){return !t.stoch?'—':'<span class="'+(t.stoch.k>80?'tg-dn':t.stoch.k<20?'tg-up':'')+'">'+t.stoch.k+' / '+t.stoch.d+'</span>';}],
+    ['CCI (20)',function(t){return t.cci==null?'—':'<span class="'+(t.cci>100?'tg-dn':t.cci<-100?'tg-up':'')+'">'+t.cci+'</span>';}],
+    ['SuperTrend',function(t){return t.superTrend==null?'—':t.superTrend>0?'<span class="tg-up">▲ Up</span>':'<span class="tg-dn">▼ Down</span>';}],
+    ['20-bar range',function(t){return fx(t.lo20)+' – '+fx(t.hi20);}],
+    ['Bars',function(t){return t.n+' × '+(t.iv||'');}]
+  ];
+  var h='<div class="tech-grid"><div class="tg-h tg-l">'+pairSpan(p)+'</div>';
+  TECH_TFS.forEach(function(tf){h+='<div class="tg-h">'+tf[1]+'</div>';});
+  rows.forEach(function(r){
+    h+='<div class="tg-l">'+r[0]+'</div>';
+    TECH_TFS.forEach(function(tf){
+      var t=_tech[tf[0]]&&_tech[tf[0]][p];
+      h+='<div class="tg-cell">'+(t&&t.ok?r[1](t):'<span class="tg-flat">'+(_tech[tf[0]]?'—':'…')+'</span>')+'</div>';
+    });
+  });
+  return h+'</div>';
+}
+
+/* ══════════════════════════════════════════════════════════════════
+   v13 — CURRENCY TREE MAP  (New features 19.8.26 #1)
+══════════════════════════════════════════════════════════════════
+   "Currency heatmaps, similar idea to stock heatmaps … easier to see what is
+   most traded and its direction." FX has no volume feed and no market cap, so
+   tile SIZE is the pair's activity — its last session's range divided by its own
+   14-day average range, from /briefing — and COLOUR is the % change over the
+   chosen window from /price. Squarified layout so tiles stay readable. */
+var _tmTf='td',_tmMajors=false,_tmRows=null,_tmAt=0,_tmLoading=false;
+var TM_TFS=[['t4h','4H'],['td','Daily'],['tw','Weekly'],['tm','Monthly']];
+async function loadTreeMap(force){
+  var body=document.getElementById('tm-body'); if(!body) return;
+  if(_tmLoading) return;
+  if(!force&&_tmRows&&Date.now()-_tmAt<REFRESH_AFTER){renderTreeMap();return;}
+  _tmLoading=true;
+  if(!_tmRows) body.innerHTML='<div class="ld" style="padding:20px"><div class="sp"></div>Loading activity and price changes…</div>';
+  try{
+    var q=await liveQuotes(TREND_PAIRS,{allowStale:true});
+    var stats={};
+    try{
+      var chunks=[];for(var i=0;i<TREND_PAIRS.length;i+=10)chunks.push(TREND_PAIRS.slice(i,i+10));
+      var res=await Promise.all(chunks.map(function(ch){return fetch(BRIEF_URL+'?pairs='+encodeURIComponent(ch.join(','))+'&_='+Math.floor(Date.now()/300000),{cache:'no-store'}).then(function(r){return r.json();}).catch(function(){return null;});}));
+      res.forEach(function(d){if(d&&d.stats)Object.keys(d.stats).forEach(function(k){stats[k]=d.stats[k];});});
+    }catch(e){}
+    _tmRows=TREND_PAIRS.map(function(p){
+      var d=q[p]||{},s=stats[p]||{};
+      return {sym:p,p:d.p,t4h:d.t4h,td:d.td,tw:d.tw,tm:d.tm,act:(s.activity!=null&&s.activity>0)?s.activity:null,rangePips:s.rangePips,atrPips:s.atrPips,t4hSpansBreak:d.t4hSpansBreak};
+    }).filter(function(r){return r.p!=null;});
+    _tmAt=Date.now();
+    renderTreeMap();
+  }catch(e){ body.innerHTML='<div class="eb" style="padding:16px">'+friendlyError(e)+'</div>'; }
+  _tmLoading=false;
+}
+function setTmTf(tf){_tmTf=tf;renderTreeMap();}
+function toggleTmMajors(){_tmMajors=!_tmMajors;renderTreeMap();}
+/* Squarified treemap (Bruls, Huizing & van Wijk). Items must be sorted by
+   weight descending; returns {x,y,w,h} per item inside W×H. */
+function squarify(items,W,H){
+  var total=items.reduce(function(a,b){return a+b.w;},0)||1;
+  var scale=W*H/total, out=[];
+  var x=0,y=0,w=W,h=H, row=[], rowSum=0;
+  function worst(row,sum,side){var mx=0,mn=Infinity;row.forEach(function(r){var a=r.w*scale;if(a>mx)mx=a;if(a<mn)mn=a;});var s2=side*side;return Math.max(s2*mx/(sum*sum),(sum*sum)/(s2*mn));}
+  function layoutRow(row,sum){
+    var side=Math.min(w,h), horiz=w>=h; // lay the row along the shorter side
+    var thick=sum*scale/side;
+    var off=0;
+    row.forEach(function(r){var len=r.w*scale/thick;
+      if(horiz) out.push({it:r,x:x,y:y+off,w:thick,h:len}); else out.push({it:r,x:x+off,y:y,w:len,h:thick});
+      off+=len;});
+    if(horiz){x+=thick;w-=thick;}else{y+=thick;h-=thick;}
+  }
+  items.forEach(function(it){
+    var side=Math.min(w,h);
+    if(!row.length){row=[it];rowSum=it.w*scale;return;}
+    var sumScaled=rowSum;
+    if(worst(row,sumScaled,side)>=worst(row.concat([it]),sumScaled+it.w*scale,side)){row.push(it);rowSum+=it.w*scale;}
+    else{layoutRow(row,rowSum/scale);row=[it];rowSum=it.w*scale;}
+  });
+  if(row.length) layoutRow(row,rowSum/scale);
+  return out;
+}
+function tmColor(v,maxAbs){
+  if(v==null) return '#3a3a3f';
+  var t=Math.max(-1,Math.min(1,v/(maxAbs||1)));
+  /* red (−) → slate (0) → green (+), TradingView-like */
+  var neg=[192,57,43], mid=[58,58,63], pos=[30,143,78];
+  var a=t<0?neg:pos, k=Math.abs(t);
+  var r=Math.round(mid[0]+(a[0]-mid[0])*k), g=Math.round(mid[1]+(a[1]-mid[1])*k), b=Math.round(mid[2]+(a[2]-mid[2])*k);
+  return 'rgb('+r+','+g+','+b+')';
+}
+function renderTreeMap(){
+  var body=document.getElementById('tm-body'),ctl=document.getElementById('tm-controls'); if(!body||!_tmRows) return;
+  if(ctl){
+    var c='';
+    TM_TFS.forEach(function(t){c+='<button class="gapf'+(_tmTf===t[0]?' active':'')+'" onclick="setTmTf(\''+t[0]+'\')">'+t[1]+'</button>';});
+    c+='<button class="pip-fccy'+(_tmMajors?' all-active':'')+'" style="margin-left:8px" onclick="toggleTmMajors()">'+(_tmMajors?'USD majors ✓':'USD majors')+'</button>';
+    c+='<button class="pip-fccy" onclick="loadTreeMap(true)">↺</button>';
+    c+='<span class="tm-legend">fall <i></i> rise</span>';
+    ctl.innerHTML=c;
+  }
+  var rows=_tmRows.filter(function(r){return !_tmMajors||r.sym.indexOf('USD')>-1;});
+  var items=rows.map(function(r){return {r:r,w:Math.max(0.25,r.act!=null?r.act:0.6)};}).sort(function(a,b){return b.w-a.w;});
+  var W=body.clientWidth||800,H=body.clientHeight||520;
+  var vals=rows.map(function(r){return r[_tmTf];}).filter(function(v){return v!=null;}).map(Math.abs).sort(function(a,b){return a-b;});
+  var maxAbs=vals.length?Math.max(0.05,vals[Math.floor(vals.length*0.9)]):1; // 90th percentile so one outlier doesn't wash out the rest
+  var lay=squarify(items,W,H);
+  var h='';
+  lay.forEach(function(t){
+    var r=t.it.r, v=r[_tmTf];
+    var fs=Math.max(9,Math.min(22,Math.sqrt(t.w*t.h)/6));
+    var small=t.w<70||t.h<44;
+    var tip=slashPair(r.sym)+' · '+(v==null?'no data':(v>=0?'+':'')+v.toFixed(2)+'% '+TM_TFS.filter(function(x){return x[0]===_tmTf;})[0][1].toLowerCase())+' · activity '+(r.act!=null?r.act.toFixed(2)+'× its 14-day range':'n/a')+(r.rangePips!=null?' ('+Math.round(r.rangePips)+'p vs '+Math.round(r.atrPips)+'p avg)':'')+(_tmTf==='t4h'&&r.t4hSpansBreak?' · ⚠ 4H window spans a market break':'');
+    h+='<div class="tm-tile" style="left:'+t.x.toFixed(1)+'px;top:'+t.y.toFixed(1)+'px;width:'+t.w.toFixed(1)+'px;height:'+t.h.toFixed(1)+'px;background:'+tmColor(v,maxAbs)+'" title="'+esc(tip)+'" onclick="goToPair(\''+r.sym+'\')">'
+      +'<div class="tm-sym" style="font-size:'+fs+'px">'+slashPair(r.sym)+'</div>'
+      +(small?'':'<div class="tm-chg" style="font-size:'+Math.max(9,fs*0.8)+'px">'+(v==null?'—':(v>=0?'+':'')+v.toFixed(2)+'%')+'</div>')
+      +(small||t.h<64?'':'<div class="tm-act" style="font-size:'+Math.max(8,fs*0.55)+'px">'+(r.act!=null?r.act.toFixed(1)+'× activity':'')+'</div>')
+      +'</div>';
+  });
+  body.innerHTML=h;
+  var src=document.getElementById('tm-src');
+  if(src){
+    var lbl={t4h:'last 4 hours (by timestamp; ⚠ where it spans a market break)',td:'since the '+rolloverLabel()+' rollover',tw:'vs 5 trading days ago',tm:'vs 21 trading days ago'}[_tmTf];
+    src.innerHTML='Tile size = activity (last session range ÷ own 14-day average range — FX has no volume feed). Colour = % change '+lbl+', scaled to the 90th percentile of today\'s moves. '+rows.filter(function(r){return r.act==null;}).length+' tile'+(rows.filter(function(r){return r.act==null;}).length===1?'':'s')+' without an activity figure drawn at a default size. As of '+fhClock()+'. Tap a tile to open its analysis.';
+  }
+}
+window.addEventListener('resize',function(){if(_tmRows&&document.getElementById('hm-tree')&&document.getElementById('hm-tree').classList.contains('active'))renderTreeMap();});
+
+/* ══════════════════════════════════════════════════════════════════
+   v13 — CURRENCY INDICES  (New features 28.8.26 #2)
+══════════════════════════════════════════════════════════════════
+   The TradingView screener of DXY/EXY/BXY… rebuilt from what the free feed can
+   honestly supply: an equal-weight strength basket per currency from the 28
+   watchlist pairs, plus the real ICE DXY. Overview / Performance / Technicals,
+   the same three views as the screenshot. */
+var STRENGTH_URL=WU.replace(/\/api$/,'')+'/strength';
+var _idx=null,_idxAt=0,_idxView='overview',_idxSort={col:'name',dir:1},_idxLoading=false;
+var IDX_META={USD:['$','U.S. Dollar'],EUR:['€','Euro'],GBP:['£','British Pound'],CHF:['₣','Swiss Franc'],JPY:['¥','Japanese Yen'],CAD:['C$','Canadian Dollar'],AUD:['A$','Australian Dollar'],NZD:['NZ$','New Zealand Dollar'],DXY:['$','U.S. Dollar Index']};
+async function loadStrength(force){
+  var body=document.getElementById('idx-body'); if(!body) return;
+  if(_idxLoading) return;
+  if(!force&&_idx&&Date.now()-_idxAt<60*60*1000){renderIdx();return;}
+  _idxLoading=true;
+  if(!_idx) body.innerHTML='<div class="ld" style="padding:20px"><div class="sp"></div>Building currency-strength baskets from a year of daily bars…</div>';
+  try{
+    var r=await fetch(STRENGTH_URL+(force?'?force=1':''),{cache:'no-store'});
+    if(!r.ok) throw new Error('HTTP '+r.status);
+    var d=await r.json();
+    if(!d||!d.strength||!Object.keys(d.strength).length) throw new Error(d&&d.error?d.error:'No strength data returned — try again in a moment.');
+    _idx=d;_idxAt=Date.now();markSectionLoaded('indices');
+    renderIdx();
+    var m=document.getElementById('idx-meta'); if(m) m.textContent='Window '+(d.from||'')+' → '+(d.to||'')+' · '+d.pairsUsed+' pairs · as of '+fhClock()+(d.cached?' (shared cache)':'');
+  }catch(e){ body.innerHTML='<div class="eb" style="padding:16px">'+friendlyError(e)+'</div>'; }
+  _idxLoading=false;
+}
+function showIdxView(v,btn){_idxView=v;document.querySelectorAll('.idx-vtab').forEach(function(b){b.classList.remove('active');});if(btn)btn.classList.add('active');renderIdx();}
+function sortIdx(col){if(_idxSort.col===col){_idxSort.dir*=-1;}else{_idxSort.col=col;_idxSort.dir=col==='name'?1:-1;}renderIdx();}
+function pctCell(v,dp){if(v==null)return '<span class="hm-na">—</span>';var c=v>0.0001?'hm-pos':v<-0.0001?'hm-neg':'hm-neu';return '<span class="'+c+'">'+(v>0?'+':'')+v.toFixed(dp==null?2:dp)+'%</span>';}
+function ratingCell(lbl,score){var c=score==null?'tr-na':score>=0.1?(score>=0.5?'tr-sb':'tr-b'):score<=-0.1?(score<=-0.5?'tr-ss':'tr-s'):'tr-n';return '<span class="tr-cell '+c+'" style="min-width:0">'+techArrow(score)+' '+techShort(lbl)+'</span>';}
+function sparkSvg(vals,col){
+  if(!vals||vals.length<2) return '';
+  var w=90,h=24,mn=Math.min.apply(null,vals),mx=Math.max.apply(null,vals),rg=(mx-mn)||1;
+  var pts=vals.map(function(v,i){return (i/(vals.length-1)*w).toFixed(1)+','+(h-(v-mn)/rg*(h-2)-1).toFixed(1);}).join(' ');
+  return '<svg class="idx-spark" width="'+w+'" height="'+h+'" viewBox="0 0 '+w+' '+h+'"><polyline points="'+pts+'" fill="none" stroke="'+col+'" stroke-width="1.5" stroke-linejoin="round"/></svg>';
+}
+function renderIdx(){
+  var body=document.getElementById('idx-body'); if(!body||!_idx) return;
+  var keys=Object.keys(_idx.strength);
+  var rows=keys.map(function(k){
+    var s=_idx.strength[k], p=s.perf||{}, t=s.tech||{}, ccy=k==='DXY'?'USD':k;
+    var last=s.spark&&s.spark.length?s.spark[s.spark.length-1]:null;
+    var first=s.spark&&s.spark.length?s.spark[0]:null;
+    return {k:k,ccy:ccy,name:(IDX_META[k]||[k,k])[1]+(k==='DXY'?'':' strength'),sub:s.kind==='index'?'ICE DXY · real index':'basket of '+(s.name.match(/\d+/)||['7'])[0]+' pairs · rebased 100',
+      level:k==='DXY'&&s.live!=null?s.live:last,d1:p.d1,w1:p.w1,m1:p.m1,m3:p.m3,m6:p.m6,ytd:p.ytd,y1:p.y1,vol:p.vol,
+      hi:t.hi20,lo:t.lo20,rating:t.rating||{},rsi:t.rsi,macd:t.macd,stoch:t.stoch,cci:t.cci,st:t.superTrend,mom:t.mom,spark:s.spark,sixty:(last!=null&&first)?pctOf2(last,first):null};
+  });
+  var sc=_idxSort.col,sd=_idxSort.dir;
+  rows.sort(function(a,b){
+    if(sc==='name') return sd*a.name.localeCompare(b.name);
+    var av=sc==='rating'?a.rating.all:sc==='ma'?a.rating.ma:sc==='osc'?a.rating.osc:a[sc], bv=sc==='rating'?b.rating.all:sc==='ma'?b.rating.ma:sc==='osc'?b.rating.osc:b[sc];
+    if(av==null&&bv==null)return 0;if(av==null)return 1;if(bv==null)return -1;return sd*(av-bv);
+  });
+  function arr(col){if(_idxSort.col!==col)return '<span style="opacity:0.3;font-size:9px"> ⇅</span>';return '<span style="font-size:9px"> '+(_idxSort.dir===1?'▲':'▼')+'</span>';}
+  var cols;
+  if(_idxView==='overview') cols=[['level','Level'],['d1','Chg 1D'],['w1','Chg 1W'],['lo','20d low'],['hi','20d high'],['rating','Tech rating'],['spark','60 days']];
+  else if(_idxView==='performance') cols=[['d1','1D'],['w1','1W'],['m1','1M'],['m3','3M'],['m6','6M'],['ytd','YTD'],['y1','1Y'],['vol','Volatility']];
+  else cols=[['rating','Tech rating'],['ma','MA rating'],['osc','Osc rating'],['rsi','RSI 14'],['mom','Mom 10'],['cci','CCI 20'],['stoch','Stoch %K / %D'],['macd','MACD hist'],['st','SuperTrend']];
+  var h='<table class="idx-table"><thead><tr><th onclick="sortIdx(\'name\')">Index'+arr('name')+'</th>';
+  cols.forEach(function(c){h+='<th onclick="sortIdx(\''+c[0]+'\')">'+c[1]+(c[0]==='spark'?'':arr(c[0]))+'</th>';});
+  h+='</tr></thead><tbody>';
+  rows.forEach(function(r){
+    var col=ccyCol(r.ccy);
+    h+='<tr class="idx-row"><td><div class="idx-name"><span class="idx-badge" style="background:'+col+'">'+r.k+'</span><div><div style="font-weight:600;font-family:\'Syne\',sans-serif;font-size:13px">'+esc(r.name)+'</div><div class="idx-sub">'+esc(r.sub)+'</div></div></div></td>';
+    cols.forEach(function(c){
+      var k=c[0],v;
+      if(k==='level') v=r.level==null?'—':r.level.toFixed(2);
+      else if(k==='lo'||k==='hi') v=r[k]==null?'—':r[k].toFixed(2);
+      else if(k==='rating') v=ratingCell(r.rating.label,r.rating.all);
+      else if(k==='ma') v=ratingCell(r.rating.maLabel,r.rating.ma);
+      else if(k==='osc') v=ratingCell(r.rating.oscLabel,r.rating.osc);
+      else if(k==='spark') v=sparkSvg(r.spark,col);
+      else if(k==='vol') v=r.vol==null?'—':r.vol.toFixed(2)+'%';
+      else if(k==='rsi') v=r.rsi==null?'—':'<span class="'+(r.rsi>70?'hm-neg':r.rsi<30?'hm-pos':'')+'">'+r.rsi.toFixed(1)+'</span>';
+      else if(k==='mom') v=r.mom==null?'—':'<span class="'+(r.mom>0?'hm-pos':r.mom<0?'hm-neg':'')+'">'+(r.mom>0?'+':'')+r.mom.toFixed(3)+'</span>';
+      else if(k==='cci') v=r.cci==null?'—':'<span class="'+(r.cci>100?'hm-neg':r.cci<-100?'hm-pos':'')+'">'+r.cci.toFixed(1)+'</span>';
+      else if(k==='stoch') v=!r.stoch?'—':'<span class="'+(r.stoch.k>80?'hm-neg':r.stoch.k<20?'hm-pos':'')+'">'+r.stoch.k.toFixed(1)+' / '+r.stoch.d.toFixed(1)+'</span>';
+      else if(k==='macd') v=!r.macd?'—':'<span class="'+(r.macd.hist>0?'hm-pos':'hm-neg')+'">'+(r.macd.hist>0?'+':'')+r.macd.hist.toFixed(3)+(r.macd.rising===true?' ▲':r.macd.rising===false?' ▼':'')+'</span>';
+      else if(k==='st') v=r.st==null?'—':r.st>0?'<span class="hm-pos">▲ Up</span>':'<span class="hm-neg">▼ Down</span>';
+      else v=pctCell(r[k]);
+      h+='<td>'+v+'</td>';
+    });
+    h+='</tr>';
+  });
+  h+='</tbody></table>';
+  body.innerHTML=h;
+}
+function pctOf2(a,b){return (b==null||!b)?null:Number(((a-b)/b*100).toFixed(2));}
+
 document.addEventListener('DOMContentLoaded',function(){
   initPin();
   /* Timezone first — every later render reads FH_TZ for its labels. */
