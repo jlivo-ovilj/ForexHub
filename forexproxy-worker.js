@@ -29,7 +29,7 @@
        Cache API which is per-colo) and backs off when Forex Factory rate-limits.
    Bindings required: ANTHROPIC_API_KEY (secret), FH_APP_KEY (secret), FH_KV (KV).  */
 
-const WORKER_VERSION = "11.3";
+const WORKER_VERSION = "11.4";
 const YF_HOSTS = ["https://query1.finance.yahoo.com", "https://query2.finance.yahoo.com"];
 const UA = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0 Safari/537.36";
 const NY_HOUR_FMT = new Intl.DateTimeFormat("en-US", { timeZone: "America/New_York", hour: "numeric", hourCycle: "h23" });
@@ -965,7 +965,15 @@ export default {
         const list = Array.isArray(body.setups) ? body.setups.slice(0, 12).map(function (s) {
           const pair = String(s.pair || "").replace(/[^A-Za-z]/g, "").toUpperCase();
           const n = function (v) { const x = parseFloat(v); return isFinite(x) ? x : null; };
-          return { pair: pair, dir: /LONG|BUY/i.test(String(s.dir || "")) ? "LONG" : "SHORT", entry: n(s.entry), sl: n(s.sl), tp: n(s.tp), rr: n(s.rr), prob: String(s.prob || "").slice(0, 12), order: String(s.order || "").slice(0, 16) };
+          /* v11.4 — two fields added for the site's TRADE / CHART buttons.
+             mode:"chart" means DRAW ONLY: the terminal must show the box and lines
+             but must never place the order, whatever its own order setting says.
+             Anything unrecognised falls back to "trade", which is how every
+             setup behaved before this existed, so an older site keeps working.
+             strength carries the scanner's against/with-strength verdict so a
+             later review can test whether the flag predicted anything. */
+          const mode = String(s.mode || "").toLowerCase() === "chart" ? "chart" : "trade";
+          return { pair: pair, dir: /LONG|BUY/i.test(String(s.dir || "")) ? "LONG" : "SHORT", entry: n(s.entry), sl: n(s.sl), tp: n(s.tp), rr: n(s.rr), prob: String(s.prob || "").slice(0, 12), order: String(s.order || "").slice(0, 16), mode: mode, strength: String(s.strength || "").slice(0, 10), strengthWhy: String(s.strengthWhy || "").slice(0, 90) };
         }).filter(function (s) { return /^[A-Z]{6}$/.test(s.pair) && s.entry != null && s.sl != null && s.tp != null; }) : [];
         const rec = { src: src, ts: new Date().toISOString(), count: list.length, setups: list };
         await KV.put("setups:" + src, JSON.stringify(rec), { expirationTtl: 86400 });

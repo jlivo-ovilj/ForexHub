@@ -443,6 +443,14 @@ button.scan-pair-chip:hover{opacity:0.75}
 .scan-str.with{color:#4ade80;border-color:rgba(74,222,128,0.35);background:rgba(74,222,128,0.08)}
 @media(max-width:640px){.scan-str{white-space:normal;margin-left:0;margin-top:6px;flex-basis:100%;text-align:center}}
 .str-ctl{display:flex;align-items:center;gap:6px;font-size:11.5px;color:rgba(240,237,232,0.55);flex-wrap:wrap}
+.feed-ctl{display:flex;align-items:center;gap:6px;flex-wrap:wrap}
+.sb-sm{font-size:11.5px;padding:5px 10px}
+.sb-clr{opacity:.7}
+.feed-count{font-family:'DM Mono',monospace;font-size:11px;color:#fbbf24}
+.feed-btn{transition:background .15s,color .15s,border-color .15s}
+.feed-btn.chart.on{color:#38bdf8;border-color:rgba(56,189,248,0.5);background:rgba(56,189,248,0.12)}
+.feed-btn.trade.on{color:#4ade80;border-color:rgba(74,222,128,0.5);background:rgba(74,222,128,0.12)}
+.feed-btn.trade.blocked{opacity:.4;text-decoration:line-through}
 .str-ctl select{font-family:'DM Mono',monospace;font-size:11px;background:rgba(255,255,255,0.05);color:#f0ede8;border:1px solid rgba(255,255,255,0.14);border-radius:6px;padding:3px 6px}
 .scan-reason{font-size:13px;line-height:1.7;color:#d4d0ca;margin-bottom:12px}
 .scan-levels{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px}
@@ -1370,6 +1378,12 @@ body.light .chart-modal-overlay{background:rgba(0,0,0,0.55)}
         <select id="str-mode" onchange="setStrMode(this.value)"></select>
         <select id="str-win" onchange="setStrWin(this.value)"></select>
       </span>
+      <span class="feed-ctl">
+        <button class="sb sb-sm" onclick="feedSendAll('chart')" title="Send every setup below to the terminals as drawings only — nothing is placed">📈 All to chart</button>
+        <button class="sb sb-sm" onclick="feedSendAll('trade')" title="Send every eligible setup to be placed by the bot. Anything flagged against strength is skipped.">⚡ All to trade</button>
+        <button class="sb sb-sm sb-clr" onclick="feedClear('scanner');feedClear('pullback')" title="Retract everything — the terminals will have nothing armed">✕ Clear feed</button>
+        <span id="feed-count" class="feed-count"></span>
+      </span>
       <span class="meta" id="scan-meta"></span>
     </div>
   </div>
@@ -1509,6 +1523,13 @@ body.light .chart-modal-overlay{background:rgba(0,0,0,0.55)}
   <div class="st">About ForexHub</div>
   <div class="ss">Your daily forex companion</div>
   <div class="card">
+    <div class="ai"><div class="aq">What's new in v17 (14 Sep 2026)</div><div class="aa">
+      · <b>Nothing reaches MT5 or cTrader unless you send it.</b> Until now every validated setup was published to the terminal feed the moment a scan finished, and the bots placed whatever they found — which is how 46 trades were taken in a week without anyone looking at one of them. Running a scan now publishes nothing at all.<br>
+      · Every card has two new buttons. <b>📈 Chart</b> sends the setup so the risk/reward box and the 1 Entry · 2 TP · 3 SL lines are drawn on the terminal chart, but the bot is <em>forbidden to place it</em> — you execute by hand if you decide to. <b>⚡ Trade</b> sends it to be placed, as the feed behaved before. The button shows what you chose (<em>On chart ✓</em> / <em>Trading ✓</em>), so you can see what is actually armed.<br>
+      · <b>📈 All to chart</b> and <b>⚡ All to trade</b> do the same for every setup on screen, and <b>✕ Clear feed</b> retracts everything — useful before the weekend. A running <em>On the feed: N</em> count sits next to them.<br>
+      · The against-strength flag from v16 now has a job instead of a veto: a flagged setup can still be sent to the chart, but its Trade button is struck through and says why. You are never quietly prevented from seeing a setup — only from arming it without noticing.<br>
+      · What you have sent survives a reload and a fresh scan, because a setup handed to a terminal is a live instruction, not a screen state. It ages out after 24 hours, matching the feed's own expiry. Worker 11.4 carries the chart-or-trade mode and the strength verdict through to the terminals.
+    </div></div>
     <div class="ai"><div class="aq">What's new in v16 (14 Sep 2026)</div><div class="aa">
       · <b>Against-strength filter on the scanner.</b> A review of 46 live trades from 7–14 September found the losses were almost entirely on the long side — 15 long trades, −$22.10, ten of them straight to a full stop — and the currency being bought was EUR five times in a week when EUR sat at the bottom of the strength table. The scanner reads price structure, not regime, so it kept producing tidy-looking longs in the weakest currency on the board.<br>
       · Every trade is long one currency and short another. Each setup is now checked against the same currency-strength baskets behind the Indices tab: it is marked <b>against strength</b> when the currency being <em>bought</em> is in the bottom two, or the one being <em>sold</em> is in the top two — and <b>with strength</b> in the mirror case. The chip on the card states the numbers it used, so you can disagree with it.<br>
@@ -1877,7 +1898,7 @@ function dismissBanner(){
 /* ══════════════════════════════════════
    HEADER DATE
 ══════════════════════════════════════ */
-var FH_BUILD='v16'; // 14 Sep 2026 — against-strength filter on the scanner (from the 46-trade live review) // bump on every delivered change — shown in the header so it's always obvious which version is loaded
+var FH_BUILD='v17'; // 14 Sep 2026 — Chart / Trade buttons: nothing reaches the terminals unless you send it // bump on every delivered change — shown in the header so it's always obvious which version is loaded
 /* Stale-tab killer: every so often, check whether a newer build has been deployed.
    If so, show a can't-miss banner telling the user to reload — long-open tabs silently
    running old code caused repeated "the fix didn't work" confusion. */
@@ -1931,7 +1952,7 @@ function showS(id,btn){
   }
   if(id==='trends'&&(!trendLoaded||sectionStale('trends',REFRESH_AFTER))) loadTrendScan();
   if(id==='indices') loadStrength(false);
-  if(id==='scanner') initStrCtl();          // v16 — fill the Against-strength dropdowns
+  if(id==='scanner'){ initStrCtl(); paintFeedButtons(); }   // v16 filter control + v17 feed state
   if(id==='iq') initIq();
   if(id==='calculator'&&(!calcLoaded||sectionStale('calculator',REFRESH_AFTER))) loadCalculator();
 }
@@ -2871,7 +2892,9 @@ function setupChartSlot(o,src){
   _setupStore[id]=o;
   return '<div class="scan-chart" data-sid="'+id+'" title="Tap to enlarge · copy onto your chart" onclick="openSetupModal('+id+')"></div>'
     +'<button class="pip-fccy scan-copy" onclick="event.stopPropagation();copySetupChart('+id+')" title="Copy this setup as an image">📋 Copy chart</button>'
-    +'<button class="pip-fccy scan-copy" onclick="event.stopPropagation();copySetupText('+id+')" title="Copy the levels as one line of text — paste into the TradingView position tool or a note">📝 Copy levels</button>';
+    +'<button class="pip-fccy scan-copy" onclick="event.stopPropagation();copySetupText('+id+')" title="Copy the levels as one line of text — paste into the TradingView position tool or a note">📝 Copy levels</button>'
+    +'<button class="pip-fccy feed-btn chart" onclick="event.stopPropagation();feedSend('+id+',\'chart\')">📈 Chart</button>'
+    +'<button class="pip-fccy feed-btn trade" onclick="event.stopPropagation();feedSend('+id+',\'trade\')">⚡ Trade</button>';
 }
 function fillSetupCharts(root){
   (root||document).querySelectorAll('.scan-chart[data-sid]').forEach(function(d){
@@ -2907,11 +2930,127 @@ function copySetupText(id){
    cBot (FxHubSetupSync) can draw them on the matching chart. Fire-and-forget:
    a failure here never affects the cards. */
 var SETUPS_URL=WU.replace(/\/api$/,'')+'/setups';
+
+/* ══════════════════════════════════════════════════════════════════
+   THE TERMINAL FEED — what actually reaches MT5 / cTrader  (v17)
+══════════════════════════════════════════════════════════════════
+   Until now every validated setup was published automatically the moment a
+   scan finished, and the bots placed whatever they found. The 7–14 September
+   review showed what that costs: 46 trades taken without a human ever looking
+   at one of them, and the losing longs were setups John would very likely have
+   passed on had he been asked.
+
+   So nothing is published by scanning any more. Each card carries two buttons:
+
+     CHART  — send it so the box and lines are drawn on the terminal chart, but
+              the bot is forbidden to place it (mode "chart"). This is the
+              "I want to watch this one" answer.
+     TRADE  — send it to be placed, exactly as the feed behaved before.
+
+   A setup that the strength filter has flagged can still be sent as CHART, but
+   TRADE is disabled — the flag stops being a silent veto and becomes a reason
+   shown on a button.
+
+   What has been sent survives a page reload and a fresh scan, because a setup
+   handed to a terminal is a live instruction, not a screen state. It ages out
+   after 24 hours, matching the worker's own expiry, and Clear feed retracts
+   everything immediately. */
+var FEED_TTL=24*60*60*1000;
+function feedAll(){ try{ return JSON.parse(LS.get('fh_feed')||'{}')||{}; }catch(e){ return {}; } }
+function feedSave(f){ LS.set('fh_feed',JSON.stringify(f)); }
+/* Stable across scans: the same pair, direction and entry is the same instruction. */
+function feedKey(o){
+  return String(o.pair).replace(/[^A-Za-z]/g,'').toUpperCase()+'|'+(o._isLong?'L':'S')+'|'+o._e;
+}
+function feedGet(src){
+  var f=feedAll(), b=f[src]||{}, now=Date.now(), changed=false;
+  Object.keys(b).forEach(function(k){ if(now-(b[k].at||0)>FEED_TTL){ delete b[k]; changed=true; } });
+  if(changed){ f[src]=b; feedSave(f); }
+  return b;
+}
+function feedMode(src,o){ var e=feedGet(src)[feedKey(o)]; return e?e.mode:null; }
+
+/* Every send re-posts the whole current basket for that source. The worker
+   stores one record per source, so a partial post would silently retract
+   everything sent before it. */
+function feedPush(src){
+  var b=feedGet(src), list=Object.keys(b).map(function(k){ return b[k].s; });
+  return publishSetups(src,list);
+}
+function feedSend(id,mode){
+  var o=_setupStore[id]; if(!o) return;
+  var src=o.src==='pullback'?'pullback':'scanner';
+  if(mode==='trade'&&o._str&&o._str.verdict==='against'&&strMode()!=='off'&&strMode()!=='flag'){
+    showToast('Held back: '+o._str.why); return;
+  }
+  var f=feedAll(), b=f[src]||{};
+  b[feedKey(o)]={mode:mode,at:Date.now(),s:{
+    pair:String(o.pair).replace(/[^A-Za-z]/g,'').toUpperCase(),dir:o._isLong?'LONG':'SHORT',
+    entry:o._e,sl:o._sl,tp:o._tp,rr:o._rr,prob:o.prob||'',order:o.orderType||'',mode:mode,
+    strength:o._str?o._str.verdict:'',strengthWhy:o._str?o._str.why:''}};
+  f[src]=b; feedSave(f);
+  feedPush(src).then(function(){ paintFeedButtons(); });
+  showToast(mode==='trade'?'Sent to trade — the bot will place it':'Sent to chart — drawn only, no order');
+  paintFeedButtons();
+}
+function feedSendAll(mode){
+  var ids=Object.keys(_setupStore).filter(function(id){ return document.querySelector('.scan-chart[data-sid="'+id+'"]'); });
+  var src=null,n=0;
+  ids.forEach(function(id){
+    var o=_setupStore[id]; if(!o) return;
+    src=o.src==='pullback'?'pullback':'scanner';
+    if(mode==='trade'&&o._str&&o._str.verdict==='against'&&strMode()!=='off'&&strMode()!=='flag') return;
+    var f=feedAll(), b=f[src]||{};
+    b[feedKey(o)]={mode:mode,at:Date.now(),s:{
+      pair:String(o.pair).replace(/[^A-Za-z]/g,'').toUpperCase(),dir:o._isLong?'LONG':'SHORT',
+      entry:o._e,sl:o._sl,tp:o._tp,rr:o._rr,prob:o.prob||'',order:o.orderType||'',mode:mode,
+      strength:o._str?o._str.verdict:'',strengthWhy:o._str?o._str.why:''}};
+    f[src]=b; feedSave(f); n++;
+  });
+  if(!src||!n){ showToast('Nothing eligible to send'); return; }
+  feedPush(src).then(function(){ paintFeedButtons(); });
+  showToast(n+' setup'+(n>1?'s':'')+' sent to '+(mode==='trade'?'trade':'chart'));
+  paintFeedButtons();
+}
+function feedClear(src){
+  var f=feedAll(); f[src]={}; feedSave(f);
+  publishSetups(src,[]).then(function(){ paintFeedButtons(); });
+  showToast('Feed cleared — nothing is armed on the terminals');
+  paintFeedButtons();
+}
+/* Buttons reflect what is actually on the feed, not what was clicked. */
+function paintFeedButtons(){
+  document.querySelectorAll('.scan-chart[data-sid]').forEach(function(d){
+    var id=d.getAttribute('data-sid'), o=_setupStore[id]; if(!o) return;
+    var src=o.src==='pullback'?'pullback':'scanner', m=feedMode(src,o);
+    var card=d.closest('.scan-card'); if(!card) return;
+    var bc=card.querySelector('.feed-btn.chart'), bt=card.querySelector('.feed-btn.trade');
+    if(bc){ bc.classList.toggle('on',m==='chart'); bc.textContent=m==='chart'?'📈 On chart ✓':'📈 Chart'; }
+    if(bt){
+      var blocked=o._str&&o._str.verdict==='against'&&strMode()!=='off'&&strMode()!=='flag';
+      bt.classList.toggle('on',m==='trade');
+      bt.classList.toggle('blocked',!!blocked);
+      bt.textContent=m==='trade'?'⚡ Trading ✓':'⚡ Trade';
+      bt.title=blocked?('Against strength — '+o._str.why+'. Send it to the chart instead, or change Against strength in the header.'):'Send to MT5 / cTrader and let the bot place it';
+    }
+  });
+  var n=0; ['scanner','pullback'].forEach(function(s){ n+=Object.keys(feedGet(s)).length; });
+  var el=document.getElementById('feed-count');
+  if(el) el.textContent=n?('On the feed: '+n):'';
+}
+
 function publishSetups(src,list){
   try{
-    var payload={src:src,setups:list.map(function(o){return {pair:String(o.pair).replace(/[^A-Za-z]/g,'').toUpperCase(),dir:o._isLong?'LONG':'SHORT',entry:o._e,sl:o._sl,tp:o._tp,rr:o._rr,prob:o.prob||'',order:o.orderType||'',
-      /* v16 — recorded so a later review can test whether the flag was predictive */
-      strength:o._str?o._str.verdict:'',strengthWhy:o._str?o._str.why:''};})};
+    /* Two shapes arrive here: a parsed card (_isLong/_e/_sl/_tp) straight from the
+       scanner, or an entry already stored in the feed basket, which is flat and
+       carries its own mode. v17 posts the second kind, so re-mapping blindly would
+       have thrown away every level — flatten only what still needs it. */
+    var payload={src:src,setups:list.map(function(o){
+      if(o.entry!=null&&o.dir) return o;
+      return {pair:String(o.pair).replace(/[^A-Za-z]/g,'').toUpperCase(),dir:o._isLong?'LONG':'SHORT',entry:o._e,sl:o._sl,tp:o._tp,rr:o._rr,prob:o.prob||'',order:o.orderType||'',mode:'trade',
+        /* v16 — recorded so a later review can test whether the flag was predictive */
+        strength:o._str?o._str.verdict:'',strengthWhy:o._str?o._str.why:''};
+    })};
     return fetch(SETUPS_URL,{method:'POST',headers:FH_HDRS,body:JSON.stringify(payload)}).then(function(r){return r.ok?r.json():null;}).then(function(d){
       var m=document.getElementById('scan-meta');
       if(d&&d.ok&&m) m.textContent+=' · sent to MT5/cTrader feed ('+d.stored+')';
@@ -5049,7 +5188,7 @@ async function runScanner(){
       var scanAt=fhTime(scanBucket*18e5);
       meta.textContent='Analysis from '+scanAt+' '+fhTzLabel()+' (new analysis every 30 min) · Not financial advice';
       if(shown) buildShareBar('scan-share','Trade scanner','#scan-results','scanner');
-      if(pub.length) publishSetups('scanner',pub);
+      paintFeedButtons();   // v17 — nothing is published until you press Chart or Trade
     }
   } catch(e){
     res.innerHTML='<div class="eb" style="margin:10px">'+friendlyError(e)+'</div>';
@@ -5152,7 +5291,7 @@ async function runPullbackScanner(){
       }
       meta.textContent='Pullback scan · '+fhClock()+' · Not financial advice';
       if(shown) buildShareBar('scan-share','Pullback scanner','#scan-results','pullback_scanner');
-      if(pub.length) publishSetups('pullback',pub);
+      paintFeedButtons();   // v17 — nothing is published until you press Chart or Trade
     }
   } catch(e){
     res.innerHTML='<div class="eb" style="margin:10px">'+friendlyError(e)+'</div>';
