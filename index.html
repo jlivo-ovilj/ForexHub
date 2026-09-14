@@ -491,6 +491,7 @@ button.scan-pair-chip:hover{opacity:0.75}
 .scan-decide{gap:18px}
 .scan-decide button{font-size:13.5px;font-weight:700;padding:9px 20px;border-width:1.5px;border-radius:100px;letter-spacing:0.01em}
 @media(max-width:640px){.scan-body{flex-direction:column}.scan-side{width:100%;flex-direction:row;flex-wrap:wrap}.scan-chart{width:150px}.scan-actions{margin-top:10px}}
+.scan-ref{color:#fbbf24;font-family:'DM Mono',monospace;font-size:11px;cursor:help}
 .ptr-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px}
 .ptr-grid .fld{margin:0}
 .scan-empty{text-align:center;padding:50px 20px;color:#b0aba3;font-size:15px}
@@ -1562,6 +1563,12 @@ body.light .chart-modal-overlay{background:rgba(0,0,0,0.55)}
   <div class="st">About ForexHub</div>
   <div class="ss">Your daily forex companion</div>
   <div class="card">
+    <div class="ai"><div class="aq">What's new in v21 (14 Sep 2026) · bots 1.17 · worker 11.5</div><div class="aa">
+      · <b>Every setup you send now carries a trade reference</b> — <code>NZDUSDS-141530</code>: the pair, L or S, then the day and time you sent it. It appears on the card once sent, in the MT5 order comment / cTrader label, and in <code>FxHubJournal.csv</code> beside the broker's ticket number. That is how a trade in your history gets traced back to the card that produced it.<br>
+      · <b>The journal is the one that counts.</b> An MT5 order comment can be rewritten by the broker when a stop or target closes the trade — some append <code>[sl]</code>, some replace it outright — so the comment is for reading while the order is live. The journal CSV is our own file, the bot writes the reference into its own column while the position is open, and the ticket beside it never changes. Search either the reference or the ticket and you have both ends.<br>
+      · <b>The reference is minted when you send, not when you scan</b>, and it is kept. Re-run the scanner, or switch a setup from Trade to Chart and back, and the reference stays the one the terminal already has — it identifies the instruction, not the scan.<br>
+      · Worker 11.5 passes it through. (The whitelist there drops anything it does not name, silently — which is how the strength verdict went missing through all of 11.3.)<br>
+    </div></div>
     <div class="ai"><div class="aq">What's new in v20 (14 Sep 2026) · bots 1.16</div><div class="aa">
       · <b>The trade review can no longer make numbers up.</b> Both reviews accept a chart screenshot, and both used to hand the picture over with nothing stopping the model quoting prices, pip counts and R-multiples it had measured off the pixels. It cannot do that accurately, and on your 7–14 Sep reviews it was simply wrong — the criticism was often fair but the evidence cited for it was invented, which is worse than saying nothing. Every figure must now come from you.<br>
       · <b>Past trade review has a place to put the real numbers:</b> pair, direction, entry, stop, target, exit price, result and how long you held it. Fill in what you have. The review states only those, describes everything else in words — where the entry sat relative to the swing, whether the stop looked inside the noise, how price behaved afterwards — and if it needs a number you did not give it, it says so instead of guessing one. The printed record shows exactly which numbers it was working from.<br>
@@ -1953,7 +1960,7 @@ function dismissBanner(){
 /* ══════════════════════════════════════
    HEADER DATE
 ══════════════════════════════════════ */
-var FH_BUILD='v20'; // 14 Sep 2026 — trade review can no longer invent numbers from a screenshot // bump on every delivered change — shown in the header so it's always obvious which version is loaded
+var FH_BUILD='v21'; // 14 Sep 2026 — every sent setup carries a trade reference through to the journal // bump on every delivered change — shown in the header so it's always obvious which version is loaded
 /* Stale-tab killer: every so often, check whether a newer build has been deployed.
    If so, show a can't-miss banner telling the user to reload — long-open tabs silently
    running old code caused repeated "the fix didn't work" confusion. */
@@ -3037,6 +3044,28 @@ var SETUPS_URL=WU.replace(/\/api$/,'')+'/setups';
    handed to a terminal is a live instruction, not a screen state. It ages out
    after 24 hours, matching the worker's own expiry, and Clear feed retracts
    everything immediately. */
+/* ── THE TRADE REFERENCE  (v21) ─────────────────────────────────────
+   So a trade in the broker's history can be traced back to the card that
+   produced it. Shape: NZDUSDS-141530 — pair, L or S, then the day and the
+   HHMM you sent it. Readable on its own, and it ties to the timestamp
+   already printed on the card and in the chart note.
+
+   It is minted when a setup is SENT, not when it is scanned, and kept in
+   the basket entry — so re-running the scanner and sending the same setup
+   again does not renumber an instruction the terminal already has.
+
+   It travels: card → feed → order comment (MT5) / label (cTrader) →
+   FxHubJournal.csv. The journal is the one that matters. An MT5 order
+   comment can be rewritten by the broker when a stop or target closes the
+   trade, so the comment is for reading while the order is live; the CSV,
+   which is our own file and carries the broker ticket beside the ref, is
+   what a review reads months later. */
+function makeRef(o,when){
+  var d=when||new Date();
+  var pr=String(o.pair).replace(/[^A-Za-z]/g,'').toUpperCase();
+  var p2=function(n){ return (n<10?'0':'')+n; };
+  return pr+(o._isLong?'L':'S')+'-'+p2(d.getDate())+p2(d.getHours())+p2(d.getMinutes());
+}
 var FEED_TTL=24*60*60*1000;
 function feedAll(){ try{ return JSON.parse(LS.get('fh_feed')||'{}')||{}; }catch(e){ return {}; } }
 function feedSave(f){ LS.set('fh_feed',JSON.stringify(f)); }
@@ -3065,12 +3094,14 @@ function feedSend(id,mode){
   if(mode==='trade'&&o._str&&o._str.verdict==='against'&&strMode()!=='off'&&strMode()!=='flag'){
     showToast('Held back: '+o._str.why); return;
   }
-  var f=feedAll(), b=f[src]||{};
-  b[feedKey(o)]={mode:mode,at:Date.now(),s:{
+  var f=feedAll(), b=f[src]||{}, k=feedKey(o);
+  var ref=(b[k]&&b[k].s&&b[k].s.ref)?b[k].s.ref:makeRef(o);   // keep the ref a setup already has
+  b[k]={mode:mode,at:Date.now(),s:{
     pair:String(o.pair).replace(/[^A-Za-z]/g,'').toUpperCase(),dir:o._isLong?'LONG':'SHORT',
-    entry:o._e,sl:o._sl,tp:o._tp,rr:o._rr,prob:o.prob||'',order:o.orderType||'',mode:mode,
+    entry:o._e,sl:o._sl,tp:o._tp,rr:o._rr,prob:o.prob||'',order:o.orderType||'',mode:mode,ref:ref,
     strength:o._str?o._str.verdict:'',strengthWhy:o._str?o._str.why:''}};
   f[src]=b; feedSave(f);
+  o._ref=ref;
   feedPush(src).then(function(){ paintFeedButtons(); });
   showToast(mode==='trade'?'Sent to trade — the bot will place it':'Sent to chart — drawn only, no order');
   paintFeedButtons();
@@ -3082,12 +3113,13 @@ function feedSendAll(mode){
     var o=_setupStore[id]; if(!o) return;
     src=o.src==='pullback'?'pullback':'scanner';
     if(mode==='trade'&&o._str&&o._str.verdict==='against'&&strMode()!=='off'&&strMode()!=='flag') return;
-    var f=feedAll(), b=f[src]||{};
-    b[feedKey(o)]={mode:mode,at:Date.now(),s:{
+    var f=feedAll(), b=f[src]||{}, k=feedKey(o);
+    var ref=(b[k]&&b[k].s&&b[k].s.ref)?b[k].s.ref:makeRef(o);
+    b[k]={mode:mode,at:Date.now(),s:{
       pair:String(o.pair).replace(/[^A-Za-z]/g,'').toUpperCase(),dir:o._isLong?'LONG':'SHORT',
-      entry:o._e,sl:o._sl,tp:o._tp,rr:o._rr,prob:o.prob||'',order:o.orderType||'',mode:mode,
+      entry:o._e,sl:o._sl,tp:o._tp,rr:o._rr,prob:o.prob||'',order:o.orderType||'',mode:mode,ref:ref,
       strength:o._str?o._str.verdict:'',strengthWhy:o._str?o._str.why:''}};
-    f[src]=b; feedSave(f); n++;
+    f[src]=b; feedSave(f); o._ref=ref; n++;
   });
   if(!src||!n){ showToast('Nothing eligible to send'); return; }
   feedPush(src).then(function(){ paintFeedButtons(); });
@@ -3118,6 +3150,18 @@ function paintFeedButtons(){
         :(m==='trade'?'Armed — the bot will place this one. Press Chart to stand it down.':'Send to MT5 / cTrader and let the bot place it');
     }
   });
+  /* The ref only exists once sent, so it appears then — and it is what you
+     search the broker history and the journal CSV for. */
+  document.querySelectorAll('.scan-chart[data-sid]').forEach(function(d){
+    var id=d.getAttribute('data-sid'), o=_setupStore[id]; if(!o) return;
+    var src=o.src==='pullback'?'pullback':'scanner';
+    var e=feedGet(src)[feedKey(o)], card=d.closest('.scan-card'); if(!card) return;
+    var slot=card.querySelector('.scan-ref');
+    if(!slot){ var rr=card.querySelector('.scan-rr'); if(!rr) return;
+      slot=document.createElement('span'); slot.className='scan-ref'; rr.appendChild(slot); }
+    slot.textContent=(e&&e.s&&e.s.ref)?('  ·  ref '+e.s.ref):'';
+    slot.title=(e&&e.s&&e.s.ref)?'Search this in your broker history or FxHubJournal.csv to find the trade this card produced':'';
+  });
   var n=0; ['scanner','pullback'].forEach(function(s){ n+=Object.keys(feedGet(s)).length; });
   var el=document.getElementById('feed-count');
   if(el) el.textContent=n?('On the feed: '+n):'';
@@ -3131,7 +3175,7 @@ function publishSetups(src,list){
        have thrown away every level — flatten only what still needs it. */
     var payload={src:src,setups:list.map(function(o){
       if(o.entry!=null&&o.dir) return o;
-      return {pair:String(o.pair).replace(/[^A-Za-z]/g,'').toUpperCase(),dir:o._isLong?'LONG':'SHORT',entry:o._e,sl:o._sl,tp:o._tp,rr:o._rr,prob:o.prob||'',order:o.orderType||'',mode:'trade',
+      return {pair:String(o.pair).replace(/[^A-Za-z]/g,'').toUpperCase(),dir:o._isLong?'LONG':'SHORT',entry:o._e,sl:o._sl,tp:o._tp,rr:o._rr,prob:o.prob||'',order:o.orderType||'',mode:'trade',ref:o._ref||makeRef(o),
         /* v16 — recorded so a later review can test whether the flag was predictive */
         strength:o._str?o._str.verdict:'',strengthWhy:o._str?o._str.why:''};
     })};

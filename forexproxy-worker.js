@@ -29,7 +29,7 @@
        Cache API which is per-colo) and backs off when Forex Factory rate-limits.
    Bindings required: ANTHROPIC_API_KEY (secret), FH_APP_KEY (secret), FH_KV (KV).  */
 
-const WORKER_VERSION = "11.4";
+const WORKER_VERSION = "11.5";
 const YF_HOSTS = ["https://query1.finance.yahoo.com", "https://query2.finance.yahoo.com"];
 const UA = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0 Safari/537.36";
 const NY_HOUR_FMT = new Intl.DateTimeFormat("en-US", { timeZone: "America/New_York", hour: "numeric", hourCycle: "h23" });
@@ -971,9 +971,13 @@ export default {
              Anything unrecognised falls back to "trade", which is how every
              setup behaved before this existed, so an older site keeps working.
              strength carries the scanner's against/with-strength verdict so a
-             later review can test whether the flag predicted anything. */
+             later review can test whether the flag predicted anything.
+             11.5 — ref is the trade reference (NZDUSDS-141530) that lets a trade
+             in the broker's history be traced back to the card that made it.
+             Note how this whitelist drops anything it does not name, silently:
+             that is exactly how strength went missing through all of 11.3. */
           const mode = String(s.mode || "").toLowerCase() === "chart" ? "chart" : "trade";
-          return { pair: pair, dir: /LONG|BUY/i.test(String(s.dir || "")) ? "LONG" : "SHORT", entry: n(s.entry), sl: n(s.sl), tp: n(s.tp), rr: n(s.rr), prob: String(s.prob || "").slice(0, 12), order: String(s.order || "").slice(0, 16), mode: mode, strength: String(s.strength || "").slice(0, 10), strengthWhy: String(s.strengthWhy || "").slice(0, 90) };
+          return { pair: pair, dir: /LONG|BUY/i.test(String(s.dir || "")) ? "LONG" : "SHORT", entry: n(s.entry), sl: n(s.sl), tp: n(s.tp), rr: n(s.rr), prob: String(s.prob || "").slice(0, 12), order: String(s.order || "").slice(0, 16), mode: mode, ref: String(s.ref || "").slice(0, 20), strength: String(s.strength || "").slice(0, 10), strengthWhy: String(s.strengthWhy || "").slice(0, 90) };
         }).filter(function (s) { return /^[A-Z]{6}$/.test(s.pair) && s.entry != null && s.sl != null && s.tp != null; }) : [];
         const rec = { src: src, ts: new Date().toISOString(), count: list.length, setups: list };
         await KV.put("setups:" + src, JSON.stringify(rec), { expirationTtl: 86400 });
