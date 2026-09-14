@@ -443,13 +443,26 @@ button.scan-pair-chip:hover{opacity:0.75}
 .scan-str.with{color:#4ade80;border-color:rgba(74,222,128,0.35);background:rgba(74,222,128,0.08)}
 @media(max-width:640px){.scan-str{white-space:normal;margin-left:0;margin-top:6px;flex-basis:100%;text-align:center}}
 .str-ctl{display:flex;align-items:center;gap:6px;font-size:11.5px;color:rgba(240,237,232,0.55);flex-wrap:wrap}
-.feed-ctl{display:flex;align-items:center;gap:6px;flex-wrap:wrap}
+.feed-ctl{display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin-left:4px}
 .sb-sm{font-size:11.5px;padding:5px 10px}
-.sb-clr{opacity:.7}
-.feed-count{font-family:'DM Mono',monospace;font-size:11px;color:#fbbf24}
+/* v18 — the three feed controls were all solid accent pink: identical to each
+   other and to Run scanner, so nothing told them apart at a glance. They are
+   now outlined in the same colour each action carries everywhere else —
+   blue = chart only, green = will trade, red = retract — which also drops
+   them a rank below Run scanner, the one primary action in that row. */
+.sb-feed{background:transparent;border:1.5px solid;font-weight:600;letter-spacing:0.01em}
+.sb-feed.f-chart{color:#38bdf8;border-color:rgba(56,189,248,0.55);background:rgba(56,189,248,0.10)}
+.sb-feed.f-trade{color:#4ade80;border-color:rgba(74,222,128,0.55);background:rgba(74,222,128,0.10)}
+.sb-feed.f-clr{color:#f87171;border-color:rgba(248,113,113,0.45);background:rgba(248,113,113,0.08)}
+.sb-feed:hover{filter:brightness(1.35)}
+.feed-count{font-family:'DM Mono',monospace;font-size:11px;color:#fbbf24;padding-left:2px}
+/* Per-card buttons carry the same colour at rest, not only when active, so
+   Chart and Trade are distinguishable before either has been pressed. */
 .feed-btn{transition:background .15s,color .15s,border-color .15s}
-.feed-btn.chart.on{color:#38bdf8;border-color:rgba(56,189,248,0.5);background:rgba(56,189,248,0.12)}
-.feed-btn.trade.on{color:#4ade80;border-color:rgba(74,222,128,0.5);background:rgba(74,222,128,0.12)}
+.feed-btn.chart{color:rgba(56,189,248,0.85);border-color:rgba(56,189,248,0.35)}
+.feed-btn.trade{color:rgba(74,222,128,0.85);border-color:rgba(74,222,128,0.35)}
+.feed-btn.chart.on{color:#38bdf8;border-color:rgba(56,189,248,0.75);background:rgba(56,189,248,0.16);font-weight:600}
+.feed-btn.trade.on{color:#4ade80;border-color:rgba(74,222,128,0.75);background:rgba(74,222,128,0.16);font-weight:600}
 .feed-btn.trade.blocked{opacity:.4;text-decoration:line-through}
 .str-ctl select{font-family:'DM Mono',monospace;font-size:11px;background:rgba(255,255,255,0.05);color:#f0ede8;border:1px solid rgba(255,255,255,0.14);border-radius:6px;padding:3px 6px}
 .scan-reason{font-size:13px;line-height:1.7;color:#d4d0ca;margin-bottom:12px}
@@ -465,7 +478,11 @@ button.scan-pair-chip:hover{opacity:0.75}
 .scan-chart{cursor:zoom-in;border-radius:8px;overflow:hidden}
 .scan-chart canvas{width:100%!important;height:auto!important}
 .scan-copy{font-size:11px;padding:5px 8px;text-align:center}
-@media(max-width:640px){.scan-body{flex-direction:column}.scan-side{width:100%;flex-direction:row}.scan-chart{width:150px}.scan-copy{align-self:flex-end}}
+/* v18 — the four actions moved out of the narrow right rail into the empty
+   space beside the thumbnail, where they are wide enough to read. */
+.scan-actions{display:flex;flex-wrap:wrap;gap:8px;margin-top:12px}
+.scan-actions button{font-size:11.5px;padding:6px 12px;text-align:center;white-space:nowrap}
+@media(max-width:640px){.scan-body{flex-direction:column}.scan-side{width:100%;flex-direction:row}.scan-chart{width:150px}.scan-actions{margin-top:10px}}
 .scan-empty{text-align:center;padding:50px 20px;color:#b0aba3;font-size:15px}
 .scan-empty .scan-icon{font-size:40px;margin-bottom:12px}
 
@@ -1379,9 +1396,9 @@ body.light .chart-modal-overlay{background:rgba(0,0,0,0.55)}
         <select id="str-win" onchange="setStrWin(this.value)"></select>
       </span>
       <span class="feed-ctl">
-        <button class="sb sb-sm" onclick="feedSendAll('chart')" title="Send every setup below to the terminals as drawings only — nothing is placed">📈 All to chart</button>
-        <button class="sb sb-sm" onclick="feedSendAll('trade')" title="Send every eligible setup to be placed by the bot. Anything flagged against strength is skipped.">⚡ All to trade</button>
-        <button class="sb sb-sm sb-clr" onclick="feedClear('scanner');feedClear('pullback')" title="Retract everything — the terminals will have nothing armed">✕ Clear feed</button>
+        <button class="sb sb-sm sb-feed f-chart" onclick="feedSendAll('chart')" title="Send every setup below to the terminals as drawings only — nothing is placed">📈 All to chart</button>
+        <button class="sb sb-sm sb-feed f-trade" onclick="feedSendAll('trade')" title="Send every eligible setup to be placed by the bot. Anything flagged against strength is skipped.">⚡ All to trade</button>
+        <button class="sb sb-sm sb-feed f-clr" onclick="feedClear('scanner');feedClear('pullback')" title="Retract everything — the terminals will have nothing armed">✕ Clear feed</button>
         <span id="feed-count" class="feed-count"></span>
       </span>
       <span class="meta" id="scan-meta"></span>
@@ -1523,6 +1540,12 @@ body.light .chart-modal-overlay{background:rgba(0,0,0,0.55)}
   <div class="st">About ForexHub</div>
   <div class="ss">Your daily forex companion</div>
   <div class="card">
+    <div class="ai"><div class="aq">What's new in v18 (14 Sep 2026)</div><div class="aa">
+      · <b>The four buttons on each setup card have moved.</b> They were stacked in the narrow 150px rail under the thumbnail, where "📈 On chart ✓" barely fitted. They now sit in a row in the empty space under the R:R line, where there is room to read them.<br>
+      · <b>Colour tells the actions apart.</b> <b>📈 Chart</b> is blue, <b>⚡ Trade</b> is green and <b>✕ Clear feed</b> is red — at rest as well as when active, on the cards and in the scanner header alike. The three header controls used to be three identical pink pills, indistinguishable from each other and from Run scanner; they are now outlined rather than solid, which also puts Run scanner back where it belongs as the one primary action in that row, and they are spaced further apart.<br>
+      · <b>Copy levels reads properly.</b> It was one long run-on line that pasted into a TradingView note as an unreadable slab; it is now a short block, one level per line. A TradingView text object can only be a single colour, so the levels cannot be colour-coded inside a note — for a coloured picture of the setup use <b>📋 Copy chart</b> and press Ctrl+V on the chart, which drops the image straight on.<br>
+      · <b>Fixed:</b> the scanner line still claimed "sent to MT5/cTrader feed (N)" — left over from before v17, when scanning published automatically, and it appended again every time you sent something. The <em>On the feed: N</em> count beside the buttons is now the only place that is stated, and it is live.<br>
+    </div></div>
     <div class="ai"><div class="aq">What's new in v17 (14 Sep 2026)</div><div class="aa">
       · <b>Nothing reaches MT5 or cTrader unless you send it.</b> Until now every validated setup was published to the terminal feed the moment a scan finished, and the bots placed whatever they found — which is how 46 trades were taken in a week without anyone looking at one of them. Running a scan now publishes nothing at all.<br>
       · Every card has two new buttons. <b>📈 Chart</b> sends the setup so the risk/reward box and the 1 Entry · 2 TP · 3 SL lines are drawn on the terminal chart, but the bot is <em>forbidden to place it</em> — you execute by hand if you decide to. <b>⚡ Trade</b> sends it to be placed, as the feed behaved before. The button shows what you chose (<em>On chart ✓</em> / <em>Trading ✓</em>), so you can see what is actually armed.<br>
@@ -1898,7 +1921,7 @@ function dismissBanner(){
 /* ══════════════════════════════════════
    HEADER DATE
 ══════════════════════════════════════ */
-var FH_BUILD='v17'; // 14 Sep 2026 — Chart / Trade buttons: nothing reaches the terminals unless you send it // bump on every delivered change — shown in the header so it's always obvious which version is loaded
+var FH_BUILD='v18'; // 14 Sep 2026 — scanner card layout: actions moved under the levels, feed controls colour-coded // bump on every delivered change — shown in the header so it's always obvious which version is loaded
 /* Stale-tab killer: every so often, check whether a newer build has been deployed.
    If so, show a can't-miss banner telling the user to reload — long-open tabs silently
    running old code caused repeated "the fix didn't work" confusion. */
@@ -2886,16 +2909,29 @@ function buildSetupChart(o,W,H){
 }
 /* Register a validated setup and return the card's chart block (the canvas is
    attached by fillSetupCharts() once the cards are in the DOM). */
-function setupChartSlot(o,src){
+/* v18 — one registration, two pieces of markup. The thumbnail stays in the
+   150px side rail; the buttons move into the wide empty space under R:R,
+   where a label like "On chart ✓" has room to breathe. paintFeedButtons
+   looks them up card-scoped, so the move costs nothing there. */
+function setupRegister(o,src){
   var id=++_setupSeq;
   o.when=new Date();o.src=src;o.tf=src==='pullback'?'PULLBACK':'SETUP';
   _setupStore[id]=o;
-  return '<div class="scan-chart" data-sid="'+id+'" title="Tap to enlarge · copy onto your chart" onclick="openSetupModal('+id+')"></div>'
-    +'<button class="pip-fccy scan-copy" onclick="event.stopPropagation();copySetupChart('+id+')" title="Copy this setup as an image">📋 Copy chart</button>'
-    +'<button class="pip-fccy scan-copy" onclick="event.stopPropagation();copySetupText('+id+')" title="Copy the levels as one line of text — paste into the TradingView position tool or a note">📝 Copy levels</button>'
-    +'<button class="pip-fccy feed-btn chart" onclick="event.stopPropagation();feedSend('+id+',\'chart\')">📈 Chart</button>'
-    +'<button class="pip-fccy feed-btn trade" onclick="event.stopPropagation();feedSend('+id+',\'trade\')">⚡ Trade</button>';
+  return id;
 }
+function setupThumb(id){
+  return '<div class="scan-chart" data-sid="'+id+'" title="Tap to enlarge · Copy chart pastes it straight onto a TradingView chart with Ctrl+V" onclick="openSetupModal('+id+')"></div>';
+}
+function setupActions(id){
+  return '<div class="scan-actions">'
+    +'<button class="pip-fccy scan-copy" onclick="event.stopPropagation();copySetupChart('+id+')" title="Copy this setup as an image — on TradingView, press Ctrl+V on the chart to drop it in">📋 Copy chart</button>'
+    +'<button class="pip-fccy scan-copy" onclick="event.stopPropagation();copySetupText('+id+')" title="Copy the levels as text for a note or journal">📝 Copy levels</button>'
+    +'<button class="pip-fccy feed-btn chart" onclick="event.stopPropagation();feedSend('+id+',\'chart\')">📈 Chart</button>'
+    +'<button class="pip-fccy feed-btn trade" onclick="event.stopPropagation();feedSend('+id+',\'trade\')">⚡ Trade</button>'
+    +'</div>';
+}
+/* kept so anything still calling the old name gets the whole side rail */
+function setupChartSlot(o,src){ var id=setupRegister(o,src); return setupThumb(id)+setupActions(id); }
 function fillSetupCharts(root){
   (root||document).querySelectorAll('.scan-chart[data-sid]').forEach(function(d){
     var o=_setupStore[d.getAttribute('data-sid')];
@@ -2913,12 +2949,21 @@ function openSetupModal(id){
   body.appendChild(buildSetupChart(o,392,512));
   document.getElementById('chart-modal').style.display='flex';
 }
-/* v15 — the levels as one line of text, in the TradingView position-tool
-   order (1 Entry · 2 Take profit · 3 Stop loss). TradingView has no way for a
-   website to place a drawing, so this is the fastest honest hand-off there. */
+/* v15 — the levels as text, in the TradingView position-tool order
+   (1 Entry · 2 Take profit · 3 Stop loss).
+
+   v18: this used to be one long run-on line, which pastes into a TradingView
+   note as an unreadable yellow slab. It is now a short block, one level per
+   line. A TradingView text object carries a single colour, so the levels
+   cannot be colour-coded inside one note — for a coloured picture of the
+   setup use Copy chart, which pastes onto the chart with Ctrl+V. */
 function setupText(o){
   var pr=String(o.pair).replace(/[^A-Za-z]/g,'').toUpperCase();
-  return slashPair(pr)+' '+(o._isLong?'LONG':'SHORT')+' · 1 Entry '+fmtPrice(pr,o._e)+' · 2 Take profit '+fmtPrice(pr,o._tp)+' · 3 Stop loss '+fmtPrice(pr,o._sl)+' · R:R 1:'+(o._rr!=null?o._rr.toFixed(1):'—')+' · ForexHub '+(o.src==='pullback'?'pullback':'scanner')+' '+fhDate(o.when||new Date(),{day:'2-digit',month:'short'})+' '+fhClock(o.when||new Date());
+  return slashPair(pr)+' '+(o._isLong?'LONG':'SHORT')+' · R:R 1:'+(o._rr!=null?o._rr.toFixed(1):'—')+'\n'
+    +'1 Entry '+fmtPrice(pr,o._e)+'\n'
+    +'2 Take profit '+fmtPrice(pr,o._tp)+'\n'
+    +'3 Stop loss '+fmtPrice(pr,o._sl)+'\n'
+    +'ForexHub '+(o.src==='pullback'?'pullback':'scanner')+' · '+fhDate(o.when||new Date(),{day:'2-digit',month:'short'})+' '+fhClock(o.when||new Date());
 }
 function copySetupText(id){
   var o=_setupStore[id]; if(!o){showToast('Nothing to copy');return;}
@@ -3053,7 +3098,11 @@ function publishSetups(src,list){
     })};
     return fetch(SETUPS_URL,{method:'POST',headers:FH_HDRS,body:JSON.stringify(payload)}).then(function(r){return r.ok?r.json():null;}).then(function(d){
       var m=document.getElementById('scan-meta');
-      if(d&&d.ok&&m) m.textContent+=' · sent to MT5/cTrader feed ('+d.stored+')';
+      /* v18 — this used to append "· sent to MT5/cTrader feed (N)" to the scan
+         line. Under v17 that is both stale (a scan sends nothing) and wrong
+         after a second send, because it appended rather than replaced. The
+         "On the feed: N" count beside the buttons is the single live truth. */
+      if(d&&d.ok&&m) paintFeedButtons();
       return d;
     }).catch(function(){return null;});
   }catch(e){ return Promise.resolve(null); }
@@ -5163,12 +5212,13 @@ async function runScanner(){
         html+='<div class="scan-card '+cardClass+'"><div class="scan-hdr">'+pairChip(o.pair,true)+'<span class="scan-dir '+(o._isLong?'long':'short')+'">'+esc(o.dir)+'</span><span class="scan-prob '+(isHigh?'high':'med')+'">'+esc(o.prob||'MEDIUM')+' PROB</span>'+strChip(st)+'</div>';
         html+='<div class="scan-reason">'+colorizeCcy(md(o.reason))+'</div>';
         /* 8.9.26 #9.1 — Entry · Take profit · Stop loss, the TradingView position-tool order. */
+        var _sid=setupRegister(o,'scanner');
         html+='<div class="scan-body"><div class="scan-main"><div class="scan-levels">'
           +'<div class="scan-level"><div class="scan-level-lbl">1 · Entry</div><div class="scan-level-val">'+esc(o.entry)+'</div></div>'
           +'<div class="scan-level"><div class="scan-level-lbl">2 · Take profit</div><div class="scan-level-val" style="color:#4ade80">'+esc(o.tp)+'</div></div>'
           +'<div class="scan-level"><div class="scan-level-lbl">3 · Stop loss</div><div class="scan-level-val" style="color:#f87171">'+esc(o.sl)+'</div></div>'
-          +'</div><div class="scan-rr">R:R = 1:'+o._rr.toFixed(1)+'</div></div>'
-          +'<div class="scan-side">'+setupChartSlot(o,'scanner')+'</div></div>';
+          +'</div><div class="scan-rr">R:R = 1:'+o._rr.toFixed(1)+'</div>'+setupActions(_sid)+'</div>'
+          +'<div class="scan-side">'+setupThumb(_sid)+'</div></div>';
         html+='</div>';
       });
       if(!shown){
@@ -5274,12 +5324,13 @@ async function runPullbackScanner(){
         if(pd&&pd.p!=null) nowPrice=' <span style="font-size:11px;color:rgba(240,237,232,0.45);font-weight:400">now '+fmtPrice(o.pair.replace('/',''),pd.p)+'</span>';
         html+='<div class="scan-card '+cardClass+'"><div class="scan-hdr">'+pairChip(o.pair,true)+'<span class="scan-dir '+(o._isLong?'long':'short')+'">'+esc(o.dir)+'</span><span class="scan-prob '+(isHigh?'high':'med')+'">'+esc(o.prob||'MEDIUM')+' PROB</span><span style="font-size:11px;padding:2px 8px;border-radius:100px;background:rgba(255,255,255,0.06);color:'+orderCol+';margin-left:4px;border:1px solid '+orderCol+'40">'+esc(orderLabel)+'</span>'+strChip(st)+'</div>';
         html+='<div class="scan-reason">'+colorizeCcy(md(o.reason))+'</div>';
+        var _sid=setupRegister(o,'pullback');
         html+='<div class="scan-body"><div class="scan-main"><div class="scan-levels">'
           +'<div class="scan-level"><div class="scan-level-lbl">1 · Entry trigger (limit)'+nowPrice+'</div><div class="scan-level-val">'+esc(o.entry)+'</div></div>'
           +'<div class="scan-level"><div class="scan-level-lbl">2 · Take profit</div><div class="scan-level-val" style="color:#4ade80">'+esc(o.tp)+'</div></div>'
           +'<div class="scan-level"><div class="scan-level-lbl">3 · Stop loss</div><div class="scan-level-val" style="color:#f87171">'+esc(o.sl)+'</div></div>'
-          +'</div><div class="scan-rr">R:R = 1:'+o._rr.toFixed(1)+'</div></div>'
-          +'<div class="scan-side">'+setupChartSlot(o,'pullback')+'</div></div>';
+          +'</div><div class="scan-rr">R:R = 1:'+o._rr.toFixed(1)+'</div>'+setupActions(_sid)+'</div>'
+          +'<div class="scan-side">'+setupThumb(_sid)+'</div></div>';
         html+='</div>';
       });
       if(!shown){
