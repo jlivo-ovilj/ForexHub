@@ -491,6 +491,8 @@ button.scan-pair-chip:hover{opacity:0.75}
 .scan-decide{gap:18px}
 .scan-decide button{font-size:13.5px;font-weight:700;padding:9px 20px;border-width:1.5px;border-radius:100px;letter-spacing:0.01em}
 @media(max-width:640px){.scan-body{flex-direction:column}.scan-side{width:100%;flex-direction:row;flex-wrap:wrap}.scan-chart{width:150px}.scan-actions{margin-top:10px}}
+.ptr-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px}
+.ptr-grid .fld{margin:0}
 .scan-empty{text-align:center;padding:50px 20px;color:#b0aba3;font-size:15px}
 .scan-empty .scan-icon{font-size:40px;margin-bottom:12px}
 
@@ -1192,9 +1194,21 @@ body.light .chart-modal-overlay{background:rgba(0,0,0,0.55)}
       </div>
       <input type="file" id="ptr-img" accept="image/*" onchange="handlePtrFile(this)">
       <img id="ptr-preview" class="img-preview" alt="Chart preview">
+      <div class="cl" style="margin-top:14px;margin-bottom:4px">The numbers</div>
+      <div class="cb" style="margin-bottom:10px">Fill in whatever you have. <b>The review can only use numbers you give it here or in your notes</b> — it is not allowed to read prices off the picture, because measuring them from pixels is guesswork and it was quietly getting them wrong.</div>
+      <div class="ptr-grid">
+        <div class="fld"><label>Pair</label><input class="in" id="ptr-pair" placeholder="GBP/JPY"></div>
+        <div class="fld"><label>Direction</label><select class="in" id="ptr-dir"><option value="">—</option><option>LONG</option><option>SHORT</option></select></div>
+        <div class="fld"><label>Entry</label><input class="in" id="ptr-entry" placeholder="208.700"></div>
+        <div class="fld"><label>Stop loss</label><input class="in" id="ptr-sl" placeholder="209.200"></div>
+        <div class="fld"><label>Take profit</label><input class="in" id="ptr-tp" placeholder="207.400"></div>
+        <div class="fld"><label>Exit price</label><input class="in" id="ptr-exit" placeholder="where you actually got out"></div>
+        <div class="fld"><label>Result</label><input class="in" id="ptr-res" placeholder="-$7.50, or -1R"></div>
+        <div class="fld"><label>Held for</label><input class="in" id="ptr-held" placeholder="3h, 2 days…"></div>
+      </div>
       <div class="fld" style="margin-top:4px">
         <label>Trade notes (optional)</label>
-        <textarea class="ta" id="ptr-notes" placeholder="e.g. Bought GBP/USD at 1.2750, SL 1.2700, hit TP at 1.2850. Entered on 4H breakout." style="min-height:70px"></textarea>
+        <textarea class="ta" id="ptr-notes" placeholder="e.g. Entered on the 4H breakout, moved my stop up too early." style="min-height:70px"></textarea>
       </div>
       <button class="sb" id="ptr-btn" onclick="revPastTrade()">Analyse this trade</button>
       <div id="ptr-result" style="margin-top:14px"></div>
@@ -1548,6 +1562,11 @@ body.light .chart-modal-overlay{background:rgba(0,0,0,0.55)}
   <div class="st">About ForexHub</div>
   <div class="ss">Your daily forex companion</div>
   <div class="card">
+    <div class="ai"><div class="aq">What's new in v20 (14 Sep 2026) · bots 1.16</div><div class="aa">
+      · <b>The trade review can no longer make numbers up.</b> Both reviews accept a chart screenshot, and both used to hand the picture over with nothing stopping the model quoting prices, pip counts and R-multiples it had measured off the pixels. It cannot do that accurately, and on your 7–14 Sep reviews it was simply wrong — the criticism was often fair but the evidence cited for it was invented, which is worse than saying nothing. Every figure must now come from you.<br>
+      · <b>Past trade review has a place to put the real numbers:</b> pair, direction, entry, stop, target, exit price, result and how long you held it. Fill in what you have. The review states only those, describes everything else in words — where the entry sat relative to the swing, whether the stop looked inside the noise, how price behaved afterwards — and if it needs a number you did not give it, it says so instead of guessing one. The printed record shows exactly which numbers it was working from.<br>
+      · <b>Bots 1.16 — correlated exposure.</b> Every trade is long one currency and short another, so three yen shorts across three pairs is not three trades, it is one view with three times the money behind it; on 14 Sep three of them stopped within five minutes for about a tenth of the account. The bot now allows at most <b>2 open trades on the same side of any one currency</b>, and leaves at least <b>4 hours between trades on the same pair</b>. A setup over the limit is still drawn, with the reason on the chart — <em>"held — already 2 short JPY (limit 2)"</em> — and no order goes in; you can still take it by hand. It is not marked skipped, so it becomes eligible again the moment the limit clears. Both numbers are settings. <b>This costs winners too</b> — a good theme running across three pairs gets capped at two. It is insurance, not edge.<br>
+    </div></div>
     <div class="ai"><div class="aq">What's new in v19 (14 Sep 2026)</div><div class="aa">
       · <b>📈 Chart and ⚡ Trade are now the card's decision.</b> They sit alone under the R:R line at full size, and they are the only two buttons on a card that do anything to your account. Hover either one and it tells you exactly what it will do — including, once pressed, how to undo it.<br>
       · <b>Chart sits first, Trade second</b> (v19.1). Trade led briefly, on the grounds that it is the action you take most often. Frequency is the wrong tiebreaker when one of the two can cost money and the other cannot: Chart is free and undoes with one press, while a Trade the bot has already placed has to be deleted in the terminal. The cheap action takes the easy reach — the leftmost button, and the one you hit by accident on a phone — and arming a trade costs you a deliberate move across a wider gap. It is also the order you actually work in: look at it, then arm it.<br>
@@ -1934,7 +1953,7 @@ function dismissBanner(){
 /* ══════════════════════════════════════
    HEADER DATE
 ══════════════════════════════════════ */
-var FH_BUILD='v19.1'; // 14 Sep 2026 — Chart before Trade: the reversible action takes the easy reach // bump on every delivered change — shown in the header so it's always obvious which version is loaded
+var FH_BUILD='v20'; // 14 Sep 2026 — trade review can no longer invent numbers from a screenshot // bump on every delivered change — shown in the header so it's always obvious which version is loaded
 /* Stale-tab killer: every so often, check whether a newer build has been deployed.
    If so, show a can't-miss banner telling the user to reload — long-open tabs silently
    running old code caused repeated "the fix didn't work" confusion. */
@@ -4571,6 +4590,9 @@ async function revT(){
   out.innerHTML='<div class="ld"><div class="sp"></div>Reviewing your trade idea…</div>';
   try{
     var basePrompt='You are a professional forex trading mentor. '+(ti?'A student has this trade idea:\n\n"'+ti+'"\n\n':'Analyse the chart image provided.\n\n')+'Give structured feedback:\n\n**SETUP QUALITY: [Strong/Moderate/Weak]**\n\n**What\'s good:**\n[2-3 bullet points]\n\n**Concerns:**\n[2-3 bullet points]\n\n**Risk/Reward assessment:**\n[1-2 sentences on the R:R and whether it meets minimum 1:2]\n\n**Recommendation:**\n[PROCEED / WAIT / AVOID] — brief explanation';
+    /* The rule only applies to the image path — with no picture there is nothing
+       to misread, and the numbers can only have come from what John typed. */
+    if(tirImageB64) basePrompt+=NO_INVENT_RULE;
     var txt=tirImageB64?await aiImage(basePrompt,tirImageB64,tirMimeType):await ai(basePrompt,null,{model:'claude-haiku-4-5',maxTokens:1200,webSearch:false});
     /* Wrap everything that belongs in the record — the setup you typed, the chart you
        attached and the AI's feedback — inside one printable block, then attach the same
@@ -4621,6 +4643,37 @@ function handlePtrDrop(event){
     handlePtrFile(inp);
   }
 }
+/* ══════════════════════════════════════════════════════════════════
+   THE NO-INVENTED-NUMBERS RULE  (v20)
+══════════════════════════════════════════════════════════════════
+   Both reviews accept a chart screenshot, and both used to hand the image
+   to the model with no constraint on what it could claim. It answered with
+   confident prices, pip counts and R-multiples measured off the pixels —
+   which cannot be done accurately, and on John's 7–14 Sep reviews it was
+   simply wrong. The criticism was often fair; the evidence cited for it was
+   fabricated, which is worse than saying nothing.
+
+   So: numbers come from the trader, never from the picture. The image is
+   still useful — structure, where the entry sat relative to the swing, how
+   the trade behaved after entry — and the model is told to describe those
+   in words. If a number is needed and was not supplied, it must say so
+   rather than estimate one. */
+var NO_INVENT_RULE=
+ '\n\nHARD RULE ON NUMBERS — this overrides every other instruction:\n'
++'· You may ONLY state a number (price, level, pip count, R-multiple, percentage, profit, date or time) if it appears verbatim in the FACTS block or the trader\'s notes below.\n'
++'· You must NOT read, measure, estimate or infer any number from the chart image. You cannot do this accurately and previous attempts were wrong.\n'
++'· If your point needs a number that was not supplied, say plainly what is missing — e.g. "I can\'t tell how far the stop sat from the entry because you did not give me the stop" — and make the point qualitatively instead.\n'
++'· Describing the image in words is encouraged: trend direction, where the entry sat relative to the swing, whether the stop looked inside or outside the recent noise, how price behaved after entry. Just no figures.\n'
++'· Do not restate the trader\'s own numbers back as if you derived them.';
+
+function ptrFacts(){
+  var f=[], g=function(id){ var e=document.getElementById(id); return e?String(e.value||'').trim():''; };
+  var map=[['ptr-pair','Pair'],['ptr-dir','Direction'],['ptr-entry','Entry'],['ptr-sl','Stop loss'],
+           ['ptr-tp','Take profit'],['ptr-exit','Exit price'],['ptr-res','Result'],['ptr-held','Held for']];
+  map.forEach(function(m){ var v=g(m[0]); if(v) f.push(m[1]+': '+v); });
+  return f;
+}
+
 async function revPastTrade(){
   if(!ptrImageB64){alert('Please upload a chart screenshot first.');return;}
   var notes=document.getElementById('ptr-notes').value.trim();
@@ -4628,17 +4681,25 @@ async function revPastTrade(){
   btn.disabled=true;btn.innerHTML='<div class="sp"></div> Analysing chart…';
   out.innerHTML='<div class="ld"><div class="sp"></div>Analysing your trade chart…</div>';
   try{
-    var prompt='You are a professional forex trading coach. Analyse this past trade chart image.'+(notes?'\n\nTrader\'s notes: '+notes:'')+'\n\nProvide structured feedback:\n\n**TRADE OUTCOME ASSESSMENT:**\n[Was this a well-executed trade or a poor one, and why?]\n\n**WHAT WENT WELL:**\n[2-3 specific observations from the chart]\n\n**WHAT COULD BE IMPROVED:**\n[2-3 specific areas with actionable suggestions]\n\n**KEY LESSON:**\n[The single most important takeaway from this trade]\n\n**OVERALL GRADE: [A/B/C/D]**\n[Brief explanation of the grade]';
+    var facts=ptrFacts();
+    var prompt='You are a professional forex trading coach. Analyse this past trade.'
+      +'\n\nFACTS SUPPLIED BY THE TRADER'+(facts.length?':\n'+facts.join('\n'):': none — no levels were given.')
+      +(notes?'\n\nTrader\'s notes: '+notes:'')
+      +NO_INVENT_RULE
+      +'\n\nProvide structured feedback:\n\n**TRADE OUTCOME ASSESSMENT:**\n[Was this well executed or not, and why?]\n\n**WHAT WENT WELL:**\n[2-3 specific observations]\n\n**WHAT COULD BE IMPROVED:**\n[2-3 areas with actionable suggestions]\n\n**KEY LESSON:**\n[The single most important takeaway]\n\n**OVERALL GRADE: [A/B/C/D]**\n[Brief explanation]'
+      +(facts.length?'':'\n\nNote: no levels were supplied, so open your reply by saying which numbers would have made this review sharper.');
     var txt=await aiImage(prompt,ptrImageB64,ptrMimeType);
     /* Same printable record as the trade-idea review: notes + chart + feedback in one block. */
     out.innerHTML='<div id="ptr-doc">'
+      +(facts.length?'<div class="cl" style="margin-bottom:6px">The numbers you gave it</div><div class="cb" style="white-space:pre-wrap;margin-bottom:10px">'+esc(facts.join(' · '))+'</div>'
+                    :'<div class="cb" style="margin-bottom:10px;color:#fbbf24">No levels were supplied — the review is qualitative only.</div>')
       +'<div class="cl" style="margin-bottom:6px">Trade notes</div>'
       +'<div class="cb" style="white-space:pre-wrap;margin-bottom:10px">'+esc(notes||'(no notes added)')+'</div>'
       +'<div class="meta" style="margin-bottom:4px">Chart screenshot attached:</div>'
       +'<img alt="Trade chart" style="display:block;width:100%;max-width:640px;border-radius:8px;margin:0 0 12px" src="data:'+(ptrMimeType||'image/png')+';base64,'+ptrImageB64+'">'
       +'<div class="cl" style="margin-bottom:6px">AI feedback</div>'
       +'<div class="cb">'+md(txt)+'</div>'
-      +'<div class="meta" style="margin-top:10px">Reviewed '+stampAEST()+' · ForexHub '+FH_BUILD+' · educational only, not financial advice</div>'
+      +'<div class="meta" style="margin-top:10px">Reviewed '+stampAEST()+' · ForexHub '+FH_BUILD+' · every figure above came from you, not from the image · educational only, not financial advice</div>'
       +'</div>'
       +'<div class="share-bar" id="ptr-share" style="display:none"></div>';
     buildShareBar('ptr-share','Past trade review','#ptr-doc','past-trade-review');
