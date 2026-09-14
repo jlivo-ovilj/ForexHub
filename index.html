@@ -442,7 +442,7 @@ button.scan-pair-chip:hover{opacity:0.75}
 .scan-str.against{color:#fbbf24;border-color:rgba(251,191,36,0.45);background:rgba(251,191,36,0.10)}
 .scan-str.with{color:#4ade80;border-color:rgba(74,222,128,0.35);background:rgba(74,222,128,0.08)}
 @media(max-width:640px){.scan-str{white-space:normal;margin-left:0;margin-top:6px;flex-basis:100%;text-align:center}}
-.str-ctl{display:flex;align-items:center;gap:6px;font-size:11.5px;color:rgba(240,237,232,0.55);flex-wrap:wrap}
+.str-ctl{display:flex;align-items:center;gap:6px;font-size:11.5px;color:var(--mt);flex-wrap:wrap}
 .feed-ctl{display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin-left:4px}
 .sb-sm{font-size:11.5px;padding:5px 10px}
 /* v18 — the three feed controls were all solid accent pink: identical to each
@@ -467,7 +467,19 @@ button.scan-pair-chip:hover{opacity:0.75}
 .feed-btn.trade.on{color:#4ade80;border-color:rgba(74,222,128,0.8);background:rgba(74,222,128,0.18)}
 .feed-btn:hover{filter:brightness(1.3)}
 .feed-btn.trade.blocked{opacity:.4;text-decoration:line-through}
-.str-ctl select{font-family:'DM Mono',monospace;font-size:11px;background:rgba(255,255,255,0.05);color:#f0ede8;border:1px solid rgba(255,255,255,0.14);border-radius:6px;padding:3px 6px}
+/* v22 — these two dropdowns were unreadable in both themes. The control used a
+   5%-white background with light text: in light mode that is near-white on white,
+   and the native option list inherits the select's own colours, so in dark mode
+   every unselected option came out grey-on-grey. A translucent background cannot
+   work here — the popup list is drawn by the OS over an unknown backdrop — so the
+   colours are opaque and the options are given explicit colours of their own for
+   each theme, since <option> does not reliably inherit CSS variables. */
+.str-ctl select{font-family:'DM Mono',monospace;font-size:11px;background:#1e1e1e;color:#f0ede8;border:1px solid rgba(255,255,255,0.22);border-radius:6px;padding:3px 6px;cursor:pointer}
+.str-ctl select option{background:#1e1e1e;color:#f0ede8}
+.str-ctl select:hover{border-color:rgba(255,255,255,0.38)}
+body.light .str-ctl select{background:#ffffff;color:#1c1b19;border:1px solid rgba(0,0,0,0.28)}
+body.light .str-ctl select option{background:#ffffff;color:#1c1b19}
+body.light .str-ctl select:hover{border-color:rgba(0,0,0,0.45)}
 .scan-reason{font-size:13px;line-height:1.7;color:#d4d0ca;margin-bottom:12px}
 .scan-levels{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px}
 .scan-level{background:var(--sf2);border-radius:var(--rs);padding:10px;text-align:center}
@@ -1563,6 +1575,9 @@ body.light .chart-modal-overlay{background:rgba(0,0,0,0.55)}
   <div class="st">About ForexHub</div>
   <div class="ss">Your daily forex companion</div>
   <div class="card">
+    <div class="ai"><div class="aq">What's new in v22 (14 Sep 2026)</div><div class="aa">
+      · <b>Fixed: the two Against strength dropdowns were unreadable.</b> In light mode the whole control washed out to near-invisible; in dark mode the open list showed grey-on-grey and you could only read the option already highlighted. The control was painted with a 5%-white background and light text, which is fine over a dark panel and hopeless over a white one — and the native option list inherits the select's own colours, so the popup went with it. Both now use opaque colours with their own light-mode set, and the options are coloured explicitly rather than left to inherit.<br>
+    </div></div>
     <div class="ai"><div class="aq">What's new in v21 (14 Sep 2026) · bots 1.17 · worker 11.5</div><div class="aa">
       · <b>Every setup you send now carries a trade reference</b> — <code>NZDUSDS-141530</code>: the pair, L or S, then the day and time you sent it. It appears on the card once sent, in the MT5 order comment / cTrader label, and in <code>FxHubJournal.csv</code> beside the broker's ticket number. That is how a trade in your history gets traced back to the card that produced it.<br>
       · <b>The journal is the one that counts.</b> An MT5 order comment can be rewritten by the broker when a stop or target closes the trade — some append <code>[sl]</code>, some replace it outright — so the comment is for reading while the order is live. The journal CSV is our own file, the bot writes the reference into its own column while the position is open, and the ticket beside it never changes. Search either the reference or the ticket and you have both ends.<br>
@@ -1960,7 +1975,7 @@ function dismissBanner(){
 /* ══════════════════════════════════════
    HEADER DATE
 ══════════════════════════════════════ */
-var FH_BUILD='v21'; // 14 Sep 2026 — every sent setup carries a trade reference through to the journal // bump on every delivered change — shown in the header so it's always obvious which version is loaded
+var FH_BUILD='v22'; // 14 Sep 2026 — the Against strength dropdowns are readable in both themes // bump on every delivered change — shown in the header so it's always obvious which version is loaded
 /* Stale-tab killer: every so often, check whether a newer build has been deployed.
    If so, show a can't-miss banner telling the user to reload — long-open tabs silently
    running old code caused repeated "the fix didn't work" confusion. */
