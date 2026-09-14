@@ -488,6 +488,7 @@ button.scan-pair-chip:hover{opacity:0.75}
    so they sit alone on the left at full size, Trade first. Copy chart and
    Copy levels are utilities that act on the thumbnail, so they sit under it. */
 .scan-actions{display:flex;flex-wrap:wrap;gap:10px;margin-top:14px}
+.scan-decide{gap:18px}
 .scan-decide button{font-size:13.5px;font-weight:700;padding:9px 20px;border-width:1.5px;border-radius:100px;letter-spacing:0.01em}
 @media(max-width:640px){.scan-body{flex-direction:column}.scan-side{width:100%;flex-direction:row;flex-wrap:wrap}.scan-chart{width:150px}.scan-actions{margin-top:10px}}
 .scan-empty{text-align:center;padding:50px 20px;color:#b0aba3;font-size:15px}
@@ -1548,7 +1549,8 @@ body.light .chart-modal-overlay{background:rgba(0,0,0,0.55)}
   <div class="ss">Your daily forex companion</div>
   <div class="card">
     <div class="ai"><div class="aq">What's new in v19 (14 Sep 2026)</div><div class="aa">
-      · <b>⚡ Trade and 📈 Chart are now the card's decision.</b> They sit alone under the R:R line at full size, Trade first, and they are the only two buttons on a card that do anything to your account. Hover either one and it tells you exactly what it will do — including, once pressed, how to undo it.<br>
+      · <b>📈 Chart and ⚡ Trade are now the card's decision.</b> They sit alone under the R:R line at full size, and they are the only two buttons on a card that do anything to your account. Hover either one and it tells you exactly what it will do — including, once pressed, how to undo it.<br>
+      · <b>Chart sits first, Trade second</b> (v19.1). Trade led briefly, on the grounds that it is the action you take most often. Frequency is the wrong tiebreaker when one of the two can cost money and the other cannot: Chart is free and undoes with one press, while a Trade the bot has already placed has to be deleted in the terminal. The cheap action takes the easy reach — the leftmost button, and the one you hit by accident on a phone — and arming a trade costs you a deliberate move across a wider gap. It is also the order you actually work in: look at it, then arm it.<br>
       · <b>📋 Copy chart and 📝 Copy levels have moved under the thumbnail</b> they copy. They are utilities, not decisions, and they were competing with the two buttons that matter.<br>
     </div></div>
     <div class="ai"><div class="aq">What's new in v18 (14 Sep 2026)</div><div class="aa">
@@ -1932,7 +1934,7 @@ function dismissBanner(){
 /* ══════════════════════════════════════
    HEADER DATE
 ══════════════════════════════════════ */
-var FH_BUILD='v19'; // 14 Sep 2026 — Trade/Chart promoted to the card's decision, copy buttons demoted to the thumbnail // bump on every delivered change — shown in the header so it's always obvious which version is loaded
+var FH_BUILD='v19.1'; // 14 Sep 2026 — Chart before Trade: the reversible action takes the easy reach // bump on every delivered change — shown in the header so it's always obvious which version is loaded
 /* Stale-tab killer: every so often, check whether a newer build has been deployed.
    If so, show a can't-miss banner telling the user to reload — long-open tabs silently
    running old code caused repeated "the fix didn't work" confusion. */
@@ -2937,8 +2939,8 @@ function setupThumb(id){
    what each one actually does to the terminal. */
 function setupActions(id){
   return '<div class="scan-actions scan-decide">'
-    +'<button class="pip-fccy feed-btn trade" onclick="event.stopPropagation();feedSend('+id+',\'trade\')">⚡ Trade</button>'
     +'<button class="pip-fccy feed-btn chart" onclick="event.stopPropagation();feedSend('+id+',\'chart\')">📈 Chart</button>'
+    +'<button class="pip-fccy feed-btn trade" onclick="event.stopPropagation();feedSend('+id+',\'trade\')">⚡ Trade</button>'
     +'</div>';
 }
 /* The utilities, under the thumbnail they copy. */
