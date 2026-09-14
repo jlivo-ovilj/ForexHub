@@ -438,6 +438,12 @@ button.scan-pair-chip:hover{opacity:0.75}
 .scan-prob{font-family:'DM Mono',monospace;font-size:10px;padding:3px 10px;border-radius:100px;border:1px solid;margin-left:auto}
 .scan-prob.high{color:#4ade80;border-color:rgba(74,222,128,0.4);background:rgba(74,222,128,0.08)}
 .scan-prob.med{color:#fbbf24;border-color:rgba(251,191,36,0.4);background:rgba(251,191,36,0.08)}
+.scan-str{font-family:'DM Mono',monospace;font-size:9.5px;letter-spacing:.04em;padding:3px 9px;border-radius:100px;border:1px solid;margin-left:6px;white-space:nowrap;max-width:100%;overflow:hidden;text-overflow:ellipsis}
+.scan-str.against{color:#fbbf24;border-color:rgba(251,191,36,0.45);background:rgba(251,191,36,0.10)}
+.scan-str.with{color:#4ade80;border-color:rgba(74,222,128,0.35);background:rgba(74,222,128,0.08)}
+@media(max-width:640px){.scan-str{white-space:normal;margin-left:0;margin-top:6px;flex-basis:100%;text-align:center}}
+.str-ctl{display:flex;align-items:center;gap:6px;font-size:11.5px;color:rgba(240,237,232,0.55);flex-wrap:wrap}
+.str-ctl select{font-family:'DM Mono',monospace;font-size:11px;background:rgba(255,255,255,0.05);color:#f0ede8;border:1px solid rgba(255,255,255,0.14);border-radius:6px;padding:3px 6px}
 .scan-reason{font-size:13px;line-height:1.7;color:#d4d0ca;margin-bottom:12px}
 .scan-levels{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px}
 .scan-level{background:var(--sf2);border-radius:var(--rs);padding:10px;text-align:center}
@@ -1359,6 +1365,11 @@ body.light .chart-modal-overlay{background:rgba(0,0,0,0.55)}
     <div class="scan-controls">
       <button class="sb" id="scan-btn" onclick="runScanner()">🔍 Run scanner</button>
       <button class="sb sb-pb" id="pullback-btn" onclick="runPullbackScanner()">↩ Pullback scan</button>
+      <span class="str-ctl" title="Every trade is long one currency and short another. A setup counts as against strength when the currency being bought is in the bottom two of the strength table, or the one being sold is in the top two.">
+        Against strength:
+        <select id="str-mode" onchange="setStrMode(this.value)"></select>
+        <select id="str-win" onchange="setStrWin(this.value)"></select>
+      </span>
       <span class="meta" id="scan-meta"></span>
     </div>
   </div>
@@ -1498,6 +1509,13 @@ body.light .chart-modal-overlay{background:rgba(0,0,0,0.55)}
   <div class="st">About ForexHub</div>
   <div class="ss">Your daily forex companion</div>
   <div class="card">
+    <div class="ai"><div class="aq">What's new in v16 (14 Sep 2026)</div><div class="aa">
+      · <b>Against-strength filter on the scanner.</b> A review of 46 live trades from 7–14 September found the losses were almost entirely on the long side — 15 long trades, −$22.10, ten of them straight to a full stop — and the currency being bought was EUR five times in a week when EUR sat at the bottom of the strength table. The scanner reads price structure, not regime, so it kept producing tidy-looking longs in the weakest currency on the board.<br>
+      · Every trade is long one currency and short another. Each setup is now checked against the same currency-strength baskets behind the Indices tab: it is marked <b>against strength</b> when the currency being <em>bought</em> is in the bottom two, or the one being <em>sold</em> is in the top two — and <b>with strength</b> in the mirror case. The chip on the card states the numbers it used, so you can disagree with it.<br>
+      · <b>Against strength</b> in the scanner header decides what happens: <em>Flag only</em>, <em>Flag and hold back from the bots</em> (the default — the card still appears for you to judge, but it is not sent to the MT5 / cTrader feed, so nothing is placed automatically), <em>Hide the setup</em>, or <em>Off</em>. Anything held back is named underneath the results with the reason. Ranking window is switchable between 1 day, 1 week (default) and "both must agree".<br>
+      · The verdict is recorded on every setup sent to the feed, so a later review can test whether the flag actually predicted anything rather than taking it on trust.<br>
+      · Nothing here changes a price. If the strength data can't be fetched, no setup is flagged and none are held back.
+    </div></div>
     <div class="ai"><div class="aq">What's new in v15 (8 Sep 2026)</div><div class="aa">
       · Calculator: the pip table now shows <b>Notional A$</b>, <b>Margin</b> and <b>% of account</b> for the selected lot size, with a leverage picker — <em>My account</em> (500:1, from your Currency Pairs Value sheet), <em>ASIC retail</em> (30:1 majors / 20:1 others, NZD counted as non-major, gold 20:1) or a custom ratio. Your choice is remembered.<br>
       · Scanner setups now go to a feed that the new <b>FxHubSetupSync</b> MT5 expert advisor and cTrader cBot poll: attach one to a chart and every current setup for that pair is drawn as a risk/reward box with 1 Entry · 2 TP · 3 SL lines, optionally placing the pending order. Files are in your MT4 MT5 Bot and cTrader Bot folders with setup notes at the top of each. TradingView can't be driven this way, so each card also has <b>Copy levels</b> — one line of text in the position-tool order.<br>
@@ -1859,7 +1877,7 @@ function dismissBanner(){
 /* ══════════════════════════════════════
    HEADER DATE
 ══════════════════════════════════════ */
-var FH_BUILD='v15'; // 8 Sep 2026 — leverage columns, MT5/cTrader setup feed, calendar→IQ, IQ fixes // bump on every delivered change — shown in the header so it's always obvious which version is loaded
+var FH_BUILD='v16'; // 14 Sep 2026 — against-strength filter on the scanner (from the 46-trade live review) // bump on every delivered change — shown in the header so it's always obvious which version is loaded
 /* Stale-tab killer: every so often, check whether a newer build has been deployed.
    If so, show a can't-miss banner telling the user to reload — long-open tabs silently
    running old code caused repeated "the fix didn't work" confusion. */
@@ -1913,6 +1931,7 @@ function showS(id,btn){
   }
   if(id==='trends'&&(!trendLoaded||sectionStale('trends',REFRESH_AFTER))) loadTrendScan();
   if(id==='indices') loadStrength(false);
+  if(id==='scanner') initStrCtl();          // v16 — fill the Against-strength dropdowns
   if(id==='iq') initIq();
   if(id==='calculator'&&(!calcLoaded||sectionStale('calculator',REFRESH_AFTER))) loadCalculator();
 }
@@ -2890,7 +2909,9 @@ function copySetupText(id){
 var SETUPS_URL=WU.replace(/\/api$/,'')+'/setups';
 function publishSetups(src,list){
   try{
-    var payload={src:src,setups:list.map(function(o){return {pair:String(o.pair).replace(/[^A-Za-z]/g,'').toUpperCase(),dir:o._isLong?'LONG':'SHORT',entry:o._e,sl:o._sl,tp:o._tp,rr:o._rr,prob:o.prob||'',order:o.orderType||''};})};
+    var payload={src:src,setups:list.map(function(o){return {pair:String(o.pair).replace(/[^A-Za-z]/g,'').toUpperCase(),dir:o._isLong?'LONG':'SHORT',entry:o._e,sl:o._sl,tp:o._tp,rr:o._rr,prob:o.prob||'',order:o.orderType||'',
+      /* v16 — recorded so a later review can test whether the flag was predictive */
+      strength:o._str?o._str.verdict:'',strengthWhy:o._str?o._str.why:''};})};
     return fetch(SETUPS_URL,{method:'POST',headers:FH_HDRS,body:JSON.stringify(payload)}).then(function(r){return r.ok?r.json():null;}).then(function(d){
       var m=document.getElementById('scan-meta');
       if(d&&d.ok&&m) m.textContent+=' · sent to MT5/cTrader feed ('+d.stored+')';
@@ -3137,9 +3158,10 @@ async function loadD(pair,btn){
   var bias='';
   try{
     var pc=await priceContext(pair);
-    // If the live feed is briefly down (pc empty), let the model web-search the current price
-    // instead of refusing — a refusal must never end up rendered as the day's analysis.
-    var dSearch=!pc;
+    // Cost review 14.9.26: if the live feed is briefly down (pc empty), stop here instead of
+    // falling back to a web-search call (~20k+ input tokens each). Nothing is billed or cached.
+    if(!pc) throw new Error('Live price feed unavailable right now — tap ↻ Refresh in a minute.');
+    var dSearch=false;
     var prompt=pc+'You are a professional forex analyst. Provide a concise DAILY analysis for '+p+' as of today '+new Date().toISOString().split('T')[0]+'. Format exactly:\nBIAS: [BULLISH/BEARISH/NEUTRAL]\n\nKEY LEVELS:\n- Resistance 1: [price]\n- Resistance 2: [price]\n- Entry zone: [price range]\n- Support 1: [price]\n- Support 2: [price]\n\nWATCH TODAY:\n[2-3 bullet points on what to watch, catalysts, and specific entry triggers. Use **bold** for key terms.]\n\nBe specific with price levels — resistances above and supports below the current price. Keep it concise. Never say you lack access to live data — '+(dSearch?'use web search to find the current price first.':'the CURRENT LIVE MARKET price is provided above.')+freshnessNote(dSearch);
     var dKey='d:'+pair+':'+new Date().toDateString();
     var txt=await ai(prompt,dKey,{model:'claude-haiku-4-5',maxTokens:1000,webSearch:dSearch});
@@ -3253,7 +3275,9 @@ async function load4hr(pair,btn){
   var hr4key=Math.floor(new Date()/14400000);
   try{
     var pc=await priceContext(pair);
-    var hSearch=!pc; // live feed down → let the model search for the price instead of refusing
+    // Cost review 14.9.26: live feed down → stop, never fall back to a web-search call.
+    if(!pc) throw new Error('Live price feed unavailable right now — tap ↻ Refresh in a minute.');
+    var hSearch=false;
     var prompt=pc+'You are a professional forex analyst. Provide a 4-HOUR intraday analysis for '+p+' right now '+new Date().toISOString().split('T')[0]+'. Format exactly:\n4H BIAS: [BULLISH/BEARISH/NEUTRAL]\n\n4H SETUP:\n[2-3 sentences on the 4H chart structure, pattern, and context. Use **bold** for key terms.]\n\nKEY 4H LEVELS:\n- Resistance 1: [price]\n- Resistance 2: [price]\n- Entry zone: [price range]\n- Support 1: [price]\n- Support 2: [price]\n\nENTRY TRIGGER:\n[1-2 sentences on the specific price action signal or candle pattern to watch for entry. Use **bold** for the trigger.]\n\nEvery level line must be one of the five labels above followed by a price — always give all five, resistances above and supports below the current price. Keep the prose tight and specific. Never say you lack access to live data — '+(hSearch?'use web search to find the current price first.':'the CURRENT LIVE MARKET price is provided above.')+freshnessNote(hSearch);
     var hKey='4h:'+pair+':'+hr4key;
     var txt=await ai(prompt,hKey,{model:'claude-haiku-4-5',maxTokens:1000,webSearch:hSearch});
@@ -3928,12 +3952,12 @@ async function aiCalEvents(){
   var from=fhDate(today,{weekday:'long',day:'numeric',month:'long',year:'numeric'});
   var prompt='Search economic calendars (Forex Factory, Investing.com, DailyFX, Trading Economics) and list every scheduled economic event over the NEXT 7 DAYS starting '+from+' that could move the forex market.\n'
     +'MANDATORY — never omit if scheduled: central-bank rate decisions, statements, minutes and press conferences (FOMC/Fed, ECB, BoE, BoJ, RBA, RBNZ, BoC, SNB), CPI/inflation, employment reports (NFP, unemployment), GDP, PMI.\n'
-    +'Only future events. Do not invent events you cannot find.\n\n'
+    +'Only future events, and only HIGH or MEDIUM impact (skip low-impact releases). Do not invent events you cannot find.\n\n'
     +'Respond with a single JSON object and NOTHING else:\n'
     +'{"events":[{"date":"2026-08-18","timeAEST":"23:30","name":"US Non-Farm Payrolls","ccy":"USD","impact":"high","forecast":"175K","previous":"142K"}]}\n'
     +'Rules: "date" is YYYY-MM-DD. "timeAEST" is 24-hour Australia/Brisbane time. "ccy" is one of '+NEWS_CCYS.join(' ')+'. '
     +'"impact" is high, med or low. forecast/previous may be "" if unknown. Plain text only — no citation markers, no commentary.';
-  var d=await ai(prompt,'cal-ai:'+aestKey(new Date()),{model:'claude-haiku-4-5',maxTokens:3000,webSearch:true,expectJson:true});
+  var d=await ai(prompt,'cal-ai:'+aestKey(new Date()),{model:'claude-haiku-4-5',maxTokens:2600,webSearch:true,expectJson:true});
   var raw=(d&&Array.isArray(d.events))?d.events:(Array.isArray(d)?d:[]);
   var out=[],seen={};
   raw.forEach(function(e){
@@ -4339,7 +4363,7 @@ async function revT(){
   out.innerHTML='<div class="ld"><div class="sp"></div>Reviewing your trade idea…</div>';
   try{
     var basePrompt='You are a professional forex trading mentor. '+(ti?'A student has this trade idea:\n\n"'+ti+'"\n\n':'Analyse the chart image provided.\n\n')+'Give structured feedback:\n\n**SETUP QUALITY: [Strong/Moderate/Weak]**\n\n**What\'s good:**\n[2-3 bullet points]\n\n**Concerns:**\n[2-3 bullet points]\n\n**Risk/Reward assessment:**\n[1-2 sentences on the R:R and whether it meets minimum 1:2]\n\n**Recommendation:**\n[PROCEED / WAIT / AVOID] — brief explanation';
-    var txt=tirImageB64?await aiImage(basePrompt,tirImageB64,tirMimeType):await ai(basePrompt);
+    var txt=tirImageB64?await aiImage(basePrompt,tirImageB64,tirMimeType):await ai(basePrompt,null,{model:'claude-haiku-4-5',maxTokens:1200,webSearch:false});
     /* Wrap everything that belongs in the record — the setup you typed, the chart you
        attached and the AI's feedback — inside one printable block, then attach the same
        Print / Share / Email / Save bar the Scanner and Analysis tabs use. */
@@ -4800,6 +4824,144 @@ function droppedNote(dropped){
   return '<div class="ss" style="margin-top:10px;margin-bottom:0">'+dropped.length+' further candidate'+(dropped.length>1?'s were':' was')
     +' discarded before display ('+parts.join(', ')+'). Incomplete or self-contradictory setups are never shown as trades.</div>';
 }
+/* The counterpart for the strength filter. A setup held back is never silent —
+   it is named, with the reason, so the filter can be argued with. */
+function heldNote(held){
+  if(!held||!held.length) return '';
+  var mode=strMode();
+  var what=mode==='block'?'hidden':'kept off the MT5 / cTrader feed';
+  var list=held.map(function(o){
+    return slashPair(String(o.pair).replace(/[^A-Za-z]/g,'').toUpperCase())+' '+(o._isLong?'long':'short')
+      +(o._str&&o._str.why?' ('+esc(o._str.why)+')':'');
+  }).join(', ');
+  return '<div class="ss" style="margin-top:10px;margin-bottom:0;border-left:2px solid #fbbf24;padding-left:10px">'
+    +held.length+' setup'+(held.length>1?'s were':' was')+' '+what+' as against currency strength — '+list
+    +'. Change this under Against strength in the scanner header.</div>';
+}
+
+/* ══════════════════════════════════════════════════════════════════
+   STRENGTH FILTER  (v16 — 14 Sep 2026)
+══════════════════════════════════════════════════════════════════
+   WHY THIS EXISTS
+
+   Live-account review of 7–14 Sep 2026, 46 trades: net −A$24.44, and the
+   damage was almost entirely on the long side — 15 long trades, −A$22.10,
+   with ten of them running straight to a full stop having never once been in
+   profit. The currency being bought in the losing longs was EUR five times,
+   AUD three, in a week when EUR sat at the bottom of the strength table and
+   the dollar and yen were bid against everything.
+
+   The scanner reads price structure. It does not read regime, so it will
+   happily produce a technically tidy long in the weakest currency on the
+   board. This layer supplies the missing half.
+
+   HOW IT JUDGES
+
+   Every FX trade is long one currency and short another: a EUR/USD buy is
+   long EUR and short USD. The eight currencies are ranked on the strength
+   baskets the worker already publishes (/strength — the same numbers behind
+   the Indices tab), and a setup is "against strength" when the currency being
+   BOUGHT is in the bottom two, or the currency being SOLD is in the top two.
+   Buying the strongest or selling the weakest reads as "with strength".
+
+   Nothing here changes a level. It only annotates, and — depending on the
+   setting — decides whether a setup is worth handing to a terminal that will
+   place it without a human looking. */
+var STR_CCY=['USD','EUR','GBP','CHF','JPY','CAD','AUD','NZD'];
+var STR_MODES={off:'Off',flag:'Flag only',nofeed:'Flag · hold back from bots',block:'Hide the setup'};
+var STR_WINS={d1:'1 day',w1:'1 week',both:'1 week + 1 month agree'};
+function strMode(){ var v=LS.get('fh_strfilter'); return STR_MODES[v]?v:'nofeed'; }
+function strWin(){ var v=LS.get('fh_strwin'); return STR_WINS[v]?v:'w1'; }
+function setStrMode(v){ LS.set('fh_strfilter',v); }
+function setStrWin(v){ LS.set('fh_strwin',v); }
+
+/* The Indices tab fills _idx when it is opened. The scanner cannot rely on
+   that having happened, so it fetches on its own and shares the same cache. */
+async function ensureStrength(){
+  if(_idx&&Date.now()-_idxAt<60*60*1000) return _idx;
+  try{
+    var r=await fetch(STRENGTH_URL,{cache:'no-store'});
+    if(!r.ok) return null;
+    var d=await r.json();
+    if(!d||!d.strength||!Object.keys(d.strength).length) return null;
+    _idx=d;_idxAt=Date.now();
+    return _idx;
+  }catch(e){ return null; }
+}
+
+/* Rank 1 = strongest. DXY is an index of the dollar, not a ninth currency, so
+   it is excluded — including it would count USD twice. */
+function strengthRanks(){
+  if(!_idx||!_idx.strength) return null;
+  var win=strWin(), rows=[];
+  STR_CCY.forEach(function(c){
+    var s=_idx.strength[c]; if(!s||!s.perf) return;
+    var a=s.perf[win==='d1'?'d1':'w1'], b=s.perf.m1;
+    if(a==null) return;
+    rows.push({ccy:c,a:a,b:b});
+  });
+  if(rows.length<6) return null;               // too thin to rank honestly
+  var byA=rows.slice().sort(function(x,y){return y.a-x.a;});
+  var byB=rows.slice().sort(function(x,y){return (y.b==null?-1e9:y.b)-(x.b==null?-1e9:x.b);});
+  var out={},n=rows.length;
+  byA.forEach(function(r,i){ out[r.ccy]={rank:i+1,of:n,pct:r.a,rankB:null}; });
+  byB.forEach(function(r,i){ if(out[r.ccy]) out[r.ccy].rankB=i+1; });
+  return out;
+}
+
+/* Returns null when there is no strength data — the filter must never invent a
+   verdict it cannot support, and a setup is not held back on a failed fetch. */
+function setupStrength(o){
+  var ranks=strengthRanks(); if(!ranks) return null;
+  var pr=String(o.pair).replace(/[^A-Za-z]/g,'').toUpperCase();
+  if(pr.length<6) return null;
+  var base=pr.slice(0,3), quote=pr.slice(3,6);
+  var buy=o._isLong?base:quote, sell=o._isLong?quote:base;
+  var rb=ranks[buy], rs=ranks[sell];
+  if(!rb||!rs) return null;
+  var n=rb.of, bottom=n-1, both=strWin()==='both';
+  /* "both" asks the second window to agree before a currency counts as an
+     extreme, which flags less often and later. */
+  var buyWeak  = rb.rank>=bottom && (!both||(rb.rankB!=null&&rb.rankB>=bottom));
+  var sellStrong = rs.rank<=2    && (!both||(rs.rankB!=null&&rs.rankB<=2));
+  var buyStrong= rb.rank<=2, sellWeak=rs.rank>=bottom;
+  var why=[];
+  if(buyWeak) why.push('buying '+buy+', '+rb.rank+' of '+n+' on strength');
+  if(sellStrong) why.push('selling '+sell+', '+rs.rank+' of '+n);
+  var verdict=why.length?'against':((buyStrong||sellWeak)?'with':'neutral');
+  if(verdict==='with'&&!why.length){
+    if(buyStrong) why.push('buying '+buy+', '+rb.rank+' of '+n+' on strength');
+    if(sellWeak)  why.push('selling '+sell+', '+rs.rank+' of '+n);
+  }
+  return {verdict:verdict,buy:buy,sell:sell,buyRank:rb.rank,sellRank:rs.rank,of:n,
+          win:strWin(),why:why.join(' · ')};
+}
+
+/* The chip that appears on a card. Deliberately states the numbers it used, so
+   a flag can be argued with rather than taken on faith. */
+/* Fills the two dropdowns in the scanner header from the current setting. */
+function initStrCtl(){
+  var m=document.getElementById('str-mode'), w=document.getElementById('str-win');
+  if(m&&!m.options.length){
+    Object.keys(STR_MODES).forEach(function(k){
+      m.innerHTML+='<option value="'+k+'"'+(k===strMode()?' selected':'')+'>'+STR_MODES[k]+'</option>';
+    });
+  }
+  if(w&&!w.options.length){
+    Object.keys(STR_WINS).forEach(function(k){
+      w.innerHTML+='<option value="'+k+'"'+(k===strWin()?' selected':'')+'>'+STR_WINS[k]+'</option>';
+    });
+  }
+}
+function strChip(st){
+  if(!st||st.verdict==='neutral') return '';
+  var against=st.verdict==='against';
+  var col=against?'#fbbf24':'#4ade80';
+  var lbl=against?'AGAINST STRENGTH':'WITH STRENGTH';
+  return '<span class="scan-str '+(against?'against':'with')+'" title="'+esc(st.why)+' ('+STR_WINS[st.win]+')">'
+    +lbl+'<span style="opacity:.75;font-weight:400"> · '+esc(st.why)+'</span></span>';
+}
+
 async function runScanner(){
   setScanMode('scanner');
   var btn=document.getElementById('scan-btn'),res=document.getElementById('scan-results');
@@ -4808,6 +4970,7 @@ async function runScanner(){
   meta.textContent='';
   var shareEl=document.getElementById('scan-share');if(shareEl){shareEl.style.display='none';shareEl.innerHTML='';}
   res.innerHTML='<div class="ld" style="padding:20px"><div class="sp"></div>Cross-referencing sentiment, correlation, and multi-timeframe analysis…</div>';
+  if(strMode()!=='off') await ensureStrength();   // v16 regime check; silent if unavailable
   try{
     // Live intraday prices to anchor entries to the real current market (fixes stale entries)
     var priceBlock='';
@@ -4839,7 +5002,7 @@ async function runScanner(){
       res.innerHTML='<div class="scan-empty"><div class="scan-icon">🔍</div><div>The analysis came back in an unexpected shape and no setups could be read from it. Tap Run scanner to try again.</div></div>';
       meta.textContent='Attempted '+fhClock()+' · nothing parsed';
     } else {
-      var html='',shown=0,dropped=[],pub=[];
+      var html='',shown=0,dropped=[],pub=[],held=[];
       setups.forEach(function(s){
         var o={pair:scanField(s,'PAIR'),dir:scanField(s,'DIRECTION'),prob:scanField(s,'PROBABILITY'),
                entry:scanField(s,'ENTRY')||scanField(s,'ENTRY TRIGGER'),
@@ -4848,10 +5011,17 @@ async function runScanner(){
                reason:scanReason(s)};
         var bad=validateSetup(o);
         if(bad){dropped.push(bad);return;}
-        shown++; pub.push(o);
+        /* v16 — regime check. Never blocks on a failed strength fetch. */
+        var st=strMode()==='off'?null:setupStrength(o);
+        o._str=st;
+        if(st&&st.verdict==='against'){
+          if(strMode()==='block'){held.push(o); return;}
+          if(strMode()==='nofeed') held.push(o); else pub.push(o);
+        } else pub.push(o);
+        shown++;
         var isHigh=o.prob.toUpperCase().indexOf('HIGH')>-1;
         var cardClass=isHigh?'prob-high':'prob-med';
-        html+='<div class="scan-card '+cardClass+'"><div class="scan-hdr">'+pairChip(o.pair,true)+'<span class="scan-dir '+(o._isLong?'long':'short')+'">'+esc(o.dir)+'</span><span class="scan-prob '+(isHigh?'high':'med')+'">'+esc(o.prob||'MEDIUM')+' PROB</span></div>';
+        html+='<div class="scan-card '+cardClass+'"><div class="scan-hdr">'+pairChip(o.pair,true)+'<span class="scan-dir '+(o._isLong?'long':'short')+'">'+esc(o.dir)+'</span><span class="scan-prob '+(isHigh?'high':'med')+'">'+esc(o.prob||'MEDIUM')+' PROB</span>'+strChip(st)+'</div>';
         html+='<div class="scan-reason">'+colorizeCcy(md(o.reason))+'</div>';
         /* 8.9.26 #9.1 — Entry · Take profit · Stop loss, the TradingView position-tool order. */
         html+='<div class="scan-body"><div class="scan-main"><div class="scan-levels">'
@@ -4868,7 +5038,7 @@ async function runScanner(){
         delete cache[scanKey];LS.del('fhai:'+scanKey);
         res.innerHTML='<div class="scan-empty"><div class="scan-icon">⚠️</div><div>'+setups.length+' candidate setup'+(setups.length>1?'s came':' came')+' back but none were complete and self-consistent, so none are shown. Tap Run scanner to try again.</div></div>'+droppedNote(dropped);
       } else {
-        res.innerHTML=html+droppedNote(dropped);
+        res.innerHTML=html+droppedNote(dropped)+heldNote(held);
         fillSetupCharts(res);
       }
       /* D1 / Amendment 19.8.26 #4 ("times not quite lining up"): the bucket is
@@ -4879,7 +5049,7 @@ async function runScanner(){
       var scanAt=fhTime(scanBucket*18e5);
       meta.textContent='Analysis from '+scanAt+' '+fhTzLabel()+' (new analysis every 30 min) · Not financial advice';
       if(shown) buildShareBar('scan-share','Trade scanner','#scan-results','scanner');
-      if(shown) publishSetups('scanner',pub);
+      if(pub.length) publishSetups('scanner',pub);
     }
   } catch(e){
     res.innerHTML='<div class="eb" style="margin:10px">'+friendlyError(e)+'</div>';
@@ -4898,6 +5068,7 @@ async function runPullbackScanner(){
   meta.textContent='';
   var shareEl=document.getElementById('scan-share');if(shareEl){shareEl.style.display='none';shareEl.innerHTML='';}
   res.innerHTML='<div class="ld" style="padding:20px"><div class="sp"></div>Fetching today\'s top movers (since the '+rolloverLabel()+' rollover) for pullback analysis…</div>';
+  if(strMode()!=='off') await ensureStrength();   // v16 regime check; silent if unavailable
   try{
     // 1. Get live quotes — ALL 28 watched pairs so big movers (e.g. CHF/JPY, NZD & CAD crosses) are never missed
     var pbPairs=TREND_PAIRS;
@@ -4933,7 +5104,7 @@ async function runPullbackScanner(){
       meta.textContent='Attempted '+fhClock()+' · nothing parsed';
     } else {
       var html='<div style="background:rgba(251,191,36,0.07);border:1px solid rgba(251,191,36,0.2);border-radius:var(--rs);padding:10px 14px;margin-bottom:14px;font-size:13px;color:#fbbf24">↩ Pullback scanner — LIMIT ORDERS only. Place at the entry trigger and wait for price to come to you. Not a market-entry signal.</div>';
-      var shown=0,dropped=[],pub=[];
+      var shown=0,dropped=[],pub=[],held=[];
       setups.forEach(function(s){
         var o={pair:scanField(s,'PAIR'),orderType:scanField(s,'ORDER TYPE'),dir:scanField(s,'DIRECTION'),
                prob:scanField(s,'PROBABILITY'),
@@ -4945,7 +5116,14 @@ async function runPullbackScanner(){
            card: no complete levels or no reasoning ⇒ not a setup. */
         var bad=validateSetup(o);
         if(bad){dropped.push(bad);return;}
-        shown++; pub.push(o);
+        /* v16 — regime check. Never blocks on a failed strength fetch. */
+        var st=strMode()==='off'?null:setupStrength(o);
+        o._str=st;
+        if(st&&st.verdict==='against'){
+          if(strMode()==='block'){held.push(o); return;}
+          if(strMode()==='nofeed') held.push(o); else pub.push(o);
+        } else pub.push(o);
+        shown++;
         var isHigh=o.prob.toUpperCase().indexOf('HIGH')>-1;
         var isFade=/fade/i.test(o.orderType);
         var orderCol=isFade?'#f472b6':'#fbbf24';
@@ -4955,7 +5133,7 @@ async function runPullbackScanner(){
         var nowPrice='';
         var pd=q[o.pair.replace(/[^A-Za-z]/g,'').toUpperCase()];
         if(pd&&pd.p!=null) nowPrice=' <span style="font-size:11px;color:rgba(240,237,232,0.45);font-weight:400">now '+fmtPrice(o.pair.replace('/',''),pd.p)+'</span>';
-        html+='<div class="scan-card '+cardClass+'"><div class="scan-hdr">'+pairChip(o.pair,true)+'<span class="scan-dir '+(o._isLong?'long':'short')+'">'+esc(o.dir)+'</span><span class="scan-prob '+(isHigh?'high':'med')+'">'+esc(o.prob||'MEDIUM')+' PROB</span><span style="font-size:11px;padding:2px 8px;border-radius:100px;background:rgba(255,255,255,0.06);color:'+orderCol+';margin-left:4px;border:1px solid '+orderCol+'40">'+esc(orderLabel)+'</span></div>';
+        html+='<div class="scan-card '+cardClass+'"><div class="scan-hdr">'+pairChip(o.pair,true)+'<span class="scan-dir '+(o._isLong?'long':'short')+'">'+esc(o.dir)+'</span><span class="scan-prob '+(isHigh?'high':'med')+'">'+esc(o.prob||'MEDIUM')+' PROB</span><span style="font-size:11px;padding:2px 8px;border-radius:100px;background:rgba(255,255,255,0.06);color:'+orderCol+';margin-left:4px;border:1px solid '+orderCol+'40">'+esc(orderLabel)+'</span>'+strChip(st)+'</div>';
         html+='<div class="scan-reason">'+colorizeCcy(md(o.reason))+'</div>';
         html+='<div class="scan-body"><div class="scan-main"><div class="scan-levels">'
           +'<div class="scan-level"><div class="scan-level-lbl">1 · Entry trigger (limit)'+nowPrice+'</div><div class="scan-level-val">'+esc(o.entry)+'</div></div>'
@@ -4969,12 +5147,12 @@ async function runPullbackScanner(){
         delete cache[pbKey];LS.del('fhai:'+pbKey);
         res.innerHTML='<div class="scan-empty"><div class="scan-icon">⚠️</div><div>'+setups.length+' candidate setup'+(setups.length>1?'s came':' came')+' back but none were complete and self-consistent, so none are shown. Tap Pullback scan to try again.</div></div>'+droppedNote(dropped);
       } else {
-        res.innerHTML=html+droppedNote(dropped);
+        res.innerHTML=html+droppedNote(dropped)+heldNote(held);
         fillSetupCharts(res);
       }
       meta.textContent='Pullback scan · '+fhClock()+' · Not financial advice';
       if(shown) buildShareBar('scan-share','Pullback scanner','#scan-results','pullback_scanner');
-      if(shown) publishSetups('pullback',pub);
+      if(pub.length) publishSetups('pullback',pub);
     }
   } catch(e){
     res.innerHTML='<div class="eb" style="margin:10px">'+friendlyError(e)+'</div>';
