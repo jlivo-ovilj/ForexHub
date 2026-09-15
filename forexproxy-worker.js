@@ -1,4 +1,7 @@
 /* ForexHub data + AI proxy — Cloudflare Worker
+   v11.6 15.9.26: POST /tv-hook — TradingView alert webhooks become feed setups
+     (src "tv"), stored apart from the site's basket; GET /setups merges them.
+     Needs a new secret binding FH_TV_KEY (the webhook password in the URL).
    v11.3 8.9.26: /setups feed for the MT5 EA and cTrader cBot (v15).
    v11.2 8.9.26: 12-hour cache for the v14 IQ event outlooks (iq:o: keys).
    v11.1 8.9.26: /strength 1Y figure tolerates Yahoo's slightly-short 1y window.
@@ -29,7 +32,7 @@
        Cache API which is per-colo) and backs off when Forex Factory rate-limits.
    Bindings required: ANTHROPIC_API_KEY (secret), FH_APP_KEY (secret), FH_KV (KV).  */
 
-const WORKER_VERSION = "11.5";
+const WORKER_VERSION = "11.6";
 const YF_HOSTS = ["https://query1.finance.yahoo.com", "https://query2.finance.yahoo.com"];
 const UA = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0 Safari/537.36";
 const NY_HOUR_FMT = new Intl.DateTimeFormat("en-US", { timeZone: "America/New_York", hour: "numeric", hourCycle: "h23" });
@@ -509,6 +512,15 @@ function perfOf(bars) {
   return { d1: back(1), w1: byTime(7 * 86400), m1: byTime(30 * 86400), m3: byTime(91 * 86400), m6: byTime(182 * 86400), ytd: ytd, y1: byTime(365 * 86400), vol: vol };
 }
 
+/* 11.6 — parse the TradingView record and drop anything past its expiry. */
+function tvLive(rawRec) {
+  if (!rawRec) return [];
+  try {
+    const rec = JSON.parse(rawRec); const now = Date.now();
+    return (rec.setups || []).filter(function (s) { return !s.expires || Date.parse(s.expires) > now; });
+  } catch (e) { return []; }
+}
+
 export default {
   async fetch(req, env) {
     const origin = req.headers.get("Origin") || "";
@@ -984,16 +996,70 @@ export default {
         return J({ ok: true, stored: list.length, src: src, ts: rec.ts });
       } catch (e) { return J({ error: e.message }, 500); }
     }
+    /* ── TradingView webhook: POST /tv-hook?k=<FH_TV_KEY> ──
+       v11.6 (15.9.26). A TradingView alert whose message is JSON lands here and
+       becomes a feed setup with src "tv", so the MT5 EA / cTrader cBot treat it
+       exactly like a card sent from the site. TradingView cannot send headers,
+       so the password travels in the URL — a separate secret (FH_TV_KEY), not
+       the app key that is visible in the page source.
+       Message shape (all numbers as numbers or numeric strings):
+         { "pair":"EURUSD", "dir":"LONG", "entry":1.1, "sl":1.09, "tp":1.12,
+           "mode":"chart"|"trade", "ttl":10, "ref":"LB-0915", "note":"..." }
+       or { "action":"clear" } to drop every TradingView setup, or
+          { "action":"cancel", "pair":"EURUSD" } to drop that pair's.
+       Same pair+dir+entry replaces the earlier copy (a re-fired alert does not
+       duplicate). Each setup expires ttl hours after it arrived (default 10,
+       max 24) — the London breakout is only valid for a session. Mode defaults
+       to chart: nothing from TradingView trades unless the alert says so. */
+    if (url.pathname === "/tv-hook" && req.method === "POST") {
+      try {
+        if (!env.FH_TV_KEY) return J({ error: "Webhook is not configured (missing FH_TV_KEY)." }, 503);
+        if ((url.searchParams.get("k") || "") !== env.FH_TV_KEY) return J({ error: "Not authorised." }, 401);
+        if (!KV) return J({ error: "No KV binding — setups cannot be stored." }, 503);
+        const raw = (await req.text()).slice(0, 4000);
+        let body; try { body = JSON.parse(raw); } catch (e) { return J({ error: "Alert message is not JSON.", got: raw.slice(0, 120) }, 400); }
+        const cur = tvLive(await KV.get("setups:tv"));
+        const now = new Date().toISOString();
+        const action = String(body.action || "").toLowerCase();
+        const pair = String(body.pair || body.ticker || "").split(":").pop().replace(/[^A-Za-z]/g, "").toUpperCase().slice(0, 6);
+        let next = cur;
+        if (action === "clear") next = [];
+        else if (action === "cancel") next = cur.filter(function (s) { return s.pair !== pair; });
+        else {
+          const n = function (v) { const x = parseFloat(v); return isFinite(x) ? x : null; };
+          const dir = /LONG|BUY/i.test(String(body.dir || "")) ? "LONG" : (/SHORT|SELL/i.test(String(body.dir || "")) ? "SHORT" : "");
+          const s = { pair: pair, dir: dir, entry: n(body.entry), sl: n(body.sl), tp: n(body.tp), rr: n(body.rr), prob: String(body.prob || "").slice(0, 12), order: String(body.order || "").slice(0, 16),
+            mode: String(body.mode || "").toLowerCase() === "trade" ? "trade" : "chart", ref: String(body.ref || "").slice(0, 20), strength: String(body.strength || "").slice(0, 10), strengthWhy: String(body.note || body.strengthWhy || "").slice(0, 90), at: now };
+          if (!/^[A-Z]{6}$/.test(s.pair) || !s.dir || s.entry == null || s.sl == null || s.tp == null) return J({ error: "Need pair (6 letters), dir LONG/SHORT, entry, sl, tp.", got: s }, 400);
+          if (s.rr == null) { const risk = Math.abs(s.entry - s.sl); s.rr = risk > 0 ? Number((Math.abs(s.tp - s.entry) / risk).toFixed(2)) : null; }
+          /* Signature (John, 15 Sep): every TradingView setup's reference starts
+             with TV- so the order comment / label and the journal column say
+             where the trade came from. Site refs look like NZDUSDS-141530. */
+          if (!/^TV-/i.test(s.ref)) s.ref = ("TV-" + (s.ref || s.pair + "-" + now.slice(5, 16).replace(/[-T:]/g, ""))).slice(0, 20);
+          const ttl = Math.min(24, Math.max(1, n(body.ttl) || 10));
+          s.expires = new Date(Date.now() + ttl * 3600 * 1000).toISOString();
+          const key = function (x) { return x.pair + "|" + x.dir + "|" + x.entry; };
+          next = cur.filter(function (x) { return key(x) !== key(s); }).concat([s]).slice(-20);
+        }
+        await KV.put("setups:tv", JSON.stringify({ ts: now, setups: next }), { expirationTtl: 86400 });
+        return J({ ok: true, action: action || "add", live: next.length, ts: now });
+      } catch (e) { return J({ error: e.message }, 500); }
+    }
     if (url.pathname === "/setups" && req.method === "GET") {
       try {
         if (!env.FH_APP_KEY || (url.searchParams.get("k") || "") !== env.FH_APP_KEY) return J({ error: "Not authorised." }, 401);
         if (!KV) return J({ error: "No KV binding." }, 503);
-        const both = await Promise.all([KV.get("setups:scanner"), KV.get("setups:pullback")]);
+        const both = await Promise.all([KV.get("setups:scanner"), KV.get("setups:pullback"), KV.get("setups:tv")]);
         const sc = both[0] ? JSON.parse(both[0]) : null, pb = both[1] ? JSON.parse(both[1]) : null;
         const all = [];
         if (sc) sc.setups.forEach(function (s) { s.src = "scanner"; s.at = sc.ts; all.push(s); });
         if (pb) pb.setups.forEach(function (s) { s.src = "pullback"; s.at = pb.ts; all.push(s); });
-        return new Response(JSON.stringify({ ts: new Date().toISOString(), scannerAt: sc ? sc.ts : null, pullbackAt: pb ? pb.ts : null, setups: all }),
+        /* 11.6 — TradingView setups live in their own record so the site's
+           replace-the-basket POST above can never wipe them, and each one
+           carries its own timestamp and expiry (see /tv-hook). */
+        const tv = tvLive(both[2]);
+        tv.forEach(function (s) { s.src = "tv"; all.push(s); });
+        return new Response(JSON.stringify({ ts: new Date().toISOString(), scannerAt: sc ? sc.ts : null, pullbackAt: pb ? pb.ts : null, tvCount: tv.length, setups: all }),
           { status: 200, headers: { "Content-Type": "application/json", "Cache-Control": "no-store", "Access-Control-Allow-Origin": "*" } });
       } catch (e) { return J({ error: e.message }, 500); }
     }
