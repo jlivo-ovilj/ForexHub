@@ -152,7 +152,7 @@ body.light .nb{color:rgba(28,27,25,0.88)}
 
 /* ── CALENDAR CONTROLS (Amendment 17.8.26) ── */
 .cal-controls{display:flex;flex-wrap:wrap;gap:6px;align-items:center;margin-bottom:8px}
-.cal-flbl{font-family:'DM Mono',monospace;font-size:10px;color:var(--mt);margin-right:2px}
+.cal-flbl{font-family:'DM Mono',monospace;font-size:10.5px;font-weight:700;letter-spacing:0.08em;text-transform:uppercase;color:var(--tx);opacity:0.8;margin-right:4px}
 .cal-past{opacity:0.72}
 /* v24 — released events fold away under one line so the next release sits at the top of the day */
 .cal-fold{margin-bottom:6px}
@@ -164,7 +164,7 @@ body.light .nb{color:rgba(28,27,25,0.88)}
 .cal-fold[open]>summary{margin-bottom:6px}
 .cal-fold .cal-event{margin-left:0}
 /* v24 — calendar grid view */
-.cal-grid{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:6px;margin-bottom:8px}
+.cal-grid{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:6px;margin-bottom:8px}
 .cal-gd{background:var(--sf);border:1px solid var(--bd);border-radius:var(--rs);padding:8px 8px 6px;min-height:120px;display:flex;flex-direction:column;gap:4px;min-width:0}
 .cal-gd.today{border-color:var(--ac)}
 .cal-gd.past{opacity:0.6}
@@ -175,7 +175,7 @@ body.light .nb{color:rgba(28,27,25,0.88)}
 .cal-ge.high{border-left-color:#ef4444}.cal-ge.med{border-left-color:#f59e0b}.cal-ge.low{border-left-color:#6b7280}
 .cal-ge.past{opacity:0.55}
 .cal-ge .ge-t{font-family:'DM Mono',monospace;font-size:9.5px;color:var(--mt);display:flex;gap:5px;align-items:center}
-.cal-ge .ge-n{white-space:nowrap;overflow:hidden;text-overflow:ellipsis;color:var(--tx)}
+.cal-ge .ge-n{color:var(--tx);display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;line-height:1.3}
 .cal-ge .ge-c{font-family:'DM Mono',monospace;font-weight:700;font-size:9.5px}
 .cal-gmore{font-family:'DM Mono',monospace;font-size:10px;color:var(--mt);padding:2px 5px}
 @media(max-width:820px){.cal-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
@@ -1226,7 +1226,7 @@ body.light .chart-modal-overlay{background:rgba(0,0,0,0.55)}
       <div class="cb" style="margin-bottom:12px">Describe your trade setup below. Optionally drop a chart screenshot for deeper analysis.</div>
       <div class="img-drop" id="tir-dropzone" onclick="document.getElementById('tir-img').click()" ondragover="event.preventDefault();this.classList.add('dragover')" ondragleave="this.classList.remove('dragover')" ondrop="handleTirDrop(event)">
         <div class="img-drop-icon">📊</div>
-        <div class="img-drop-lbl">Optional: tap to add chart screenshot</div>
+        <div class="img-drop-lbl">Optional: tap to add a chart screenshot — or press Ctrl+V to paste one</div>
         <div class="img-drop-sub">PNG, JPG or GIF · max 5MB</div>
       </div>
       <input type="file" id="tir-img" accept="image/*" onchange="handleTirFile(this)">
@@ -1247,7 +1247,7 @@ body.light .chart-modal-overlay{background:rgba(0,0,0,0.55)}
       <div class="cb" style="margin-bottom:16px">Upload a screenshot of a completed trade. AI will analyse why it went well or poorly and what to improve.</div>
       <div class="img-drop" id="ptr-dropzone" onclick="document.getElementById('ptr-img').click()" ondragover="event.preventDefault();this.classList.add('dragover')" ondragleave="this.classList.remove('dragover')" ondrop="handlePtrDrop(event)">
         <div class="img-drop-icon">📈</div>
-        <div class="img-drop-lbl">Tap to upload chart screenshot</div>
+        <div class="img-drop-lbl">Tap to upload a chart screenshot — or press Ctrl+V to paste one</div>
         <div class="img-drop-sub">PNG, JPG or GIF · max 5MB</div>
       </div>
       <input type="file" id="ptr-img" accept="image/*" onchange="handlePtrFile(this)">
@@ -1339,6 +1339,8 @@ body.light .chart-modal-overlay{background:rgba(0,0,0,0.55)}
       <div id="corr-body" style="padding:16px"><div class="ld"><div class="sp"></div>Loading correlations…</div></div>
     </div>
     <div class="map-src">Rates: <a href="https://frankfurter.dev/" target="_blank" rel="noopener">Frankfurter API (ECB)</a></div>
+    <div class="share-bar" id="corr-share" style="display:none"></div>
+    <div class="iq-ask" id="iqask-corr" data-ctx="corr"></div>
   </div>
 </div>
 
@@ -1414,7 +1416,7 @@ body.light .chart-modal-overlay{background:rgba(0,0,0,0.55)}
       </div>
       <div class="img-drop" id="iq-dropzone" onclick="document.getElementById('iq-img').click()" ondragover="event.preventDefault();this.classList.add('dragover')" ondragleave="this.classList.remove('dragover')" ondrop="handleIqDrop(event)">
         <div class="img-drop-icon">🧠</div>
-        <div class="img-drop-lbl">Optional: tap to add a screenshot (briefing, heat map, chart)</div>
+        <div class="img-drop-lbl">Optional: tap to add a screenshot (briefing, heat map, chart) — or press Ctrl+V to paste one</div>
         <div class="img-drop-sub">PNG or JPG · stored downscaled in your library</div>
       </div>
       <input type="file" id="iq-img" accept="image/*" onchange="handleIqFile(this)" style="display:none">
@@ -1625,7 +1627,18 @@ body.light .chart-modal-overlay{background:rgba(0,0,0,0.55)}
 <div id="about" class="sec">
   <div class="st">About ForexHub</div>
   <div class="ss">Your daily forex companion</div>
+  <div class="share-bar" style="display:flex;margin:0 0 14px">
+    <a class="share-btn" href="mudmap.html" target="_blank" rel="noopener" style="text-decoration:none">🗺 Mud map — how everything connects</a>
+  </div>
   <div class="card">
+    <div class="ai"><div class="aq">What's new in v24.1 (16 Sep 2026) — follow-ups from the v24 review</div><div class="aa">
+      · <b>Calendar grid is Monday to Saturday</b> — Sunday never carries anything in FX, so the column is gone; a Sunday release (rare) sits at the top of Monday marked SUN. Cells are wider, names wrap to two lines instead of cutting off, and the day headers drop the year.<br>
+      · <b>Correlation matrix</b> now has Print / Save and its own Ask IQ — "how much of the same bet am I holding", "which pairs give me independent exposure".<br>
+      · Indices and Technicals Print / Save bars now appear on every load, not only the first fetch of the hour.<br>
+      · The Impact / Days / View / Currency labels on the calendar are bolder so they read as headings.<br>
+      · The screenshot drop zones say so: tap, or <b>Ctrl+V</b> to paste.<br>
+      · A permanent <b>Mud map</b> link sits at the top of this tab, above the version notes.<br>
+    </div></div>
     <div class="ai"><div class="aq">What's new in v24 (16 Sep 2026) · worker 11.7 — amendments 14.9.26</div><div class="aa">
       · <b>Ask IQ on the research tabs.</b> Technicals, Trends, Indices and the Heat map each carry an orange <b>Ask IQ</b> panel. Type a question (or tap a suggested one) and it goes to Claude together with the table on screen — the technicals rows you have filtered to, the trend biases, the index performance and volatility figures, the pip moves — plus the currency-strength ranking, the daily technicals headcount, the trend biases and the next 48 hours of the calendar from the other tabs. So "why is NZD weak", "which crosses should I be shorting", "why is USD strong but DXY neutral" or "what does the Volatility column mean" are answered against the numbers in front of you, not in general. Every answer is saved to the IQ library and can be printed or saved like any report.<br>
       · <b>Print / Save on every table that is worth keeping</b> — Technicals, Trends, Indices and the Heat map now have the same bar as the Weekly/Daily/4H analysis. They file under <code>Analysis\&lt;month&gt;</code>; Market sentiment now files under <code>Market Sentiment</code> and IQ outlooks/reviews under <code>IQ Scanner</code>.<br>
@@ -2043,7 +2056,7 @@ function dismissBanner(){
 /* ══════════════════════════════════════
    HEADER DATE
 ══════════════════════════════════════ */
-var FH_BUILD='v24'; // 16 Sep 2026 — amendments 14.9.26: Ask IQ on the research tabs, print/save everywhere, calendar collapse + grid, paste screenshots // bump on every delivered change — shown in the header so it's always obvious which version is loaded
+var FH_BUILD='v24.1'; // 16 Sep 2026 — calendar six-day grid, correlation Ask IQ, labels, paste hint, mud-map link // 16 Sep 2026 — amendments 14.9.26: Ask IQ on the research tabs, print/save everywhere, calendar collapse + grid, paste screenshots // bump on every delivered change — shown in the header so it's always obvious which version is loaded
 /* Stale-tab killer: every so often, check whether a newer build has been deployed.
    If so, show a can't-miss banner telling the user to reload — long-open tabs silently
    running old code caused repeated "the fix didn't work" confusion. */
@@ -2856,7 +2869,7 @@ function reportFolder(title){
   if(t.indexOf('sentiment')>-1) return {folder:'Market Sentiment'};   // v24 — John's existing folder
   if(t.indexOf('event outlook')>-1||t.indexOf('event review')>-1) return {folder:'IQ Scanner'};   // v24 — John's existing folder
   // v24 — technicals / trend / indices / heat-map tables and Ask IQ answers file under Analysis\<month> (checked before 'scanner' so 'Trend scanner' lands here)
-  if(t.indexOf('technicals')>-1||t.indexOf('trend')>-1||t.indexOf('indices')>-1||t.indexOf('heat map')>-1||t.indexOf('ask iq')>-1) return {folder:'Analysis'};
+  if(t.indexOf('technicals')>-1||t.indexOf('trend')>-1||t.indexOf('indices')>-1||t.indexOf('heat map')>-1||t.indexOf('correlation')>-1||t.indexOf('ask iq')>-1) return {folder:'Analysis'};
   if(t.indexOf('scanner')>-1||t.indexOf('scan')>-1) return {folder:'Trade Scanner'};
   if(t.indexOf('review')>-1) return {folder:'Trade Reviews'};
   if(t.indexOf('analysis')>-1||t.indexOf('outlook')>-1){var m=(title||'').match(/([A-Z]{3})\/([A-Z]{3})/);return {folder:'Analysis',sub:m?m[1]+m[2]:null};}
@@ -4368,6 +4381,7 @@ async function calEventsToday(){
 var calFilter={imp:'medhigh',ccy:'',days:7,view:'list'};
 var _calPastOpen=false;   // v24 — whether the 'already released' fold is open
 function setCalView(v){calFilter.view=v;renderCalendarView();}
+function fhWeekday(d){ try{ var w=fhDate(d,{weekday:'short'}); return ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'].indexOf(w.slice(0,3)); }catch(e){ return d.getDay(); } }
 function calSaveFilter(){try{LS.set('fh_calfilter',JSON.stringify(calFilter));}catch(e){}}
 function calLoadFilter(){try{var d=JSON.parse(LS.get('fh_calfilter')||'null');if(d)calFilter=Object.assign(calFilter,d);}catch(e){}}
 function setCalImp(v){calFilter.imp=v;calSaveFilter();renderCalendarView();}
@@ -4493,25 +4507,40 @@ function renderCalendarView(){
 }
 /* v24 — calendar grid: one column per day, 7 per row (7 days = one row, 2 weeks = two). */
 function renderCalGrid(byDay,todayKey,now){
+  /* v24.1 — six columns: Sunday has nothing worth a column in FX, so any Sunday
+     event is parked at the top of Monday's cell, marked "Sun". Two rows for 2 weeks. */
   var days=calFilter.days<7?7:calFilter.days;
   var start=new Date(now);
-  var h='<div class="cal-grid">';
+  var byKey={}; byDay.forEach(function(g){byKey[g.key]=g;});
+  var cells=[];
   for(var d=0;d<days;d++){
-    var dt=new Date(start.getTime()+d*86400000), key=aestKey(dt);
-    var grp=null; byDay.forEach(function(g){if(g.key===key)grp=g;});
-    var lbl=fhDate(dt,{weekday:'short',day:'2-digit',month:'short'});
-    var isToday=key===todayKey;
-    h+='<div class="cal-gd'+(isToday?' today':'')+'"><div class="cal-gd-h"><span>'+esc(lbl)+(isToday?' · today':'')+'</span><span>'+(grp?grp.list.length:'')+'</span></div>';
-    if(!grp){ h+='<div class="cal-gmore">—</div></div>'; continue; }
-    grp.list.forEach(function(ev){
-      var i=calData.indexOf(ev), past=ev.ts<now, col=getCcyColor(ev.ccy);
+    var dt=new Date(start.getTime()+d*86400000), key=aestKey(dt), grp=byKey[key];
+    var list=grp?grp.list.map(function(ev){return {ev:ev,sun:false};}):[];
+    if(fhWeekday(dt)===0){                       // Sunday → carry into the next cell (Monday)
+      var nd=new Date(dt.getTime()+86400000), nk=aestKey(nd);
+      if(d===days-1){ if(list.length) cells.push({dt:dt,key:key,list:list,sunOnly:true}); continue; }
+      cells.push({carry:list.map(function(x){x.sun=true;return x;})});
+      continue;
+    }
+    var carry=cells.length&&cells[cells.length-1].carry?cells.pop().carry:[];
+    cells.push({dt:dt,key:key,list:carry.concat(list)});
+  }
+  cells=cells.filter(function(c){return !c.carry;});
+  var h='<div class="cal-grid">';
+  cells.forEach(function(c){
+    var isToday=c.key===todayKey;
+    var lbl=fhDate(c.dt,{weekday:'short',day:'2-digit',month:'short'}).replace(/,?\s*20\d\d/,'');
+    h+='<div class="cal-gd'+(isToday?' today':'')+'"><div class="cal-gd-h"><span>'+esc(lbl)+(isToday?' · today':'')+'</span><span>'+(c.list.length||'')+'</span></div>';
+    if(!c.list.length){ h+='<div class="cal-gmore">—</div></div>'; return; }
+    c.list.forEach(function(x){
+      var ev=x.ev, i=calData.indexOf(ev), past=ev.ts<now, col=getCcyColor(ev.ccy);
       h+='<div class="cal-ge '+ev.imp+(past?' past':'')+'" onclick="openCalPopup('+i+')" title="'+esc(ev.name)+' · '+esc(ev.time)+'">'
-        +'<span class="ge-t"><span class="ge-c" style="color:'+col+'">'+esc(ev.ccy)+'</span>'+esc(ev.time)+(past?' ✓':'')+'</span>'
+        +'<span class="ge-t"><span class="ge-c" style="color:'+col+'">'+esc(ev.ccy)+'</span>'+(x.sun?'<span class="ge-c" style="color:var(--ac)">SUN</span>':'')+esc(ev.time)+(past?' ✓':'')+'</span>'
         +'<span class="ge-n">'+esc(ev.name)+'</span></div>';
     });
     h+='</div>';
-  }
-  h+='</div><div class="meta" style="margin-bottom:10px">Tap an event for its detail and the IQ button. Colour bar = impact (red high, amber medium, grey low); faded = already released.</div>';
+  });
+  h+='</div><div class="meta" style="margin-bottom:10px">Monday to Saturday; a Sunday release (rare) sits at the top of Monday marked SUN. Tap an event for its detail and the IQ button. Colour bar = impact (red high, amber medium, grey low); faded ✓ = already released.</div>';
   return h;
 }
 function setCalMeta(n){
@@ -5103,6 +5132,7 @@ var CORR_ALL=['EURUSD','GBPUSD','USDJPY','USDCHF','USDCAD','AUDUSD','NZDUSD',
   'EURGBP','EURJPY','EURCHF','EURAUD','EURNZD','EURCAD',
   'GBPJPY','GBPCHF','GBPAUD','GBPNZD','GBPCAD',
   'AUDJPY','AUDNZD','AUDCAD','AUDCHF','NZDJPY','NZDCAD','NZDCHF','CADJPY','CADCHF','CHFJPY'];
+var _corrMatrix=null; // v24.1
 var corrView='majors', _corrData=null, _corrDates=null, _corrFocus=null, _corrSortDir=-1, _corrDisplay='grid';
 async function loadCorrelation(){
   corrLoaded=true;
@@ -5154,6 +5184,9 @@ function renderCorr(){
   }
   var pairs=corrView==='all'?CORR_ALL:CORR_MAJORS;
   var rets=pairs.map(function(p){return returns(series(p));});
+  // v24.1 — keep the matrix for Ask IQ + build the report bar
+  _corrMatrix={pairs:pairs,m:pairs.map(function(_,i){return pairs.map(function(_,j){return Math.round(corr(rets[i],rets[j])*100);});})};
+  buildShareBar('corr-share','Correlation matrix','#corr-body','correlation');
   function pcol(sym){var c=sym.slice(0,3);return CCY_COLORS[c]?ccyCol(c):'var(--tx)';}
   var ref=_corrFocus?pairs.indexOf(_corrFocus):-1;
   function ctrlBar(){
@@ -6589,7 +6622,6 @@ async function loadTech(force){
       if(meta) meta.textContent='Loaded '+(i+1)+'/'+order.length+' timeframes…';
     }
     _techAt=Date.now(); markSectionLoaded('tech');
-    buildShareBar('tech-share','Watchlist technicals','#tech-body','technicals');
     if(meta) meta.textContent='As of '+fhClock()+' · '+FH_PAIRS.length+' pairs · 15m/1H/4H refresh every 5–10 min, Daily/Weekly hourly';
   }catch(e){
     body.innerHTML='<div class="eb" style="padding:16px">'+friendlyError(e)+'</div>';
@@ -6602,6 +6634,7 @@ function sortTech(col){if(_techSort.col===col){_techSort.dir*=-1;}else{_techSort
 function toggleTechRow(p){_techOpen[p]=!_techOpen[p];renderTech();}
 function renderTech(){
   var body=document.getElementById('tech-body'); if(!body) return;
+  if(Object.keys(_tech).length) buildShareBar('tech-share','Watchlist technicals','#tech-body','technicals');   // v24.1
   var filt=document.getElementById('tech-filters');
   if(filt){
     var f='<button class="pip-fccy'+(_techCcy===''?' all-active':'')+'" onclick="setTechCcy(\'\')">All</button>';
@@ -6828,7 +6861,6 @@ async function loadStrength(force){
     if(!d||!d.strength||!Object.keys(d.strength).length) throw new Error(d&&d.error?d.error:'No strength data returned — try again in a moment.');
     _idx=d;_idxAt=Date.now();markSectionLoaded('indices');
     renderIdx();
-    buildShareBar('idx-share','Currency indices','#idx-body','indices');
     var m=document.getElementById('idx-meta'); if(m) m.textContent='Window '+(d.from||'')+' → '+(d.to||'')+' · '+d.pairsUsed+' pairs · as of '+fhClock()+(d.cached?' (shared cache)':'');
   }catch(e){ body.innerHTML='<div class="eb" style="padding:16px">'+friendlyError(e)+'</div>'; }
   _idxLoading=false;
@@ -6845,6 +6877,7 @@ function sparkSvg(vals,col){
 }
 function renderIdx(){
   var body=document.getElementById('idx-body'); if(!body||!_idx) return;
+  buildShareBar('idx-share','Currency indices','#idx-body','indices');   // v24.1 — here, so a cached load has it too
   var keys=Object.keys(_idx.strength);
   var rows=keys.map(function(k){
     var s=_idx.strength[k], p=s.perf||{}, t=s.tech||{}, ccy=k==='DXY'?'USD':k;
@@ -7215,6 +7248,11 @@ var ASK_CTX={
         'Why is the USD basket strong while the US Dollar Index (DXY) is neutral?',
         'What is the significance of the Volatility column and what does it mean for choosing currencies?',
         'Is the strongest currency moving against nearly all the others — is this a single-currency move?']},
+  corr:{title:'Correlation matrix',sub:'Ask which pairs move together, which cancel out, and what that means for the trades you hold.',
+    qs:['If I am long EUR/USD and short USD/CHF, how much of the same bet am I holding?',
+        'Which pairs give me the most independent exposure right now?',
+        'Which correlations look unusual compared with what you would normally expect?',
+        'Is there a single currency driving most of these correlations this month?']},
   maps:{title:'Heat map',sub:'Ask about the pip moves since the rollover and over the week and month.',
     qs:['Why is GBP down across the board when its news was good?',
         'Which currency is driving today\'s moves, and is it consistent across the pairs?',
@@ -7253,6 +7291,12 @@ function askCtxIdx(){
     return k+(k==='DXY'?' (real ICE DXY)':' basket')+': 1D '+pct1(p.d1)+', 1W '+pct1(p.w1)+', 1M '+pct1(p.m1)+', 3M '+pct1(p.m3)+', 6M '+pct1(p.m6)+', YTD '+pct1(p.ytd)+', 1Y '+pct1(p.y1)+', volatility '+(p.vol!=null?Number(p.vol).toFixed(2)+'%':'n/a')+', tech rating '+techLbl(t.rating&&t.rating.all)+(t.rsi!=null?', RSI '+Number(t.rsi).toFixed(0):'');});
   return 'CURRENCY INDICES (equal-weight basket of each currency\'s 7 watchlist pairs, rebased 1y ago; DXY is the real index; volatility = daily-move std-dev over the year):\n'+lines.join('\n');
 }
+function askCtxCorr(){
+  if(!_corrMatrix) return null;
+  var P=_corrMatrix.pairs, M=_corrMatrix.m, lines=[];
+  for(var i=0;i<P.length;i++) for(var j=i+1;j<P.length;j++) lines.push(P[i]+' vs '+P[j]+': '+(M[i][j]>0?'+':'')+M[i][j]+'%');
+  return 'CORRELATION MATRIX (60-day rolling correlation of daily returns, ECB rates; +100 = move together, -100 = opposite):\n'+lines.join('\n');
+}
 function askCtxMaps(){
   if(!_hmRows||!_hmRows.length) return null;
   var lines=_hmRows.map(function(r){return r.sym+': daily '+fmtPip(r.d)+' pips, weekly '+fmtPip(r.w)+', monthly '+fmtPip(r.m);});
@@ -7286,7 +7330,7 @@ async function runAskIq(k){
   var c=ASK_CTX[k], qEl=document.getElementById('ia-q-'+k), out=document.getElementById('ia-out-'+k), btn=document.getElementById('ia-btn-'+k), sh=document.getElementById('ia-share-'+k);
   var q=(qEl.value||'').trim();
   if(!q){ out.innerHTML='<div class="eb">Type a question, or tap one of the suggestions.</div>'; return; }
-  var own=k==='tech'?askCtxTech():k==='trend'?askCtxTrend():k==='idx'?askCtxIdx():askCtxMaps();
+  var own=k==='tech'?askCtxTech():k==='trend'?askCtxTrend():k==='idx'?askCtxIdx():k==='corr'?askCtxCorr():askCtxMaps();
   if(!own){ out.innerHTML='<div class="eb">This tab has not loaded its data yet — refresh it, then ask.</div>'; return; }
   var common=askCtxCommon(k);
   btn.disabled=true; btn.innerHTML='<div class="sp"></div>'; if(sh){sh.style.display='none';sh.innerHTML='';}
