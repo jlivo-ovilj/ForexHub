@@ -34,6 +34,7 @@ body[data-sect="trends"]    {--ac:#10b981;--adm:rgba(16,185,129,0.12)}
 body[data-sect="calculator"]{--ac:#06b6d4;--adm:rgba(6,182,212,0.12)}
 body[data-sect="indices"]   {--ac:#f472b6;--adm:rgba(244,114,182,0.12)}
 body[data-sect="iq"]        {--ac:#fb923c;--adm:rgba(251,146,60,0.12)}
+body[data-sect="plan"]      {--ac:#f97316;--adm:rgba(249,115,22,0.12)}
 *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
 body{font-family:'Syne',sans-serif;background:var(--bg);color:var(--tx);min-height:100vh;overflow-x:hidden}
 
@@ -564,6 +565,57 @@ body.light .str-ctl select:hover{border-color:rgba(0,0,0,0.45)}
 
 /* ── THEME TOGGLE (Amendment: light/dark mode) ── */
 .hdr-right{display:flex;align-items:center;gap:12px}
+/* v25 — Classic / Flow navigation (ForexFlow) */
+.nav-tog{background:var(--sf2);border:1px solid var(--bd2);color:var(--tx);height:34px;border-radius:100px;cursor:pointer;font-family:'DM Mono',monospace;font-size:11px;padding:0 4px;display:flex;align-items:center;gap:2px;flex-shrink:0}
+.nav-tog span{padding:5px 9px;border-radius:100px;color:var(--mt)}
+.nav-tog span.on{background:var(--ac);color:#0b0b0d;font-weight:700}
+body[data-nav="flow"] .nav.classic{display:none}
+body:not([data-nav="flow"]) .flow-wrap{display:none}
+.flow-wrap{border-bottom:1px solid var(--bd);padding:10px 20px 10px}
+.flow-nav{display:flex;gap:6px;flex-wrap:wrap;justify-content:center}
+.fnb{background:transparent;border:1.5px solid var(--bd2);color:var(--mt);border-radius:100px;padding:7px 15px;font-family:'Syne',sans-serif;font-weight:700;font-size:13.5px;cursor:pointer;transition:all .15s;display:flex;align-items:center;gap:8px;white-space:nowrap}
+.fnb i{width:8px;height:8px;border-radius:50%;background:var(--fc);display:inline-block;opacity:.9}
+.fnb:hover{border-color:var(--fc);color:var(--tx)}
+.fnb.on{background:var(--fc);border-color:var(--fc);color:#0b0b0d}
+.fnb.on i{background:#0b0b0d;opacity:.45}
+.flow-sub{display:flex;gap:6px;flex-wrap:wrap;justify-content:center;margin:8px auto 0;padding:7px 10px;border-radius:12px;max-width:940px;background:color-mix(in srgb,var(--fc) 9%,transparent);border:1px solid color-mix(in srgb,var(--fc) 30%,transparent)}
+.flow-sub:empty{display:none}
+.fsb{background:transparent;border:1px solid color-mix(in srgb,var(--fc) 45%,transparent);color:var(--fc);border-radius:100px;padding:5px 12px;font-family:'DM Mono',monospace;font-size:11.5px;cursor:pointer;transition:all .15s;white-space:nowrap}
+.fsb:hover{background:color-mix(in srgb,var(--fc) 15%,transparent)}
+.fsb.on{background:color-mix(in srgb,var(--fc) 24%,transparent);border-color:var(--fc);color:var(--tx);font-weight:500}
+/* Plan tab */
+.pl-steps{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:6px;margin:0 0 12px}
+.pl-stp{background:var(--sf);border:1px solid var(--bd);border-radius:10px;padding:10px 10px 8px;cursor:pointer;min-width:0;transition:border-color .15s}
+.pl-stp .n{font-family:'DM Mono',monospace;font-size:10px;color:var(--mt);letter-spacing:.08em}
+.pl-stp .t{font-family:'Syne',sans-serif;font-weight:700;font-size:13px;margin:2px 0;color:var(--tx)}
+.pl-stp .k{font-family:'DM Mono',monospace;font-size:20px;font-weight:500;color:var(--ac);font-variant-numeric:tabular-nums}
+.pl-stp .k small{font-size:10px;color:var(--mt);margin-left:4px}
+.pl-stp.on{border-color:var(--ac);box-shadow:0 0 0 2px var(--adm)}
+.pl-stp .bar{height:3px;border-radius:2px;background:var(--bd2);margin-top:6px;overflow:hidden}
+.pl-stp .bar i{display:block;height:100%;background:var(--ac)}
+.pl-rule{display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid var(--bd);flex-wrap:wrap;font-family:'DM Sans','Syne',sans-serif;font-size:13.5px}
+.pl-rule:last-child{border-bottom:none}
+.pl-rule label{display:flex;align-items:center;gap:8px;cursor:pointer;flex:1;min-width:220px;color:var(--tx)}
+.pl-rule input[type=checkbox]{accent-color:var(--ac);width:15px;height:15px}
+.pl-rule input[type=number]{background:var(--sf2);border:1px solid var(--bd2);color:var(--tx);border-radius:6px;padding:3px 6px;font-family:'DM Mono',monospace;font-size:11.5px;width:64px}
+.pl-rule .unit{font-family:'DM Mono',monospace;font-size:11px;color:var(--mt)}
+.pl-rule .src{font-family:'DM Mono',monospace;font-size:10px;color:var(--mt);border:1px solid var(--bd2);border-radius:100px;padding:2px 8px}
+.pl-pairs{display:flex;flex-wrap:wrap;gap:6px;margin-top:10px}
+.pl-pc{font-family:'DM Mono',monospace;font-size:11px;border-radius:100px;padding:4px 10px;border:1px solid var(--bd2);color:var(--tx);background:var(--sf2)}
+.pl-pc.out{opacity:.32;text-decoration:line-through}
+.pl-pc.new{border-color:#ef4444;color:#ef4444;opacity:1;text-decoration:line-through}
+.pl-short{display:grid;grid-template-columns:repeat(auto-fit,minmax(250px,1fr));gap:10px;margin-top:10px}
+.pl-sc{background:var(--sf);border:1px solid var(--bd);border-left:4px solid #22c55e;border-radius:10px;padding:12px 14px}
+.pl-sc.sell{border-left-color:#ef4444}
+.pl-sc .p{font-family:'Syne',sans-serif;font-weight:800;font-size:18px;display:flex;justify-content:space-between;align-items:center;color:var(--tx)}
+.pl-sc .dir{font-family:'DM Mono',monospace;font-size:11px;padding:2px 9px;border-radius:100px;color:#0b0b0d;background:#22c55e}
+.pl-sc.sell .dir{background:#ef4444;color:#fff}
+.pl-sc ul{margin:8px 0 0;padding-left:16px;font-size:12.5px;color:var(--mt);line-height:1.6}
+.pl-sc ul li b{color:var(--tx);font-weight:500}
+.pl-sc .act{display:flex;gap:6px;margin-top:10px;flex-wrap:wrap}
+.pl-meta{font-family:'DM Mono',monospace;font-size:10.5px;color:var(--mt);margin-top:8px}
+@media(max-width:820px){.pl-steps{grid-template-columns:repeat(3,minmax(0,1fr))}}
+@media(max-width:480px){.pl-steps{grid-template-columns:repeat(2,minmax(0,1fr))}}
 .theme-tog{background:var(--sf2);border:1px solid var(--bd2);color:var(--tx);width:34px;height:34px;border-radius:100px;cursor:pointer;font-size:15px;display:flex;align-items:center;justify-content:center;flex-shrink:0;transition:background 0.2s,border-color 0.2s}
 .theme-tog:hover{border-color:var(--ac)}
 /* Timezone picker — sits beside the theme toggle because every time on the
@@ -773,13 +825,14 @@ body.light .chart-modal-overlay{background:rgba(0,0,0,0.55)}
   <div class="hdr-right">
     <div class="hdate" id="hdate"></div>
     <select class="tz-tog" id="tz-tog" onchange="setTz(this.value)" title="Display timezone — changes how times are labelled, never what is measured" aria-label="Display timezone"></select>
+    <button class="nav-tog" id="nav-tog" onclick="toggleNavMode()" title="Classic = one row of tabs · Flow = grouped tabs with the Plan roadmap" aria-label="Switch navigation layout"><span id="nav-tog-c">Classic</span><span id="nav-tog-f">Flow</span></button>
     <button class="theme-tog" id="theme-tog" onclick="toggleTheme()" title="Toggle light / dark mode" aria-label="Toggle theme">🌙</button>
   </div>
 </div>
 
 <!-- ══ NAV ══ -->
 <div class="nav-wrap">
-<div class="nav">
+<div class="nav classic">
   <button class="nb active" onclick="showS('analysis',this)">Watchlist</button>
   <button class="nb" onclick="showS('briefing',this)">Briefing</button>
   <button class="nb" onclick="showS('scanner',this)">Scanner</button>
@@ -795,6 +848,8 @@ body.light .chart-modal-overlay{background:rgba(0,0,0,0.55)}
   <button class="nb" onclick="showS('calculator',this)">Calculator</button>
   <button class="nb" onclick="showS('about',this)">About</button>
 </div>
+<!-- v25 — ForexFlow grouped navigation (built by renderFlowNav) -->
+<div class="flow-wrap" id="flow-wrap"><div class="flow-nav" id="flow-nav"></div><div class="flow-sub" id="flow-sub"></div></div>
 </div>
 
 <!-- ══ PRICE TICKER (built by initTicker) ══ -->
@@ -1439,6 +1494,20 @@ body.light .chart-modal-overlay{background:rgba(0,0,0,0.55)}
   </div>
 </div>
 
+<!-- ══ PLAN (v25 — ForexFlow roadmap) ══ -->
+<div id="plan" class="sec">
+  <div class="st">Today's plan</div>
+  <div class="ss">From the whole watchlist to the few pairs worth your time — one elimination rule at a time, on live data</div>
+  <div class="scan-controls" style="margin-bottom:12px;align-items:center;flex-wrap:wrap;gap:8px">
+    <button class="sb" onclick="loadPlan(true)">↺ Refresh</button>
+    <span class="meta" id="plan-meta" style="margin-top:0">Loading the data behind each step…</span>
+  </div>
+  <div class="pl-steps" id="pl-steps"></div>
+  <div class="card" id="pl-stepcard"><div class="ld" style="padding:16px"><div class="sp"></div>Loading strength, trends, technicals, calendar and correlations…</div></div>
+  <div class="card" style="margin-top:12px"><div class="cl">Shortlist</div><div id="pl-short"><div class="meta">Waiting for the steps above.</div></div></div>
+  <div class="map-src" style="text-align:left">Each step is a rule you set once; the site applies it to live data every time you open this tab. Green = buy, red = sell. The buttons on each card jump into the existing panels with that pair selected. Rules are remembered in this browser. Educational only — not financial advice.</div>
+</div>
+
 <!-- ══ TRENDS (top-down scanner) ══ -->
 <div id="trends" class="sec">
   <div class="st">Top-down trend scanner</div>
@@ -1631,6 +1700,11 @@ body.light .chart-modal-overlay{background:rgba(0,0,0,0.55)}
     <a class="share-btn" href="mudmap.html" target="_blank" rel="noopener" style="text-decoration:none">🗺 Mud map — how everything connects</a>
   </div>
   <div class="card">
+    <div class="ai"><div class="aq">What's new in v25 (16 Sep 2026) — ForexFlow</div><div class="aa">
+      · <b>Two ways to move around the site.</b> A <b>Classic · Flow</b> switch sits in the header beside the theme button. Classic is the single row of tabs the site has always had — nothing there changes. <b>Flow</b> (ForexFlow) groups the same panels into seven families — <b>Plan · Today · Research · Pairs · IQ · Journal · About</b> — with a tinted second row of sub-tabs in the family's colour, and that colour carries into the panel below. Every panel is reachable in both; every cross-link (calendar → IQ, sessions → calendar, pair links) works in both. The choice is remembered in this browser.<br>
+      · <b>Plan — the roadmap (Flow only).</b> Six elimination steps over live data, from the whole watchlist to the few pairs worth your time: Regime (market closed? one currency moving alone?) → Strength (strong vs weak, which also sets the direction) → Trend (W/D/4H must agree) → Timing (daily technicals must agree; optional floor on the 14-day ATR and on how active the last session was) → News risk (no high-impact event inside the window) → Same bet (drop the correlated duplicate). Each step's rules are switches and numbers you set once; they are remembered. The counter on each step shows how many pairs survive, the chips show what was dropped and why, and the shortlist cards carry the reasons plus buttons into the Scanner, the Daily analysis and Ask IQ for that pair. The starting rules are sensible defaults — make them yours.<br>
+      · Where things moved in Flow: Watchlist's Weekly / Daily / 4H sit under <b>Pairs</b> with the Scanner; Technicals and the three Maps panels sit under <b>Research</b>; Trade idea and Past trade review sit under <b>IQ</b> with the event outlook, event review and library; Checklist and Calculator sit under <b>Journal</b>.<br>
+    </div></div>
     <div class="ai"><div class="aq">What's new in v24.1 (16 Sep 2026) — follow-ups from the v24 review</div><div class="aa">
       · <b>Calendar grid is Monday to Saturday</b> — Sunday never carries anything in FX, so the column is gone; a Sunday release (rare) sits at the top of Monday marked SUN. Cells are wider, names wrap to two lines instead of cutting off, and the day headers drop the year.<br>
       · <b>Correlation matrix</b> now has Print / Save and its own Ask IQ — "how much of the same bet am I holding", "which pairs give me independent exposure".<br>
@@ -2056,7 +2130,7 @@ function dismissBanner(){
 /* ══════════════════════════════════════
    HEADER DATE
 ══════════════════════════════════════ */
-var FH_BUILD='v24.1'; // 16 Sep 2026 — calendar six-day grid, correlation Ask IQ, labels, paste hint, mud-map link // 16 Sep 2026 — amendments 14.9.26: Ask IQ on the research tabs, print/save everywhere, calendar collapse + grid, paste screenshots // bump on every delivered change — shown in the header so it's always obvious which version is loaded
+var FH_BUILD='v25'; // 16 Sep 2026 — ForexFlow: Classic / Flow navigation toggle, grouped tabs with colour families, Plan tab // 16 Sep 2026 — calendar six-day grid, correlation Ask IQ, labels, paste hint, mud-map link // 16 Sep 2026 — amendments 14.9.26: Ask IQ on the research tabs, print/save everywhere, calendar collapse + grid, paste screenshots // bump on every delivered change — shown in the header so it's always obvious which version is loaded
 /* Stale-tab killer: every so often, check whether a newer build has been deployed.
    If so, show a can't-miss banner telling the user to reload — long-open tabs silently
    running old code caused repeated "the fix didn't work" confusion. */
@@ -2112,6 +2186,8 @@ function showS(id,btn){
   if(id==='indices') loadStrength(false);
   if(id==='scanner'){ initStrCtl(); paintFeedButtons(); }   // v16 filter control + v17 feed state
   if(id==='iq') initIq();
+  if(id==='plan') loadPlan(false);
+  flowSync();
   if(id==='calculator'&&(!calcLoaded||sectionStale('calculator',REFRESH_AFTER))) loadCalculator();
 }
 /* D1: per-section freshness clock. Marked on every successful load; read on tab entry. */
@@ -2135,14 +2211,16 @@ function showAnalysisSub(id,btn){
   if(id==='analysis-weekly'){activatePairPill('#wpr',curPair);loadW(curPair,document.querySelector('#wpr .pp.active'));}
   if(id==='analysis-4hr'){activatePairPill('#hpr',curPair);load4hr(curPair,document.querySelector('#hpr .pp.active'));}
   if(id==='analysis-tech'){loadTech(false);}
+  flowSync();
 }
 /* Review sub-tabs (Amendment 9) */
 function showReviewSub(id,btn){
   document.querySelectorAll('.review-sub').forEach(function(s){s.classList.remove('active')});
-  document.querySelectorAll('.rsub').forEach(function(b){b.classList.remove('active')});
+  document.querySelectorAll('#review .rsub').forEach(function(b){b.classList.remove('active')});
   var el=document.getElementById(id);
   if(el) el.classList.add('active');
   if(btn) btn.classList.add('active');
+  flowSync();
 }
 
 /* ══════════════════════════════════════
@@ -2683,10 +2761,91 @@ function applyTzEverywhere(){
     });
   }catch(e){}
 }
+/* ══ v25 — ForexFlow navigation ══════════════════════════════════════════
+   Two ways to reach the same panels. Classic is the single row of tabs the
+   site has always had. Flow groups them into seven families with a tinted
+   second row, and adds the Plan tab. The panels themselves never move, so
+   every cross-link (calendar → IQ, sessions → calendar, pair links) works
+   in both. The choice is remembered like the theme. */
+var FLOW_TABS=[
+ {id:'plan',name:'Plan',dark:'#f97316',light:'#ea580c',subs:[{id:'plan',name:"Today's plan",sec:'plan'}]},
+ {id:'today',name:'Today',dark:'#fbbf24',light:'#b45309',subs:[{id:'brief',name:'Briefing',sec:'briefing'},{id:'sessions',name:'Sessions',sec:'sessions'},{id:'calendar',name:'Calendar',sec:'calendar'}]},
+ {id:'research',name:'Research',dark:'#22c55e',light:'#15803d',subs:[
+   {id:'trends',name:'Trends',sec:'trends'},{id:'indices',name:'Indices',sec:'indices'},
+   {id:'heat',name:'Heat map',sec:'maps',go:function(){showMap('heatmap',document.querySelector('.mt-heat'));},is:function(){return document.getElementById('heatmap').classList.contains('active');}},
+   {id:'sent',name:'Sentiment',sec:'maps',go:function(){showMap('sentiment',document.querySelector('.mt-sent'));},is:function(){return document.getElementById('sentiment').classList.contains('active');}},
+   {id:'corr',name:'Correlation',sec:'maps',go:function(){showMap('correlation',document.querySelector('.mt-corr'));},is:function(){return document.getElementById('correlation').classList.contains('active');}},
+   {id:'tech',name:'Technicals',sec:'analysis',go:function(){showAnalysisSub('analysis-tech',document.querySelector('.asub-tech'));},is:function(){return document.getElementById('analysis-tech').classList.contains('active');}}]},
+ {id:'pairs',name:'Pairs',dark:'#ec4899',light:'#be185d',subs:[
+   {id:'scan',name:'Scanner',sec:'scanner'},
+   {id:'weekly',name:'Weekly',sec:'analysis',go:function(){showAnalysisSub('analysis-weekly',document.querySelector('.asub-weekly'));},is:function(){return document.getElementById('analysis-weekly').classList.contains('active');}},
+   {id:'daily',name:'Daily',sec:'analysis',go:function(){showAnalysisSub('analysis-daily',document.querySelector('.asub-daily'));},is:function(){return document.getElementById('analysis-daily').classList.contains('active');}},
+   {id:'h4',name:'4 Hour',sec:'analysis',go:function(){showAnalysisSub('analysis-4hr',document.querySelector('.asub-4hr'));},is:function(){return document.getElementById('analysis-4hr').classList.contains('active');}}]},
+ {id:'iq',name:'IQ',dark:'#a78bfa',light:'#7c3aed',subs:[
+   {id:'outlook',name:'Event outlook',sec:'iq',go:function(){showIqSub('iq-outlook',document.querySelectorAll('#iq .rsub')[0]);},is:function(){return document.getElementById('iq-outlook').classList.contains('active');}},
+   {id:'evrev',name:'Event review',sec:'iq',go:function(){showIqSub('iq-review',document.querySelectorAll('#iq .rsub')[1]);},is:function(){return document.getElementById('iq-review').classList.contains('active');}},
+   {id:'idea',name:'Trade idea review',sec:'review',go:function(){showReviewSub('review-idea',document.querySelectorAll('#review .rsub')[0]);},is:function(){return document.getElementById('review-idea').classList.contains('active');}},
+   {id:'past',name:'Past trade review',sec:'review',go:function(){showReviewSub('review-past',document.querySelectorAll('#review .rsub')[1]);},is:function(){return document.getElementById('review-past').classList.contains('active');}},
+   {id:'lib',name:'Library',sec:'iq',go:function(){showIqSub('iq-library',document.querySelectorAll('#iq .rsub')[2]);},is:function(){return document.getElementById('iq-library').classList.contains('active');}}]},
+ {id:'journal',name:'Journal',dark:'#60a5fa',light:'#1d4ed8',subs:[{id:'journal',name:'Journal',sec:'journal'},{id:'check',name:'Checklist',sec:'checklist'},{id:'calc',name:'Calculator',sec:'calculator'}]},
+ {id:'about',name:'About',dark:'#a8a29e',light:'#57534e',subs:[{id:'about',name:'About',sec:'about'}]}
+];
+var _flowMain='plan',_flowSub='plan';
+function navMode(){ return LS.get('fh_nav')==='flow'?'flow':'classic'; }
+function flowColour(t){ return isLight()?t.light:t.dark; }
+function applyNavMode(m){
+  document.body.setAttribute('data-nav',m);
+  var c=document.getElementById('nav-tog-c'),f=document.getElementById('nav-tog-f');
+  if(c){c.classList.toggle('on',m!=='flow');} if(f){f.classList.toggle('on',m==='flow');}
+  if(m==='flow'){ flowSync(); renderFlowNav(); }
+  else { document.body.style.removeProperty('--ac'); document.body.style.removeProperty('--adm'); }
+}
+function toggleNavMode(){
+  var m=navMode()==='flow'?'classic':'flow';
+  LS.set('fh_nav',m); applyNavMode(m);
+  if(m==='flow'&&!document.getElementById('plan').classList.contains('active')&&document.body.getAttribute('data-sect')==='analysis'){ flowGo('plan','plan'); }
+  showToast(m==='flow'?'Flow navigation — grouped tabs + the Plan roadmap':'Classic navigation');
+}
+function renderFlowNav(){
+  var n=document.getElementById('flow-nav'),sub=document.getElementById('flow-sub'); if(!n) return;
+  n.innerHTML=FLOW_TABS.map(function(t){return '<button class="fnb'+(t.id===_flowMain?' on':'')+'" style="--fc:'+flowColour(t)+'" onclick="flowGo(\''+t.id+'\')"><i></i>'+t.name+'</button>';}).join('');
+  var t=FLOW_TABS.filter(function(x){return x.id===_flowMain;})[0]; if(!t) return;
+  sub.style.setProperty('--fc',flowColour(t));
+  sub.innerHTML=t.subs.length>1?t.subs.map(function(sb){return '<button class="fsb'+(sb.id===_flowSub?' on':'')+'" onclick="flowGo(\''+t.id+'\',\''+sb.id+'\')">'+sb.name+'</button>';}).join(''):'';
+  // the family colour flows into the section accent
+  document.body.style.setProperty('--ac',flowColour(t));
+  document.body.style.setProperty('--adm',flowColour(t)+'1f');
+}
+function flowGo(mainId,subId){
+  var t=FLOW_TABS.filter(function(x){return x.id===mainId;})[0]; if(!t) return;
+  var sb=subId?t.subs.filter(function(x){return x.id===subId;})[0]:null;
+  if(!sb){ // returning to a family: keep its last sub if we are already in it, else the first
+    sb=(mainId===_flowMain&&t.subs.filter(function(x){return x.id===_flowSub;})[0])||t.subs[0];
+  }
+  _flowMain=mainId; _flowSub=sb.id; _flowSyncing=true;
+  showS(sb.sec,null);
+  if(sb.go) sb.go();
+  _flowSyncing=false;
+  renderFlowNav();
+  var mainEl=document.querySelector('.main'); if(mainEl) mainEl.scrollTo({top:0,behavior:'smooth'});
+}
+var _flowSyncing=false;
+/* Called after any panel change so the Flow rows follow cross-links */
+function flowSync(){
+  if(_flowSyncing||navMode()!=='flow') return;
+  var sec=document.body.getAttribute('data-sect'); if(!sec) return;
+  var found=null;
+  FLOW_TABS.forEach(function(t){t.subs.forEach(function(sb){ if(found) return; if(sb.sec!==sec) return; if(!sb.is||sb.is()) found={m:t.id,s:sb.id}; });});
+  if(!found) FLOW_TABS.forEach(function(t){t.subs.forEach(function(sb){ if(!found&&sb.sec===sec) found={m:t.id,s:sb.id}; });});
+  if(found){ _flowMain=found.m; _flowSub=found.s; renderFlowNav(); }
+}
+function initNavMode(){ applyNavMode(navMode()); }
+
 function toggleTheme(){
   var t=document.body.classList.contains('light')?'dark':'light';
   LS.set('fh_theme',t);
   applyTheme(t);
+  if(navMode()==='flow') renderFlowNav();
   // D5: currency colours are baked into rendered markup, so redraw what's on screen
   try{
     if(typeof drawPipTable==='function'&&_pipRows&&_pipRows.length) drawPipTable();
@@ -5115,6 +5274,7 @@ function showMap(id,btn){
   if(btn) btn.classList.add('active');
   if(id==='sentiment'&&!sentLoaded) loadSentiment();
   if(id==='correlation'&&!corrLoaded) loadCorrelation();
+  flowSync();
 }
 async function loadSentiment(){
   sentLoaded=true;
@@ -6954,6 +7114,7 @@ function showIqSub(id,btn){
   var el=document.getElementById(id); if(el) el.classList.add('active');
   if(btn) btn.classList.add('active');
   if(id==='iq-library') renderIqLibrary();
+  flowSync();
 }
 /* Events for the pickers: last week, this week and next week from the same
    feed the Calendar uses, re-stamped into the display zone. */
@@ -7225,6 +7386,171 @@ function deleteIqEntry(id){
 }
 function initIq(){ updateIqCount(); iqFillPickers(); }
 
+/* ══ v25 — PLAN (ForexFlow roadmap) ═════════════════════════════════════
+   Six elimination steps over the data the other tabs already hold:
+   strength (Indices), trend (Trends), daily technicals (Technicals),
+   calendar (Calendar), correlation (Maps). Rules are switches and numbers
+   the trader sets once; they live in localStorage fh_plan_rules. */
+var PLAN_DEF={closed:true,single:true,singlePct:0.4,gap:true,gapPct:0.6,mixed:true,strongOnly:false,techAgree:true,dropNeutral:true,atr:false,atrPips:60,active:false,actMin:0.8,news:true,newsHrs:12,newsMed:false,corr:true,corrPct:75};
+var _planBrief={},_planBriefAt=0;
+var _planRules=null,_planOpen=1,_planRes=null,_planLoading=false,_planAt=0;
+function planRules(){ if(_planRules) return _planRules; var r={}; try{ r=JSON.parse(LS.get('fh_plan_rules')||'{}')||{}; }catch(e){} _planRules=Object.assign({},PLAN_DEF,r); return _planRules; }
+function savePlanRules(){ LS.set('fh_plan_rules',JSON.stringify(_planRules)); }
+var PLAN_STEPS=[
+ {n:'01',t:'Regime',desc:'Is it worth trading at all right now?',rules:[
+   {k:'closed',txt:'Stop when the market is closed (weekend)',src:'Sessions'},
+   {k:'single',txt:'When one currency is moving alone, only keep its crosses — 1-day basket move of at least',num:'singlePct',unit:'%',step:0.1,src:'Indices'}]},
+ {n:'02',t:'Strength',desc:'Keep pairs that pit a strong currency against a weak one. This also sets the direction.',rules:[
+   {k:'gap',txt:'Weekly strength gap between the two currencies at least',num:'gapPct',unit:'%',step:0.1,src:'Indices'}]},
+ {n:'03',t:'Trend',desc:'Weekly, daily and 4H must agree with that direction.',rules:[
+   {k:'mixed',txt:'Drop pairs with a Mixed bias, or a bias against the strength direction',src:'Trends'},
+   {k:'strongOnly',txt:'Keep only STRONG biases',src:'Trends'}]},
+ {n:'04',t:'Timing',desc:'The daily technicals must point the same way, and the pair must have enough range to pay.',rules:[
+   {k:'techAgree',txt:'Daily rating must agree with the direction',src:'Technicals'},
+   {k:'dropNeutral',txt:'Drop Neutral daily ratings',src:'Technicals'},
+   {k:'atr',txt:'Drop pairs whose 14-day average daily range (ATR) is under',num:'atrPips',unit:'pips',step:5,src:'Briefing'},
+   {k:'active',txt:'Drop pairs whose last session range was under this share of their own ATR',num:'actMin',unit:'× ATR (0.8 = a quiet day)',step:0.1,src:'Briefing'}]},
+ {n:'05',t:'News risk',desc:'Nothing high-impact about to land on either currency.',rules:[
+   {k:'news',txt:'Drop pairs with a high-impact event inside the next',num:'newsHrs',unit:'hours',step:1,src:'Calendar'},
+   {k:'newsMed',txt:'…count medium-impact events too',src:'Calendar'}]},
+ {n:'06',t:'Same bet',desc:'Don\'t hold the same trade twice.',rules:[
+   {k:'corr',txt:'Of any two survivors correlated above',num:'corrPct',unit:'% (60-day), keep the one with the bigger strength gap',step:5,src:'Correlation'}]}
+];
+function planMarketClosed(){ var d=new Date(),wd=d.getUTCDay(),h=d.getUTCHours(); return (wd===5&&h>=21)||wd===6||(wd===0&&h<22); }
+function planW1(c){ var s=_idx&&_idx.strength&&_idx.strength[c]; return s&&s.perf&&s.perf.w1!=null?s.perf.w1:null; }
+function planD1(c){ var s=_idx&&_idx.strength&&_idx.strength[c]; return s&&s.perf&&s.perf.d1!=null?s.perf.d1:null; }
+/* 60-day correlation of daily returns from the Maps tab's ECB rates (same maths as renderCorr) */
+function planCorr(a,b){
+  if(!_corrData||!_corrDates) return null;
+  function series(sym){ return _corrDates.map(function(d){var r=_corrData.rates[d]||{};var c1=sym.slice(0,3),c2=sym.slice(3);var r1=c1==='EUR'?1:(r[c1]||1),r2=c2==='EUR'?1:(r[c2]||1);return r2/r1;}); }
+  function rets(s){ return s.slice(1).map(function(v,i){return v/s[i]-1;}); }
+  var x=rets(series(a)),y=rets(series(b)),n=Math.min(x.length,y.length); if(n<10) return null;
+  var mx=0,my=0; for(var i=0;i<n;i++){mx+=x[i];my+=y[i];} mx/=n; my/=n;
+  var top=0,sx=0,sy=0; for(i=0;i<n;i++){top+=(x[i]-mx)*(y[i]-my);sx+=(x[i]-mx)*(x[i]-mx);sy+=(y[i]-my)*(y[i]-my);}
+  return sx&&sy?top/Math.sqrt(sx*sy):null;
+}
+async function fetchPlanBrief(){
+  var stats={},chunks=[]; for(var i=0;i<FH_PAIRS.length;i+=10) chunks.push(FH_PAIRS.slice(i,i+10));
+  var res=await Promise.all(chunks.map(function(ch){return fetch(BRIEF_URL+'?pairs='+encodeURIComponent(ch.join(','))+'&_='+Math.floor(Date.now()/300000),{cache:'no-store'}).then(function(r){return r.json();}).catch(function(){return null;});}));
+  res.forEach(function(d){ if(d&&d.stats) Object.keys(d.stats).forEach(function(k){stats[k]=d.stats[k];}); });
+  _planBrief=stats; _planBriefAt=Date.now();
+}
+async function ensurePlanData(force){
+  var jobs=[];
+  if(force||!_planBriefAt) jobs.push(fetchPlanBrief());
+  if(force||!_idx) jobs.push(loadStrength(!!force));
+  if(force||!_trendData) jobs.push(loadTrendScan());
+  if(force||!_tech['1d']) jobs.push(fetchTech('1d',FH_PAIRS).then(function(t){_tech['1d']=t;}));
+  if(force||!_calAll||!_calAll.length) jobs.push(loadCalendar());
+  if(force||!_corrData) jobs.push(loadCorrelation());
+  await Promise.all(jobs.map(function(j){return Promise.resolve(j).catch(function(){});}));
+}
+function runPlan(){
+  var R=planRules(),now=Date.now();
+  var pairs=FH_PAIRS.filter(function(p){return planW1(p.slice(0,3))!=null&&planW1(p.slice(3))!=null;});
+  var alive=pairs.slice(),why={},dir={},trace=[],notes=[];
+  function drop(list,reason){ list.forEach(function(p){var i=alive.indexOf(p); if(i>-1){alive.splice(i,1); why[p]=reason;}}); }
+  function snap(before){ trace.push({kept:alive.slice(),dropped:before.filter(function(p){return alive.indexOf(p)<0;})}); }
+  // 01 regime
+  var before=alive.slice();
+  if(R.closed&&planMarketClosed()){ drop(alive.slice(),'market closed'); notes.push('Market is closed — the plan resumes at the Monday open.'); }
+  else if(R.single){
+    var top=null; ['AUD','CAD','CHF','EUR','GBP','JPY','NZD','USD'].forEach(function(c){var v=planD1(c); if(v!=null&&(top==null||Math.abs(v)>Math.abs(top.v))) top={c:c,v:v};});
+    if(top&&Math.abs(top.v)>=R.singlePct){ drop(alive.filter(function(p){return p.indexOf(top.c)<0;}),'not a '+top.c+' cross — '+top.c+' is moving alone ('+(top.v>0?'+':'')+top.v.toFixed(2)+'% today)'); notes.push(top.c+' is moving alone today ('+(top.v>0?'+':'')+top.v.toFixed(2)+'%) — only its crosses are kept.'); }
+  }
+  snap(before);
+  // 02 strength + direction
+  before=alive.slice();
+  alive.forEach(function(p){var a=planW1(p.slice(0,3)),b=planW1(p.slice(3)); dir[p]=a>=b?'BUY':'SELL';});
+  if(R.gap) drop(alive.filter(function(p){return Math.abs(planW1(p.slice(0,3))-planW1(p.slice(3)))<R.gapPct;}),'strength gap under '+R.gapPct+'%');
+  snap(before);
+  // 03 trend
+  before=alive.slice();
+  var bias={}; (_trendData||[]).forEach(function(r){bias[r.sym]=trBias(r.w,r.dd,r.h,r.age);});
+  if(R.mixed) drop(alive.filter(function(p){var b=bias[p]; return !b||b.r===0||(dir[p]==='BUY'?b.r<0:b.r>0);}),'trend bias mixed or against the strength direction');
+  if(R.strongOnly) drop(alive.filter(function(p){var b=bias[p]; return !b||Math.abs(b.r)<2;}),'trend bias not STRONG');
+  snap(before);
+  // 04 timing
+  before=alive.slice();
+  var tsc={}; alive.forEach(function(p){tsc[p]=techScore(_tech['1d']&&_tech['1d'][p]);});
+  if(R.techAgree) drop(alive.filter(function(p){var v=tsc[p]; return v!=null&&(dir[p]==='BUY'?v<=-0.1:v>=0.1);}),'daily technicals point the other way');
+  if(R.dropNeutral) drop(alive.filter(function(p){var v=tsc[p]; return v==null||Math.abs(v)<0.1;}),'daily rating neutral / missing');
+  if(R.atr) drop(alive.filter(function(p){var b=_planBrief[p]; return b&&b.atrPips!=null&&b.atrPips<R.atrPips;}),'14-day ATR under '+R.atrPips+' pips');
+  if(R.active) drop(alive.filter(function(p){var b=_planBrief[p]; return b&&b.activity!=null&&b.activity<R.actMin;}),'last session ran under '+R.actMin+'× its ATR');
+  snap(before);
+  // 05 news
+  before=alive.slice();
+  if(R.news){
+    var horizon=now+R.newsHrs*3600e3;
+    var risky={}; (_calAll||[]).forEach(function(e){ if(e.ts>=now&&e.ts<=horizon&&(e.imp==='high'||(R.newsMed&&e.imp==='med'))) (risky[e.ccy]=risky[e.ccy]||[]).push(e); });
+    drop(alive.filter(function(p){return risky[p.slice(0,3)]||risky[p.slice(3)];}),'high-impact event inside '+R.newsHrs+'h');
+    alive.forEach(function(){});
+    Object.keys(risky).forEach(function(c){ why['_news_'+c]=risky[c].map(function(e){return e.name+' '+e.time;}).join(', '); });
+  }
+  snap(before);
+  // 06 correlation
+  before=alive.slice();
+  if(R.corr&&_corrData){
+    var th=R.corrPct/100, sorted=alive.slice().sort(function(a,b){return Math.abs(planW1(b.slice(0,3))-planW1(b.slice(3)))-Math.abs(planW1(a.slice(0,3))-planW1(a.slice(3)));});
+    for(var i=0;i<sorted.length;i++){ if(alive.indexOf(sorted[i])<0) continue;
+      for(var j=i+1;j<sorted.length;j++){ if(alive.indexOf(sorted[j])<0) continue;
+        var c=planCorr(sorted[i],sorted[j]); if(c==null) continue;
+        var same=(c>=th&&dir[sorted[i]]===dir[sorted[j]])||(c<=-th&&dir[sorted[i]]!==dir[sorted[j]]);
+        if(same) drop([sorted[j]],'same bet as '+sorted[i]+' ('+Math.round(c*100)+'% correlated)');
+      } }
+  }
+  snap(before);
+  _planRes={pairs:pairs,alive:alive,why:why,dir:dir,trace:trace,notes:notes,bias:bias,tsc:tsc};
+  return _planRes;
+}
+async function loadPlan(force){
+  if(_planLoading) return; _planLoading=true;
+  var meta=document.getElementById('plan-meta');
+  try{
+    if(force||!_planAt||Date.now()-_planAt>REFRESH_AFTER){ if(meta) meta.textContent='Loading the data behind each step…'; await ensurePlanData(force); _planAt=Date.now(); }
+    renderPlan();
+    if(meta) meta.textContent='As of '+fhClock()+' · strength, trends, daily technicals, calendar and correlations from their own tabs';
+  }catch(e){ if(meta) meta.textContent=friendlyError(e); }
+  _planLoading=false;
+}
+function planRuleChange(){
+  var R=planRules();
+  PLAN_STEPS.forEach(function(st){st.rules.forEach(function(ru){var e=document.getElementById('plr-'+ru.k); if(e) R[ru.k]=e.checked; if(ru.num){var n=document.getElementById('plr-'+ru.num); if(n&&n.value!=='') R[ru.num]=Number(n.value);}});});
+  savePlanRules(); renderPlan();
+}
+function planOpen(i){ _planOpen=i; renderPlan(); }
+function renderPlan(){
+  var r=runPlan(),R=planRules();
+  var st=document.getElementById('pl-steps'); if(!st) return;
+  var total=r.pairs.length||28;
+  st.innerHTML=PLAN_STEPS.map(function(s,i){var k=r.trace[i]?r.trace[i].kept.length:0;return '<div class="pl-stp'+(i===_planOpen?' on':'')+'" onclick="planOpen('+i+')"><div class="n">STEP '+s.n+'</div><div class="t">'+s.t+'</div><div class="k">'+k+'<small>of '+total+' left</small></div><div class="bar"><i style="width:'+(total?k/total*100:0)+'%"></i></div></div>';}).join('');
+  var s=PLAN_STEPS[_planOpen],tr=r.trace[_planOpen]||{kept:[],dropped:[]};
+  var h='<div class="cl">Step '+s.n+' — '+s.t+'</div><div class="cb" style="margin-bottom:6px">'+s.desc+'</div>';
+  h+=s.rules.map(function(ru){return '<div class="pl-rule"><label><input type="checkbox" id="plr-'+ru.k+'" '+(R[ru.k]?'checked':'')+' onchange="planRuleChange()"><span>'+ru.txt+'</span></label>'
+    +(ru.num?'<input type="number" id="plr-'+ru.num+'" value="'+R[ru.num]+'" step="'+ru.step+'" onchange="planRuleChange()"><span class="unit">'+ru.unit+'</span>':'')
+    +'<span class="src">from '+ru.src+'</span></div>';}).join('');
+  if(_planOpen===0&&r.notes.length) h+='<div class="meta" style="margin-top:8px">'+r.notes.map(esc).join(' ')+'</div>';
+  h+='<div class="pl-pairs">'+r.pairs.map(function(p){var cls=r.alive.indexOf(p)>-1?'':(tr.dropped.indexOf(p)>-1?'new':'out');return '<span class="pl-pc '+cls+'" title="'+esc(r.why[p]||'still in')+'">'+p.slice(0,3)+'/'+p.slice(3)+'</span>';}).join('')+'</div>';
+  h+='<div class="pl-meta">Red = dropped at this step (hover for the reason) · faded = dropped earlier · '+tr.kept.length+' still in after this step</div>';
+  document.getElementById('pl-stepcard').innerHTML=h;
+  var sh=document.getElementById('pl-short');
+  if(!r.alive.length){ sh.innerHTML='<div class="scan-empty"><div class="scan-icon">🧭</div><div>Nothing survives today\'s rules — that is a valid answer. Loosen a rule above to see what comes back'+(r.notes.length?'':'')+'.</div></div>'; return; }
+  sh.innerHTML='<div class="pl-short">'+r.alive.map(function(p){var a=p.slice(0,3),b=p.slice(3),d=r.dir[p],bi=r.bias[p],tv=r.tsc[p];
+    return '<div class="pl-sc'+(d==='SELL'?' sell':'')+'"><div class="p"><span>'+colorizeCcy(a+'/'+b)+'</span><span class="dir">'+d+'</span></div><ul>'
+      +'<li>Strength this week: <b>'+a+' '+pct1(planW1(a))+'</b> vs <b>'+b+' '+pct1(planW1(b))+'</b> (1D '+pct1(planD1(a))+' / '+pct1(planD1(b))+')</li>'
+      +'<li>Trend: <b>'+(bi?bi.t:'n/a')+'</b> on W / D / 4H · Daily technicals: <b>'+techLbl(tv)+'</b></li>'
+      +'<li>News: <b>none '+(R.newsMed?'high or medium':'high-impact')+'</b> on '+a+' or '+b+' in the next '+R.newsHrs+'h</li>'
+      +(_planBrief[p]&&_planBrief[p].atrPips!=null?'<li>Range: 14-day ATR <b>'+Math.round(_planBrief[p].atrPips)+' pips</b>'+(_planBrief[p].activity!=null?', last session <b>'+_planBrief[p].activity.toFixed(1)+'×</b> that':'')+'</li>':'')+'</ul>'
+      +'<div class="act"><button class="share-btn" onclick="planToScanner()">Open Scanner</button><button class="share-btn" onclick="goToPair(\''+p+'\',\'daily\')">Daily analysis</button><button class="share-btn" onclick="planAskIq(\''+p+'\',\''+d+'\')">Ask IQ about this</button></div></div>';}).join('')+'</div>';
+}
+function planToScanner(){ if(navMode()==='flow') flowGo('pairs','scan'); else showS('scanner',document.querySelector('.nb[onclick*="scanner"]')); }
+function planAskIq(p,d){
+  if(navMode()==='flow') flowGo('research','tech'); else { showS('analysis',document.querySelector('.nb[onclick*="analysis"]')); showAnalysisSub('analysis-tech',document.querySelector('.asub-tech')); }
+  setTechCcy(p.slice(0,3));
+  var q=document.getElementById('ia-q-tech'); if(q){ q.value='Today\'s plan has '+p.slice(0,3)+'/'+p.slice(3)+' as a '+d+' — strength, trend and daily technicals agree and there is no high-impact news inside the window. What would make you NOT take it, and where is the sensible entry and stop?'; }
+  setTimeout(function(){ runAskIq('tech'); },600);
+}
+
 /* ══ v24 — ASK IQ (amendment 14.9.26) ═══════════════════════════════════
    One panel that sits on the research tabs. The question goes up with the
    tab's LIVE data as evidence — the technicals rows you filtered to, the
@@ -7381,6 +7707,7 @@ document.addEventListener('DOMContentLoaded',function(){
   initPlanner();
   initTicker();
   initAskIq();   // v24 — Ask IQ panels on the research tabs
+  initNavMode(); // v25 — Classic / Flow
   updateDate();
   setInterval(updateDate,30000);
   setTimeout(checkForNewBuild,20000);
