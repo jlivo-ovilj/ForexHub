@@ -1575,6 +1575,10 @@ body.light .chart-modal-overlay{background:rgba(0,0,0,0.55)}
   <div class="st">About ForexHub</div>
   <div class="ss">Your daily forex companion</div>
   <div class="card">
+    <div class="ai"><div class="aq">What's new in v23 (16 Sep 2026) · cTrader bot 1.18a</div><div class="aa">
+      · <b>Save now files reports into a month folder</b> — <code>Trade Scanner\2026-09 September</code>, <code>Morning Briefing\2026-09 September</code> and so on, created on the fly. The first Save asks you to pick the report's folder once (choose the top folder, e.g. <code>Trade Scanner</code>, not the month); after that it saves straight in with no dialog. Analysis reports keep their per-pair folder. Print → Save as PDF is unchanged — that dialog belongs to Windows, so it cannot be steered.<br>
+      · <b>cTrader bot 1.18a</b> — stops the notification flood: the bot matched the first broker symbol starting with the pair (Pepperstone's untradeable <code>USDCHFW</code>) and sent 0-lot orders every poll; and every chart instance was trailing every position on every tick. Now the exact symbol wins, a rejected order is retried three times then parked with the reason on the chart, one instance manages exits (Windows lock), and the stop only moves by at least 5 pips.<br>
+    </div></div>
     <div class="ai"><div class="aq">What's new in v22 (14 Sep 2026)</div><div class="aa">
       · <b>Fixed: the two Against strength dropdowns were unreadable.</b> In light mode the whole control washed out to near-invisible; in dark mode the open list showed grey-on-grey and you could only read the option already highlighted. The control was painted with a 5%-white background and light text, which is fine over a dark panel and hopeless over a white one — and the native option list inherits the select's own colours, so the popup went with it. Both now use opaque colours with their own light-mode set, and the options are coloured explicitly rather than left to inherit.<br>
     </div></div>
@@ -1975,7 +1979,7 @@ function dismissBanner(){
 /* ══════════════════════════════════════
    HEADER DATE
 ══════════════════════════════════════ */
-var FH_BUILD='v22'; // 14 Sep 2026 — the Against strength dropdowns are readable in both themes // bump on every delivered change — shown in the header so it's always obvious which version is loaded
+var FH_BUILD='v23'; // 16 Sep 2026 — Save files reports into month folders (Trade Scanner\2026-09 September) // bump on every delivered change — shown in the header so it's always obvious which version is loaded
 /* Stale-tab killer: every so often, check whether a newer build has been deployed.
    If so, show a can't-miss banner telling the user to reload — long-open tabs silently
    running old code caused repeated "the fix didn't work" confusion. */
@@ -2761,7 +2765,7 @@ function doEmail(id){
   },900);
   showToast('Save the print window as PDF, then attach it to the email');
 }
-/* ── #11: remember an OneDrive folder per report type (File System Access; needs http/localhost) ── */
+/* ── #11: remember an OneDrive folder per report type (File System Access — works on https, e.g. github.io, and localhost; not on file://) ── */
 function _fhIdb(){return new Promise(function(res,rej){var r=indexedDB.open('fh_fs',1);r.onupgradeneeded=function(){r.result.createObjectStore('dirs');};r.onsuccess=function(){res(r.result);};r.onerror=function(){rej(r.error);};});}
 function _fhIdbGet(k){return _fhIdb().then(function(db){return new Promise(function(res){var t=db.transaction('dirs','readonly').objectStore('dirs').get(k);t.onsuccess=function(){res(t.result);};t.onerror=function(){res(null);};});}).catch(function(){return null;});}
 function _fhIdbSet(k,v){return _fhIdb().then(function(db){return new Promise(function(res){var t=db.transaction('dirs','readwrite').objectStore('dirs').put(v,k);t.onsuccess=function(){res(true);};t.onerror=function(){res(false);};});}).catch(function(){return false;});}
@@ -2775,6 +2779,12 @@ async function getReportDir(folder){
   try{ h=await window.showDirectoryPicker({id:'fh_'+folder.replace(/\s/g,''),mode:'readwrite'}); await _fhIdbSet(key,h); return h; }
   catch(e){ return null; }
 }
+// v23 — "2026-09 September": sorts by date in Explorer, reads as a month.
+function monthFolder(d){
+  d=d||new Date();
+  var names=['January','February','March','April','May','June','July','August','September','October','November','December'];
+  return d.getFullYear()+'-'+('0'+(d.getMonth()+1)).slice(-2)+' '+names[d.getMonth()];
+}
 function reportFolder(title){
   var t=(title||'').toLowerCase();
   if(t.indexOf('brief')>-1) return {folder:'Morning Briefing'};
@@ -2787,7 +2797,8 @@ async function doSave(id){
   var c=document.getElementById(id);
   var fname=c.dataset.name+'_'+fileStamp()+'.html';
   var html=reportDocHTML(id);
-  // #11 — auto-save into the remembered OneDrive folder (per-pair subfolder for Analysis). Only when served via http/localhost.
+  // #11 — auto-save into the remembered OneDrive folder (per-pair subfolder for Analysis; month
+  // subfolder such as "2026-09 September" for everything else, v23). Needs https or localhost.
   if(window.showDirectoryPicker){
     var fi=reportFolder(c.dataset.title);
     if(fi.folder){
@@ -2795,6 +2806,7 @@ async function doSave(id){
       if(dir){
         try{
           if(fi.sub){ dir=await dir.getDirectoryHandle(fi.sub,{create:true}); }
+          else { dir=await dir.getDirectoryHandle(monthFolder(),{create:true}); fi.sub=monthFolder(); }
           var fh=await dir.getFileHandle(fname,{create:true});
           var ww=await fh.createWritable(); await ww.write(html); await ww.close();
           showToast('Saved to '+fi.folder+(fi.sub?'/'+fi.sub:'')+' — '+fname);
