@@ -1438,6 +1438,7 @@ body.light .chart-modal-overlay{background:rgba(0,0,0,0.55)}
       <div class="cb" style="margin-bottom:10px">Choose an upcoming release from the calendar, or describe something that isn't on it (a Treasury announcement, a surprise intervention).</div>
       <div class="iq-row">
         <select class="iq-sel" id="iq-o-ev" onchange="iqOutlookPick()"><option value="">Loading calendar…</option></select>
+        <span class="meta" style="margin:0;white-space:nowrap">🔴 high · 🟡 medium · text = currency colour</span>
       </div>
       <div id="iq-o-chip" class="iq-row" style="display:none"></div>
       <div id="iq-o-custom" class="iq-row" style="display:none">
@@ -1701,6 +1702,10 @@ body.light .chart-modal-overlay{background:rgba(0,0,0,0.55)}
     <a class="share-btn" href="mudmap.html" target="_blank" rel="noopener" style="text-decoration:none">🗺 Mud map — how everything connects</a>
   </div>
   <div class="card">
+    <div class="ai"><div class="aq">What's new in v25.2 (17 Sep 2026) — colour means one thing</div><div class="aa">
+      · <b>Briefing news rows:</b> the coloured edge on each row is now the <b>impact</b> (red high, amber medium, grey low) and the small chip is the currency — before, a USD row's red edge made every dollar release look high-impact. Each row also has the same <b>🧠 IQ</b> button as the Calendar.<br>
+      · <b>IQ event pickers:</b> each option starts with an impact dot (🔴 high, 🟡 medium) and the text takes the currency's colour, so the list reads like the rest of the site.<br>
+    </div></div>
     <div class="ai"><div class="aq">What's new in v25 (16 Sep 2026) — ForexFlow</div><div class="aa">
       · <b>Two ways to move around the site.</b> A <b>Classic · Flow</b> switch sits in the header beside the theme button. Classic is the single row of tabs the site has always had — nothing there changes. <b>Flow</b> (ForexFlow) groups the same panels into seven families — <b>Plan · Today · Research · Pairs · IQ · Journal · About</b> — with a tinted second row of sub-tabs in the family's colour, and that colour carries into the panel below. Every panel is reachable in both; every cross-link (calendar → IQ, sessions → calendar, pair links) works in both. The choice is remembered in this browser.<br>
       · <b>Plan — the roadmap (Flow only).</b> Six elimination steps over live data, from the whole watchlist to the few pairs worth your time: Regime (market closed? one currency moving alone?) → Strength (strong vs weak, which also sets the direction) → Trend (W/D/4H must agree) → Timing (daily technicals must agree; optional floor on the 14-day ATR and on how active the last session was) → News risk (no high-impact event inside the window) → Same bet (drop the correlated duplicate). Each step's rules are switches and numbers you set once; they are remembered. The counter on each step shows how many pairs survive, the chips show what was dropped and why, and the shortlist cards carry the reasons plus buttons into the Scanner, the Daily analysis and Ask IQ for that pair. The starting rules are sensible defaults — make them yours.<br>
@@ -2132,7 +2137,7 @@ function dismissBanner(){
 /* ══════════════════════════════════════
    HEADER DATE
 ══════════════════════════════════════ */
-var FH_BUILD='v25.1'; // Plan chips show the state after each step, not the final result // 16 Sep 2026 — ForexFlow: Classic / Flow navigation toggle, grouped tabs with colour families, Plan tab // 16 Sep 2026 — calendar six-day grid, correlation Ask IQ, labels, paste hint, mud-map link // 16 Sep 2026 — amendments 14.9.26: Ask IQ on the research tabs, print/save everywhere, calendar collapse + grid, paste screenshots // bump on every delivered change — shown in the header so it's always obvious which version is loaded
+var FH_BUILD='v25.2'; // IQ picker shows impact + currency colour; briefing news rows: impact border + IQ button // Plan chips show the state after each step, not the final result // 16 Sep 2026 — ForexFlow: Classic / Flow navigation toggle, grouped tabs with colour families, Plan tab // 16 Sep 2026 — calendar six-day grid, correlation Ask IQ, labels, paste hint, mud-map link // 16 Sep 2026 — amendments 14.9.26: Ask IQ on the research tabs, print/save everywhere, calendar collapse + grid, paste screenshots // bump on every delivered change — shown in the header so it's always obvious which version is loaded
 /* Stale-tab killer: every so often, check whether a newer build has been deployed.
    If so, show a can't-miss banner telling the user to reload — long-open tabs silently
    running old code caused repeated "the fix didn't work" confusion. */
@@ -6612,12 +6617,16 @@ async function renderBriefing(force){
     var now=Date.now();
     var upcoming=evs.filter(function(e){return e.ts>=now;});
     var passed=evs.filter(function(e){return e.ts<now;});
+    /* v25.2 — the left border is the IMPACT colour (red / amber / grey), the chip keeps
+       the currency colour, and every row has the same IQ button as the Calendar. A
+       USD-red border used to make every dollar release look high-impact. */
     function row(e){
-      var col=(ccyCol(e.ccy));
-      return '<div class="cal-event'+(e.ts<now?' cal-past':'')+'" style="border-left:3px solid '+col+'">'
+      var col=(ccyCol(e.ccy)), impCol=e.imp==='high'?'#ef4444':e.imp==='med'?'#f59e0b':'#6b7280';
+      return '<div class="cal-event'+(e.ts<now?' cal-past':'')+'" style="border-left:4px solid '+impCol+'">'
         +'<span class="cal-imp-badge '+e.imp+'">'+(e.imp==='high'?'HIGH':e.imp==='med'?'MED':'LOW')+'</span>'
         +'<div class="cal-text"><div class="cal-title"><span class="cal-ccy-tag" style="color:'+col+';background:'+col+'22;border:1px solid '+col+'44">'+e.ccy+'</span>'+highlightEcoTerms(e.name)+'</div>'
-        +'<div class="cal-detail">'+e.time+' · Forecast: <span class="cal-val">'+e.forecast+'</span> · Prev: <span class="cal-val">'+e.prev+'</span></div></div></div>';
+        +'<div class="cal-detail">'+e.time+' · Forecast: <span class="cal-val">'+e.forecast+'</span> · Prev: <span class="cal-val">'+e.prev+'</span></div></div>'
+        +'<button class="cal-iq" onclick="event.stopPropagation();openIqFor('+e.ts+',\''+e.ccy+'\',\''+esc(String(e.name).replace(/'/g,'’'))+'\')" title="'+(e.ts<=now?'Review this event in Market IQ':'Build the outlook for this event in Market IQ')+'">🧠 IQ</button></div>';
     }
     var out='';
     if(upcoming.length){ out+='<div class="cal-day"><div class="cal-day-hdr">Still to come today <span style="color:var(--mt);font-weight:400">'+upcoming.length+'</span></div>'+upcoming.map(row).join('')+'</div>'; }
@@ -7135,9 +7144,12 @@ async function iqLoadEvents(force){
   return _iqEvents;
 }
 function iqEvKey(ev){return ev.ts+'|'+ev.ccy+'|'+ev.name;}
+/* v25.2 — impact first as a coloured dot (🔴 high · 🟡 medium · ⚪ low) so it reads the
+   same as the calendar badges; the option text takes the currency's colour. */
 function iqEvLabel(ev){
-  return fhDate(new Date(ev.ts),{weekday:'short',day:'2-digit',month:'short'})+' '+fhTime(ev.ts)+' · '+ev.ccy+' · '+ev.name+(ev.imp==='high'?' ●●●':ev.imp==='med'?' ●●':'');
+  return (ev.imp==='high'?'🔴 ':ev.imp==='med'?'🟡 ':'⚪ ')+fhDate(new Date(ev.ts),{weekday:'short',day:'2-digit',month:'short'})+' '+fhTime(ev.ts)+' · '+ev.ccy+' · '+ev.name;
 }
+function iqOpt(ev,extra){ return '<option value="'+esc(iqEvKey(ev))+'" style="color:'+ccyCol(ev.ccy)+'">'+esc(iqEvLabel(ev))+(extra||'')+'</option>'; }
 async function iqFillPickers(){
   var evs=await iqLoadEvents(false);
   var now=Date.now();
@@ -7145,14 +7157,14 @@ async function iqFillPickers(){
   if(o){
     var up=evs.filter(function(e){return e.ts>=now-3600000&&e.imp!=='low';});
     var h='<option value="">— choose an upcoming release —</option>';
-    up.forEach(function(e){h+='<option value="'+esc(iqEvKey(e))+'">'+esc(iqEvLabel(e))+'</option>';});
+    up.forEach(function(e){h+=iqOpt(e);});
     h+='<option value="__custom">✎ Something not on the calendar…</option>';
     o.innerHTML=h;
   }
   if(r){
     var past=evs.filter(function(e){return e.ts<=now&&e.imp!=='low';}).sort(function(a,b){return b.ts-a.ts;});
     var h2='<option value="">— choose a release that has happened —</option>';
-    past.forEach(function(e){h2+='<option value="'+esc(iqEvKey(e))+'">'+esc(iqEvLabel(e))+(e.actual?' · actual '+esc(e.actual):'')+'</option>';});
+    past.forEach(function(e){h2+=iqOpt(e,e.actual?' · actual '+esc(e.actual):'');});
     h2+='<option value="__custom">✎ Something not on the calendar…</option>';
     r.innerHTML=h2;
   }
