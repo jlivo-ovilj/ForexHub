@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>ForexHub — mud map</title>
+<style>
+:root{--bg:#0b0b0d;--sf:#141417;--sf2:#1c1c21;--bd:#26262c;--bd2:#34343c;--tx:#e8e4dd;--mt:#8b8b95;--ac:#f97316;
+  --c-src:#3b82f6;--c-wrk:#a855f7;--c-tab:#22c55e;--c-out:#f59e0b;--c-bot:#ef4444;--c-ai:#fb923c}
+@media(prefers-color-scheme:light){:root:not([data-theme="dark"]){--bg:#f6f4ef;--sf:#fff;--sf2:#f0ede6;--bd:#dcd8cf;--bd2:#c9c4b8;--tx:#1a1a1f;--mt:#6b6b74}}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--tx);font-family:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;font-size:14px;line-height:1.5}
+.wrap{max-width:1500px;margin:0 auto;padding:20px 16px 40px}
+h1{font-size:24px;margin:0 0 4px}
+.sub{color:var(--mt);margin-bottom:14px}
+.legend{display:flex;flex-wrap:wrap;gap:10px 16px;font-size:12px;color:var(--mt);margin-bottom:14px;align-items:center}
+.legend i{display:inline-block;width:10px;height:10px;border-radius:3px;margin-right:6px;vertical-align:middle}
+.hint{font-size:12px;color:var(--mt);margin-bottom:12px}
+.hint b{color:var(--tx)}
+#map{position:relative}
+.cols{display:grid;grid-template-columns:1.05fr 1.1fr 1.6fr 1fr;gap:26px;position:relative;z-index:2}
+.col h2{font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:var(--mt);margin:0 0 8px;font-weight:600}
+.node{background:var(--sf);border:1px solid var(--bd);border-left:4px solid var(--bd2);border-radius:8px;padding:8px 10px;margin-bottom:8px;cursor:pointer;transition:all .15s;position:relative}
+.node .n{font-weight:600;font-size:13px}
+.node .d{font-size:11.5px;color:var(--mt);margin-top:2px}
+.node.src{border-left-color:var(--c-src)}.node.wrk{border-left-color:var(--c-wrk)}.node.tab{border-left-color:var(--c-tab)}.node.out{border-left-color:var(--c-out)}.node.bot{border-left-color:var(--c-bot)}.node.ai{border-left-color:var(--c-ai)}
+.node:hover{border-color:var(--ac)}
+.node.on{border-color:var(--ac);box-shadow:0 0 0 2px #f9731633}
+.node.dim{opacity:.28}
+.node .tag{position:absolute;right:8px;top:8px;font-size:10px;color:var(--mt);font-family:ui-monospace,monospace}
+svg#lines{position:absolute;inset:0;width:100%;height:100%;z-index:1;pointer-events:none}
+svg#lines path{fill:none;stroke:var(--bd2);stroke-width:1.4;opacity:.55;transition:all .15s}
+svg#lines path.on{stroke:var(--ac);stroke-width:2.2;opacity:1}
+svg#lines path.hide{opacity:.07}
+#info{margin-top:18px;background:var(--sf);border:1px solid var(--bd);border-radius:10px;padding:14px 16px;min-height:60px}
+#info h3{margin:0 0 6px;font-size:15px}
+#info .k{font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:var(--mt);margin:8px 0 3px}
+#info ul{margin:0;padding-left:18px}
+.opt{margin-top:22px}
+.opt h2{font-size:16px;margin:0 0 6px}
+.opt .card{background:var(--sf);border:1px solid var(--bd);border-radius:10px;padding:12px 14px;margin-bottom:8px}
+.opt .card b{color:var(--ac)}
+.opt .card .s{font-size:12px;color:var(--mt)}
+.reset{background:transparent;border:1px solid var(--bd2);color:var(--mt);border-radius:100px;padding:5px 12px;font-size:12px;cursor:pointer;margin-left:auto}
+@media(max-width:900px){.cols{grid-template-columns:1fr 1fr}svg#lines{display:none}}
+</style>
+</head>
+<body>
+<div class="wrap">
+<h1>ForexHub — how everything connects</h1>
+<div class="sub">Data sources → worker endpoints → site tabs → what comes out. Site v24 · worker 11.7 · 16 Sep 2026.</div>
+<div class="legend">
+  <span><i style="background:var(--c-src)"></i>Data source</span>
+  <span><i style="background:var(--c-wrk)"></i>Worker endpoint (forexproxy)</span>
+  <span><i style="background:var(--c-ai)"></i>AI-powered</span>
+  <span><i style="background:var(--c-tab)"></i>Site tab / panel</span>
+  <span><i style="background:var(--c-out)"></i>Output / storage</span>
+  <span><i style="background:var(--c-bot)"></i>Trading terminal</span>
+  <button class="reset" onclick="select(null)">Clear selection</button>
+</div>
+<div class="hint"><b>Tap any box</b> to light up everything that feeds it and everything it feeds. Tap again to clear. Grey text under a box says how often it refreshes or where it is cached.</div>
+
+<div id="map">
+<svg id="lines"></svg>
+<div class="cols">
+  <div class="col"><h2>Sources</h2>
+    <div class="node src" id="yahoo"><div class="n">Yahoo Finance</div><div class="d">Prices, intraday + daily bars for the 28 watchlist pairs, DXY</div></div>
+    <div class="node src" id="tvcal"><div class="n">TradingView calendar</div><div class="d">Economic events with actuals</div></div>
+    <div class="node src" id="ff"><div class="n">Forex Factory</div><div class="d">Calendar fallback when TradingView fails</div></div>
+    <div class="node src" id="anth"><div class="n">Anthropic (Claude)</div><div class="d">Every AI answer on the site</div></div>
+    <div class="node src" id="tvalert"><div class="n">TradingView alerts</div><div class="d">London-breakout Pine script → webhook</div></div>
+    <div class="node src" id="user"><div class="n">You</div><div class="d">Screenshots, notes, trade ideas, questions</div></div>
+  </div>
+  <div class="col"><h2>Worker (Cloudflare)</h2>
+    <div class="node wrk" id="price"><div class="n">/price</div><div class="d">Live quotes + 4H / daily / weekly / monthly change per pair. ≤12 pairs per call, so the 28-pair list is 3 calls.</div></div>
+    <div class="node wrk" id="briefing"><div class="n">/briefing</div><div class="d">7am→7am session move, range, gap, activity vs 14-day ATR. 11.7: weekend-aware.</div></div>
+    <div class="node wrk" id="tech"><div class="n">/tech</div><div class="d">MA + oscillator ratings per pair, 5 timeframes. KV-cached per timeframe.</div></div>
+    <div class="node wrk" id="strength"><div class="n">/strength</div><div class="d">Currency baskets rebased 1y, real DXY, basket technicals. Hourly.</div></div>
+    <div class="node wrk" id="calendar"><div class="n">/calendar</div><div class="d">This / next / last week. KV-cached 14 days with source flag.</div></div>
+    <div class="node wrk ai" id="api"><div class="n">/api</div><div class="d">Claude proxy: app key + origin + per-IP cap + daily budget. Identical prompts cached in KV (AI_TTL).</div></div>
+    <div class="node wrk" id="setups"><div class="n">/setups</div><div class="d">Setup feed for the bots. POST from the site, GET by MT5 / cTrader. KV 24h.</div></div>
+    <div class="node wrk" id="tvhook"><div class="n">/tv-hook</div><div class="d">TradingView alert → feed setup (src "tv")</div></div>
+    <div class="node wrk" id="kv"><div class="n">KV store</div><div class="d">Calendar, AI replies, tech, setups, stats</div></div>
+  </div>
+  <div class="col"><h2>Site tabs</h2>
+    <div class="node tab" id="ticker"><div class="n">Ticker</div><div class="d">Header prices, refreshes on a timer</div></div>
+    <div class="node tab ai" id="watch"><div class="n">Watchlist — Weekly / Daily / 4H analysis</div><div class="d">AI outlook per pair with live price context</div></div>
+    <div class="node tab" id="techtab"><div class="n">Watchlist — Technicals</div><div class="d">Ratings table · v24: Ask IQ + Save/Print</div></div>
+    <div class="node tab ai" id="brief"><div class="n">Briefing</div><div class="d">Movers, activity, gaps, today's news, AI summary</div></div>
+    <div class="node tab ai" id="scanner"><div class="n">Scanner / Pullback</div><div class="d">Setups from live prices, AI commentary, Chart / Trade buttons</div></div>
+    <div class="node tab" id="trends"><div class="n">Trends</div><div class="d">W/D/4H alignment · v24: Ask IQ + Save/Print</div></div>
+    <div class="node tab" id="indices"><div class="n">Indices</div><div class="d">Currency strength · v24: Ask IQ + Save/Print</div></div>
+    <div class="node tab ai" id="iq"><div class="n">IQ</div><div class="d">Event outlook · event review · library</div></div>
+    <div class="node tab ai" id="askiq"><div class="n">Ask IQ (v24)</div><div class="d">Question + the tab's live data + strength, technicals, trends and the next 48h of the calendar</div></div>
+    <div class="node tab ai" id="maps"><div class="n">Maps</div><div class="d">Heat map (pips), majors matrix, tree map, AI sentiment, correlation · v24: Ask IQ + Save/Print</div></div>
+    <div class="node tab" id="sessions"><div class="n">Sessions</div><div class="d">Session dial + timeline with calendar pins</div></div>
+    <div class="node tab ai" id="caltab"><div class="n">Calendar</div><div class="d">List / grid (v24), released events folded, IQ button per event, AI explain</div></div>
+    <div class="node tab ai" id="review"><div class="n">Review</div><div class="d">Trade idea + past trade, screenshot (paste in v24)</div></div>
+    <div class="node tab" id="journal"><div class="n">Journal · Checklist · Calculator</div><div class="d">Local records; backup carries the IQ library</div></div>
+  </div>
+  <div class="col"><h2>Outputs</h2>
+    <div class="node out" id="folders"><div class="n">OneDrive report folders</div><div class="d">Save → Trade Scanner / Morning Briefing / Trade Reviews / Market Sentiment / IQ Scanner / Analysis, in month sub-folders (v23–24)</div></div>
+    <div class="node out" id="iqlib"><div class="n">IQ library</div><div class="d">Browser storage (fh_iq): outlooks, reviews, Ask IQ answers</div></div>
+    <div class="node out" id="lsc"><div class="n">Browser caches</div><div class="d">AI replies, quotes, journal, settings</div></div>
+    <div class="node bot" id="mt5"><div class="n">MT5 EA — FxHubSetupSync</div><div class="d">Polls /setups, draws, places orders</div></div>
+    <div class="node bot" id="ctr"><div class="n">cTrader cBot — FxHubSetupSync 1.18a</div><div class="d">Polls /setups, one exit manager, trailing</div></div>
+    <div class="node out" id="watch2"><div class="n">Scheduled dollar-move watch</div><div class="d">Reads /strength + /calendar twice a day, messages you only when one currency moves against all</div></div>
+  </div>
+</div>
+</div>
+
+<div id="info"><h3>Tap a box</h3><div class="d" style="color:var(--mt)">The panel explains what feeds the box, what it feeds, and how often it refreshes.</div></div>
+
+<div class="opt">
+<h2>Where it could be tightened</h2>
+<div class="card"><b>1. Seven separate callers fetch the same 28 quotes.</b> Ticker, Trends, Heat map, Tree map, Scanner, Pullback scanner and Calculator each call <code>/price</code> for the whole watchlist (3 requests each). A single shared quote cache with a 60-second life would cut most of those to zero when you move between tabs. <div class="s">Saves worker requests and the 2–3 s wait on each tab. Low risk: the data is identical.</div></div>
+<div class="card"><b>2. The calendar is fetched up to three ways.</b> The Calendar tab, the IQ pickers and the briefing each ask the worker for the same weeks. One in-page store (<code>_calAll</code> already exists) could feed all three. <div class="s">Ask IQ (v24) already reads the shared store rather than fetching.</div></div>
+<div class="card"><b>3. Trends and Heat map are the same numbers in two shapes.</b> Both come from <code>/price</code>: Trends shows % on W/D/4H, Heat map shows pips on D/W/M. One table with a % / pips switch would halve the code and the fetches. <div class="s">Worth doing when either tab next changes.</div></div>
+<div class="card"><b>4. /briefing is fetched twice</b> — by the Briefing and by the Tree map (for activity sizing). Same fix as #1. <div class="s">Small.</div></div>
+<div class="card"><b>5. Basket technicals repeat pair technicals.</b> <code>/strength</code> computes ratings on baskets from the same Yahoo bars <code>/tech</code> already pulls per pair. The worker could reuse the per-pair bars. <div class="s">Worker-only change; saves Yahoo subrequests.</div></div>
+<div class="card"><b>6. AI cost is already shared</b> — identical prompts are cached in KV server-side, so a second device costs nothing. Ask IQ is deliberately uncached (each question is new). <div class="s">Nothing to do; noted so it isn't "optimised" away.</div></div>
+</div>
+</div>
+
+<script>
+/* edges: [from, to, note] */
+var E=[
+ ['yahoo','price','quotes + bars'],['yahoo','briefing','1d + intraday bars'],['yahoo','tech','bars per timeframe'],['yahoo','strength','daily bars, DXY'],
+ ['tvcal','calendar','primary'],['ff','calendar','fallback'],['anth','api','messages API'],['tvalert','tvhook','webhook JSON'],
+ ['calendar','kv','14d'],['api','kv','AI_TTL'],['tech','kv','per tf'],['setups','kv','24h'],['tvhook','setups','src tv'],
+ ['price','ticker',''],['price','watch','price context'],['price','trends',''],['price','maps','heat, matrix, tree'],['price','scanner',''],['price','journal','calculator'],
+ ['briefing','brief',''],['briefing','maps','tree map sizing'],
+ ['tech','techtab',''],['strength','indices',''],['strength','askiq','strength ranking'],['strength','watch2',''],
+ ['calendar','caltab',''],['calendar','iq','event pickers'],['calendar','brief',"today's news"],['calendar','sessions','pins'],['calendar','askiq','next 48h'],['calendar','watch2',''],
+ ['api','watch','W/D/4H outlook'],['api','brief','summary'],['api','scanner','commentary'],['api','maps','sentiment'],['api','caltab','explain'],['api','review',''],['api','iq',''],['api','askiq',''],
+ ['user','review','screenshot / paste'],['user','iq','screenshot / notes'],['user','askiq','question'],['user','journal',''],
+ ['techtab','askiq','filtered rows'],['trends','askiq','bias table'],['indices','askiq','index figures'],['maps','askiq','pip moves'],
+ ['sessions','caltab','announcement → event'],['caltab','iq','IQ button'],['scanner','setups','Chart / Trade'],
+ ['setups','mt5','poll'],['setups','ctr','poll'],
+ ['askiq','iqlib',''],['iq','iqlib',''],['journal','iqlib','backup'],
+ ['techtab','folders','save'],['trends','folders','save'],['indices','folders','save'],['maps','folders','save'],['brief','folders','save'],['scanner','folders','save'],['review','folders','save'],['iq','folders','save'],['watch','folders','save'],['askiq','folders','save'],
+ ['api','lsc','reply cache'],['price','lsc','quote cache'],['journal','lsc','']
+];
+var svg=document.getElementById('lines'),map=document.getElementById('map'),sel=null,paths=[];
+function pos(id){var el=document.getElementById(id),r=el.getBoundingClientRect(),m=map.getBoundingClientRect();return {x1:r.left-m.left,x2:r.right-m.left,y:r.top-m.top+r.height/2};}
+function draw(){
+  svg.innerHTML='';paths=[];
+  E.forEach(function(e){
+    var a=pos(e[0]),b=pos(e[1]);
+    var ax=a.x2,bx=b.x1; if(bx<ax){ax=a.x1;bx=b.x2;}
+    var dx=Math.max(40,Math.abs(bx-ax)/2);
+    var d='M'+ax+','+a.y+' C'+(ax+dx)+','+a.y+' '+(bx-dx)+','+b.y+' '+bx+','+b.y;
+    var p=document.createElementNS('http://www.w3.org/2000/svg','path');p.setAttribute('d',d);p.dataset.a=e[0];p.dataset.b=e[1];svg.appendChild(p);paths.push(p);
+  });
+  apply();
+}
+function apply(){
+  var nodes=document.querySelectorAll('.node');
+  if(!sel){nodes.forEach(function(n){n.classList.remove('on','dim');});paths.forEach(function(p){p.classList.remove('on','hide');});return;}
+  var keep={};keep[sel]=1;
+  E.forEach(function(e){if(e[0]===sel)keep[e[1]]=1;if(e[1]===sel)keep[e[0]]=1;});
+  nodes.forEach(function(n){n.classList.toggle('on',n.id===sel);n.classList.toggle('dim',!keep[n.id]);});
+  paths.forEach(function(p){var hit=p.dataset.a===sel||p.dataset.b===sel;p.classList.toggle('on',hit);p.classList.toggle('hide',!hit);});
+}
+function name(id){var el=document.getElementById(id);return el?el.querySelector('.n').textContent:id;}
+function select(id){
+  sel=(sel===id)?null:id;apply();
+  var info=document.getElementById('info');
+  if(!sel){info.innerHTML='<h3>Tap a box</h3><div style="color:var(--mt)">The panel explains what feeds the box, what it feeds, and how often it refreshes.</div>';return;}
+  var ins=E.filter(function(e){return e[1]===sel;}),outs=E.filter(function(e){return e[0]===sel;});
+  var h='<h3>'+name(sel)+'</h3><div style="color:var(--mt)">'+document.getElementById(sel).querySelector('.d').textContent+'</div>';
+  h+='<div class="k">Fed by</div>'+(ins.length?'<ul>'+ins.map(function(e){return '<li>'+name(e[0])+(e[2]?' <span style="color:var(--mt)">— '+e[2]+'</span>':'')+'</li>';}).join('')+'</ul>':'<div style="color:var(--mt)">nothing — this is a source</div>');
+  h+='<div class="k">Feeds</div>'+(outs.length?'<ul>'+outs.map(function(e){return '<li>'+name(e[1])+(e[2]?' <span style="color:var(--mt)">— '+e[2]+'</span>':'')+'</li>';}).join('')+'</ul>':'<div style="color:var(--mt)">nothing further — this is an output</div>');
+  info.innerHTML=h;
+}
+document.querySelectorAll('.node').forEach(function(n){n.addEventListener('click',function(){select(n.id);});});
+window.addEventListener('resize',draw);
+draw();
+</script>
+</body>
+</html>

@@ -1,4 +1,5 @@
 /* ForexHub data + AI proxy — Cloudflare Worker
+   v11.7 16.9.26: /briefing — when the market is shut the last 7am→7am session is reported as the previous day (marketClosed, lastBarAt); no "session so far" or gap until it reopens.
    v11.6 15.9.26: POST /tv-hook — TradingView alert webhooks become feed setups
      (src "tv"), stored apart from the site's basket; GET /setups merges them.
      Needs a new secret binding FH_TV_KEY (the webhook password in the URL).
@@ -32,7 +33,7 @@
        Cache API which is per-colo) and backs off when Forex Factory rate-limits.
    Bindings required: ANTHROPIC_API_KEY (secret), FH_APP_KEY (secret), FH_KV (KV).  */
 
-const WORKER_VERSION = "11.6";
+const WORKER_VERSION = "11.7";
 const YF_HOSTS = ["https://query1.finance.yahoo.com", "https://query2.finance.yahoo.com"];
 const UA = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0 Safari/537.36";
 const NY_HOUR_FMT = new Intl.DateTimeFormat("en-US", { timeZone: "America/New_York", hour: "numeric", hourCycle: "h23" });
@@ -782,6 +783,7 @@ export default {
             let prevOpenRef = null, prevCloseRef = null, prevBars = 0, prevPartial = false;
             let gapFrom = null, gapTo = null, gapFromAt = null, gapToAt = null;
             let gapWeekend = false, gapBreakMin = null;
+            let marketClosed = false, lastBarAt = null;
             const barIv = hh.iv;
             /* Bars in a full 7am→7am session at this resolution — used to tell a
                complete window from one the feed only partly covered. */
@@ -801,7 +803,34 @@ export default {
               }
               gapMeasurable = !(joins >= 10 && flat / joins > 0.9);
               const ro = rolloverIdx(hb);
-              if (ro.length) {
+              /* 11.7 (16 Sep amendment 1) — when the market is shut (weekend, holiday)
+                 the last 7am→7am session is COMPLETE, not "in progress". Before this,
+                 a Monday-07:52 briefing called Friday's fall "this session so far" and
+                 showed Thursday as the previous day. A bar older than 3 hours can only
+                 mean a closed market (FX prints continuously otherwise). */
+              const lastBarT = hb.length ? hb[hb.length - 1].t : 0;
+              marketClosed = hb.length > 0 && (Date.now() / 1000 - lastBarT) > 3 * 3600;
+              lastBarAt = hb.length ? aestStamp(lastBarT) : null;
+              if (ro.length && marketClosed) {
+                const zc = ro[ro.length - 1], last = hb.length - 1;
+                prevOpenRef = hb[zc - 1].c;
+                prevCloseRef = hb[last].c;
+                prevDayMovePips = r1((prevCloseRef - prevOpenRef) / pip);
+                let phi = null, plo = null;
+                for (let w = zc; w <= last; w++) {
+                  if (phi == null || hb[w].h > phi) phi = hb[w].h;
+                  if (plo == null || hb[w].l < plo) plo = hb[w].l;
+                }
+                prevBars = last - zc + 1;
+                prevFrom = aestStamp(hb[zc].t);
+                prevTo = aestStamp(hb[last].t);
+                if (phi != null && plo != null) { prevHigh = phi; prevLow = plo; prevDayRangePips = r1((phi - plo) / pip); }
+                prevPartial = prevBars < 20 * perHour;
+                /* The next rollover's gap (Friday close → Monday open) does not exist
+                   yet, so there is nothing to measure and no "session so far". */
+                gapPips = null; gapSrc = null; gapMeasurable = false;
+                sessionMovePips = null;
+              } else if (ro.length) {
                 const z1 = ro[ro.length - 1];
                 gapFrom = hb[z1 - 1].c; gapTo = hb[z1].o;
                 gapFromAt = aestStamp(hb[z1 - 1].t); gapToAt = aestStamp(hb[z1].t);
@@ -836,7 +865,7 @@ export default {
                 }
               }
             } catch (e) { /* fall back to daily */ }
-            if (gapPips == null) {
+            if (gapPips == null && !marketClosed) {
               const next = bars[j + 1];
               gapPips = next ? (next.o - prev.c) / pip : null;
               if (gapPips != null) { gapSrc = "daily"; gapMeasurable = false; }
@@ -866,6 +895,8 @@ export default {
               prevHigh: prevHigh, prevLow: prevLow,
               prevOpenRef: prevOpenRef, prevCloseRef: prevCloseRef,
               prevBars: prevBars, prevPartial: prevPartial,
+              marketClosed: marketClosed,   // 11.7: true ⇒ figures are the last completed session
+              lastBarAt: lastBarAt,
               // D6: which window sessionMove/prevDayMove actually came from
               moveSrc: sessionMovePips != null ? "session7am"
                 : (prevDayMovePips != null ? "prevSession7am" : "dailyClose")

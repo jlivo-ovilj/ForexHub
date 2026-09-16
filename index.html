@@ -154,6 +154,49 @@ body.light .nb{color:rgba(28,27,25,0.88)}
 .cal-controls{display:flex;flex-wrap:wrap;gap:6px;align-items:center;margin-bottom:8px}
 .cal-flbl{font-family:'DM Mono',monospace;font-size:10px;color:var(--mt);margin-right:2px}
 .cal-past{opacity:0.72}
+/* v24 — released events fold away under one line so the next release sits at the top of the day */
+.cal-fold{margin-bottom:6px}
+.cal-fold>summary{list-style:none;cursor:pointer;font-family:'DM Mono',monospace;font-size:10.5px;letter-spacing:0.06em;text-transform:uppercase;color:var(--mt);padding:7px 12px;border:1px dashed var(--bd2);border-radius:var(--rs);display:flex;align-items:center;gap:8px}
+.cal-fold>summary::-webkit-details-marker{display:none}
+.cal-fold>summary:hover{color:var(--tx);border-color:var(--ac)}
+.cal-fold>summary .cf-arrow{transition:transform .15s;display:inline-block}
+.cal-fold[open]>summary .cf-arrow{transform:rotate(90deg)}
+.cal-fold[open]>summary{margin-bottom:6px}
+.cal-fold .cal-event{margin-left:0}
+/* v24 — calendar grid view */
+.cal-grid{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:6px;margin-bottom:8px}
+.cal-gd{background:var(--sf);border:1px solid var(--bd);border-radius:var(--rs);padding:8px 8px 6px;min-height:120px;display:flex;flex-direction:column;gap:4px;min-width:0}
+.cal-gd.today{border-color:var(--ac)}
+.cal-gd.past{opacity:0.6}
+.cal-gd-h{font-family:'DM Mono',monospace;font-size:10px;letter-spacing:0.06em;text-transform:uppercase;color:var(--mt);display:flex;justify-content:space-between;gap:4px;padding-bottom:4px;border-bottom:1px solid var(--bd);margin-bottom:2px}
+.cal-gd.today .cal-gd-h{color:var(--ac)}
+.cal-ge{font-size:11px;line-height:1.35;padding:4px 5px;border-radius:6px;border-left:3px solid var(--bd2);background:var(--sf2);cursor:pointer;display:flex;flex-direction:column;gap:1px;min-width:0}
+.cal-ge:hover{border-left-color:var(--ac)}
+.cal-ge.high{border-left-color:#ef4444}.cal-ge.med{border-left-color:#f59e0b}.cal-ge.low{border-left-color:#6b7280}
+.cal-ge.past{opacity:0.55}
+.cal-ge .ge-t{font-family:'DM Mono',monospace;font-size:9.5px;color:var(--mt);display:flex;gap:5px;align-items:center}
+.cal-ge .ge-n{white-space:nowrap;overflow:hidden;text-overflow:ellipsis;color:var(--tx)}
+.cal-ge .ge-c{font-family:'DM Mono',monospace;font-weight:700;font-size:9.5px}
+.cal-gmore{font-family:'DM Mono',monospace;font-size:10px;color:var(--mt);padding:2px 5px}
+@media(max-width:820px){.cal-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
+/* v24 — Ask IQ panel (lives on Technicals, Trends, Indices, Maps) */
+.iq-ask{margin-top:14px;border:1px solid #fb923c44;border-radius:var(--r);background:linear-gradient(180deg,#fb923c0d,transparent 60%),var(--sf);padding:14px 16px}
+.iq-ask .ia-h{display:flex;align-items:center;gap:10px;margin-bottom:8px;flex-wrap:wrap}
+.iq-ask .ia-t{font-family:'Syne',sans-serif;font-weight:700;font-size:15px;color:#fb923c}
+.iq-ask .ia-s{font-size:12px;color:var(--mt)}
+.iq-ask .ia-chips{display:flex;flex-wrap:wrap;gap:6px;margin:6px 0 10px}
+.iq-ask .ia-chip{background:transparent;border:1px solid var(--bd2);color:var(--mt);border-radius:100px;padding:5px 11px;font-size:11.5px;cursor:pointer;text-align:left;line-height:1.3}
+.iq-ask .ia-chip:hover{border-color:#fb923c;color:var(--tx)}
+.iq-ask .ia-row{display:flex;gap:8px;align-items:stretch}
+.iq-ask .ia-q{flex:1;min-height:44px;resize:vertical}
+.iq-ask .ia-btn{background:#fb923c;color:#0b0b0d;border:none;border-radius:var(--rs);padding:0 16px;font-family:'Syne',sans-serif;font-weight:700;font-size:13px;cursor:pointer;white-space:nowrap}
+.iq-ask .ia-btn:disabled{opacity:0.6;cursor:default}
+.iq-ask .ia-out{margin-top:12px}
+.iq-ask .ia-out .cb{font-size:13.5px}
+.iq-ask .ia-ctx{font-family:'DM Mono',monospace;font-size:10px;color:var(--mt);margin-top:6px}
+[data-theme="light"] .iq-ask{border-color:#c2410c55}
+[data-theme="light"] .iq-ask .ia-t{color:#c2410c}
+[data-theme="light"] .iq-ask .ia-btn{background:#c2410c;color:#fff}
 
 /* ── GAP FILTER (Amendment 17.8.26) ── */
 .gap-filter{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:10px}
@@ -685,7 +728,7 @@ body.light .chart-modal-overlay{background:rgba(0,0,0,0.55)}
 .idx-vtab{padding:7px 18px;border-radius:100px;font-family:'Syne',sans-serif;font-size:13px;font-weight:500;border:1px solid rgba(244,114,182,0.3);background:transparent;color:rgba(244,114,182,0.75);cursor:pointer;transition:all .15s}
 .idx-vtab.active{background:#f472b6;color:#0a0a0a;border-color:#f472b6}
 .idx-table{width:100%;border-collapse:collapse}
-.idx-table thead th{font-family:'DM Mono',monospace;font-size:9.5px;text-transform:uppercase;letter-spacing:0.05em;color:var(--mt);padding:9px 6px;text-align:right;border-bottom:1px solid var(--bd2);position:sticky;top:0;background:var(--sf);cursor:pointer;user-select:none;white-space:nowrap}
+.idx-table thead th{font-family:'DM Mono',monospace;font-size:10px;text-transform:uppercase;letter-spacing:0.06em;color:var(--tx);font-weight:700;opacity:0.85;padding:9px 6px;text-align:right;border-bottom:1px solid var(--bd2);position:sticky;top:0;background:var(--sf);cursor:pointer;user-select:none;white-space:nowrap}
 .idx-table thead th:first-child{text-align:left;padding-left:10px}
 .idx-table td{padding:7px 6px;border-bottom:1px solid var(--bd);font-family:'DM Mono',monospace;font-size:11.5px;text-align:right;white-space:nowrap}
 .idx-table td:first-child{text-align:left;padding-left:10px}
@@ -782,6 +825,8 @@ body.light .chart-modal-overlay{background:rgba(0,0,0,0.55)}
     <div class="card" style="padding:0;overflow:hidden">
       <div class="scroller-x"><div id="tech-body"><div class="ld" style="padding:20px"><div class="sp"></div>Loading technicals…</div></div></div>
     </div>
+    <div class="share-bar" id="tech-share" style="display:none"></div>
+    <div class="iq-ask" id="iqask-tech" data-ctx="tech"></div>
     <div class="map-src" style="text-align:left">Each cell is the overall rating for that timeframe: moving averages (SMA 9/20/50/100/200, EMA 20/50) vote by where price sits against them; oscillators (RSI, stochastic, CCI, MACD, momentum) vote by their own rule; the two are averaged. Tap a pair to open its full indicator grid; tap the pair name to open its analysis. 4H bars are built from hourly bars on the New York day.</div>
   </div>
   <!-- Daily -->
@@ -1268,6 +1313,8 @@ body.light .chart-modal-overlay{background:rgba(0,0,0,0.55)}
       <div class="meta" id="mat-src" style="margin-top:8px">% change since the daily FX rollover · each row currency vs each column currency</div>
     </div>
     <div class="map-src" id="hm-src">Live prices · Daily = pips since the daily FX rollover · Weekly/Monthly vs 5/21 trading days ago</div>
+    <div class="share-bar" id="hm-share" style="display:none"></div>
+    <div class="iq-ask" id="iqask-maps" data-ctx="maps"></div>
   </div>
   <!-- Sentiment -->
   <div id="sentiment" class="map-panel">
@@ -1311,6 +1358,8 @@ body.light .chart-modal-overlay{background:rgba(0,0,0,0.55)}
   <div class="card" style="padding:0;overflow:hidden">
     <div class="scroller-x"><div id="idx-body"><div class="ld" style="padding:20px"><div class="sp"></div>Loading currency strength…</div></div></div>
   </div>
+  <div class="share-bar" id="idx-share" style="display:none"></div>
+  <div class="iq-ask" id="iqask-idx" data-ctx="idx"></div>
   <div class="map-src" style="text-align:left" id="idx-src">Each currency is an equal-weight basket of its seven watchlist pairs, rebased to 100 one year ago — it rises when the currency gains against the rest. The US Dollar Index row is the real ICE DXY. The TradingView currency indices (EXY, BXY…) are licensed products not on the free feed; the baskets move the same way without pretending to be them.</div>
 </div>
 
@@ -1399,6 +1448,8 @@ body.light .chart-modal-overlay{background:rgba(0,0,0,0.55)}
   <div class="card" style="padding:0;overflow:hidden">
     <div id="trend-body"><div class="ld" style="padding:20px"><div class="sp"></div>Loading trends…</div></div>
   </div>
+  <div class="share-bar" id="trend-share" style="display:none"></div>
+  <div class="iq-ask" id="iqask-trend" data-ctx="trend"></div>
   <div class="map-src">Live price data, no AI. Tap a column header to sort; filter by currency. Only Buy and Sell biases are shown by default — tap <b>Show mixed</b> to include the rest. The exact measurement window for each column is stated under the table.</div>
 </div>
 
@@ -1575,6 +1626,18 @@ body.light .chart-modal-overlay{background:rgba(0,0,0,0.55)}
   <div class="st">About ForexHub</div>
   <div class="ss">Your daily forex companion</div>
   <div class="card">
+    <div class="ai"><div class="aq">What's new in v24 (16 Sep 2026) · worker 11.7 — amendments 14.9.26</div><div class="aa">
+      · <b>Ask IQ on the research tabs.</b> Technicals, Trends, Indices and the Heat map each carry an orange <b>Ask IQ</b> panel. Type a question (or tap a suggested one) and it goes to Claude together with the table on screen — the technicals rows you have filtered to, the trend biases, the index performance and volatility figures, the pip moves — plus the currency-strength ranking, the daily technicals headcount, the trend biases and the next 48 hours of the calendar from the other tabs. So "why is NZD weak", "which crosses should I be shorting", "why is USD strong but DXY neutral" or "what does the Volatility column mean" are answered against the numbers in front of you, not in general. Every answer is saved to the IQ library and can be printed or saved like any report.<br>
+      · <b>Print / Save on every table that is worth keeping</b> — Technicals, Trends, Indices and the Heat map now have the same bar as the Weekly/Daily/4H analysis. They file under <code>Analysis\&lt;month&gt;</code>; Market sentiment now files under <code>Market Sentiment</code> and IQ outlooks/reviews under <code>IQ Scanner</code>.<br>
+      · <b>Calendar: released events fold away.</b> Once a release is out it tucks under one line — "4 already released — tap to show" — so the next event sits at the top of the day. The fold remembers whether you left it open.<br>
+      · <b>Calendar grid view.</b> Beside Days there is now <b>View: List / Calendar</b>. Calendar lays the window out seven days across (two rows for 2 weeks), one cell per day, colour bar = impact, faded = released. Tap any event for its detail and IQ button as before.<br>
+      · The label that read "Window" beside Today / 7 days / 2 weeks now reads <b>Days</b> — it was never a button, just the name of that filter row.<br>
+      · <b>Indices header row</b> is brighter and bolder so the column names read at a glance.<br>
+      · <b>Paste a screenshot.</b> On Trade idea review, Past trade review and IQ review you can now press Ctrl+V with a screenshot on the clipboard (Win+Shift+S, then Ctrl+V) and it lands in the drop zone — no saving and browsing for the file.<br>
+      · <b>Fixed: the Monday-morning briefing called Friday "this session so far".</b> Before the market reopens the worker still had Friday as the session in progress, so the alert reported Friday's −99.7-pip USD/JPY fall as today's move and showed Thursday as the previous day. Worker 11.7 now treats the last completed 7am→7am session as the previous day while the market is shut, drops the "so far" alert and the gap line until trading resumes, and the briefing says plainly that the market is closed.<br>
+      · <b>Mud map.</b> <a href="mudmap.html" target="_blank" style="color:var(--ac)">How everything connects</a> — sources → worker → tabs → outputs, tap a box to light up its links, with a short list of where the plumbing could be tightened. Also filed in FXHub Specs Manual.<br>
+      · Held for a later batch, by agreement: event reminders pushed to a phone or terminal (needs a decision on the channel first).<br>
+    </div></div>
     <div class="ai"><div class="aq">What's new in v23 (16 Sep 2026) · cTrader bot 1.18a</div><div class="aa">
       · <b>Save now files reports into a month folder</b> — <code>Trade Scanner\2026-09 September</code>, <code>Morning Briefing\2026-09 September</code> and so on, created on the fly. The first Save asks you to pick the report's folder once (choose the top folder, e.g. <code>Trade Scanner</code>, not the month); after that it saves straight in with no dialog. Analysis reports keep their per-pair folder. Print → Save as PDF is unchanged — that dialog belongs to Windows, so it cannot be steered.<br>
       · <b>cTrader bot 1.18a</b> — stops the notification flood: the bot matched the first broker symbol starting with the pair (Pepperstone's untradeable <code>USDCHFW</code>) and sent 0-lot orders every poll; and every chart instance was trailing every position on every tick. Now the exact symbol wins, a rejected order is retried three times then parked with the reason on the chart, one instance manages exits (Windows lock), and the stop only moves by at least 5 pips.<br>
@@ -1731,6 +1794,7 @@ var cW   = "AUDUSD";
 var c4   = "EURJPY";
 var curPair = "AUDUSD";   // shared across timeframes (Amendment 5)
 var hmLoaded=false, sentLoaded=false, corrLoaded=false, trendLoaded=false;
+var _hmRows=null;   // v24 — heat-map rows for Ask IQ
 
 /* Activate the sidebar pill matching a pair (e.g. "AUDCAD" → "AUD/CAD") */
 function activatePairPill(sel,pair){
@@ -1979,7 +2043,7 @@ function dismissBanner(){
 /* ══════════════════════════════════════
    HEADER DATE
 ══════════════════════════════════════ */
-var FH_BUILD='v23'; // 16 Sep 2026 — Save files reports into month folders (Trade Scanner\2026-09 September) // bump on every delivered change — shown in the header so it's always obvious which version is loaded
+var FH_BUILD='v24'; // 16 Sep 2026 — amendments 14.9.26: Ask IQ on the research tabs, print/save everywhere, calendar collapse + grid, paste screenshots // bump on every delivered change — shown in the header so it's always obvious which version is loaded
 /* Stale-tab killer: every so often, check whether a newer build has been deployed.
    If so, show a can't-miss banner telling the user to reload — long-open tabs silently
    running old code caused repeated "the fix didn't work" confusion. */
@@ -2388,6 +2452,7 @@ async function loadTrendScan(){
                    hSpan:d.t4hSpanMin,hBreak:d.t4hSpansBreak===true,age:d.sessionAgeMin});});
     }
     _trendData=rows;
+    buildShareBar('trend-share','Trend scanner','#trend-body','trend-scanner');
     var t=fhTime();
     var mt=document.getElementById('trend-meta'); if(mt) mt.textContent=rows.length+' pairs · '+t+' '+fhTzLabel();
     if(!rows.length){out.innerHTML='<div class="eb" style="padding:16px">No price data returned after 3 attempts — the feed may be briefly down. Try Refresh in a minute.</div>';return;}
@@ -2788,6 +2853,10 @@ function monthFolder(d){
 function reportFolder(title){
   var t=(title||'').toLowerCase();
   if(t.indexOf('brief')>-1) return {folder:'Morning Briefing'};
+  if(t.indexOf('sentiment')>-1) return {folder:'Market Sentiment'};   // v24 — John's existing folder
+  if(t.indexOf('event outlook')>-1||t.indexOf('event review')>-1) return {folder:'IQ Scanner'};   // v24 — John's existing folder
+  // v24 — technicals / trend / indices / heat-map tables and Ask IQ answers file under Analysis\<month> (checked before 'scanner' so 'Trend scanner' lands here)
+  if(t.indexOf('technicals')>-1||t.indexOf('trend')>-1||t.indexOf('indices')>-1||t.indexOf('heat map')>-1||t.indexOf('ask iq')>-1) return {folder:'Analysis'};
   if(t.indexOf('scanner')>-1||t.indexOf('scan')>-1) return {folder:'Trade Scanner'};
   if(t.indexOf('review')>-1) return {folder:'Trade Reviews'};
   if(t.indexOf('analysis')>-1||t.indexOf('outlook')>-1){var m=(title||'').match(/([A-Z]{3})\/([A-Z]{3})/);return {folder:'Analysis',sub:m?m[1]+m[2]:null};}
@@ -4296,7 +4365,9 @@ async function calEventsToday(){
 }
 
 /* ── filters ── */
-var calFilter={imp:'medhigh',ccy:'',days:7};
+var calFilter={imp:'medhigh',ccy:'',days:7,view:'list'};
+var _calPastOpen=false;   // v24 — whether the 'already released' fold is open
+function setCalView(v){calFilter.view=v;renderCalendarView();}
 function calSaveFilter(){try{LS.set('fh_calfilter',JSON.stringify(calFilter));}catch(e){}}
 function calLoadFilter(){try{var d=JSON.parse(LS.get('fh_calfilter')||'null');if(d)calFilter=Object.assign(calFilter,d);}catch(e){}}
 function setCalImp(v){calFilter.imp=v;calSaveFilter();renderCalendarView();}
@@ -4363,9 +4434,13 @@ function renderCalendarView(){
   [['all','All'],['medhigh','High + Med'],['high','High only']].forEach(function(o){
     c+='<button class="gapf'+(calFilter.imp===o[0]?' active':'')+'" onclick="setCalImp(\''+o[0]+'\')">'+o[1]+'</button>';
   });
-  c+='<span class="cal-flbl">Window</span>';
+  c+='<span class="cal-flbl">Days</span>';
   [[1,'Today'],[7,'7 days'],[14,'2 weeks']].forEach(function(o){
     c+='<button class="gapf'+(calFilter.days===o[0]?' active':'')+'" onclick="setCalDays('+o[0]+')">'+o[1]+'</button>';
+  });
+  c+='<span class="cal-flbl" style="margin-left:10px">View</span>';
+  [['list','List'],['grid','Calendar']].forEach(function(o){
+    c+='<button class="gapf'+(calFilter.view===o[0]?' active':'')+'" onclick="setCalView(\''+o[0]+'\')">'+o[1]+'</button>';
   });
   c+='</div><div class="cal-controls"><span class="cal-flbl">Currency</span>';
   c+='<button class="gapf'+(!calFilter.ccy?' active':'')+'" onclick="setCalCcy(\'\')">All</button>';
@@ -4386,13 +4461,23 @@ function renderCalendarView(){
     byDay[idx[e.dayKey]].list.push(e);
   });
   var html=calStaleNote()+c;
+  if(calFilter.view==='grid'){ body.innerHTML=html+renderCalGrid(byDay,todayKey,now); setCalMeta(evs.length); return; }
   byDay.forEach(function(grp){
     var isToday=grp.key===todayKey;
     html+='<div class="cal-day"><div class="cal-day-hdr">'+grp.day+(isToday?' <span style="color:var(--ac)">· today</span>':'')+' <span style="color:var(--mt);font-weight:400">'+grp.list.length+' event'+(grp.list.length>1?'s':'')+'</span></div>';
-    grp.list.forEach(function(ev){
+    /* v24 (amendment 14.9.26) — released events fold under one line so the next
+       release is at the top of the day; open it to see what already came out. */
+    var pastN=grp.list.filter(function(ev){return ev.ts<now;}).length;
+    var foldOpened=false;
+    grp.list.forEach(function(ev,k){
       var col=getCcyColor(ev.ccy);
       var i=calData.indexOf(ev);
       var past=ev.ts<now;
+      if(k===0&&pastN&&pastN<grp.list.length){
+        html+='<details class="cal-fold"'+(_calPastOpen?' open':'')+' ontoggle="_calPastOpen=this.open"><summary><span class="cf-arrow">▶</span>'+pastN+' already released — tap to show</summary>';
+        foldOpened=true;
+      }
+      if(foldOpened&&!past){ html+='</details>'; foldOpened=false; }
       html+='<div class="cal-event'+(past?' cal-past':'')+'" onclick="openCalPopup('+i+')">';
       html+='<span class="cal-imp-badge '+ev.imp+'">'+(ev.imp==='high'?'HIGH':ev.imp==='med'?'MED':'LOW')+'</span>';
       html+='<div class="cal-text">';
@@ -4400,10 +4485,34 @@ function renderCalendarView(){
       html+='<div class="cal-detail">'+ev.time+' · Forecast: <span class="cal-val">'+ev.forecast+'</span> · Prev: <span class="cal-val">'+ev.prev+'</span></div>';
       html+='</div><button class="cal-iq" onclick="event.stopPropagation();openIqFor('+ev.ts+',\''+ev.ccy+'\',\''+esc(String(ev.name).replace(/'/g,'’'))+'\')" title="'+(ev.ts<=Date.now()?'Review this event in Market IQ':'Build the outlook for this event in Market IQ')+'">🧠 IQ</button></div>';
     });
+    if(foldOpened) html+='</details>';
     html+='</div>';
   });
   body.innerHTML=html;
   setCalMeta(evs.length);
+}
+/* v24 — calendar grid: one column per day, 7 per row (7 days = one row, 2 weeks = two). */
+function renderCalGrid(byDay,todayKey,now){
+  var days=calFilter.days<7?7:calFilter.days;
+  var start=new Date(now);
+  var h='<div class="cal-grid">';
+  for(var d=0;d<days;d++){
+    var dt=new Date(start.getTime()+d*86400000), key=aestKey(dt);
+    var grp=null; byDay.forEach(function(g){if(g.key===key)grp=g;});
+    var lbl=fhDate(dt,{weekday:'short',day:'2-digit',month:'short'});
+    var isToday=key===todayKey;
+    h+='<div class="cal-gd'+(isToday?' today':'')+'"><div class="cal-gd-h"><span>'+esc(lbl)+(isToday?' · today':'')+'</span><span>'+(grp?grp.list.length:'')+'</span></div>';
+    if(!grp){ h+='<div class="cal-gmore">—</div></div>'; continue; }
+    grp.list.forEach(function(ev){
+      var i=calData.indexOf(ev), past=ev.ts<now, col=getCcyColor(ev.ccy);
+      h+='<div class="cal-ge '+ev.imp+(past?' past':'')+'" onclick="openCalPopup('+i+')" title="'+esc(ev.name)+' · '+esc(ev.time)+'">'
+        +'<span class="ge-t"><span class="ge-c" style="color:'+col+'">'+esc(ev.ccy)+'</span>'+esc(ev.time)+(past?' ✓':'')+'</span>'
+        +'<span class="ge-n">'+esc(ev.name)+'</span></div>';
+    });
+    h+='</div>';
+  }
+  h+='</div><div class="meta" style="margin-bottom:10px">Tap an event for its detail and the IQ button. Colour bar = impact (red high, amber medium, grey low); faded = already released.</div>';
+  return h;
 }
 function setCalMeta(n){
   var m=document.getElementById('cal-meta');
@@ -4625,6 +4734,21 @@ function calcPos(){
    REVIEW – Trade idea
 ══════════════════════════════════════ */
 var tirImageB64=null,tirMimeType=null;
+/* v24 — Ctrl+V a screenshot straight into the drop zone that is on screen
+   (Trade idea, Past trade, IQ review). No save-then-browse. */
+document.addEventListener('paste',function(ev){
+  try{
+    var items=ev.clipboardData&&ev.clipboardData.items; if(!items) return;
+    var file=null;
+    for(var i=0;i<items.length;i++){ if(items[i].type&&items[i].type.indexOf('image/')===0){ file=items[i].getAsFile(); break; } }
+    if(!file) return;
+    var zones=[['tir-dropzone',handleTirFile],['ptr-dropzone',handlePtrFile],['iq-dropzone',handleIqFile]];
+    for(var z=0;z<zones.length;z++){
+      var el=document.getElementById(zones[z][0]);
+      if(el&&el.offsetParent!==null){ ev.preventDefault(); zones[z][1]({files:[file]}); showToast('Screenshot pasted'); return; }
+    }
+  }catch(e){}
+});
 function handleTirFile(input){
   var file=input.files[0];
   if(!file) return;
@@ -4804,7 +4928,9 @@ async function loadHeatMap(){
       });
     }
     if(!rows.length){body.innerHTML='<div class="eb" style="padding:16px">No live data returned after 3 attempts — the upstream price feed is briefly down. Tap the Heat Map tab again in a minute.</div>';hmLoaded=false;return;}
+    _hmRows=rows;   // v24 — kept for Ask IQ
     renderHeatPips(rows);
+    buildShareBar('hm-share','Heat map — pip changes','#hm-body','heat-map');
     buildMajorsMatrixLive(q);
     var t=fhTime();
     var src=document.getElementById('hm-src');
@@ -6166,6 +6292,9 @@ async function renderBriefing(force){
   // 6. Alerts (computed from the above)
   var alerts=[];
   gaps.filter(function(s){return s.gapPips!=null&&s.gapMeasurable!==false&&Math.abs(s.gapPips)>pspread(s.pair)&&Math.abs(s.gapPips)>=10;}).slice(0,3).forEach(function(s){var edge=Math.abs(s.gapPips)-pspread(s.pair);alerts.push({t:'gap',x:slashPair(s.pair)+' gapped '+fmtPips(s.gapPips)+' pips at the ~7am rollover vs a ~'+pspread(s.pair).toFixed(1)+'-pip spread — tradable (edge +'+edge.toFixed(1)+' pips).'});});
+  /* v24 / worker 11.7 — over the weekend the figures are the last completed session, say so up front */
+  var closedRow=rows.filter(function(s){return s.marketClosed;})[0];
+  if(closedRow) alerts.push({t:'news',x:'Market closed — the figures below are the last completed 7am→7am session'+(closedRow.prevFrom?' ('+closedRow.prevFrom+' → '+(closedRow.lastBarAt||closedRow.prevTo)+')':'')+'. Live moves and gaps resume when trading reopens (Monday ~08:00 AEST).'});
   var sessRows=rows.filter(function(s){return s.sessionMovePips!=null;});
   var bigAbs=(hasSession?sessRows:rows).slice().sort(function(a,b){return Math.abs((hasSession?b.sessionMovePips:b.displayPips))-Math.abs((hasSession?a.sessionMovePips:a.displayPips));})[0];
   if(bigAbs) alerts.push({t:'move',x:slashPair(bigAbs.pair)+' is the biggest mover '+(hasSession?'this session so far ('+fmtPips(bigAbs.sessionMovePips)+' pips since the '+rolloverLabel()+' rollover).':'in the previous session ('+fmtPips(bigAbs.displayPips)+' pips).')});
@@ -6460,6 +6589,7 @@ async function loadTech(force){
       if(meta) meta.textContent='Loaded '+(i+1)+'/'+order.length+' timeframes…';
     }
     _techAt=Date.now(); markSectionLoaded('tech');
+    buildShareBar('tech-share','Watchlist technicals','#tech-body','technicals');
     if(meta) meta.textContent='As of '+fhClock()+' · '+FH_PAIRS.length+' pairs · 15m/1H/4H refresh every 5–10 min, Daily/Weekly hourly';
   }catch(e){
     body.innerHTML='<div class="eb" style="padding:16px">'+friendlyError(e)+'</div>';
@@ -6698,6 +6828,7 @@ async function loadStrength(force){
     if(!d||!d.strength||!Object.keys(d.strength).length) throw new Error(d&&d.error?d.error:'No strength data returned — try again in a moment.');
     _idx=d;_idxAt=Date.now();markSectionLoaded('indices');
     renderIdx();
+    buildShareBar('idx-share','Currency indices','#idx-body','indices');
     var m=document.getElementById('idx-meta'); if(m) m.textContent='Window '+(d.from||'')+' → '+(d.to||'')+' · '+d.pairsUsed+' pairs · as of '+fhClock()+(d.cached?' (shared cache)':'');
   }catch(e){ body.innerHTML='<div class="eb" style="padding:16px">'+friendlyError(e)+'</div>'; }
   _idxLoading=false;
@@ -7012,7 +7143,7 @@ function renderIqEntry(en){
   if(en.notes) h+='<div class="cl" style="margin-bottom:4px">Your notes</div><div class="cb" style="white-space:pre-wrap;margin-bottom:10px">'+esc(en.notes)+'</div>';
   if(en.img) h+='<img alt="Screenshot" style="display:block;width:100%;max-width:720px;border-radius:8px;margin:0 0 12px" src="'+en.img+'">';
   else if(en.imgDropped) h+='<div class="meta" style="margin-bottom:8px">Screenshot not stored — library was full.</div>';
-  h+='<div class="cl" style="margin-bottom:6px">Review</div><div class="cb">'+colorizeCcy(mdTable(en.text))+'</div>';
+  h+='<div class="cl" style="margin-bottom:6px">'+(en.type==='ask'?'Answer · asked from '+esc(en.ctxTitle||'a research tab'):'Review')+'</div><div class="cb">'+colorizeCcy(mdTable(en.text))+'</div>';
   h+='<div class="meta" style="margin-top:10px">Reviewed '+esc(fhDate(new Date(en.at),{weekday:'short',day:'2-digit',month:'short',year:'numeric'})+' '+fhClock(en.at))+' · ForexHub '+esc(en.build||'')+' · educational only, not financial advice</div></div>';
   return h;
 }
@@ -7060,6 +7191,118 @@ function deleteIqEntry(id){
   renderIqLibrary();
 }
 function initIq(){ updateIqCount(); iqFillPickers(); }
+
+/* ══ v24 — ASK IQ (amendment 14.9.26) ═══════════════════════════════════
+   One panel that sits on the research tabs. The question goes up with the
+   tab's LIVE data as evidence — the technicals rows you filtered to, the
+   trend table, the index figures, the heat-map pips — plus, whichever tab
+   you are on, the strength ranking, the technicals headcount and the next
+   48 hours of the calendar, so it can answer "do the technicals agree" and
+   "what's coming up that changes this". Answers land in the IQ library. */
+var ASK_CTX={
+  tech:{title:'Watchlist technicals',sub:'Ask about the ratings you can see — the rows follow your currency filter.',
+    qs:['Why are some timeframes a buy and others a sell on the same pair — what does that tell me?',
+        'GBP/USD is a buy on the weekly but a sell intraday. Would you expect price to reach support and then turn into a buy profile?',
+        'Which pairs have every timeframe agreeing, and which of those does the calendar put at risk?',
+        'Where do the technicals and the currency-strength ranking disagree?']},
+  trend:{title:'Trend scanner',sub:'Ask about the weekly / daily / 4H alignment in the table.',
+    qs:['Based on this table, which pairs are strongest to buy and which to sell right now?',
+        'There is no clear strong-buy or strong-sell — what does that mean and what should I do?',
+        'Which biases are being driven by one currency, so I would be taking the same trade several times?',
+        'Do the technicals ratings agree with these trend biases?']},
+  idx:{title:'Currency indices',sub:'Ask about strength, performance and volatility across the currencies.',
+    qs:['Which currencies are strong and which weak — so which crosses should I be buying or selling?',
+        'Why is the USD basket strong while the US Dollar Index (DXY) is neutral?',
+        'What is the significance of the Volatility column and what does it mean for choosing currencies?',
+        'Is the strongest currency moving against nearly all the others — is this a single-currency move?']},
+  maps:{title:'Heat map',sub:'Ask about the pip moves since the rollover and over the week and month.',
+    qs:['Why is GBP down across the board when its news was good?',
+        'Which currency is driving today\'s moves, and is it consistent across the pairs?',
+        'Which moves look over-extended against their weekly and monthly context?',
+        'Do these moves line up with the trend scanner and the technicals?']}
+};
+function initAskIq(){
+  document.querySelectorAll('.iq-ask[data-ctx]').forEach(function(box){
+    var k=box.dataset.ctx, c=ASK_CTX[k]; if(!c||box.dataset.built) return;
+    box.dataset.built='1';
+    var h='<div class="ia-h"><span class="ia-t">🧠 Ask IQ</span><span class="ia-s">'+esc(c.sub)+'</span></div>';
+    h+='<div class="ia-chips">'+c.qs.map(function(q){return '<button class="ia-chip" onclick="askIqChip(\''+k+'\',this)">'+esc(q)+'</button>';}).join('')+'</div>';
+    h+='<div class="ia-row"><textarea class="ta ia-q" id="ia-q-'+k+'" placeholder="Ask anything about what you can see on this tab…" onkeydown="if(event.key===\'Enter\'&&!event.shiftKey){event.preventDefault();runAskIq(\''+k+'\');}"></textarea><button class="ia-btn" id="ia-btn-'+k+'" onclick="runAskIq(\''+k+'\')">Ask</button></div>';
+    h+='<div class="ia-out" id="ia-out-'+k+'"></div><div class="share-bar" id="ia-share-'+k+'" style="display:none"></div>';
+    box.innerHTML=h;
+  });
+}
+function askIqChip(k,btn){ var q=document.getElementById('ia-q-'+k); if(q){ q.value=btn.textContent; } runAskIq(k); }
+function techLbl(sc){ return sc==null?'n/a':sc>=0.5?'STRONG BUY':sc>=0.1?'BUY':sc<=-0.5?'STRONG SELL':sc<=-0.1?'SELL':'NEUTRAL'; }
+function pct1(v){ return v==null?'n/a':((v>0?'+':'')+Number(v).toFixed(2)+'%'); }
+/* The tab's own table, as text the model can read */
+function askCtxTech(){
+  if(!Object.keys(_tech).length) return null;
+  var pairs=FH_PAIRS.filter(function(p){ if(_techCcy&&p.indexOf(_techCcy)<0) return false; if(_techMajors&&p.indexOf('USD')<0) return false; return true; });
+  var lines=pairs.map(function(p){ return p+': '+TECH_TFS.map(function(tf){return tf[1]+' '+techLbl(techScore(_tech[tf[0]]&&_tech[tf[0]][p]));}).join(', '); });
+  return 'WATCHLIST TECHNICALS (overall rating per timeframe; MA + oscillator vote'+(_techCcy?'; filtered to '+_techCcy:'')+(_techMajors?'; majors only':'')+'):\n'+lines.join('\n');
+}
+function askCtxTrend(){
+  if(!_trendData||!_trendData.length) return null;
+  var lines=_trendData.map(function(r){var b=trBias(r.w,r.dd,r.h,r.age);return r.sym+': weekly '+pct1(r.w)+', daily '+pct1(r.dd)+', 4H '+pct1(r.h)+' → bias '+b.t;});
+  return 'TREND SCANNER (percent change on each timeframe and the aligned bias):\n'+lines.join('\n');
+}
+function askCtxIdx(){
+  if(!_idx||!_idx.strength) return null;
+  var lines=Object.keys(_idx.strength).map(function(k){var s=_idx.strength[k],p=s.perf||{},t=s.tech||{};
+    return k+(k==='DXY'?' (real ICE DXY)':' basket')+': 1D '+pct1(p.d1)+', 1W '+pct1(p.w1)+', 1M '+pct1(p.m1)+', 3M '+pct1(p.m3)+', 6M '+pct1(p.m6)+', YTD '+pct1(p.ytd)+', 1Y '+pct1(p.y1)+', volatility '+(p.vol!=null?Number(p.vol).toFixed(2)+'%':'n/a')+', tech rating '+techLbl(t.rating&&t.rating.all)+(t.rsi!=null?', RSI '+Number(t.rsi).toFixed(0):'');});
+  return 'CURRENCY INDICES (equal-weight basket of each currency\'s 7 watchlist pairs, rebased 1y ago; DXY is the real index; volatility = daily-move std-dev over the year):\n'+lines.join('\n');
+}
+function askCtxMaps(){
+  if(!_hmRows||!_hmRows.length) return null;
+  var lines=_hmRows.map(function(r){return r.sym+': daily '+fmtPip(r.d)+' pips, weekly '+fmtPip(r.w)+', monthly '+fmtPip(r.m);});
+  return 'HEAT MAP (pips since the 7am AEST rollover, and versus 5 / 21 trading days ago):\n'+lines.join('\n');
+}
+/* Cross-tab evidence every question gets, whatever tab it is asked from */
+function askCtxCommon(k){
+  var parts=[];
+  if(k!=='idx'&&_idx&&_idx.strength){
+    var rk=Object.keys(_idx.strength).filter(function(x){return x!=='DXY';}).map(function(x){return {k:x,w:(_idx.strength[x].perf||{}).w1,d:(_idx.strength[x].perf||{}).d1};}).filter(function(o){return o.w!=null;}).sort(function(a,b){return b.w-a.w;});
+    if(rk.length) parts.push('CURRENCY STRENGTH this week (basket, strongest → weakest): '+rk.map(function(o){return o.k+' '+pct1(o.w)+' (1D '+pct1(o.d)+')';}).join(', '));
+  }
+  if(k!=='tech'&&Object.keys(_tech).length){
+    var cnt={};
+    FH_PAIRS.forEach(function(p){var s=techScore(_tech['1d']&&_tech['1d'][p]);if(s==null)return;var l=techLbl(s);cnt[l]=(cnt[l]||0)+1;});
+    var sb=FH_PAIRS.filter(function(p){return techLbl(techScore(_tech['1d']&&_tech['1d'][p]))==='STRONG BUY';});
+    var ss=FH_PAIRS.filter(function(p){return techLbl(techScore(_tech['1d']&&_tech['1d'][p]))==='STRONG SELL';});
+    parts.push('DAILY TECHNICALS headcount: '+JSON.stringify(cnt)+'; strong buys: '+(sb.join(' ')||'none')+'; strong sells: '+(ss.join(' ')||'none'));
+  }
+  if(k!=='trend'&&_trendData&&_trendData.length){
+    var bl={}; _trendData.forEach(function(r){var b=trBias(r.w,r.dd,r.h,r.age).t; (bl[b]=bl[b]||[]).push(r.sym);});
+    parts.push('TREND SCANNER biases: '+Object.keys(bl).map(function(b){return b+': '+bl[b].join(' ');}).join(' | '));
+  }
+  if(_calAll&&_calAll.length){
+    var now=Date.now(), ev=_calAll.filter(function(e){return e.ts>now-6*3600e3&&e.ts<now+48*3600e3&&e.imp!=='low';}).slice(0,18);
+    if(ev.length) parts.push('CALENDAR next 48h (high/medium): '+ev.map(function(e){return (e.ts<now?'[released] ':'')+e.ccy+' '+e.name+' '+fhDate(new Date(e.ts),{weekday:'short'})+' '+e.time+(e.forecast&&e.forecast!=='—'?' f '+e.forecast:'')+(e.prev&&e.prev!=='—'?' p '+e.prev:'');}).join('; '));
+  }
+  return parts.join('\n');
+}
+async function runAskIq(k){
+  var c=ASK_CTX[k], qEl=document.getElementById('ia-q-'+k), out=document.getElementById('ia-out-'+k), btn=document.getElementById('ia-btn-'+k), sh=document.getElementById('ia-share-'+k);
+  var q=(qEl.value||'').trim();
+  if(!q){ out.innerHTML='<div class="eb">Type a question, or tap one of the suggestions.</div>'; return; }
+  var own=k==='tech'?askCtxTech():k==='trend'?askCtxTrend():k==='idx'?askCtxIdx():askCtxMaps();
+  if(!own){ out.innerHTML='<div class="eb">This tab has not loaded its data yet — refresh it, then ask.</div>'; return; }
+  var common=askCtxCommon(k);
+  btn.disabled=true; btn.innerHTML='<div class="sp"></div>'; if(sh){sh.style.display='none';sh.innerHTML='';}
+  out.innerHTML='<div class="ld" style="padding:12px"><div class="sp"></div>Reading the '+esc(c.title.toLowerCase())+'…</div>';
+  try{
+    var prompt='You are a senior FX strategist sitting next to a retail trader who is looking at the ForexHub '+c.title+' tab. Answer the question below using ONLY the evidence supplied; quote the actual readings you rely on (pair names, ratings, percentages, pips) so the trader can check them against the screen. Be direct: if the data does not support a clean answer, say so and say what would change your mind. Plain English, short paragraphs, a markdown table if comparing several pairs. End with "Watch:" — one line on the next thing that could change this view (an event or a level). Tradable pairs are limited to the watchlist. Not financial advice; do not add disclaimers.\n\nQUESTION: '+q+'\n\nAS OF: '+fhClock()+'\n\n'+own+(common?'\n\nOTHER TABS:\n'+common:'');
+    var text=await ai(prompt,null,{model:'claude-sonnet-5',maxTokens:1800});
+    if(!text||!String(text).trim()) throw new Error('Empty reply');
+    var id='ask'+Date.now();
+    var en={id:id,at:Date.now(),type:'ask',name:q,ccy:'IQ',ctx:k,ctxTitle:c.title,text:String(text),build:FH_BUILD};
+    var list=loadIq(); list.unshift(en); saveIq(list); updateIqCount();
+    out.innerHTML='<div id="ia-doc-'+k+'"><div class="card" style="margin-top:4px"><div class="cl">Ask IQ · '+esc(c.title)+'</div><div class="meta" style="margin:0 0 8px">Q: '+esc(q)+'</div><div class="cb">'+colorizeCcy(mdTable(String(text)))+'</div><div class="ia-ctx">Answered '+esc(fhClock())+' from the '+esc(c.title.toLowerCase())+' on screen'+(common?' + strength, technicals, trends and the next 48h of the calendar':'')+' · saved to the IQ library · educational only</div></div></div>';
+    buildShareBar('ia-share-'+k,'Ask IQ — '+c.title+' — '+q.slice(0,60),'#ia-doc-'+k,'ask-iq-'+k);
+  }catch(e){ out.innerHTML='<div class="eb">'+friendlyError(e)+'</div>'; }
+  btn.disabled=false; btn.textContent='Ask';
+}
 /* Calendar → IQ hand-off. Upcoming events open the Outlook, released ones the
    Review, with the event already selected. */
 async function openIqFor(ts,ccy,name){
@@ -7093,6 +7336,7 @@ document.addEventListener('DOMContentLoaded',function(){
   buildPairControls();   // Pair dropdown + pip filters, built from the canonical FH_PAIRS list
   initPlanner();
   initTicker();
+  initAskIq();   // v24 — Ask IQ panels on the research tabs
   updateDate();
   setInterval(updateDate,30000);
   setTimeout(checkForNewBuild,20000);
