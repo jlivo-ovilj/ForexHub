@@ -611,6 +611,8 @@ body:not([data-nav="flow"]) .flow-wrap{display:none}
 .pl-sc .p{font-family:'Syne',sans-serif;font-weight:800;font-size:18px;display:flex;justify-content:space-between;align-items:center;color:var(--tx)}
 .pl-sc .dir{font-family:'DM Mono',monospace;font-size:11px;padding:2px 9px;border-radius:100px;color:#0b0b0d;background:#22c55e}
 .pl-sc.sell .dir{background:#ef4444;color:#fff}
+.pl-newswarn{color:#ef4444}
+.pl-newswarn{color:#ef4444}
 .pl-sc ul{margin:8px 0 0;padding-left:16px;font-size:12.5px;color:var(--mt);line-height:1.6}
 .pl-sc ul li b{color:var(--tx);font-weight:500}
 .pl-sc .act{display:flex;gap:6px;margin-top:10px;flex-wrap:wrap}
@@ -1702,6 +1704,13 @@ body.light .chart-modal-overlay{background:rgba(0,0,0,0.55)}
     <a class="share-btn" href="mudmap.html" target="_blank" rel="noopener" style="text-decoration:none">🗺 Mud map — how everything connects</a>
   </div>
   <div class="card">
+    <div class="ai"><div class="aq">What's new in v25.3 (17 Sep 2026) — news that just landed counts</div><div class="aa">
+      · <b>Plan, step 05 (News risk) now looks back as well as forward.</b> On 17 Sep the BoE rate decision landed at 21:00, the plan was refreshed at 21:28 and GBP/USD passed as "no high-impact news" because only <i>future</i> events were checked. A new rule — <b>"…or one that already landed in the last N hours"</b> (default 2h) — catches a release that is still inside its own move. Both windows are yours to set.<br>
+      · <b>Flag instead of drop.</b> A switch on the same step keeps news-driven pairs in the shortlist with a red warning line naming the event and how long ago it hit, for when you <i>want</i> the momentum trade and just need to know what you are holding.<br>
+      · <b>The shortlist card and the Ask IQ question say what was actually found</b> — the event, its time and "landed 28 min ago" — instead of a hard-coded "no high-impact news".<br>
+      · <b>Ask IQ:</b> an empty reply from the AI is no longer saved to the library as "No response"; you get a retry message instead.<br>
+      · <b>Trade Calculator:</b> the per-row pair dropdown keeps its currency colour after you change it.<br>
+    </div></div>
     <div class="ai"><div class="aq">What's new in v25.2 (17 Sep 2026) — colour means one thing</div><div class="aa">
       · <b>Briefing news rows:</b> the coloured edge on each row is now the <b>impact</b> (red high, amber medium, grey low) and the small chip is the currency — before, a USD row's red edge made every dollar release look high-impact. Each row also has the same <b>🧠 IQ</b> button as the Calendar.<br>
       · <b>IQ event pickers:</b> each option starts with an impact dot (🔴 high, 🟡 medium) and the text takes the currency's colour, so the list reads like the rest of the site.<br>
@@ -2137,7 +2146,7 @@ function dismissBanner(){
 /* ══════════════════════════════════════
    HEADER DATE
 ══════════════════════════════════════ */
-var FH_BUILD='v25.2'; // IQ picker shows impact + currency colour; briefing news rows: impact border + IQ button // Plan chips show the state after each step, not the final result // 16 Sep 2026 — ForexFlow: Classic / Flow navigation toggle, grouped tabs with colour families, Plan tab // 16 Sep 2026 — calendar six-day grid, correlation Ask IQ, labels, paste hint, mud-map link // 16 Sep 2026 — amendments 14.9.26: Ask IQ on the research tabs, print/save everywhere, calendar collapse + grid, paste screenshots // bump on every delivered change — shown in the header so it's always obvious which version is loaded
+var FH_BUILD='v25.3'; // Plan news-risk looks back as well as forward, flag-not-drop option, honest card + IQ question, empty AI replies not saved // IQ picker shows impact + currency colour; briefing news rows: impact border + IQ button // Plan chips show the state after each step, not the final result // 16 Sep 2026 — ForexFlow: Classic / Flow navigation toggle, grouped tabs with colour families, Plan tab // 16 Sep 2026 — calendar six-day grid, correlation Ask IQ, labels, paste hint, mud-map link // 16 Sep 2026 — amendments 14.9.26: Ask IQ on the research tabs, print/save everywhere, calendar collapse + grid, paste screenshots // bump on every delivered change — shown in the header so it's always obvious which version is loaded
 /* Stale-tab killer: every so often, check whether a newer build has been deployed.
    If so, show a can't-miss banner telling the user to reload — long-open tabs silently
    running old code caused repeated "the fix didn't work" confusion. */
@@ -6165,7 +6174,7 @@ function plannerRowPairChange(i,val){
   // Selecting the main pair clears the override so the row keeps following the Pair dropdown
   plannerData[i].pair=(val===mainPair)?null:val;
   var sel=document.getElementById('pr-pair-'+i);
-  if(sel){ sel.value=val; sel.style.color=plannerData[i].pair?'var(--ac)':'var(--mt)'; }
+  if(sel){ sel.value=val; sel.style.color=plannerData[i].pair?ccyCol(String(val).slice(0,3)):'var(--mt)'; sel.style.fontWeight=plannerData[i].pair?'600':''; }
   updatePlanner();
 }
 
@@ -7405,7 +7414,7 @@ function initIq(){ updateIqCount(); iqFillPickers(); }
    strength (Indices), trend (Trends), daily technicals (Technicals),
    calendar (Calendar), correlation (Maps). Rules are switches and numbers
    the trader sets once; they live in localStorage fh_plan_rules. */
-var PLAN_DEF={closed:true,single:true,singlePct:0.4,gap:true,gapPct:0.6,mixed:true,strongOnly:false,techAgree:true,dropNeutral:true,atr:false,atrPips:60,active:false,actMin:0.8,news:true,newsHrs:12,newsMed:false,corr:true,corrPct:75};
+var PLAN_DEF={closed:true,single:true,singlePct:0.4,gap:true,gapPct:0.6,mixed:true,strongOnly:false,techAgree:true,dropNeutral:true,atr:false,atrPips:60,active:false,actMin:0.8,news:true,newsHrs:12,newsMed:false,newsBack:true,newsBackHrs:2,newsFlag:false,corr:true,corrPct:75};
 var _planBrief={},_planBriefAt=0;
 var _planRules=null,_planOpen=1,_planRes=null,_planLoading=false,_planAt=0;
 function planRules(){ if(_planRules) return _planRules; var r={}; try{ r=JSON.parse(LS.get('fh_plan_rules')||'{}')||{}; }catch(e){} _planRules=Object.assign({},PLAN_DEF,r); return _planRules; }
@@ -7426,7 +7435,9 @@ var PLAN_STEPS=[
    {k:'active',txt:'Drop pairs whose last session range was under this share of their own ATR',num:'actMin',unit:'× ATR (0.8 = a quiet day)',step:0.1,src:'Briefing'}]},
  {n:'05',t:'News risk',desc:'Nothing high-impact about to land on either currency.',rules:[
    {k:'news',txt:'Drop pairs with a high-impact event inside the next',num:'newsHrs',unit:'hours',step:1,src:'Calendar'},
-   {k:'newsMed',txt:'…count medium-impact events too',src:'Calendar'}]},
+   {k:'newsBack',txt:'…or one that already landed in the last',num:'newsBackHrs',unit:'hours (the move is still playing out)',step:0.5,src:'Calendar'},
+   {k:'newsMed',txt:'…count medium-impact events too',src:'Calendar'},
+   {k:'newsFlag',txt:'Flag instead of drop — keep news-driven pairs in the shortlist with a red warning (momentum trades, higher risk)',src:'Calendar'}]},
  {n:'06',t:'Same bet',desc:'Don\'t hold the same trade twice.',rules:[
    {k:'corr',txt:'Of any two survivors correlated above',num:'corrPct',unit:'% (60-day), keep the one with the bigger strength gap',step:5,src:'Correlation'}]}
 ];
@@ -7463,7 +7474,7 @@ function runPlan(){
   var R=planRules(),now=Date.now();
   var pairs=FH_PAIRS.filter(function(p){return planW1(p.slice(0,3))!=null&&planW1(p.slice(3))!=null;});
   var alive=pairs.slice(),why={},dir={},trace=[],notes=[];
-  function drop(list,reason){ list.forEach(function(p){var i=alive.indexOf(p); if(i>-1){alive.splice(i,1); why[p]=reason;}}); }
+  function drop(list,reason){ list.forEach(function(p){var i=alive.indexOf(p); if(i>-1){alive.splice(i,1); why[p]=typeof reason==='function'?reason(p):reason;}}); }
   function snap(before){ trace.push({kept:alive.slice(),dropped:before.filter(function(p){return alive.indexOf(p)<0;})}); }
   // 01 regime
   var before=alive.slice();
@@ -7494,11 +7505,27 @@ function runPlan(){
   snap(before);
   // 05 news
   before=alive.slice();
+  /* v25.3 — look BACK as well as forward. 17 Sep 2026: the BoE rate decision landed
+     at 21:00 AEST, the plan was refreshed at 21:28, and GBP/USD passed as "no
+     high-impact news" because only future events were checked. A release that is
+     still inside its own aftershock is exactly the risk this step exists for. */
+  var news={};
   if(R.news){
-    var horizon=now+R.newsHrs*3600e3;
-    var risky={}; (_calAll||[]).forEach(function(e){ if(e.ts>=now&&e.ts<=horizon&&(e.imp==='high'||(R.newsMed&&e.imp==='med'))) (risky[e.ccy]=risky[e.ccy]||[]).push(e); });
-    drop(alive.filter(function(p){return risky[p.slice(0,3)]||risky[p.slice(3)];}),'high-impact event inside '+R.newsHrs+'h');
-    alive.forEach(function(){});
+    var horizon=now+R.newsHrs*3600e3, back=R.newsBack?now-(R.newsBackHrs||0)*3600e3:now;
+    var risky={};
+    (_calAll||[]).forEach(function(e){
+      if(!(e.imp==='high'||(R.newsMed&&e.imp==='med'))) return;
+      if(e.ts>=now&&e.ts<=horizon) (risky[e.ccy]=risky[e.ccy]||[]).push(Object.assign({ahead:true},e));
+      else if(e.ts<now&&e.ts>=back) (risky[e.ccy]=risky[e.ccy]||[]).push(Object.assign({ahead:false},e));
+    });
+    function newsOf(p){ return (risky[p.slice(0,3)]||[]).concat(risky[p.slice(3)]||[]).sort(function(a,b){return a.ts-b.ts;}); }
+    function newsWhy(p){ /* releases that share a currency and a minute (BoE = 3 rows) read as one */
+      var g={},order=[]; newsOf(p).forEach(function(e){ var k=e.ccy+'|'+e.ts; if(!g[k]){g[k]=Object.assign({n:0},e);order.push(k);} g[k].n++; });
+      return order.map(function(k){ var e=g[k],m=Math.round((now-e.ts)/60000); return e.ccy+' '+e.name+(e.n>1?' +'+(e.n-1)+' more':'')+' '+e.time+(e.ahead?' (in '+fhDur(Math.round((e.ts-now)/60000))+')':' (landed '+(m<60?m+' min':fhDur(m))+' ago)'); }).join(', '); }
+    var hit=alive.filter(function(p){return newsOf(p).length;});
+    hit.forEach(function(p){ news[p]=newsWhy(p); });
+    if(R.newsFlag){ hit.forEach(function(p){ why['_newsflag_'+p]=news[p]; }); }
+    else drop(hit,function(p){ return (newsOf(p).some(function(e){return e.ahead;})?'high-impact event inside '+R.newsHrs+'h':'high-impact event landed in the last '+R.newsBackHrs+'h')+': '+news[p]; });
     Object.keys(risky).forEach(function(c){ why['_news_'+c]=risky[c].map(function(e){return e.name+' '+e.time;}).join(', '); });
   }
   snap(before);
@@ -7514,7 +7541,7 @@ function runPlan(){
       } }
   }
   snap(before);
-  _planRes={pairs:pairs,alive:alive,why:why,dir:dir,trace:trace,notes:notes,bias:bias,tsc:tsc};
+  _planRes={pairs:pairs,alive:alive,why:why,dir:dir,trace:trace,notes:notes,bias:bias,tsc:tsc,news:news,now:now};
   return _planRes;
 }
 async function loadPlan(force){
@@ -7555,7 +7582,8 @@ function renderPlan(){
     return '<div class="pl-sc'+(d==='SELL'?' sell':'')+'"><div class="p"><span>'+colorizeCcy(a+'/'+b)+'</span><span class="dir">'+d+'</span></div><ul>'
       +'<li>Strength this week: <b>'+a+' '+pct1(planW1(a))+'</b> vs <b>'+b+' '+pct1(planW1(b))+'</b> (1D '+pct1(planD1(a))+' / '+pct1(planD1(b))+')</li>'
       +'<li>Trend: <b>'+(bi?bi.t:'n/a')+'</b> on W / D / 4H · Daily technicals: <b>'+techLbl(tv)+'</b></li>'
-      +'<li>News: <b>none '+(R.newsMed?'high or medium':'high-impact')+'</b> on '+a+' or '+b+' in the next '+R.newsHrs+'h</li>'
+      +(r.news[p]?'<li class="pl-newswarn">⚠ News: <b>'+esc(r.news[p])+'</b> — kept because "flag instead of drop" is on</li>'
+        :'<li>News: <b>none '+(R.newsMed?'high or medium':'high-impact')+'</b> on '+a+' or '+b+' in the next '+R.newsHrs+'h'+(R.newsBack?' or the last '+R.newsBackHrs+'h':'')+'</li>')
       +(_planBrief[p]&&_planBrief[p].atrPips!=null?'<li>Range: 14-day ATR <b>'+Math.round(_planBrief[p].atrPips)+' pips</b>'+(_planBrief[p].activity!=null?', last session <b>'+_planBrief[p].activity.toFixed(1)+'×</b> that':'')+'</li>':'')+'</ul>'
       +'<div class="act"><button class="share-btn" onclick="planToScanner()">Open Scanner</button><button class="share-btn" onclick="goToPair(\''+p+'\',\'daily\')">Daily analysis</button><button class="share-btn" onclick="planAskIq(\''+p+'\',\''+d+'\')">Ask IQ about this</button></div></div>';}).join('')+'</div>';
 }
@@ -7563,7 +7591,10 @@ function planToScanner(){ if(navMode()==='flow') flowGo('pairs','scan'); else sh
 function planAskIq(p,d){
   if(navMode()==='flow') flowGo('research','tech'); else { showS('analysis',document.querySelector('.nb[onclick*="analysis"]')); showAnalysisSub('analysis-tech',document.querySelector('.asub-tech')); }
   setTechCcy(p.slice(0,3));
-  var q=document.getElementById('ia-q-tech'); if(q){ q.value='Today\'s plan has '+p.slice(0,3)+'/'+p.slice(3)+' as a '+d+' — strength, trend and daily technicals agree and there is no high-impact news inside the window. What would make you NOT take it, and where is the sensible entry and stop?'; }
+  var R=planRules(), nw=_planRes&&_planRes.news&&_planRes.news[p];
+  var newsTxt=nw?'there IS high-impact news on it ('+nw+') and the plan kept it only because news-driven pairs are flagged rather than dropped'
+    :'there is no high-impact news inside the next '+R.newsHrs+'h'+(R.newsBack?' or the last '+R.newsBackHrs+'h':'');
+  var q=document.getElementById('ia-q-tech'); if(q){ q.value='Today\'s plan has '+p.slice(0,3)+'/'+p.slice(3)+' as a '+d+' — strength, trend and daily technicals agree and '+newsTxt+'. What would make you NOT take it, and where is the sensible entry and stop?'; }
   setTimeout(function(){ runAskIq('tech'); },600);
 }
 
@@ -7680,7 +7711,7 @@ async function runAskIq(k){
   try{
     var prompt='You are a senior FX strategist sitting next to a retail trader who is looking at the ForexHub '+c.title+' tab. Answer the question below using ONLY the evidence supplied; quote the actual readings you rely on (pair names, ratings, percentages, pips) so the trader can check them against the screen. Be direct: if the data does not support a clean answer, say so and say what would change your mind. Plain English, short paragraphs, a markdown table if comparing several pairs. End with "Watch:" — one line on the next thing that could change this view (an event or a level). Tradable pairs are limited to the watchlist. Not financial advice; do not add disclaimers.\n\nQUESTION: '+q+'\n\nAS OF: '+fhClock()+'\n\n'+own+(common?'\n\nOTHER TABS:\n'+common:'');
     var text=await ai(prompt,null,{model:'claude-sonnet-5',maxTokens:1800});
-    if(!text||!String(text).trim()) throw new Error('Empty reply');
+    if(!text||!String(text).trim()||String(text).trim()==='No response') throw new Error('The AI sent back an empty reply — nothing was saved. Tap Ask again; if it repeats, the daily budget or the model may be the cause (check About → usage).');
     var id='ask'+Date.now();
     var en={id:id,at:Date.now(),type:'ask',name:q,ccy:'IQ',ctx:k,ctxTitle:c.title,text:String(text),build:FH_BUILD};
     var list=loadIq(); list.unshift(en); saveIq(list); updateIqCount();
