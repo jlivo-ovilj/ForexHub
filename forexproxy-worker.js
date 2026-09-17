@@ -1,4 +1,8 @@
 /* ForexHub data + AI proxy — Cloudflare Worker
+   v11.8 17.9.26: GET /setups is held in the edge cache for 60 s (SETUPS_CACHE_S) so
+     31 polling bots share ONE set of KV reads a minute instead of 3 reads each per poll
+     (~67k reads/day → ~4k; the free KV tier is 100k/day and was exceeded 17 Sep).
+     Writes (POST /setups, /tv-hook) purge the cache so a new setup shows within a poll.
    v11.7 16.9.26: /briefing — when the market is shut the last 7am→7am session is reported as the previous day (marketClosed, lastBarAt); no "session so far" or gap until it reopens.
    v11.6 15.9.26: POST /tv-hook — TradingView alert webhooks become feed setups
      (src "tv"), stored apart from the site's basket; GET /setups merges them.
@@ -33,7 +37,10 @@
        Cache API which is per-colo) and backs off when Forex Factory rate-limits.
    Bindings required: ANTHROPIC_API_KEY (secret), FH_APP_KEY (secret), FH_KV (KV).  */
 
-const WORKER_VERSION = "11.7";
+const WORKER_VERSION = "11.8";
+const SETUPS_CACHE_S = 60;
+/* Edge-cache key for GET /setups — the app key is stripped so the secret never forms part of a cache key. */
+const setupsCacheKey = function (url) { return new Request(url.origin + "/setups?cache=1", { method: "GET" }); };
 const YF_HOSTS = ["https://query1.finance.yahoo.com", "https://query2.finance.yahoo.com"];
 const UA = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0 Safari/537.36";
 const NY_HOUR_FMT = new Intl.DateTimeFormat("en-US", { timeZone: "America/New_York", hour: "numeric", hourCycle: "h23" });
@@ -1024,6 +1031,7 @@ export default {
         }).filter(function (s) { return /^[A-Z]{6}$/.test(s.pair) && s.entry != null && s.sl != null && s.tp != null; }) : [];
         const rec = { src: src, ts: new Date().toISOString(), count: list.length, setups: list };
         await KV.put("setups:" + src, JSON.stringify(rec), { expirationTtl: 86400 });
+        try { await caches.default.delete(setupsCacheKey(url)); } catch (e) { }
         return J({ ok: true, stored: list.length, src: src, ts: rec.ts });
       } catch (e) { return J({ error: e.message }, 500); }
     }
@@ -1073,6 +1081,7 @@ export default {
           next = cur.filter(function (x) { return key(x) !== key(s); }).concat([s]).slice(-20);
         }
         await KV.put("setups:tv", JSON.stringify({ ts: now, setups: next }), { expirationTtl: 86400 });
+        try { await caches.default.delete(setupsCacheKey(url)); } catch (e) { }
         return J({ ok: true, action: action || "add", live: next.length, ts: now });
       } catch (e) { return J({ error: e.message }, 500); }
     }
@@ -1080,6 +1089,10 @@ export default {
       try {
         if (!env.FH_APP_KEY || (url.searchParams.get("k") || "") !== env.FH_APP_KEY) return J({ error: "Not authorised." }, 401);
         if (!KV) return J({ error: "No KV binding." }, 503);
+        /* 11.8 — every bot instance polls this; serve from the edge cache when fresh. */
+        const cKey = setupsCacheKey(url);
+        let cache = null;
+        try { cache = caches.default; const hit = await cache.match(cKey); if (hit) { const h = new Headers(hit.headers); h.set("X-FH-Cache", "hit"); return new Response(hit.body, { status: 200, headers: h }); } } catch (e) { cache = null; }
         const both = await Promise.all([KV.get("setups:scanner"), KV.get("setups:pullback"), KV.get("setups:tv")]);
         const sc = both[0] ? JSON.parse(both[0]) : null, pb = both[1] ? JSON.parse(both[1]) : null;
         const all = [];
@@ -1090,8 +1103,10 @@ export default {
            carries its own timestamp and expiry (see /tv-hook). */
         const tv = tvLive(both[2]);
         tv.forEach(function (s) { s.src = "tv"; all.push(s); });
-        return new Response(JSON.stringify({ ts: new Date().toISOString(), scannerAt: sc ? sc.ts : null, pullbackAt: pb ? pb.ts : null, tvCount: tv.length, setups: all }),
-          { status: 200, headers: { "Content-Type": "application/json", "Cache-Control": "no-store", "Access-Control-Allow-Origin": "*" } });
+        const body = JSON.stringify({ ts: new Date().toISOString(), scannerAt: sc ? sc.ts : null, pullbackAt: pb ? pb.ts : null, tvCount: tv.length, setups: all });
+        const hdr = { "Content-Type": "application/json", "Cache-Control": "public, max-age=" + SETUPS_CACHE_S, "Access-Control-Allow-Origin": "*", "X-FH-Cache": "miss" };
+        if (cache) { try { await cache.put(cKey, new Response(body, { status: 200, headers: hdr })); } catch (e) { } }
+        return new Response(body, { status: 200, headers: hdr });
       } catch (e) { return J({ error: e.message }, 500); }
     }
 
