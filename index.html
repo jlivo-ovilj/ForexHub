@@ -612,7 +612,10 @@ body:not([data-nav="flow"]) .flow-wrap{display:none}
 .pl-sc .dir{font-family:'DM Mono',monospace;font-size:11px;padding:2px 9px;border-radius:100px;color:#0b0b0d;background:#22c55e}
 .pl-sc.sell .dir{background:#ef4444;color:#fff}
 .pl-newswarn{color:#ef4444}
-.pl-newswarn{color:#ef4444}
+.pl-sc.top{box-shadow:0 0 0 1px var(--ac) inset}
+.pl-star{font-size:11px;font-family:'DM Mono',monospace;color:var(--ac);margin-left:6px;vertical-align:middle}
+.pl-share-note{color:#f59e0b}
+.pl-money{color:var(--mt)}
 .pl-sc ul{margin:8px 0 0;padding-left:16px;font-size:12.5px;color:var(--mt);line-height:1.6}
 .pl-sc ul li b{color:var(--tx);font-weight:500}
 .pl-sc .act{display:flex;gap:6px;margin-top:10px;flex-wrap:wrap}
@@ -1508,7 +1511,8 @@ body.light .chart-modal-overlay{background:rgba(0,0,0,0.55)}
   </div>
   <div class="pl-steps" id="pl-steps"></div>
   <div class="card" id="pl-stepcard"><div class="ld" style="padding:16px"><div class="sp"></div>Loading strength, trends, technicals, calendar and correlations…</div></div>
-  <div class="card" style="margin-top:12px"><div class="cl">Shortlist</div><div id="pl-short"><div class="meta">Waiting for the steps above.</div></div></div>
+  <div class="card" style="margin-top:12px"><div class="cl" style="display:flex;align-items:center;gap:10px;flex-wrap:wrap">Shortlist <span class="meta" style="font-weight:400;text-transform:none;letter-spacing:0">ranked by strength gap · money line at <input type="number" id="pl-lot" step="0.01" min="0.01" style="width:64px" onchange="planLotChange(this.value)"> lots</span></div><div id="pl-short"><div class="meta">Waiting for the steps above.</div></div></div>
+  <div class="share-bar" id="plan-share" style="display:none"></div>
   <div class="map-src" style="text-align:left">Each step is a rule you set once; the site applies it to live data every time you open this tab. Green = buy, red = sell. The buttons on each card jump into the existing panels with that pair selected. Rules are remembered in this browser. Educational only — not financial advice.</div>
 </div>
 
@@ -1704,6 +1708,11 @@ body.light .chart-modal-overlay{background:rgba(0,0,0,0.55)}
     <a class="share-btn" href="mudmap.html" target="_blank" rel="noopener" style="text-decoration:none">🗺 Mud map — how everything connects</a>
   </div>
   <div class="card">
+    <div class="ai"><div class="aq">What's new in v25.4 (17 Sep 2026) — which of the shortlist to actually take</div><div class="aa">
+      · <b>Shortlist ranked by strength gap</b>, widest first with a ★. A backtest run the same day (<i>Strategy Tests\Shortlist policy test 17 Sep 2026.html</i> — 48 days at London open, 8 selection policies, same trade for each) found that taking every survivor at full size loses (−1R, −9R worst day), the widest-gap pair alone made +4.7R at profit factor 1.5, gap × ATR +6.4R at 1.73, and "one per currency" was no better than taking everything. So nothing is dropped, but the order now means something. A card that shares a currency with the top pair says so — it is the same bet, size accordingly.<br>
+      · <b>Money line on every card:</b> A$/pip, what a full 14-day-ATR day is worth, gap × ATR (the best-scoring ranking in the test) and the margin, all at the lot you set in the shortlist header (remembered; default 0.05). Uses the Calculator's leverage setting.<br>
+      · <b>Print / PDF · Share · Email · Save</b> on the Plan tab at last — saves under Trade Scanner\&lt;month&gt;.<br>
+    </div></div>
     <div class="ai"><div class="aq">What's new in v25.3 (17 Sep 2026) — news that just landed counts</div><div class="aa">
       · <b>Plan, step 05 (News risk) now looks back as well as forward.</b> On 17 Sep the BoE rate decision landed at 21:00, the plan was refreshed at 21:28 and GBP/USD passed as "no high-impact news" because only <i>future</i> events were checked. A new rule — <b>"…or one that already landed in the last N hours"</b> (default 2h) — catches a release that is still inside its own move. Both windows are yours to set.<br>
       · <b>Flag instead of drop.</b> A switch on the same step keeps news-driven pairs in the shortlist with a red warning line naming the event and how long ago it hit, for when you <i>want</i> the momentum trade and just need to know what you are holding.<br>
@@ -2146,7 +2155,7 @@ function dismissBanner(){
 /* ══════════════════════════════════════
    HEADER DATE
 ══════════════════════════════════════ */
-var FH_BUILD='v25.3'; // Plan news-risk looks back as well as forward, flag-not-drop option, honest card + IQ question, empty AI replies not saved // IQ picker shows impact + currency colour; briefing news rows: impact border + IQ button // Plan chips show the state after each step, not the final result // 16 Sep 2026 — ForexFlow: Classic / Flow navigation toggle, grouped tabs with colour families, Plan tab // 16 Sep 2026 — calendar six-day grid, correlation Ask IQ, labels, paste hint, mud-map link // 16 Sep 2026 — amendments 14.9.26: Ask IQ on the research tabs, print/save everywhere, calendar collapse + grid, paste screenshots // bump on every delivered change — shown in the header so it's always obvious which version is loaded
+var FH_BUILD='v25.4'; // Plan: shortlist ranked by gap + money line + Print/Save; policy test 17 Sep // Plan news-risk looks back as well as forward, flag-not-drop option, honest card + IQ question, empty AI replies not saved // IQ picker shows impact + currency colour; briefing news rows: impact border + IQ button // Plan chips show the state after each step, not the final result // 16 Sep 2026 — ForexFlow: Classic / Flow navigation toggle, grouped tabs with colour families, Plan tab // 16 Sep 2026 — calendar six-day grid, correlation Ask IQ, labels, paste hint, mud-map link // 16 Sep 2026 — amendments 14.9.26: Ask IQ on the research tabs, print/save everywhere, calendar collapse + grid, paste screenshots // bump on every delivered change — shown in the header so it's always obvious which version is loaded
 /* Stale-tab killer: every so often, check whether a newer build has been deployed.
    If so, show a can't-miss banner telling the user to reload — long-open tabs silently
    running old code caused repeated "the fix didn't work" confusion. */
@@ -3045,6 +3054,7 @@ function reportFolder(title){
   if(t.indexOf('event outlook')>-1||t.indexOf('event review')>-1) return {folder:'IQ Scanner'};   // v24 — John's existing folder
   // v24 — technicals / trend / indices / heat-map tables and Ask IQ answers file under Analysis\<month> (checked before 'scanner' so 'Trend scanner' lands here)
   if(t.indexOf('technicals')>-1||t.indexOf('trend')>-1||t.indexOf('indices')>-1||t.indexOf('heat map')>-1||t.indexOf('correlation')>-1||t.indexOf('ask iq')>-1) return {folder:'Analysis'};
+  if(t.indexOf("today's plan")>-1||t.indexOf('shortlist')>-1) return {folder:'Trade Scanner'};   // v25.4 — the Plan prints with the scanner reports
   if(t.indexOf('scanner')>-1||t.indexOf('scan')>-1) return {folder:'Trade Scanner'};
   if(t.indexOf('review')>-1) return {folder:'Trade Reviews'};
   if(t.indexOf('analysis')>-1||t.indexOf('outlook')>-1){var m=(title||'').match(/([A-Z]{3})\/([A-Z]{3})/);return {folder:'Analysis',sub:m?m[1]+m[2]:null};}
@@ -7414,7 +7424,7 @@ function initIq(){ updateIqCount(); iqFillPickers(); }
    strength (Indices), trend (Trends), daily technicals (Technicals),
    calendar (Calendar), correlation (Maps). Rules are switches and numbers
    the trader sets once; they live in localStorage fh_plan_rules. */
-var PLAN_DEF={closed:true,single:true,singlePct:0.4,gap:true,gapPct:0.6,mixed:true,strongOnly:false,techAgree:true,dropNeutral:true,atr:false,atrPips:60,active:false,actMin:0.8,news:true,newsHrs:12,newsMed:false,newsBack:true,newsBackHrs:2,newsFlag:false,corr:true,corrPct:75};
+var PLAN_DEF={closed:true,single:true,singlePct:0.4,gap:true,gapPct:0.6,mixed:true,strongOnly:false,techAgree:true,dropNeutral:true,atr:false,atrPips:60,active:false,actMin:0.8,news:true,newsHrs:12,newsMed:false,newsBack:true,newsBackHrs:2,newsFlag:false,corr:true,lot:0.05,corrPct:75};
 var _planBrief={},_planBriefAt=0;
 var _planRules=null,_planOpen=1,_planRes=null,_planLoading=false,_planAt=0;
 function planRules(){ if(_planRules) return _planRules; var r={}; try{ r=JSON.parse(LS.get('fh_plan_rules')||'{}')||{}; }catch(e){} _planRules=Object.assign({},PLAN_DEF,r); return _planRules; }
@@ -7578,14 +7588,38 @@ function renderPlan(){
   document.getElementById('pl-stepcard').innerHTML=h;
   var sh=document.getElementById('pl-short');
   if(!r.alive.length){ sh.innerHTML='<div class="scan-empty"><div class="scan-icon">🧭</div><div>Nothing survives today\'s rules — that is a valid answer. Loosen a rule above to see what comes back'+(r.notes.length?'':'')+'.</div></div>'; return; }
-  sh.innerHTML='<div class="pl-short">'+r.alive.map(function(p){var a=p.slice(0,3),b=p.slice(3),d=r.dir[p],bi=r.bias[p],tv=r.tsc[p];
-    return '<div class="pl-sc'+(d==='SELL'?' sell':'')+'"><div class="p"><span>'+colorizeCcy(a+'/'+b)+'</span><span class="dir">'+d+'</span></div><ul>'
-      +'<li>Strength this week: <b>'+a+' '+pct1(planW1(a))+'</b> vs <b>'+b+' '+pct1(planW1(b))+'</b> (1D '+pct1(planD1(a))+' / '+pct1(planD1(b))+')</li>'
+  /* v25.4 — ranked by strength gap, widest first (the 17 Sep policy test: concentrating in the
+     widest gap beat taking everything; "one per currency" did not help, so nothing is dropped).
+     The money line puts pips, $/pip, a full-ATR day and margin on the card at the chosen lot. */
+  var lotEl=document.getElementById('pl-lot'); if(lotEl&&document.activeElement!==lotEl) lotEl.value=R.lot;
+  var ranked=r.alive.slice().sort(function(x,y){return planGap(y)-planGap(x);}), top=ranked[0];
+  sh.innerHTML='<div class="pl-short">'+ranked.map(function(p,idx){var a=p.slice(0,3),b=p.slice(3),d=r.dir[p],bi=r.bias[p],tv=r.tsc[p],money=planMoney(p);
+    var shares=idx>0&&(top.indexOf(a)>-1||top.indexOf(b)>-1)?(top.indexOf(a)>-1?a:b):null;
+    return '<div class="pl-sc'+(d==='SELL'?' sell':'')+(idx===0?' top':'')+'"><div class="p"><span>'+colorizeCcy(a+'/'+b)+(idx===0?' <span class="pl-star" title="widest strength gap of the shortlist">★ widest gap</span>':'')+'</span><span class="dir">'+d+'</span></div><ul>'
+      +'<li>Strength this week: <b>'+a+' '+pct1(planW1(a))+'</b> vs <b>'+b+' '+pct1(planW1(b))+'</b> (1D '+pct1(planD1(a))+' / '+pct1(planD1(b))+') · gap <b>'+planGap(p).toFixed(2)+'</b>'+(shares?' · <span class="pl-share-note">shares '+shares+' with '+top.slice(0,3)+'/'+top.slice(3)+' — same bet, size accordingly</span>':'')+'</li>'
+      +(money?'<li class="pl-money">'+money+'</li>':'')
       +'<li>Trend: <b>'+(bi?bi.t:'n/a')+'</b> on W / D / 4H · Daily technicals: <b>'+techLbl(tv)+'</b></li>'
       +(r.news[p]?'<li class="pl-newswarn">⚠ News: <b>'+esc(r.news[p])+'</b> — kept because "flag instead of drop" is on</li>'
         :'<li>News: <b>none '+(R.newsMed?'high or medium':'high-impact')+'</b> on '+a+' or '+b+' in the next '+R.newsHrs+'h'+(R.newsBack?' or the last '+R.newsBackHrs+'h':'')+'</li>')
       +(_planBrief[p]&&_planBrief[p].atrPips!=null?'<li>Range: 14-day ATR <b>'+Math.round(_planBrief[p].atrPips)+' pips</b>'+(_planBrief[p].activity!=null?', last session <b>'+_planBrief[p].activity.toFixed(1)+'×</b> that':'')+'</li>':'')+'</ul>'
       +'<div class="act"><button class="share-btn" onclick="planToScanner()">Open Scanner</button><button class="share-btn" onclick="goToPair(\''+p+'\',\'daily\')">Daily analysis</button><button class="share-btn" onclick="planAskIq(\''+p+'\',\''+d+'\')">Ask IQ about this</button></div></div>';}).join('')+'</div>';
+  buildShareBar('plan-share',"Today's plan — shortlist "+fhClock().slice(0,16),'#plan','todays-plan');
+}
+function planGap(p){ return Math.abs((planW1(p.slice(0,3))||0)-(planW1(p.slice(3))||0)); }
+function planLotChange(v){ var R=planRules(); var n=parseFloat(v); if(n>0){ R.lot=n; savePlanRules(); renderPlan(); } }
+/* v25.4 — the money line: what one full-ATR day and the margin look like at the chosen lot.
+   $/pip and quote→AUD come from getPipValueAUD (last quotes this browser saw), leverage
+   from the Calculator's setting (Mine 500:1 / ASIC / custom). Absent data = no line, never a guess. */
+function planMoney(p){
+  try{
+    var R=planRules(), lot=R.lot||0.05, units=lot*100000, b=_planBrief[p];
+    var stdPip=getPipValueAUD(p,plannerQuotes||{}); if(!(stdPip>0)) return '';
+    var pipVal=stdPip*lot, isJPY=p.slice(3)==='JPY', q2aud=stdPip/(isJPY?1000:10);
+    var last=lastGoodQuotes(), q=last&&last.q&&last.q[p], price=q?(q.p||q):null;
+    var lev=pipLeverageFor(p), notional=price?units*price*q2aud:null, margin=notional&&lev?notional/lev:null;
+    var atr=b&&b.atrPips!=null?Math.round(b.atrPips):null;
+    return 'Money at '+lot.toFixed(2)+' lots: <b>A$'+pipVal.toFixed(2)+'/pip</b>'+(atr!=null?' · a full 14-day-ATR day ('+atr+' pips) = <b>A$'+Math.round(atr*pipVal)+'</b> · gap × ATR <b>'+Math.round(planGap(p)*atr)+'</b>':'')+(margin!=null?' · margin <b>A$'+margin.toFixed(2)+'</b> @ '+pipLevLabel():'');
+  }catch(e){ return ''; }
 }
 function planToScanner(){ if(navMode()==='flow') flowGo('pairs','scan'); else showS('scanner',document.querySelector('.nb[onclick*="scanner"]')); }
 function planAskIq(p,d){
