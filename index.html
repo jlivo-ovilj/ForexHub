@@ -1729,6 +1729,9 @@ body.light .chart-modal-overlay{background:rgba(0,0,0,0.55)}
     <button class="sb" id="syscheck-run" style="margin-top:10px;padding:7px 16px;font-size:12.5px" onclick="runSysCheckNow()">Run check now</button>
   </div>
   <div class="card">
+    <div class="ai"><div class="aq">What's new in v26.2 (13 Oct 2026) — Columns match the chart</div><div class="aa">
+      · In the tree map's Columns view, every tile is now coloured by the pair's own move — red when its chart is falling — so USD/JPY is the same colour in the JPY column and the USD column. Before, the JPY column coloured it by what the yen did, which made a falling USD/JPY green there. The small ▲/▼ under the % still tells you what the move meant for that column's currency, and the column headers still rank currencies strongest to weakest.
+    </div></div>
     <div class="ai"><div class="aq">What's new in v26.1 (13 Oct 2026) — tidier tree map controls</div><div class="aa">
       · The eight pair filters (USD majors … CHF X's) now sit together on their own line under the timeframe buttons, instead of wrapping across two lines.
     </div></div>
@@ -2186,7 +2189,7 @@ function dismissBanner(){
 /* ══════════════════════════════════════
    HEADER DATE
 ══════════════════════════════════════ */
-var FH_BUILD='v26.1'; // pair filters on their own line under the timeframes // 13 Oct 2026 — Amendments 20: system check light, indices 'Do they agree?', tree map currency filters + columns, closed-market gap wording // Plan: shortlist ranked by gap + money line + Print/Save; policy test 17 Sep // Plan news-risk looks back as well as forward, flag-not-drop option, honest card + IQ question, empty AI replies not saved // IQ picker shows impact + currency colour; briefing news rows: impact border + IQ button // Plan chips show the state after each step, not the final result // 16 Sep 2026 — ForexFlow: Classic / Flow navigation toggle, grouped tabs with colour families, Plan tab // 16 Sep 2026 — calendar six-day grid, correlation Ask IQ, labels, paste hint, mud-map link // 16 Sep 2026 — amendments 14.9.26: Ask IQ on the research tabs, print/save everywhere, calendar collapse + grid, paste screenshots // bump on every delivered change — shown in the header so it's always obvious which version is loaded
+var FH_BUILD='v26.2'; // column tiles coloured like the chart // pair filters on their own line under the timeframes // 13 Oct 2026 — Amendments 20: system check light, indices 'Do they agree?', tree map currency filters + columns, closed-market gap wording // Plan: shortlist ranked by gap + money line + Print/Save; policy test 17 Sep // Plan news-risk looks back as well as forward, flag-not-drop option, honest card + IQ question, empty AI replies not saved // IQ picker shows impact + currency colour; briefing news rows: impact border + IQ button // Plan chips show the state after each step, not the final result // 16 Sep 2026 — ForexFlow: Classic / Flow navigation toggle, grouped tabs with colour families, Plan tab // 16 Sep 2026 — calendar six-day grid, correlation Ask IQ, labels, paste hint, mud-map link // 16 Sep 2026 — amendments 14.9.26: Ask IQ on the research tabs, print/save everywhere, calendar collapse + grid, paste screenshots // bump on every delivered change — shown in the header so it's always obvious which version is loaded
 /* Stale-tab killer: every so often, check whether a newer build has been deployed.
    If so, show a can't-miss banner telling the user to reload — long-open tabs silently
    running old code caused repeated "the fix didn't work" confusion. */
@@ -7085,7 +7088,7 @@ function renderTreeCols(body){
     items.sort(function(a,b){return (b.v==null?-99:b.v)-(a.v==null?-99:a.v);});
     return {k:k,items:items,avg:avg};
   }).sort(function(a,b){return (b.avg==null?-99:b.avg)-(a.avg==null?-99:a.avg);});
-  var vals=[];cols.forEach(function(c){c.items.forEach(function(x){if(x.v!=null)vals.push(Math.abs(x.v));});});
+  var vals=_tmRows.map(function(r){return r[tf];}).filter(function(v){return v!=null;}).map(Math.abs);   // v26.2: tiles coloured by the PAIR's own move
   vals.sort(function(a,b){return a-b;});
   var maxAbs=vals.length?Math.max(0.05,vals[Math.floor(vals.length*0.9)]):1;
   var avgs=cols.map(function(c){return Math.abs(c.avg||0);}), maxAvg=Math.max(0.03,Math.max.apply(null,avgs));
@@ -7095,16 +7098,17 @@ function renderTreeCols(body){
     c.items.forEach(function(x){
       var r=x.r, w=Math.max(0.35,r.act!=null?r.act:0.6);
       var tip=slashPair(r.sym)+' · '+c.k+(x.v==null?' no data':' '+(x.v>=0?'rose ':'fell ')+Math.abs(x.v).toFixed(2)+'% against '+x.other)+' ('+tfLbl.toLowerCase()+') · pair itself '+(r[tf]==null?'—':(r[tf]>=0?'+':'')+r[tf].toFixed(2)+'%')+' · activity '+(r.act!=null?r.act.toFixed(2)+'×':'n/a');
-      h+='<div class="tm-ct" style="flex-grow:'+w.toFixed(2)+';background:'+tmColor(x.v,maxAbs)+'" title="'+esc(tip)+'" onclick="goToPair(\''+r.sym+'\')">'
-        +'<b>'+slashPair(r.sym)+'</b><span>'+(x.v==null?'—':c.k+' '+(x.v>=0?'▲':'▼')+Math.abs(x.v).toFixed(2)+'%')+'</span>'
-        +(r.act!=null?'<i>'+r.act.toFixed(1)+'× act.</i>':'')+'</div>';
+      var pv=r[tf];
+      h+='<div class="tm-ct" style="flex-grow:'+w.toFixed(2)+';background:'+tmColor(pv,maxAbs)+'" title="'+esc(tip)+'" onclick="goToPair(\''+r.sym+'\')">'
+        +'<b>'+slashPair(r.sym)+'</b><span>'+(pv==null?'—':(pv>=0?'+':'')+pv.toFixed(2)+'%')+'</span>'
+        +'<i>'+(x.v==null?'':c.k+(x.v>=0?' ▲':' ▼'))+(r.act!=null?' · '+r.act.toFixed(1)+'× act.':'')+'</i></div>';
     });
     h+='</div>';
   });
   h+='</div>';
   body.innerHTML=h;
   var src=document.getElementById('tm-src');
-  if(src) src.innerHTML='Columns: one per currency, strongest on the left by its average move against its 7 pairs ('+tfLbl.toLowerCase()+'). Each pair appears in both of its currencies\' columns, coloured from that column\'s point of view — green = the column\'s currency rose. Tile height = activity (last session range ÷ own 14-day average). Tap a tile to open its analysis.';
+  if(src) src.innerHTML='Columns: one per currency, strongest on the left by its average move against its 7 pairs ('+tfLbl.toLowerCase()+'). Each pair appears in both of its currencies\' columns. Tile colour and % are the pair itself — the same direction as its chart (red = the chart is falling). The small ▲/▼ shows what that move meant for the column\'s currency; tiles are ordered with the column currency\'s best pairs at the top. Tile height = activity (last session range ÷ own 14-day average). Tap a tile to open its analysis.';
 }
 window.addEventListener('resize',function(){if(_tmRows&&document.getElementById('hm-tree')&&document.getElementById('hm-tree').classList.contains('active'))renderTreeMap();});
 
