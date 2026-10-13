@@ -51,6 +51,7 @@ body{font-family:'Syne',sans-serif;background:var(--bg);color:var(--tx);min-heig
 /* ── HEADER ── */
 .hdr{position:sticky;top:0;z-index:100;background:rgba(10,10,10,0.92);backdrop-filter:blur(16px);border-bottom:1px solid var(--bd);padding:14px 20px 12px;display:flex;align-items:center;justify-content:space-between}
 .logo{font-size:20px;font-weight:700;letter-spacing:0.01em}.logo span{color:var(--ac)}
+.sys-dot{background:none;border:0;padding:4px;cursor:pointer;display:inline-flex;align-items:center}.sys-dot span{width:10px;height:10px;border-radius:50%;background:#777;display:block;box-shadow:0 0 0 2px rgba(255,255,255,.08)}.sys-dot.ok span{background:#3ddc84}.sys-dot.bad span{background:#ff5c5c;animation:sysPulse 1.4s infinite}.sys-dot.old span{background:#f5b041}@keyframes sysPulse{50%{opacity:.35}}.sys-tbl{width:100%;border-collapse:collapse;font-size:12.5px;margin-top:8px}.sys-tbl td{padding:6px 8px;border-top:1px solid var(--bd,rgba(255,255,255,.08));vertical-align:top}.sys-tbl td.st{width:28px;text-align:center}
 .hdate{font-family:'DM Mono',monospace;font-size:12px;color:var(--tx);text-align:right;letter-spacing:0.04em;opacity:0.75}
 
 /* ── NAV ── */
@@ -745,12 +746,23 @@ body.light .chart-modal-overlay{background:rgba(0,0,0,0.55)}
 .tech-detail .tech-grid>div.tg-cell{padding:5px 6px;line-height:1.35}
 /* ── v13: tree map ── */
 .tm-controls{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:10px;align-items:center}
+.tm-body.cols{height:auto;min-height:520px}
 .tm-body{position:relative;width:100%;height:520px;border-radius:8px;overflow:hidden;background:var(--sf2)}
 .tm-tile{position:absolute;box-sizing:border-box;border:2px solid var(--sf);border-radius:4px;display:flex;flex-direction:column;align-items:center;justify-content:center;overflow:hidden;cursor:pointer;color:#fff;text-shadow:0 1px 2px rgba(0,0,0,0.6);transition:filter .15s}
 .tm-tile:hover{filter:brightness(1.15);z-index:2}
 .tm-sym{font-family:'Syne',sans-serif;font-weight:800;line-height:1.05;text-align:center;white-space:nowrap}
 .tm-chg{font-family:'DM Mono',monospace;font-weight:700;line-height:1.1}
 .tm-act{font-family:'DM Mono',monospace;opacity:0.85;line-height:1.1}
+.tm-cclbl{font-family:'DM Mono',monospace;font-size:10px;color:var(--mt);margin-left:6px}
+.tm-cols{display:flex;gap:4px;min-height:600px;overflow-x:auto;padding:4px;box-sizing:border-box}
+.tm-col{flex:1 0 108px;display:flex;flex-direction:column;gap:3px;min-width:108px}
+.tm-colh{flex:0 0 auto;border-radius:4px;padding:5px 4px;text-align:center;font-family:'Syne',sans-serif;font-weight:800;font-size:15px;color:#fff;text-shadow:0 1px 2px rgba(0,0,0,.5)}
+.tm-colh small{display:block;font-family:'DM Mono',monospace;font-weight:600;font-size:10.5px;opacity:.9}
+.tm-ct{flex:1 1 0;min-height:50px;border-radius:4px;display:flex;flex-direction:column;justify-content:center;align-items:center;cursor:pointer;color:#fff;text-shadow:0 1px 2px rgba(0,0,0,.55);overflow:hidden;padding:2px}
+.tm-ct:hover{filter:brightness(1.15)}
+.tm-ct b{font-family:'Syne',sans-serif;font-size:13px;line-height:1.1;white-space:nowrap}
+.tm-ct span{font-family:'DM Mono',monospace;font-size:11px;font-weight:700;line-height:1.15}
+.tm-ct i{font-family:'DM Mono',monospace;font-size:9.5px;font-style:normal;opacity:.8}
 .tm-legend{display:flex;align-items:center;gap:8px;font-family:'DM Mono',monospace;font-size:10px;color:var(--mt);margin-left:auto}
 .tm-legend i{display:inline-block;width:80px;height:8px;border-radius:4px;background:linear-gradient(90deg,#ef4444,#2e2e34,#22c55e)}
 @media(max-width:640px){.tm-body{height:420px}}
@@ -830,6 +842,7 @@ body.light .chart-modal-overlay{background:rgba(0,0,0,0.55)}
   <div class="logo">Forex<span>Hub</span></div>
   <div class="hdr-right">
     <div class="hdate" id="hdate"></div>
+    <button class="sys-dot" id="sys-dot" onclick="openSysCheck()" title="System check — loading…" aria-label="System check status"><span></span></button>
     <select class="tz-tog" id="tz-tog" onchange="setTz(this.value)" title="Display timezone — changes how times are labelled, never what is measured" aria-label="Display timezone"></select>
     <button class="nav-tog" id="nav-tog" onclick="toggleNavMode()" title="Classic = one row of tabs · Flow = grouped tabs with the Plan roadmap" aria-label="Switch navigation layout"><span id="nav-tog-c">Classic</span><span id="nav-tog-f">Flow</span></button>
     <button class="theme-tog" id="theme-tog" onclick="toggleTheme()" title="Toggle light / dark mode" aria-label="Toggle theme">🌙</button>
@@ -1417,6 +1430,7 @@ body.light .chart-modal-overlay{background:rgba(0,0,0,0.55)}
     <button class="idx-vtab active" onclick="showIdxView('overview',this)">Overview</button>
     <button class="idx-vtab" onclick="showIdxView('performance',this)">Performance</button>
     <button class="idx-vtab" onclick="showIdxView('technicals',this)">Technicals</button>
+    <button class="idx-vtab" onclick="showIdxView('agree',this)">Do they agree?</button>
   </div>
   <div class="card" style="padding:0;overflow:hidden">
     <div class="scroller-x"><div id="idx-body"><div class="ld" style="padding:20px"><div class="sp"></div>Loading currency strength…</div></div></div>
@@ -1707,7 +1721,20 @@ body.light .chart-modal-overlay{background:rgba(0,0,0,0.55)}
   <div class="share-bar" style="display:flex;margin:0 0 14px">
     <a class="share-btn" href="mudmap.html" target="_blank" rel="noopener" style="text-decoration:none">🗺 Mud map — how everything connects</a>
   </div>
+  <div class="card" id="syscheck-card">
+    <div class="aq" style="margin-bottom:4px">🩺 System check</div>
+    <div class="meta" style="line-height:1.6">Every weekday at about 07:40 AEST the proxy tests everything the site depends on — live prices, the briefing, currency indices, technicals, the calendar, the bots' setups feed and one real AI question — and records the result here. The light in the header is green when the last check passed, red when something failed, amber when the last check is more than a day old.</div>
+    <div id="syscheck-body" class="meta" style="margin-top:8px">Loading…</div>
+    <button class="sb" id="syscheck-run" style="margin-top:10px;padding:7px 16px;font-size:12.5px" onclick="runSysCheckNow()">Run check now</button>
+  </div>
   <div class="card">
+    <div class="ai"><div class="aq">What's new in v26 (13 Oct 2026) — Amendments 20</div><div class="aa">
+      · <b>Ask IQ empty replies fixed</b> (proxy 11.9, live 13 Oct): the Sonnet 5 model "thinks" before writing by default and that thinking was using up the whole answer allowance on bigger questions, so nothing came back. Thinking is now switched off for these self-contained questions. The scanners use the same model and benefit too.<br>
+      · <b>System check</b> (proxy 12.0): every weekday at about 07:40 AEST the proxy tests prices, the briefing, currency indices, technicals, the calendar, the bots' setups feed and one real AI question. The dot in the header is green when everything passed, red when something failed, amber when the last check is over a day old. Tap it for the details, or press <b>Run check now</b> in the System check card above.<br>
+      · <b>Indices → Do they agree?</b> Lines up every measure per currency, shortest window first — today, this week, this month, the daily trend (moving averages over 9–200 days), momentum, S.Trend and the AI news read — and says in words what they add up to (e.g. "Uptrend, pulling back"). It also names pairs of two strong currencies (they tend to chop) and the cleanest strong-vs-weak pair. The Tech rating and S.Trend headers now say "daily", and Sentiment says it is this week's news, so a disagreement between tabs reads as different timeframes rather than an error.<br>
+      · <b>Tree map:</b> the USD-majors button is now one button per currency (USD majors, EUR X's, GBP X's, JPY X's, AUD X's, NZD X's, CAD X's, CHF X's). New <b>Columns</b> layout: one column per currency with its 7 pairs, strongest currency on the left; each pair sits in both of its currencies' columns, coloured from that column's point of view, so green always means the column's currency rose.<br>
+      · <b>Weekend briefing:</b> on Saturday the "previous session" was a 15-minute stub (Sat 07:00→07:15) with 0-pip ranges; it is now the full Friday session. The gap table says "Market closed" and that the next gap is measured at the Monday open, instead of "No data".
+    </div></div>
     <div class="ai"><div class="aq">What's new in v25.4 (17 Sep 2026) — which of the shortlist to actually take</div><div class="aa">
       · <b>Shortlist ranked by strength gap</b>, widest first with a ★. A backtest run the same day (<i>Strategy Tests\Shortlist policy test 17 Sep 2026.html</i> — 48 days at London open, 8 selection policies, same trade for each) found that taking every survivor at full size loses (−1R, −9R worst day), the widest-gap pair alone made +4.7R at profit factor 1.5, gap × ATR +6.4R at 1.73, and "one per currency" was no better than taking everything. So nothing is dropped, but the order now means something. A card that shares a currency with the top pair says so — it is the same bet, size accordingly.<br>
       · <b>Money line on every card:</b> A$/pip, what a full 14-day-ATR day is worth, gap × ATR (the best-scoring ranking in the test) and the margin, all at the lot you set in the shortlist header (remembered; default 0.05). Uses the Calculator's leverage setting.<br>
@@ -2155,7 +2182,7 @@ function dismissBanner(){
 /* ══════════════════════════════════════
    HEADER DATE
 ══════════════════════════════════════ */
-var FH_BUILD='v25.4'; // Plan: shortlist ranked by gap + money line + Print/Save; policy test 17 Sep // Plan news-risk looks back as well as forward, flag-not-drop option, honest card + IQ question, empty AI replies not saved // IQ picker shows impact + currency colour; briefing news rows: impact border + IQ button // Plan chips show the state after each step, not the final result // 16 Sep 2026 — ForexFlow: Classic / Flow navigation toggle, grouped tabs with colour families, Plan tab // 16 Sep 2026 — calendar six-day grid, correlation Ask IQ, labels, paste hint, mud-map link // 16 Sep 2026 — amendments 14.9.26: Ask IQ on the research tabs, print/save everywhere, calendar collapse + grid, paste screenshots // bump on every delivered change — shown in the header so it's always obvious which version is loaded
+var FH_BUILD='v26'; // 13 Oct 2026 — Amendments 20: system check light, indices 'Do they agree?', tree map currency filters + columns, closed-market gap wording // Plan: shortlist ranked by gap + money line + Print/Save; policy test 17 Sep // Plan news-risk looks back as well as forward, flag-not-drop option, honest card + IQ question, empty AI replies not saved // IQ picker shows impact + currency colour; briefing news rows: impact border + IQ button // Plan chips show the state after each step, not the final result // 16 Sep 2026 — ForexFlow: Classic / Flow navigation toggle, grouped tabs with colour families, Plan tab // 16 Sep 2026 — calendar six-day grid, correlation Ask IQ, labels, paste hint, mud-map link // 16 Sep 2026 — amendments 14.9.26: Ask IQ on the research tabs, print/save everywhere, calendar collapse + grid, paste screenshots // bump on every delivered change — shown in the header so it's always obvious which version is loaded
 /* Stale-tab killer: every so often, check whether a newer build has been deployed.
    If so, show a can't-miss banner telling the user to reload — long-open tabs silently
    running old code caused repeated "the fix didn't work" confusion. */
@@ -5309,7 +5336,7 @@ async function loadSentiment(){
     var prompt='You are a forex market analyst. Provide a brief AI market sentiment overview for the current week covering: USD, EUR, GBP, AUD, NZD, CAD, JPY. For each currency state: sentiment (Bullish/Bearish/Neutral), confidence (High/Med/Low), and a one-sentence driver. Format as:\n**USD** – Bullish (High) – [reason]\n**EUR** – etc.\n\nThen add a 2-sentence overall market theme at the end.'+freshnessNote(true);
     var txt=await ai(prompt,'sent:'+weekKey(),{model:'claude-haiku-4-5',maxTokens:1200,webSearch:true});
     if(aiRefused(txt)){delete cache['sent:'+weekKey()];LS.del('fhai:sent:'+weekKey());sentLoaded=false;throw new Error('The AI returned a no-data response (not cached) — reopen this tab to retry.');}
-    out.innerHTML='<div class="cb">'+colorizeCcy(md(txt))+'</div>';
+    out.innerHTML='<div class="cb">'+colorizeCcy(md(txt))+'</div><div class="meta" style="margin-top:8px;line-height:1.5">Timeframe: the AI\'s read of <b>this week\'s news</b> — not a price measure. It can disagree with the Indices tech rating (daily trend over weeks–months) and the tree map\'s 4H view. See <b>Indices → Do they agree?</b> for all of them side by side.</div>';
     buildShareBar('sent-share','Market sentiment','#sent-body','sentiment');
   } catch(e){out.innerHTML=errBox(e);}
 }
@@ -6682,6 +6709,7 @@ var _gapRows=[];
    stitched free feed can measure at all. */
 function gapCalc(s){
   var sp=pspread(s.pair);
+  if(s.gapPips==null&&s.marketClosed) return {sp:sp,g:null,edge:null,worth:false,na:true,closed:true,label:'Market closed',cls:'bmuted'};
   if(s.gapPips==null) return {sp:sp,g:null,edge:null,worth:false,na:true,label:'No data',cls:'bmuted'};
   if(s.gapMeasurable===false) return {sp:sp,g:Math.abs(s.gapPips),edge:null,worth:false,na:true,label:'Not detectable',cls:'bmuted'};
   var g=Math.abs(s.gapPips), edge=g-sp;
@@ -6723,7 +6751,7 @@ function renderGapTable(){
   var sub=document.getElementById('gap-sub');
   if(sub) sub.innerHTML=(mode==='all'?'all '+all.length+' watched pairs':worthCount+' of '+all.length+' watched pairs worth a look')
     +' · '+rolloverLabel()+' rollover · tradable when gap &gt; spread'
-    +(naCount?' · '+naCount+' not measurable from this feed':'');
+    +(all.length&&all.every(function(c){return c.closed;})?' · <b>market closed — the next gap is measured at the Monday '+rolloverLabel()+' open</b>':(naCount?' · '+naCount+' not measurable from this feed':''));
   var h='';
   if(!list.length){
     h='<div class="cb">'+(mode==='worth'
@@ -6913,7 +6941,8 @@ function techGrid(p){
    tile SIZE is the pair's activity — its last session's range divided by its own
    14-day average range, from /briefing — and COLOUR is the % change over the
    chosen window from /price. Squarified layout so tiles stay readable. */
-var _tmTf='td',_tmMajors=false,_tmRows=null,_tmAt=0,_tmLoading=false;
+var _tmTf='td',_tmCcy=null,_tmLayout='map',_tmRows=null,_tmAt=0,_tmLoading=false; // v26: _tmCcy replaces the USD-only toggle; _tmLayout map|cols
+var TM_CCYS=['USD','EUR','GBP','JPY','AUD','NZD','CAD','CHF'];
 var TM_TFS=[['t4h','4H'],['td','Daily'],['tw','Weekly'],['tm','Monthly']];
 async function loadTreeMap(force){
   var body=document.getElementById('tm-body'); if(!body) return;
@@ -6939,7 +6968,8 @@ async function loadTreeMap(force){
   _tmLoading=false;
 }
 function setTmTf(tf){_tmTf=tf;renderTreeMap();}
-function toggleTmMajors(){_tmMajors=!_tmMajors;renderTreeMap();}
+function setTmCcy(c){_tmCcy=(_tmCcy===c?null:c);if(c)_tmLayout='map';renderTreeMap();}
+function setTmLayout(l){_tmLayout=l;if(l==='cols')_tmCcy=null;renderTreeMap();}
 /* Squarified treemap (Bruls, Huizing & van Wijk). Items must be sorted by
    weight descending; returns {x,y,w,h} per item inside W×H. */
 function squarify(items,W,H){
@@ -6989,12 +7019,18 @@ function renderTreeMap(){
   if(ctl){
     var c='';
     TM_TFS.forEach(function(t){c+='<button class="gapf'+(_tmTf===t[0]?' active':'')+'" onclick="setTmTf(\''+t[0]+'\')">'+t[1]+'</button>';});
-    c+='<button class="pip-fccy'+(_tmMajors?' all-active':'')+'" style="margin-left:8px" onclick="toggleTmMajors()">'+(_tmMajors?'USD majors ✓':'USD majors')+'</button>';
+    c+='<span style="width:1px;height:18px;background:var(--bd,rgba(255,255,255,.15));margin:0 4px"></span>';
+    c+='<button class="gapf'+(_tmLayout==='map'?' active':'')+'" onclick="setTmLayout(\'map\')" title="One map of all 28 pairs">Map</button>';
+    c+='<button class="gapf'+(_tmLayout==='cols'?' active':'')+'" onclick="setTmLayout(\'cols\')" title="One column per currency with its 7 pairs, strongest currency first">Columns</button>';
+    c+='<span class="tm-cclbl">Pairs:</span>';
+    TM_CCYS.forEach(function(k){c+='<button class="pip-fccy'+(_tmCcy===k?' all-active':'')+'" style="color:'+ccyCol(k)+'" onclick="setTmCcy(\''+k+'\')" title="Show only the 7 pairs containing '+k+'">'+k+(k==='USD'?' majors':' X\'s')+(_tmCcy===k?' ✓':'')+'</button>';});
     c+='<button class="pip-fccy" onclick="loadTreeMap(true)">↺</button>';
     c+='<span class="tm-legend">fall <i></i> rise</span>';
     ctl.innerHTML=c;
   }
-  var rows=_tmRows.filter(function(r){return !_tmMajors||r.sym.indexOf('USD')>-1;});
+  body.classList.toggle('cols',_tmLayout==='cols');
+  if(_tmLayout==='cols'){ renderTreeCols(body); return; }
+  var rows=_tmRows.filter(function(r){return !_tmCcy||r.sym.indexOf(_tmCcy)>-1;});
   var items=rows.map(function(r){return {r:r,w:Math.max(0.25,r.act!=null?r.act:0.6)};}).sort(function(a,b){return b.w-a.w;});
   var W=body.clientWidth||800,H=body.clientHeight||520;
   var vals=rows.map(function(r){return r[_tmTf];}).filter(function(v){return v!=null;}).map(Math.abs).sort(function(a,b){return a-b;});
@@ -7025,6 +7061,45 @@ function renderTreeMap(){
     var lbl={t4h:'last 4 hours (by timestamp; ⚠ where it spans a market break)',td:'since the '+rolloverLabel()+' rollover',tw:'vs 5 trading days ago',tm:'vs 21 trading days ago'}[_tmTf];
     src.innerHTML='Tile size = activity (last session range ÷ own 14-day average range — FX has no volume feed). Colour = % change '+lbl+', scaled to the 90th percentile of today\'s moves. '+rows.filter(function(r){return r.act==null;}).length+' tile'+(rows.filter(function(r){return r.act==null;}).length===1?'':'s')+' without an activity figure drawn at a default size. As of '+fhClock()+'. Tap a tile to open its analysis.';
   }
+}
+/* v26 (Amendments 20 item 13.2) — column view. One column per currency holding its
+   7 pairs; every pair sits in BOTH of its currencies' columns (John's choice), and in
+   each column the colour and figure are from THAT currency's point of view, so a
+   green tile always means "this column's currency rose". Columns run strongest →
+   weakest by the average of those figures; tiles run strongest → weakest too, and
+   their height is the pair's activity, like tile area on the map. */
+function renderTreeCols(body){
+  var tf=_tmTf, tfLbl=TM_TFS.filter(function(x){return x[0]===tf;})[0][1];
+  var cols=TM_CCYS.map(function(k){
+    var items=_tmRows.filter(function(r){return r.sym.indexOf(k)>-1;}).map(function(r){
+      var v=r[tf], base=r.sym.slice(0,3)===k;
+      return {r:r,v:v==null?null:(base?v:-v),other:base?r.sym.slice(3):r.sym.slice(0,3)};
+    });
+    var have=items.filter(function(x){return x.v!=null;});
+    var avg=have.length?have.reduce(function(a,b){return a+b.v;},0)/have.length:null;
+    items.sort(function(a,b){return (b.v==null?-99:b.v)-(a.v==null?-99:a.v);});
+    return {k:k,items:items,avg:avg};
+  }).sort(function(a,b){return (b.avg==null?-99:b.avg)-(a.avg==null?-99:a.avg);});
+  var vals=[];cols.forEach(function(c){c.items.forEach(function(x){if(x.v!=null)vals.push(Math.abs(x.v));});});
+  vals.sort(function(a,b){return a-b;});
+  var maxAbs=vals.length?Math.max(0.05,vals[Math.floor(vals.length*0.9)]):1;
+  var avgs=cols.map(function(c){return Math.abs(c.avg||0);}), maxAvg=Math.max(0.03,Math.max.apply(null,avgs));
+  var h='<div class="tm-cols">';
+  cols.forEach(function(c){
+    h+='<div class="tm-col"><div class="tm-colh" style="background:'+tmColor(c.avg,maxAvg)+';border-bottom:3px solid '+ccyCol(c.k)+'" title="'+c.k+' average move against its 7 pairs, '+tfLbl.toLowerCase()+'">'+c.k+'<small>'+(c.avg==null?'—':(c.avg>=0?'+':'')+c.avg.toFixed(2)+'% avg')+'</small></div>';
+    c.items.forEach(function(x){
+      var r=x.r, w=Math.max(0.35,r.act!=null?r.act:0.6);
+      var tip=slashPair(r.sym)+' · '+c.k+(x.v==null?' no data':' '+(x.v>=0?'rose ':'fell ')+Math.abs(x.v).toFixed(2)+'% against '+x.other)+' ('+tfLbl.toLowerCase()+') · pair itself '+(r[tf]==null?'—':(r[tf]>=0?'+':'')+r[tf].toFixed(2)+'%')+' · activity '+(r.act!=null?r.act.toFixed(2)+'×':'n/a');
+      h+='<div class="tm-ct" style="flex-grow:'+w.toFixed(2)+';background:'+tmColor(x.v,maxAbs)+'" title="'+esc(tip)+'" onclick="goToPair(\''+r.sym+'\')">'
+        +'<b>'+slashPair(r.sym)+'</b><span>'+(x.v==null?'—':c.k+' '+(x.v>=0?'▲':'▼')+Math.abs(x.v).toFixed(2)+'%')+'</span>'
+        +(r.act!=null?'<i>'+r.act.toFixed(1)+'× act.</i>':'')+'</div>';
+    });
+    h+='</div>';
+  });
+  h+='</div>';
+  body.innerHTML=h;
+  var src=document.getElementById('tm-src');
+  if(src) src.innerHTML='Columns: one per currency, strongest on the left by its average move against its 7 pairs ('+tfLbl.toLowerCase()+'). Each pair appears in both of its currencies\' columns, coloured from that column\'s point of view — green = the column\'s currency rose. Tile height = activity (last session range ÷ own 14-day average). Tap a tile to open its analysis.';
 }
 window.addEventListener('resize',function(){if(_tmRows&&document.getElementById('hm-tree')&&document.getElementById('hm-tree').classList.contains('active'))renderTreeMap();});
 
@@ -7068,6 +7143,7 @@ function sparkSvg(vals,col){
 function renderIdx(){
   var body=document.getElementById('idx-body'); if(!body||!_idx) return;
   buildShareBar('idx-share','Currency indices','#idx-body','indices');   // v24.1 — here, so a cached load has it too
+  if(_idxView==='agree'){ body.innerHTML=renderIdxAgree(); return; }
   var keys=Object.keys(_idx.strength);
   var rows=keys.map(function(k){
     var s=_idx.strength[k], p=s.perf||{}, t=s.tech||{}, ccy=k==='DXY'?'USD':k;
@@ -7085,9 +7161,9 @@ function renderIdx(){
   });
   function arr(col){if(_idxSort.col!==col)return '<span style="opacity:0.3;font-size:9px"> ⇅</span>';return '<span style="font-size:9px"> '+(_idxSort.dir===1?'▲':'▼')+'</span>';}
   var cols;
-  if(_idxView==='overview') cols=[['level','Level'],['d1','Chg 1D'],['w1','Chg 1W'],['lo','20d low'],['hi','20d high'],['rating','Tech rating'],['spark','60 days']];
+  if(_idxView==='overview') cols=[['level','Level'],['d1','Chg 1D'],['w1','Chg 1W'],['lo','20d low'],['hi','20d high'],['rating','Tech rating · daily'],['spark','60 days']];
   else if(_idxView==='performance') cols=[['d1','1D'],['w1','1W'],['m1','1M'],['m3','3M'],['m6','6M'],['ytd','YTD'],['y1','1Y'],['vol','Volatility']];
-  else cols=[['rating','Tech rating'],['ma','MA rating'],['osc','Osc rating'],['rsi','RSI 14'],['mom','Mom 10'],['cci','CCI 20'],['stoch','Stoch K/D'],['macd','MACD'],['st','S.Trend']];
+  else cols=[['rating','Tech rating'],['ma','MA rating'],['osc','Osc rating'],['rsi','RSI 14'],['mom','Mom 10'],['cci','CCI 20'],['stoch','Stoch K/D'],['macd','MACD'],['st','S.Trend · daily']];
   var h='<table class="idx-table"><thead><tr><th onclick="sortIdx(\'name\')">Index'+arr('name')+'</th>';
   cols.forEach(function(c){h+='<th onclick="sortIdx(\''+c[0]+'\')">'+c[1]+(c[0]==='spark'?'':arr(c[0]))+'</th>';});
   h+='</tr></thead><tbody>';
@@ -7118,6 +7194,75 @@ function renderIdx(){
   body.innerHTML=h;
 }
 function pctOf2(a,b){return (b==null||!b)?null:Number(((a-b)/b*100).toFixed(2));}
+
+/* ══ v26 — DO THE MEASURES AGREE? (Amendments 20 items 4 + 13.1) ══
+   John saw JPY "Strong buy" on Indices, "Neutral" in Sentiment and USD/JPY red on the
+   4H tree map, and read it as the site contradicting itself. The data was right: each
+   measure looks at a different stretch of time. This view lines them up per currency,
+   shortest window first, and says in words what the combination means. */
+function sentFor(ccy){
+  var t=null; try{ t=cache['sent:'+weekKey()]||LS.get('fhai:sent:'+weekKey()); }catch(e){}
+  if(!t) return null;
+  var m=String(t).match(new RegExp('\\b'+ccy+'\\b[^A-Za-z\\n]{0,12}(Bullish|Bearish|Neutral)','i'));
+  return m?m[1].charAt(0).toUpperCase()+m[1].slice(1).toLowerCase():null;
+}
+function agreeDir(v,thr){ if(v==null) return 0; return v>=thr?1:v<=-thr?-1:0; }
+function agreeCell(d,txt){ return '<span class="'+(d>0?'hm-pos':d<0?'hm-neg':'hm-neu')+'">'+(d>0?'▲ ':d<0?'▼ ':'– ')+txt+'</span>'; }
+function idxAgreeRows(){
+  if(!_idx) return [];
+  return ['USD','EUR','GBP','JPY','AUD','NZD','CAD','CHF'].filter(function(c){return _idx.strength[c];}).map(function(c){
+    var s=_idx.strength[c], p=s.perf||{}, t=s.tech||{}, r=t.rating||{};
+    var se=sentFor(c);
+    var row={ccy:c,
+      d1:agreeDir(p.d1,0.05), w1:agreeDir(p.w1,0.1), m1:agreeDir(p.m1,0.2),
+      trend:agreeDir(r.ma,0.1), mom:agreeDir(r.osc,0.1), st:t.superTrend>0?1:t.superTrend<0?-1:0,
+      sent:se==='Bullish'?1:se==='Bearish'?-1:se?0:null, sentTxt:se, p:p, r:r};
+    var longer=[row.m1,row.trend,row.st].reduce(function(a,b){return a+b;},0);   // weeks–months
+    var shorter=row.d1+row.w1;                                                  // today + this week
+    var L=longer>=2?1:longer<=-2?-1:0, S=shorter>=1?1:shorter<=-1?-1:0;
+    var v;
+    if(L&&S===L) v=[L,(L>0?'Strong':'Weak')+' on every timeframe','Aligned — trend and recent moves point the same way.'];
+    else if(L&&S===-L) v=[0,(L>0?'Uptrend, pulling back':'Downtrend, bouncing'),'The weeks-to-months trend is '+(L>0?'up':'down')+' but today/this week moved against it. Short-term charts and the 4H tree map will disagree with the tech rating until one gives way.'];
+    else if(L) v=[L,(L>0?'Uptrend, pausing':'Downtrend, pausing'),'Trend is '+(L>0?'up':'down')+'; the last few days are flat.'];
+    else if(S) v=[S,(S>0?'Rising lately, no trend yet':'Falling lately, no trend yet'),'Recent moves only — the longer-term measures have not turned.'];
+    else v=[0,'Mixed — no clear read','The measures disagree; this currency is a poor anchor for a trade right now.'];
+    if(row.sent!=null&&L&&row.sent===-L) v[2]+=' The AI news read ('+row.sentTxt.toLowerCase()+') is against the price trend.';
+    row.verdict=v; row.L=L; row.S=S;
+    return row;
+  });
+}
+function renderIdxAgree(){
+  var rows=idxAgreeRows();
+  if(!rows.length) return '<div class="eb">No currency data yet — tap Refresh.</div>';
+  var hasSent=rows.some(function(r){return r.sent!=null;});
+  var h='<table class="idx-table"><thead><tr><th>Currency</th><th style="min-width:230px;text-align:left">What it adds up to</th><th>Today<br><span style="opacity:.6;font-weight:400">since 07:00</span></th><th>This week<br><span style="opacity:.6;font-weight:400">5 days</span></th><th>This month<br><span style="opacity:.6;font-weight:400">21 days</span></th><th>Trend<br><span style="opacity:.6;font-weight:400">daily MAs 9–200 d</span></th><th>Momentum<br><span style="opacity:.6;font-weight:400">daily oscillators</span></th><th>S.Trend<br><span style="opacity:.6;font-weight:400">daily, lags</span></th><th>AI news<br><span style="opacity:.6;font-weight:400">this week</span></th></tr></thead><tbody>';
+  rows.forEach(function(r){
+    var col=ccyCol(r.ccy);
+    h+='<tr class="idx-row"><td><span class="idx-badge" style="background:'+col+'">'+r.ccy+'</span></td>'+'<td style="text-align:left"><b style="color:'+(r.verdict[0]>0?'var(--gr,#3ddc84)':r.verdict[0]<0?'var(--rd,#ff5c5c)':'inherit')+'">'+esc(r.verdict[1])+'</b><div class="idx-sub" style="white-space:normal;line-height:1.4">'+esc(r.verdict[2])+'</div></td>'
+      +'<td>'+agreeCell(r.d1,(r.p.d1>0?'+':'')+(r.p.d1!=null?r.p.d1.toFixed(2):'—')+'%')+'</td>'
+      +'<td>'+agreeCell(r.w1,(r.p.w1>0?'+':'')+(r.p.w1!=null?r.p.w1.toFixed(2):'—')+'%')+'</td>'
+      +'<td>'+agreeCell(r.m1,(r.p.m1>0?'+':'')+(r.p.m1!=null?r.p.m1.toFixed(2):'—')+'%')+'</td>'
+      +'<td>'+agreeCell(r.trend,techShort(r.r.maLabel||''))+'</td>'
+      +'<td>'+agreeCell(r.mom,techShort(r.r.oscLabel||''))+'</td>'
+      +'<td>'+agreeCell(r.st,r.st>0?'Up':r.st<0?'Down':'—')+'</td>'
+      +'<td>'+(r.sent==null?'<span class="hm-na">'+(hasSent?'not covered':'open Maps → Sentiment')+'</span>':agreeCell(r.sent,r.sentTxt))+'</td>'
+      +'</tr>';
+  });
+  h+='</tbody></table>';
+  // Pair hints: two strong currencies against each other chop; strong vs weak is the clean trade.
+  var up=rows.filter(function(r){return r.L>0;}), dn=rows.filter(function(r){return r.L<0;});
+  var notes=[];
+  function pairOf(a,b){ var ps=typeof ALL_PAIRS!=='undefined'?ALL_PAIRS:null; var x=a+'/'+b,y=b+'/'+a; if(ps){ if(ps.indexOf(x)>-1) return x; if(ps.indexOf(y)>-1) return y; } var ord=['EUR','GBP','AUD','NZD','USD','CAD','CHF','JPY']; return ord.indexOf(a)<ord.indexOf(b)?x:y; }
+  if(up.length>=2) notes.push('<b>Both strong:</b> '+up.map(function(r){return r.ccy;}).join(', ')+' all trend up — pairs made of two of these (e.g. '+pairOf(up[0].ccy,up[1].ccy)+') are a contest between two strong currencies and tend to chop.');
+  if(dn.length>=2) notes.push('<b>Both weak:</b> '+dn.map(function(r){return r.ccy;}).join(', ')+' — the same applies to pairs made of two of these.');
+  if(up.length&&dn.length){
+    var bestUp=up.slice().sort(function(a,b){return (b.S===1)-(a.S===1);})[0], worstDn=dn.slice().sort(function(a,b){return (b.S===-1)-(a.S===-1);})[0];
+    notes.push('<b>Cleanest contrast:</b> strong '+bestUp.ccy+' against weak '+worstDn.ccy+' → '+pairOf(bestUp.ccy,worstDn.ccy)+'. Check the 4H tree map and the chart before acting — this table is the backdrop, not an entry signal.');
+  }
+  h+='<div class="meta" style="margin-top:10px;line-height:1.6;white-space:normal">'+notes.map(function(n){return '· '+n;}).join('<br>')
+    +'<br><span style="opacity:.75">Why tabs can disagree: Today/This week are the last hours and days; Trend, Momentum and S.Trend come from daily bars and look back weeks to months; the tree map\'s 4H view is the last four hours; Sentiment is the AI\'s read of this week\'s news, not a price measure. A currency can be in an uptrend and still fall for an afternoon.</span></div>';
+  return h;
+}
 
 /* ══════════════════════════════════════════════════════════════════
    v14 — MARKET IQ  (New features 19.8.26 #2 "IQ tab", #3 "X's analysis",
@@ -7774,6 +7919,46 @@ async function openIqFor(ts,ccy,name){
   } else { if(past) iqReviewPick(); else iqOutlookPick(); }
   var card=document.querySelector('#'+subId+' .card'); if(card) card.scrollIntoView({behavior:'smooth',block:'start'});
 }
+
+/* ══ v26 — SYSTEM CHECK (Amendments 20 item 3) ══
+   The worker runs the check on a cron and keeps the result; the site only reads it. */
+var SYS_URL=WU.replace(/\/api$/,'')+'/syscheck';
+var _sysLast=null;
+function sysAgeH(l){ return l&&l.ts?(Date.now()-Date.parse(l.ts))/3600e3:999; }
+function renderSysCheck(l){
+  _sysLast=l;
+  var dot=document.getElementById('sys-dot');
+  var age=sysAgeH(l);
+  if(dot){
+    dot.className='sys-dot '+(!l?'':(!l.ok?'bad':(age>30?'old':'ok')));
+    dot.title=!l?'System check — no result yet':(!l.ok?('System check FAILED: '+l.failed.join(', ')+' — tap for details'):('System check passed '+fhDate(new Date(l.ts),{weekday:'short',day:'numeric',month:'short'})+' '+fhClock(new Date(l.ts))+(age>30?' (over a day ago)':'')));
+  }
+  var b=document.getElementById('syscheck-body'); if(!b) return;
+  if(!l){ b.innerHTML='No check has run yet. Tap <b>Run check now</b>.'; return; }
+  var h='<div><b style="color:'+(l.ok?'#3ddc84':'#ff5c5c')+'">'+(l.ok?'All systems working':'Problem found: '+esc(l.failed.join(', ')))+'</b> · '+fhDate(new Date(l.ts),{weekday:'short',day:'numeric',month:'short'})+' '+fhClock(new Date(l.ts))+' · '+(l.trigger==='manual'?'run by hand':'daily check')+' · proxy '+esc(l.version||'')+'</div>';
+  h+='<table class="sys-tbl">'+(l.results||[]).map(function(r){return '<tr><td class="st">'+(r.ok?'✅':'❌')+'</td><td><b>'+esc(r.name)+'</b></td><td>'+esc(r.note||'')+'</td><td style="text-align:right;opacity:.6">'+(r.ms!=null?(r.ms/1000).toFixed(1)+'s':'')+'</td></tr>';}).join('')+'</table>';
+  b.innerHTML=h;
+}
+async function loadSysCheck(){
+  try{ var r=await fetch(SYS_URL+'?_='+Date.now(),{cache:'no-store'}); var d=await r.json(); renderSysCheck(d&&d.last||null); }
+  catch(e){ var dot=document.getElementById('sys-dot'); if(dot){dot.className='sys-dot';dot.title='System check — could not reach the proxy';} }
+}
+async function runSysCheckNow(){
+  var btn=document.getElementById('syscheck-run'), b=document.getElementById('syscheck-body');
+  if(btn){btn.disabled=true;btn.textContent='Checking… (about 30 s)';}
+  try{
+    var r=await fetch(SYS_URL+'/run',{method:'POST',headers:FH_HDRS,body:'{}'});
+    var d=await r.json(); if(!r.ok) throw new Error(d&&d.error||('HTTP '+r.status));
+    renderSysCheck(d.last);
+  }catch(e){ if(b) b.innerHTML+='<div class="eb">'+friendlyError(e)+'</div>'; }
+  if(btn){btn.disabled=false;btn.textContent='Run check now';}
+}
+function openSysCheck(){
+  var btn=Array.prototype.filter.call(document.querySelectorAll('.nb'),function(x){return /showS\('about'/.test(x.getAttribute('onclick')||'');})[0];
+  showS('about',btn||null);
+  var c=document.getElementById('syscheck-card'); if(c) c.scrollIntoView({behavior:'smooth',block:'start'});
+}
+document.addEventListener('DOMContentLoaded',function(){ loadSysCheck(); setInterval(loadSysCheck,30*60*1000); });
 
 document.addEventListener('DOMContentLoaded',function(){
   initPin();

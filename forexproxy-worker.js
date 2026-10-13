@@ -1,4 +1,6 @@
 /* ForexHub data + AI proxy — Cloudflare Worker
+   v12.0 13.10.26 (Amendments 20): daily system check — cron (weekdays 07:40 AEST) + GET /syscheck,
+     POST /syscheck/run; Saturday briefing uses the full Fri 07:00→Sat 07:00 session, not a 15-min stub.
    v11.9 13.10.26: claude-sonnet-5 calls send thinking:{type:"disabled"} — default thinking was
      eating the whole max_tokens on big Ask IQ / scanner prompts, leaving an empty reply.
    v11.8 17.9.26: GET /setups is held in the edge cache for 60 s (SETUPS_CACHE_S) so
@@ -39,7 +41,7 @@
        Cache API which is per-colo) and backs off when Forex Factory rate-limits.
    Bindings required: ANTHROPIC_API_KEY (secret), FH_APP_KEY (secret), FH_KV (KV).  */
 
-const WORKER_VERSION = "11.9";
+const WORKER_VERSION = "12.0";
 const SETUPS_CACHE_S = 60;
 /* Edge-cache key for GET /setups — the app key is stripped so the secret never forms part of a cache key. */
 const setupsCacheKey = function (url) { return new Request(url.origin + "/setups?cache=1", { method: "GET" }); };
@@ -531,7 +533,7 @@ function tvLive(rawRec) {
   } catch (e) { return []; }
 }
 
-export default {
+const WORKER_DEFAULT = {
   async fetch(req, env) {
     const origin = req.headers.get("Origin") || "";
     const originOk = ALLOWED_ORIGINS.indexOf(origin) > -1;
@@ -821,7 +823,15 @@ export default {
               marketClosed = hb.length > 0 && (Date.now() / 1000 - lastBarT) > 3 * 3600;
               lastBarAt = hb.length ? aestStamp(lastBarT) : null;
               if (ro.length && marketClosed) {
-                const zc = ro[ro.length - 1], last = hb.length - 1;
+                let zc = ro[ro.length - 1], last = hb.length - 1;
+                /* 12.0 (Amendments 20 item 1): the market shuts at the 07:00 rollover on
+                   Saturday, so the feed often prints one stray bar AFTER that rollover.
+                   Taking "the last rollover → last bar" then gave a 15-minute 'session'
+                   (Sat 07:00→07:15) with 0-pip ranges. When the window after the last
+                   rollover is under 4 hours, the real last session is the one before it. */
+                if (ro.length >= 2 && (hb[last].t - hb[zc].t) < 4 * 3600) {
+                  last = zc - 1; zc = ro[ro.length - 2];
+                }
                 prevOpenRef = hb[zc - 1].c;
                 prevCloseRef = hb[last].c;
                 prevDayMovePips = r1((prevCloseRef - prevOpenRef) / pip);
@@ -1266,6 +1276,110 @@ export default {
       }
     }
 
+    /* ── 12.0 daily system check (Amendments 20 item 3) ──
+       GET /syscheck → last result (no secrets in it, so open like the data routes).
+       POST /syscheck/run (X-FH-App) → run it now; the site's "Run check now" button. */
+    if (url.pathname === "/syscheck" && req.method === "GET") {
+      let last = null, hist = [];
+      if (KV) {
+        try { last = JSON.parse((await KV.get("syscheck:last")) || "null"); } catch (e) { }
+        try { hist = JSON.parse((await KV.get("syscheck:hist")) || "[]"); } catch (e) { }
+      }
+      return J({ last: last, history: hist, version: WORKER_VERSION });
+    }
+    if (url.pathname === "/syscheck/run" && req.method === "POST") {
+      if (!env.FH_APP_KEY || (req.headers.get("X-FH-App") || "") !== env.FH_APP_KEY) return J({ error: "Not authorised for this proxy." }, 401);
+      if (origin && !originOk) return J({ error: "Origin not allowed." }, 403);
+      const res = await runSystemCheck(env, "manual");
+      return J({ last: res });
+    }
+
     return J({ error: "unknown endpoint: " + url.pathname }, 404);
+  },
+
+  /* Cloudflare cron trigger (schedule set on the worker: weekdays 07:40 AEST). */
+  async scheduled(event, env, ctx) {
+    ctx.waitUntil(runSystemCheck(env, "daily"));
   }
 };
+
+/* ── 12.0 System check ────────────────────────────────────────────────────────
+   Calls every route the site depends on THROUGH THE WORKER'S OWN HANDLER (no
+   network hop, same code path a visitor hits) and judges each reply on content,
+   not just HTTP 200 — "200 with an empty list" is exactly the kind of fault that
+   used to reach John first. One real AI question is included because the empty-
+   reply fault of Sep–Oct 2026 only showed on a realistic, heavy prompt. */
+async function runSystemCheck(env, trigger) {
+  const handler = WORKER_DEFAULT.fetch;
+  const base = "https://forexproxy.internal";
+  const hdrs = { "Origin": "https://jlivo-ovilj.github.io", "X-FH-App": env.FH_APP_KEY || "" };
+  const call = async function (path, init) {
+    const t0 = Date.now();
+    try {
+      const r = await handler(new Request(base + path, Object.assign({ headers: hdrs }, init || {})), env);
+      let d = null; try { d = await r.json(); } catch (e) { }
+      return { status: r.status, d: d, ms: Date.now() - t0 };
+    } catch (e) { return { status: 0, d: { error: String(e && e.message || e) }, ms: Date.now() - t0 }; }
+  };
+  const P7 = "EURUSD,GBPUSD,USDJPY,AUDUSD,USDCAD,USDCHF,NZDUSD";
+  const tests = [
+    ["Live prices", "/price?pairs=" + P7, null, function (d) {
+      const n = d && d.quotes ? Object.keys(d.quotes).length : 0;
+      return { ok: n >= 6, note: n + " of 7 pairs priced" };
+    }],
+    ["Morning briefing", "/briefing?pairs=" + P7, null, function (d) {
+      const st = d && d.stats ? Object.values(d.stats) : [];
+      const withMove = st.filter(function (x) { return x && (x.prevDayMovePips != null); }).length;
+      return { ok: st.length >= 6 && withMove >= 5, note: st.length + " pairs, " + withMove + " with a previous-session move" + (st[0] && st[0].marketClosed ? " (market closed)" : "") };
+    }],
+    ["Currency indices", "/strength", null, function (d) {
+      const s = d && d.strength ? d.strength : {};
+      const good = ["USD", "EUR", "GBP", "JPY", "AUD", "NZD", "CAD", "CHF"].filter(function (c) { return s[c] && s[c].tech && s[c].tech.ok; }).length;
+      return { ok: good === 8, note: good + " of 8 currency baskets calculated" };
+    }],
+    ["Technicals", "/tech?tf=1d&pairs=EURUSD,USDJPY,GBPUSD", null, function (d) {
+      const t = d && d.tech ? Object.keys(d.tech).length : 0;
+      return { ok: t >= 2, note: t + " of 3 pairs rated" };
+    }],
+    ["Economic calendar", "/calendar?w=thisweek", null, function (d) {
+      const n = d && d.events ? d.events.length : 0;
+      return { ok: n > 0, note: n + " events" + (d && d.stale ? " (stale copy: " + (d.error || "") + ")" : "") + (d && d.src ? " · " + d.src : "") };
+    }],
+    ["Setups feed (bots)", "/setups?k=" + encodeURIComponent(env.FH_APP_KEY || ""), null, function (d, st) {
+      return { ok: st === 200 && !(d && d.error), note: st === 200 ? "reachable" : ((d && d.error) || "HTTP " + st) };
+    }],
+    ["AI (Ask IQ / scanners)", "/api", {
+      method: "POST",
+      body: JSON.stringify({
+        model: "claude-sonnet-5", maxTokens: 900, noCache: true,
+        prompt: "System check. Using only this data, rank these four pairs by how independent they are of each other and give a short markdown table with one reason each. 30-day correlations: EUR/USD vs GBP/USD 0.84, EUR/USD vs USD/JPY -0.42, EUR/USD vs AUD/NZD 0.05, GBP/USD vs USD/JPY -0.35, GBP/USD vs AUD/NZD 0.11, USD/JPY vs AUD/NZD -0.08."
+      })
+    }, function (d) {
+      const len = d && d.text ? String(d.text).replace(/\s/g, "").length : 0;
+      const think = d && d.usage && d.usage.output_tokens_details ? d.usage.output_tokens_details.thinking_tokens : null;
+      return { ok: len >= 150, note: len >= 150 ? "answered (" + len + " chars)" : ("EMPTY/short reply" + (d && d.error ? ": " + d.error : "") + (think ? " · " + think + " thinking tokens" : "") + (d && d.stop ? " · stop " + d.stop : "")) };
+    }]
+  ];
+  const results = [];
+  for (let i = 0; i < tests.length; i++) {
+    const t = tests[i];
+    const r = await call(t[1], t[2]);
+    let v;
+    try { v = r.status === 200 ? t[3](r.d, r.status) : { ok: false, note: (r.d && r.d.error) || ("HTTP " + r.status) }; }
+    catch (e) { v = { ok: false, note: "check failed: " + e.message }; }
+    results.push({ name: t[0], ok: !!v.ok, note: v.note, ms: r.ms });
+  }
+  const failed = results.filter(function (x) { return !x.ok; }).map(function (x) { return x.name; });
+  const out = { ts: new Date().toISOString(), trigger: trigger, version: WORKER_VERSION, ok: failed.length === 0, failed: failed, results: results };
+  const KV = env.FH_KV || null;
+  if (KV) {
+    try { await KV.put("syscheck:last", JSON.stringify(out)); } catch (e) { }
+    try {
+      let hist = JSON.parse((await KV.get("syscheck:hist")) || "[]");
+      hist.unshift({ ts: out.ts, ok: out.ok, failed: failed, trigger: trigger });
+      await KV.put("syscheck:hist", JSON.stringify(hist.slice(0, 20)));
+    } catch (e) { }
+  }
+  return out;
+}
+export default WORKER_DEFAULT;
