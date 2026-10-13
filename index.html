@@ -753,6 +753,7 @@ body.light .chart-modal-overlay{background:rgba(0,0,0,0.55)}
 .tm-sym{font-family:'Syne',sans-serif;font-weight:800;line-height:1.05;text-align:center;white-space:nowrap}
 .tm-chg{font-family:'DM Mono',monospace;font-weight:700;line-height:1.1}
 .tm-act{font-family:'DM Mono',monospace;opacity:0.85;line-height:1.1}
+.tm-break{flex-basis:100%;height:0}
 .tm-cclbl{font-family:'DM Mono',monospace;font-size:10px;color:var(--mt);margin-left:6px}
 .tm-cols{display:flex;gap:4px;min-height:600px;overflow-x:auto;padding:4px;box-sizing:border-box}
 .tm-col{flex:1 0 108px;display:flex;flex-direction:column;gap:3px;min-width:108px}
@@ -1728,6 +1729,9 @@ body.light .chart-modal-overlay{background:rgba(0,0,0,0.55)}
     <button class="sb" id="syscheck-run" style="margin-top:10px;padding:7px 16px;font-size:12.5px" onclick="runSysCheckNow()">Run check now</button>
   </div>
   <div class="card">
+    <div class="ai"><div class="aq">What's new in v26.1 (13 Oct 2026) — tidier tree map controls</div><div class="aa">
+      · The eight pair filters (USD majors … CHF X's) now sit together on their own line under the timeframe buttons, instead of wrapping across two lines.
+    </div></div>
     <div class="ai"><div class="aq">What's new in v26 (13 Oct 2026) — Amendments 20</div><div class="aa">
       · <b>Ask IQ empty replies fixed</b> (proxy 11.9, live 13 Oct): the Sonnet 5 model "thinks" before writing by default and that thinking was using up the whole answer allowance on bigger questions, so nothing came back. Thinking is now switched off for these self-contained questions. The scanners use the same model and benefit too.<br>
       · <b>System check</b> (proxy 12.0): every weekday at about 07:40 AEST the proxy tests prices, the briefing, currency indices, technicals, the calendar, the bots' setups feed and one real AI question. The dot in the header is green when everything passed, red when something failed, amber when the last check is over a day old. Tap it for the details, or press <b>Run check now</b> in the System check card above.<br>
@@ -2182,7 +2186,7 @@ function dismissBanner(){
 /* ══════════════════════════════════════
    HEADER DATE
 ══════════════════════════════════════ */
-var FH_BUILD='v26'; // 13 Oct 2026 — Amendments 20: system check light, indices 'Do they agree?', tree map currency filters + columns, closed-market gap wording // Plan: shortlist ranked by gap + money line + Print/Save; policy test 17 Sep // Plan news-risk looks back as well as forward, flag-not-drop option, honest card + IQ question, empty AI replies not saved // IQ picker shows impact + currency colour; briefing news rows: impact border + IQ button // Plan chips show the state after each step, not the final result // 16 Sep 2026 — ForexFlow: Classic / Flow navigation toggle, grouped tabs with colour families, Plan tab // 16 Sep 2026 — calendar six-day grid, correlation Ask IQ, labels, paste hint, mud-map link // 16 Sep 2026 — amendments 14.9.26: Ask IQ on the research tabs, print/save everywhere, calendar collapse + grid, paste screenshots // bump on every delivered change — shown in the header so it's always obvious which version is loaded
+var FH_BUILD='v26.1'; // pair filters on their own line under the timeframes // 13 Oct 2026 — Amendments 20: system check light, indices 'Do they agree?', tree map currency filters + columns, closed-market gap wording // Plan: shortlist ranked by gap + money line + Print/Save; policy test 17 Sep // Plan news-risk looks back as well as forward, flag-not-drop option, honest card + IQ question, empty AI replies not saved // IQ picker shows impact + currency colour; briefing news rows: impact border + IQ button // Plan chips show the state after each step, not the final result // 16 Sep 2026 — ForexFlow: Classic / Flow navigation toggle, grouped tabs with colour families, Plan tab // 16 Sep 2026 — calendar six-day grid, correlation Ask IQ, labels, paste hint, mud-map link // 16 Sep 2026 — amendments 14.9.26: Ask IQ on the research tabs, print/save everywhere, calendar collapse + grid, paste screenshots // bump on every delivered change — shown in the header so it's always obvious which version is loaded
 /* Stale-tab killer: every so often, check whether a newer build has been deployed.
    If so, show a can't-miss banner telling the user to reload — long-open tabs silently
    running old code caused repeated "the fix didn't work" confusion. */
@@ -7022,10 +7026,11 @@ function renderTreeMap(){
     c+='<span style="width:1px;height:18px;background:var(--bd,rgba(255,255,255,.15));margin:0 4px"></span>';
     c+='<button class="gapf'+(_tmLayout==='map'?' active':'')+'" onclick="setTmLayout(\'map\')" title="One map of all 28 pairs">Map</button>';
     c+='<button class="gapf'+(_tmLayout==='cols'?' active':'')+'" onclick="setTmLayout(\'cols\')" title="One column per currency with its 7 pairs, strongest currency first">Columns</button>';
-    c+='<span class="tm-cclbl">Pairs:</span>';
-    TM_CCYS.forEach(function(k){c+='<button class="pip-fccy'+(_tmCcy===k?' all-active':'')+'" style="color:'+ccyCol(k)+'" onclick="setTmCcy(\''+k+'\')" title="Show only the 7 pairs containing '+k+'">'+k+(k==='USD'?' majors':' X\'s')+(_tmCcy===k?' ✓':'')+'</button>';});
-    c+='<button class="pip-fccy" onclick="loadTreeMap(true)">↺</button>';
+    c+='<button class="pip-fccy" onclick="loadTreeMap(true)" title="Refresh">↺</button>';
     c+='<span class="tm-legend">fall <i></i> rise</span>';
+    c+='<span class="tm-break"></span>';   // v26.1 — pair filters on their own line
+    c+='<span class="tm-cclbl" style="margin-left:0">Pairs:</span>';
+    TM_CCYS.forEach(function(k){c+='<button class="pip-fccy'+(_tmCcy===k?' all-active':'')+'" style="color:'+ccyCol(k)+'" onclick="setTmCcy(\''+k+'\')" title="Show only the 7 pairs containing '+k+'">'+k+(k==='USD'?' majors':' X\'s')+(_tmCcy===k?' ✓':'')+'</button>';});
     ctl.innerHTML=c;
   }
   body.classList.toggle('cols',_tmLayout==='cols');
