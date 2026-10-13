@@ -1,4 +1,6 @@
 /* ForexHub data + AI proxy — Cloudflare Worker
+   v11.9 13.10.26: claude-sonnet-5 calls send thinking:{type:"disabled"} — default thinking was
+     eating the whole max_tokens on big Ask IQ / scanner prompts, leaving an empty reply.
    v11.8 17.9.26: GET /setups is held in the edge cache for 60 s (SETUPS_CACHE_S) so
      31 polling bots share ONE set of KV reads a minute instead of 3 reads each per poll
      (~67k reads/day → ~4k; the free KV tier is 100k/day and was exceeded 17 Sep).
@@ -37,7 +39,7 @@
        Cache API which is per-colo) and backs off when Forex Factory rate-limits.
    Bindings required: ANTHROPIC_API_KEY (secret), FH_APP_KEY (secret), FH_KV (KV).  */
 
-const WORKER_VERSION = "11.8";
+const WORKER_VERSION = "11.9";
 const SETUPS_CACHE_S = 60;
 /* Edge-cache key for GET /setups — the app key is stripped so the secret never forms part of a cache key. */
 const setupsCacheKey = function (url) { return new Request(url.origin + "/setups?cache=1", { method: "GET" }); };
@@ -1194,7 +1196,13 @@ export default {
             "anthropic-version": "2023-06-01",
             "anthropic-beta": "web-search-2025-03-05"
           },
-          body: JSON.stringify({ model: model, max_tokens: maxTokens, tools: tools, messages: [{ role: "user", content: messageContent }] })
+          body: JSON.stringify(Object.assign(
+            { model: model, max_tokens: maxTokens, tools: tools, messages: [{ role: "user", content: messageContent }] },
+            /* v11.9: Sonnet 5 thinks by default and the thinking is billed against
+               max_tokens — on a heavy Ask IQ question it spent all 1,800 tokens
+               thinking and returned NO text ("The AI sent back an empty reply").
+               These prompts are self-contained analysis; turn thinking off. */
+            model === "claude-sonnet-5" ? { thinking: { type: "disabled" } } : {}))
         });
         const data = await resp.json();
 
