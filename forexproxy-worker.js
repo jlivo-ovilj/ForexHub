@@ -41,7 +41,7 @@
        Cache API which is per-colo) and backs off when Forex Factory rate-limits.
    Bindings required: ANTHROPIC_API_KEY (secret), FH_APP_KEY (secret), FH_KV (KV).  */
 
-const WORKER_VERSION = "12.0";
+const WORKER_VERSION = "12.1";
 const SETUPS_CACHE_S = 60;
 /* Edge-cache key for GET /setups — the app key is stripped so the secret never forms part of a cache key. */
 const setupsCacheKey = function (url) { return new Request(url.origin + "/setups?cache=1", { method: "GET" }); };
@@ -667,6 +667,59 @@ const WORKER_DEFAULT = {
       } catch (e) {
         return J({ error: "could not reach the rates provider", rates: null }, 200);
       }
+    }
+
+    /* ── 12.1 (15 Oct 2026) — MEASURED event moves: GET /move?at=<unix s>&pairs=USDCAD,EURUSD
+       The IQ Event Review used to get NO price data at all — only the event name and
+       a screenshot — and was told to "read the moves" from the image. On 14 Oct
+       (US CPI) it read the CAD Building Permits "-15.8%" from a calendar screenshot
+       as a USD/CAD price move and wrote a whole USD-sell-off story when USD actually
+       rallied ~100 pips. This endpoint gives the review real 5-minute prices around
+       the release so the direction of every pair is MEASURED, never guessed.
+       Per pair: price just before the release, +15m, +60m and latest, each as pips
+       and %, plus the furthest it ran up/down in the first hour. */
+    if (url.pathname === "/move" && req.method === "GET") {
+      let at = Number(url.searchParams.get("at") || 0);
+      if (at > 1e12) at = Math.floor(at / 1000);           // accept ms too
+      const nowS = Math.floor(Date.now() / 1000);
+      if (!at || at < nowS - 55 * 86400 || at > nowS + 86400) return J({ error: "at must be a unix time within the last 55 days" }, 400);
+      const pairs = (url.searchParams.get("pairs") || "").split(",").map(function (p) { return p.replace(/[^A-Za-z]/g, "").toUpperCase(); })
+        .filter(function (p) { return p.length === 6; }).slice(0, 12);
+      if (!pairs.length) return J({ error: "pairs required" }, 400);
+      const age = nowS - at;
+      const range = age < 4 * 86400 ? "5d" : "1mo";
+      const ttl = age > 3 * 3600 ? 1800 : 60;
+      const out = {}, missing = [];
+      await Promise.all(pairs.map(async function (p) {
+        try {
+          const s = series(await yChart(p + "=X", range, "5m", ttl));
+          const b = s.bars;
+          if (!b.length) { missing.push(p); return; }
+          const pip = pipOf(p);
+          // close of the last 5m bar that had fully finished by time T
+          const closeBy = function (T) { let v = null, vt = null; for (let i = 0; i < b.length; i++) { if (b[i].t + 300 <= T) { v = b[i].c; vt = b[i].t + 300; } else break; } return v == null ? null : { p: v, t: vt }; };
+          const pre = closeBy(at);
+          if (!pre || at - pre.t > 3 * 3600) { missing.push(p); return; } // market closed / no data before the release
+          const after = b.filter(function (x) { return x.t >= at; });
+          const leg = function (T) {
+            if (nowS < T) return null;
+            const c = closeBy(T); if (!c || c.t <= at) return null;
+            return { price: c.p, pips: r1((c.p - pre.p) / pip), pct: pctOf(c.p, pre.p), at: aestStamp(c.t) };
+          };
+          let hi = null, lo = null;
+          after.forEach(function (x) { if (x.t < at + 3600) { if (hi == null || x.h > hi) hi = x.h; if (lo == null || x.l < lo) lo = x.l; } });
+          const last = b[b.length - 1];
+          out[p] = {
+            pre: pre.p, preAt: aestStamp(pre.t),
+            m15: leg(at + 900), m60: leg(at + 3600),
+            latest: last.t >= at ? { price: last.c, pips: r1((last.c - pre.p) / pip), pct: pctOf(last.c, pre.p), at: aestStamp(last.t + 300) } : null,
+            upPips: hi == null ? null : r1((hi - pre.p) / pip),
+            downPips: lo == null ? null : r1((lo - pre.p) / pip),
+            bars: after.length
+          };
+        } catch (e) { missing.push(p); }
+      }));
+      return J({ at: at, atAest: aestStamp(at), moves: out, missing: missing, src: "yahoo 5m", ts: new Date().toISOString() });
     }
 
     /* ── Live FX quotes: GET /price?pairs=EURUSD,USDJPY ── */

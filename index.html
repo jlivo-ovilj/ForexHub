@@ -1485,6 +1485,7 @@ body.light .chart-modal-overlay{background:rgba(0,0,0,0.55)}
       <div id="iq-r-custom" class="iq-row" style="display:none">
         <input class="iq-in" id="iq-r-name" placeholder="Event name" style="flex:1">
         <select class="iq-sel" id="iq-r-ccy" style="width:110px"><option>USD</option><option>EUR</option><option>GBP</option><option>JPY</option><option>AUD</option><option>NZD</option><option>CAD</option><option>CHF</option><option>CNY</option></select>
+        <input class="iq-in" id="iq-r-when" type="datetime-local" title="Release time (your local time) — needed to measure the price moves" style="width:200px">
       </div>
       <div class="iq-row iq-nums">
         <div class="fld"><label>Actual</label><input class="iq-in" id="iq-r-actual" placeholder="e.g. 3.85%"></div>
@@ -1493,7 +1494,7 @@ body.light .chart-modal-overlay{background:rgba(0,0,0,0.55)}
       </div>
       <div class="img-drop" id="iq-dropzone" onclick="document.getElementById('iq-img').click()" ondragover="event.preventDefault();this.classList.add('dragover')" ondragleave="this.classList.remove('dragover')" ondrop="handleIqDrop(event)">
         <div class="img-drop-icon">🧠</div>
-        <div class="img-drop-lbl">Optional: tap to add a screenshot (briefing, heat map, chart) — or press Ctrl+V to paste one</div>
+        <div class="img-drop-lbl">Optional: tap to add a screenshot (calendar row, chart) — or press Ctrl+V to paste one. Price moves are measured automatically; the screenshot is read for the release figures only</div>
         <div class="img-drop-sub">PNG or JPG · stored downscaled in your library</div>
       </div>
       <input type="file" id="iq-img" accept="image/*" onchange="handleIqFile(this)" style="display:none">
@@ -1729,6 +1730,13 @@ body.light .chart-modal-overlay{background:rgba(0,0,0,0.55)}
     <button class="sb" id="syscheck-run" style="margin-top:10px;padding:7px 16px;font-size:12.5px" onclick="runSysCheckNow()">Run check now</button>
   </div>
   <div class="card">
+    <div class="ai"><div class="aq">What's new in v26.4 (15 Oct 2026) — Event review uses measured prices</div><div class="aa">
+      · <b>Why:</b> the 14 Oct US CPI review said USD "sold off across the board" when USD actually rallied 40–70 pips on every major. The review had no price data. It read the CAD Building Permits "-15.8%" off the calendar screenshot as a USD/CAD move and guessed the rest ("AUD/USD likely rose — not shown").<br>
+      · <b>Now:</b> before writing anything, IQ measures every USD major (plus the main crosses for the event's currency) on 5-minute prices from just before the release: +15 min, +60 min, latest, and the first-hour range. That <b>Measured moves</b> table is shown at the top of the review and is the only evidence the AI is given.<br>
+      · The AI must open with a verdict (e.g. USD STRONGER). ForexHub checks it, and every "X rose / fell" sentence, against the table. If they disagree, it rewrites once; if it still disagrees, the review is saved with a red warning.<br>
+      · Screenshots are read for the release figures only, never as price moves. Reviews with a screenshot now use the same stronger model as reviews without one.<br>
+      · A described (custom) event has a release-time box so its prices can be measured. Old library reviews without measured prices are now labelled as such.
+    </div></div>
     <div class="ai"><div class="aq">What's new in v26.3 (13 Oct 2026) — choose how Columns are coloured</div><div class="aa">
       · Tree map → Columns now has a <b>Colours: Chart | Currency</b> switch. <b>Chart</b> (default) colours every tile like its chart, so a pair is the same colour in both of its columns. <b>Currency</b> colours each tile by what the move meant for that column's currency, so the strongest currency's column reads all green at a glance. The site remembers your choice.
     </div></div>
@@ -2192,7 +2200,7 @@ function dismissBanner(){
 /* ══════════════════════════════════════
    HEADER DATE
 ══════════════════════════════════════ */
-var FH_BUILD='v26.3'; // Columns colour switch Chart/Currency // column tiles coloured like the chart // pair filters on their own line under the timeframes // 13 Oct 2026 — Amendments 20: system check light, indices 'Do they agree?', tree map currency filters + columns, closed-market gap wording // Plan: shortlist ranked by gap + money line + Print/Save; policy test 17 Sep // Plan news-risk looks back as well as forward, flag-not-drop option, honest card + IQ question, empty AI replies not saved // IQ picker shows impact + currency colour; briefing news rows: impact border + IQ button // Plan chips show the state after each step, not the final result // 16 Sep 2026 — ForexFlow: Classic / Flow navigation toggle, grouped tabs with colour families, Plan tab // 16 Sep 2026 — calendar six-day grid, correlation Ask IQ, labels, paste hint, mud-map link // 16 Sep 2026 — amendments 14.9.26: Ask IQ on the research tabs, print/save everywhere, calendar collapse + grid, paste screenshots // bump on every delivered change — shown in the header so it's always obvious which version is loaded
+var FH_BUILD='v26.4'; // 15 Oct 2026 — IQ Event review anchored to MEASURED price moves (worker /move), verdict check + auto-redo, Sonnet for screenshot reviews // Columns colour switch Chart/Currency // column tiles coloured like the chart // pair filters on their own line under the timeframes // 13 Oct 2026 — Amendments 20: system check light, indices 'Do they agree?', tree map currency filters + columns, closed-market gap wording // Plan: shortlist ranked by gap + money line + Print/Save; policy test 17 Sep // Plan news-risk looks back as well as forward, flag-not-drop option, honest card + IQ question, empty AI replies not saved // IQ picker shows impact + currency colour; briefing news rows: impact border + IQ button // Plan chips show the state after each step, not the final result // 16 Sep 2026 — ForexFlow: Classic / Flow navigation toggle, grouped tabs with colour families, Plan tab // 16 Sep 2026 — calendar six-day grid, correlation Ask IQ, labels, paste hint, mud-map link // 16 Sep 2026 — amendments 14.9.26: Ask IQ on the research tabs, print/save everywhere, calendar collapse + grid, paste screenshots // bump on every delivered change — shown in the header so it's always obvious which version is loaded
 /* Stale-tab killer: every so often, check whether a newer build has been deployed.
    If so, show a can't-miss banner telling the user to reload — long-open tabs silently
    running old code caused repeated "the fix didn't work" confusion. */
@@ -2705,8 +2713,11 @@ function renderTrends(){
     +' Bias needs Weekly ≥'+TR_MIN.w+'%, Daily ≥'+TR_MIN.d+'% and 4H ≥'+TR_MIN.h+'% in the same direction; STRONG is withheld until the session is 3 hours old.</div>';
   document.getElementById('trend-body').innerHTML=h;
 }
-async function aiImage(prompt,imageB64,mimeType){
-  var res=await fetch(WU,{method:'POST',headers:FH_HDRS,body:JSON.stringify({prompt:prompt,image:imageB64,mimeType:mimeType||'image/png'})});
+async function aiImage(prompt,imageB64,mimeType,opts){
+  opts=opts||{};
+  var body={prompt:prompt,image:imageB64,mimeType:mimeType||'image/png'};
+  if(opts.model) body.model=opts.model; if(opts.maxTokens) body.maxTokens=opts.maxTokens;
+  var res=await fetch(WU,{method:'POST',headers:FH_HDRS,body:JSON.stringify(body)});
   if(!res.ok){
     var ed=null; try{ ed=await res.json(); }catch(e){}
     throw new Error((ed&&ed.error)?ed.error:('API '+res.status));
@@ -7394,7 +7405,8 @@ function iqSubject(which){
     var name=(document.getElementById('iq-'+which+'-name').value||'').trim();
     var ccy=document.getElementById('iq-'+which+'-ccy').value;
     if(!name) return null;
-    return {name:name,ccy:ccy,ts:null,custom:true,forecast:'',prev:'',imp:'high'};
+    var whenEl=document.getElementById('iq-'+which+'-when'),wv=whenEl&&whenEl.value?new Date(whenEl.value).getTime():null;
+    return {name:name,ccy:ccy,ts:(wv&&!isNaN(wv))?wv:null,custom:true,forecast:'',prev:'',imp:'high'};
   }
   return sel;
 }
@@ -7502,6 +7514,109 @@ function saveIq(list){
   try{ localStorage.setItem(IQ_KEY,JSON.stringify(list)); return true; }
   catch(e){ showToast('Library is full — delete an older review to make room'); return false; }
 }
+/* ── v26.4 (15 Oct 2026) — MEASURED MOVES ─────────────────────────────
+   Root cause of the 14 Oct US CPI review: the review got NO price data. It was
+   told to "read the moves" from the screenshot, read CAD Building Permits'
+   "-15.8%" from a calendar screenshot as a USD/CAD price move, and invented a USD
+   sell-off ("AUD/USD likely rose — not shown, infer") when USD actually rallied
+   40-70 pips on every major. Now the worker's /move endpoint measures each pair
+   on 5-minute bars from just before the release; that table is shown first, is
+   the only evidence the AI gets, and the AI's verdict is checked against it. */
+var MOVE_URL=WU.replace(/\/api$/,'')+'/move';
+var IQ_RANK=['EUR','GBP','AUD','NZD','USD','CAD','CHF','JPY'];
+function iqPairOf(a,b){ return IQ_RANK.indexOf(a)<IQ_RANK.indexOf(b)?a+b:b+a; }
+function iqMovePairs(ccy){
+  var set=['EURUSD','GBPUSD','AUDUSD','NZDUSD','USDCAD','USDCHF','USDJPY'];
+  var extra=ccy==='USD'?['EURJPY','AUDJPY','GBPJPY','EURGBP','AUDCAD']
+    :(IQ_RANK.indexOf(ccy)>-1?IQ_RANK.filter(function(c){return c!==ccy&&c!=='USD';}).map(function(c){return iqPairOf(ccy,c);}):['EURJPY','AUDJPY','AUDCAD','EURGBP','GBPJPY']);
+  extra.forEach(function(p){ if(set.indexOf(p)<0&&(typeof FH_PAIRS==='undefined'||FH_PAIRS.indexOf(p)>-1)) set.push(p); });
+  return set.slice(0,12);
+}
+async function iqFetchMoves(ev){
+  if(!ev||!ev.ts) return {err:'no release time for this event'};
+  var at=Math.floor(ev.ts/1000);
+  if(at>Date.now()/1000-120) return {err:'the release has not happened yet'};
+  try{
+    var r=await fetch(MOVE_URL+'?at='+at+'&pairs='+iqMovePairs(ev.ccy).join(','),{cache:'no-store'});
+    var j=await r.json();
+    if(!r.ok||j.error) return {err:j.error||('price service HTTP '+r.status)};
+    if(!j.moves||!Object.keys(j.moves).length) return {err:'no price data around that time (market closed or too long ago)'};
+    return j;
+  }catch(e){ return {err:'the price service could not be reached'}; }
+}
+function iqLeg(m){ return m.m60||m.m15||m.latest||null; }
+function iqLegName(m){ return m.m60?'+60m':m.m15?'+15m':'latest'; }
+function iqSlash(p){ return p.slice(0,3)+'/'+p.slice(3); }
+/* Which way did the event currency go? Counted pair by pair from the measured
+   +60m (or +15m) figure; moves under 3 pips count as flat. */
+function iqCcyVerdict(ccy,moves){
+  var up=0,dn=0,n=0,list=[];
+  Object.keys(moves||{}).forEach(function(p){
+    if(p.indexOf(ccy)<0) return;
+    var l=iqLeg(moves[p]); if(!l||l.pips==null) return;
+    var s=l.pips*(p.slice(0,3)===ccy?1:-1); n++;
+    if(s>=3){up++;list.push(iqSlash(p)+' '+ccy+' up');} else if(s<=-3){dn++;list.push(iqSlash(p)+' '+ccy+' down');}
+  });
+  if(!n) return null;
+  var need=Math.max(1,Math.ceil(n*0.7));
+  return {v:up>=need?'STRONGER':dn>=need?'WEAKER':'MIXED',up:up,dn:dn,n:n};
+}
+function iqFmtLeg(l){ return l?((l.pips>0?'+':'')+l.pips+' pips ('+(l.pct>0?'+':'')+l.pct+'%)'):'n/a'; }
+function iqMovesText(ccy,mv){
+  var lines=['PAIR | price before | +15m | +60m | latest | furthest up / down in first hour (pips)'];
+  Object.keys(mv.moves).forEach(function(p){
+    var m=mv.moves[p];
+    lines.push(iqSlash(p)+' | '+m.pre+' | '+iqFmtLeg(m.m15)+' | '+iqFmtLeg(m.m60)+' | '+iqFmtLeg(m.latest)+(m.latest?' at '+m.latest.at:'')+' | +'+m.upPips+' / '+m.downPips);
+  });
+  return lines.join('\n');
+}
+function iqVerdictText(ccy,v){ return v?(ccy+' '+(v.v==='STRONGER'?'stronger':v.v==='WEAKER'?'weaker':'mixed')+' — up against '+v.up+', down against '+v.dn+' of '+v.n+' '+ccy+' pairs measured'):''; }
+/* Check the AI's text against the measured table. Returns a list of problems. */
+function iqCheck(txt,ccy,moves,verdict){
+  var issues=[],t=String(txt||'');
+  var vm=t.match(/^[\s*#>_]*VERDICT:?[\s*_]*([A-Z]{3})?\s*(STRONGER|WEAKER|MIXED|UNKNOWN)/im);
+  var said=vm?vm[2].toUpperCase():null;
+  if(verdict){
+    if(!said) issues.push('it gave no verdict line');
+    else if(verdict.v!=='MIXED'&&said!==verdict.v) issues.push('it says '+ccy+' '+said.toLowerCase()+', but the measured prices show '+ccy+' '+verdict.v.toLowerCase());
+  }
+  if(/\b(likely|probably|would have|should have)\s+(rose|risen|fell|fallen|rallied|dropped|followed|weakened|strengthened)\b|\bnot (shown|visible)\b[^.\n]{0,60}\binfer|\binfer(red)? from\b/i.test(t)) issues.push('it guessed a move instead of using the measured prices');
+  var sent=t.split(/(?<=[.!?])\s+|\n+/);
+  Object.keys(moves||{}).forEach(function(p){
+    var l=iqLeg(moves[p]); if(!l) return;
+    var re=new RegExp('\\b'+p.slice(0,3)+'\\s*/?\\s*'+p.slice(3)+'\\b','i');
+    sent.forEach(function(x){
+      if(!re.test(x)) return;
+      var others=Object.keys(moves).filter(function(q){return q!==p&&new RegExp('\\b'+q.slice(0,3)+'\\s*/?\\s*'+q.slice(3)+'\\b','i').test(x);});
+      if(others.length) return; // more than one pair in the sentence — too ambiguous to judge
+      var up=/\b(rose|rallied|climbed|jumped|spiked|surged|gained|higher)\b/i.test(x),dn=/\b(fell|dropped|declined|slid|tumbled|plunged|sank|lower)\b/i.test(x);
+      if(Math.abs(l.pips)>=5&&up!==dn){
+        if(up&&l.pips<0) issues.push('it says '+iqSlash(p)+' rose, but it fell '+Math.abs(l.pips)+' pips');
+        if(dn&&l.pips>0) issues.push('it says '+iqSlash(p)+' fell, but it rose '+l.pips+' pips');
+      }
+      var pm=x.match(new RegExp(p.slice(0,3)+'\\s*/?\\s*'+p.slice(3)+'[^%\\d]{0,30}([+\\-\\u2212\\u2013]?\\d{1,3}(?:\\.\\d+)?)\\s*%','i'));
+      if(pm){ var v=Math.abs(parseFloat(pm[1].replace(/[\u2212\u2013]/,'-'))); if(v>Math.max(1,3*Math.abs(l.pct||0))) issues.push('it quotes '+iqSlash(p)+' '+pm[1]+'% — the measured move was '+l.pct+'%'); }
+    });
+  });
+  return issues.filter(function(x,i,a){return a.indexOf(x)===i;});
+}
+function iqStripVerdict(t){ return String(t||'').replace(/^[\s*#>_]*VERDICT:?[^\n]*\n+/i,''); }
+function renderIqMoves(en){
+  if(en.moves&&en.moves.moves){
+    var mv=en.moves,ccy=en.ccy,v=en.verdict;
+    var cell=function(l,p){ if(!l) return '<td class="iq-flat">—</td>'; var c=l.pips>=3?'iq-up':l.pips<=-3?'iq-dn':'iq-flat'; return '<td class="'+c+'" style="font-weight:700;white-space:nowrap">'+(l.pips>0?'+':'')+l.pips+'<span style="font-weight:400;opacity:.75"> · '+(l.pct>0?'+':'')+l.pct+'%</span></td>'; };
+    var h='<div class="card" style="margin-bottom:10px"><div class="cl">Measured moves · 5-minute prices from just before the release ('+esc(mv.atAest||'')+')</div>';
+    if(v) h+='<div style="font-family:\'Syne\',sans-serif;font-weight:700;font-size:14px;margin:4px 0 8px" class="'+(v.v==='STRONGER'?'iq-up':v.v==='WEAKER'?'iq-dn':'iq-flat')+'">'+colorizeCcy(esc(iqVerdictText(ccy,v)))+'</div>';
+    h+='<div class="scroller-x"><table class="iq-mud"><thead><tr><th>Pair</th><th>Before</th><th>+15m</th><th>+60m</th><th>Latest</th><th>1st hour range</th></tr></thead><tbody>';
+    Object.keys(mv.moves).forEach(function(p){ var m=mv.moves[p];
+      h+='<tr><td>'+colorizeCcy('<b>'+esc(iqSlash(p))+'</b>')+'</td><td>'+esc(String(m.pre))+'</td>'+cell(m.m15)+cell(m.m60)+cell(m.latest)+'<td style="white-space:nowrap">+'+esc(String(m.upPips))+' / '+esc(String(m.downPips))+'</td></tr>'; });
+    h+='</tbody></table></div><div class="meta" style="margin-top:6px">Pips are the pair\'s own chart direction (green = pair up). Measured by ForexHub from '+esc(mv.src||'5m bars')+(mv.missing&&mv.missing.length?' · no data for '+esc(mv.missing.map(iqSlash).join(', ')):'')+'. Broker prices differ by a pip or two.</div></div>';
+    return h;
+  }
+  if(en.movesErr) return '<div class="eb" style="margin-bottom:10px;border-color:rgba(251,191,36,0.5)">No measured prices — '+esc(en.movesErr)+'. The review below explains the usual mechanics only; it does not say what the market did.</div>';
+  if(en.type!=='ask') return '<div class="eb" style="margin-bottom:10px">Written before v26.4 — this review had no price data and may describe moves that did not happen. Re-run it to get the measured version.</div>';
+  return '';
+}
 async function runIqReview(){
   var ev=iqSubject('r');
   var out=document.getElementById('iq-r-out'),btn=document.getElementById('iq-r-btn'),meta=document.getElementById('iq-r-meta');
@@ -7511,15 +7626,33 @@ async function runIqReview(){
   out.innerHTML='<div class="ld" style="padding:16px"><div class="sp"></div>Reading what the market did with '+esc(ev.name)+'…</div>';
   try{
     var when=ev.ts?fhDate(new Date(ev.ts),{weekday:'long',day:'2-digit',month:'long'})+' '+fhClock(ev.ts):'recent';
+    out.innerHTML='<div class="ld" style="padding:16px"><div class="sp"></div>Measuring what '+esc(ev.ccy)+' pairs actually did after '+esc(ev.name)+'…</div>';
+    var mv=await iqFetchMoves(ev), haveMoves=!!(mv&&mv.moves), verdict=haveMoves?iqCcyVerdict(ev.ccy,mv.moves):null;
+    out.innerHTML='<div class="ld" style="padding:16px"><div class="sp"></div>'+(haveMoves?'Prices measured — writing the review…':'No measured prices ('+esc(mv.err)+') — writing a mechanics-only review…')+'</div>';
+    var evidence=haveMoves
+      ?'\n\nMEASURED PRICE MOVES — 5-minute prices, measured from the last price before the release ('+mv.atAest+'). Positive pips = the PAIR went up on its chart.\n'+iqMovesText(ev.ccy,mv)
+        +'\nMeasured verdict: '+iqVerdictText(ev.ccy,verdict)+'.'
+        +'\n\nTHESE NUMBERS ARE THE ONLY EVIDENCE OF WHAT THE MARKET DID. Rules:\n- Every statement about which way a pair or currency moved, and by how much, must agree with this table. Quote the pips from it.\n- Never state or guess a direction for a pair that is not in the table. Never write "likely rose", "would have followed", "not shown — infer" or similar.\n- If the reaction faded or reversed (compare +15m, +60m and latest), say so plainly.\n- The first line of your reply must be exactly: VERDICT: '+ev.ccy+' STRONGER, VERDICT: '+ev.ccy+' WEAKER or VERDICT: '+ev.ccy+' MIXED — matching the measured verdict.'
+      :'\n\nNO PRICE DATA is available for this release ('+mv.err+'). You therefore do NOT know what the market did. Do not state the direction or size of any move. In "What the market actually did" say in one line that measured prices were unavailable, then describe the TYPICAL reaction, labelled as typical. The first line of your reply must be exactly: VERDICT: '+ev.ccy+' UNKNOWN';
+    var shot=_iqImgB64?'\n\nA screenshot is attached. Treat it as the trader\'s CALENDAR or chart reference only: numbers in it are release figures (a calendar row usually reads Actual | Forecast | Previous) or chart prices — they are NEVER pair moves, and other currencies\' rows are other releases. Read each row by its own label and do not mix rows. Use it only to read the release figures if they are not given above.':'';
     var prompt='You are a senior FX strategist reviewing a news event AFTER the fact for a retail trader who wants to understand the mechanics, not just the headline.\n\nEVENT: '+ev.name+'\nCURRENCY: '+ev.ccy+'\nWHEN: '+when+(actual?'\nACTUAL: '+actual:'')+(forecast?'\nFORECAST: '+forecast:'')+(prev?'\nPREVIOUS: '+prev:'')+(notes?'\n\nTRADER\'S NOTES / QUESTION: '+notes:'')
-      +(_iqImgB64?'\n\nA screenshot is attached (a morning briefing, heat map or chart). READ THE NUMBERS IN IT and use them as the evidence — quote the pairs and moves you can see.':'\n\nNo screenshot is attached; reason from the figures above and typical market behaviour, and say clearly where you are inferring.')
+      +evidence+shot
       +'\n\n'+IQ_PAIRS_NOTE
-      +'\n\nWrite the review in these sections, in markdown with ## headings, concise but concrete:\n## What the market actually did\nThe first-order move: was this primarily a '+ev.ccy+' move? Which direct pairs moved and how much.\n## Where the money went\nWhich currencies were bought or sold against '+ev.ccy+' and why THOSE (yield, safe-haven type, carry funding, commodity link, intervention risk).\n## Why the crosses split\nPick the 2-3 most interesting crosses. Show the arithmetic: the same pip move on a lower-priced pair is a bigger PERCENTAGE move, and a cross = one pair ÷ another, so explain each cross\'s direction from the two legs. If two "safe havens" diverged, explain the different personalities (e.g. JPY is also a funding currency with intervention risk).\n## The framework to remember\nA short table (markdown) of "event type → which currency of a pair tends to benefit" for this kind of release.\n## What surprised, and the lesson\n2-4 bullet points, including a direct answer to the trader\'s notes if given.\n\nUse "potentially" where a mechanism is conditional. No preamble, no closing summary.';
-    var txt;
-    if(_iqImgB64){ txt=await aiImage(prompt,_iqImgB64,_iqImgMime); }
-    else { var k='iq:r:'+Date.now(); txt=await ai(prompt,k,{model:'claude-sonnet-5',maxTokens:3000,webSearch:false}); delete cache[k]; LS.del('fhai:'+k); }
+      +'\n\nWrite the review in these sections, in markdown with ## headings, concise but concrete:\n## What the market actually did\nThe first-order move, from the measured table: did '+ev.ccy+' strengthen or weaken, against which pairs, by how many pips, and did it hold or fade.\n## Where the money went\nWhich currencies gained or lost most against '+ev.ccy+' in the table and why THOSE (yield, safe-haven type, carry funding, commodity link, intervention risk).\n## Why the crosses split\nOnly crosses that are in the measured table. Show the arithmetic from the two legs (a cross = one pair ÷ another; the same pip move on a lower-priced pair is a bigger percentage move). If none are measured, say so in one line.\n## The framework to remember\nA short table (markdown) of "event type → which currency of a pair tends to benefit" for this kind of release. A hotter-than-expected inflation print normally SUPPORTS the currency (higher-for-longer rates); say so if relevant.\n## What surprised, and the lesson\n2-4 bullet points, including a direct answer to the trader\'s notes if given. Any trade idea must agree with the measured direction, name the level or condition that would cancel it, and use "potentially".\n\nNo preamble after the VERDICT line, no closing summary.';
+    var callAi=async function(p){
+      if(_iqImgB64) return await aiImage(p,_iqImgB64,_iqImgMime,{model:'claude-sonnet-5',maxTokens:3000});
+      var k='iq:r:'+Date.now(); var t=await ai(p,k,{model:'claude-sonnet-5',maxTokens:3000,webSearch:false}); delete cache[k]; LS.del('fhai:'+k); return t;
+    };
+    var txt=await callAi(prompt);
     if(!txt||txt.replace(/\s/g,'').length<80) throw new Error('The review came back empty — tap Review and save to try again.');
-    var entry={id:'iq'+Date.now(),at:Date.now(),name:ev.name,ccy:ev.ccy,evTs:ev.ts||null,actual:actual,forecast:forecast,prev:prev,notes:notes,img:_iqImgB64?('data:'+_iqImgMime+';base64,'+_iqImgB64):null,text:txt,build:FH_BUILD};
+    var issues=haveMoves?iqCheck(txt,ev.ccy,mv.moves,verdict):iqCheck(txt,ev.ccy,{},null);
+    if(issues.length){
+      out.innerHTML='<div class="ld" style="padding:16px"><div class="sp"></div>First draft disagreed with the measured prices — rewriting it…</div>';
+      var txt2=await callAi(prompt+'\n\nYOUR PREVIOUS DRAFT WAS REJECTED because '+issues.join('; ')+'. Rewrite the whole review so every statement agrees with the measured table.');
+      if(txt2&&txt2.replace(/\s/g,'').length>=80){ txt=txt2; issues=haveMoves?iqCheck(txt,ev.ccy,mv.moves,verdict):iqCheck(txt,ev.ccy,{},null); }
+    }
+    var entry={id:'iq'+Date.now(),at:Date.now(),name:ev.name,ccy:ev.ccy,evTs:ev.ts||null,actual:actual,forecast:forecast,prev:prev,notes:notes,img:_iqImgB64?('data:'+_iqImgMime+';base64,'+_iqImgB64):null,text:iqStripVerdict(txt),build:FH_BUILD,
+      moves:haveMoves?mv:null,movesErr:haveMoves?null:mv.err,verdict:verdict,check:issues};
     var list=loadIq(); list.unshift(entry);
     var saved=saveIq(list);
     if(!saved&&entry.img){ entry.img=null; entry.imgDropped=true; saved=saveIq(list); }
@@ -7536,6 +7669,8 @@ function renderIqEntry(en){
   var nums=[];if(en.actual)nums.push('Actual <b>'+esc(en.actual)+'</b>');if(en.forecast)nums.push('Forecast <b>'+esc(en.forecast)+'</b>');if(en.prev)nums.push('Previous <b>'+esc(en.prev)+'</b>');
   if(nums.length) h+='<div class="meta" style="margin:0 0 8px">'+nums.join(' · ')+'</div>';
   if(en.notes) h+='<div class="cl" style="margin-bottom:4px">Your notes</div><div class="cb" style="white-space:pre-wrap;margin-bottom:10px">'+esc(en.notes)+'</div>';
+  h+=renderIqMoves(en);
+  if(en.check&&en.check.length) h+='<div class="eb" style="margin-bottom:10px">⚠ This review still disagrees with the measured prices: '+esc(en.check.join('; '))+'. Trust the table above, not the text.</div>';
   if(en.img) h+='<img alt="Screenshot" style="display:block;width:100%;max-width:720px;border-radius:8px;margin:0 0 12px" src="'+en.img+'">';
   else if(en.imgDropped) h+='<div class="meta" style="margin-bottom:8px">Screenshot not stored — library was full.</div>';
   h+='<div class="cl" style="margin-bottom:6px">'+(en.type==='ask'?'Answer · asked from '+esc(en.ctxTitle||'a research tab'):'Review')+'</div><div class="cb">'+colorizeCcy(mdTable(en.text))+'</div>';
