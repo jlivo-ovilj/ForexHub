@@ -1730,6 +1730,17 @@ body.light .chart-modal-overlay{background:rgba(0,0,0,0.55)}
     <button class="sb" id="syscheck-run" style="margin-top:10px;padding:7px 16px;font-size:12.5px" onclick="runSysCheckNow()">Run check now</button>
   </div>
   <div class="card">
+    <div class="ai"><div class="aq">What's new in v28 (15 Oct 2026) — the rest of the trust review</div><div class="aa">
+      · <b>Calendar source everywhere:</b> the briefing, Ask IQ, Plan and every analysis panel say whether events came from the live feed, a saved copy or AI web search. Analysis panels load the feed themselves and never fall back to the AI lookup. With no calendar, they are told not to cite events at all.<br>
+      · <b>Weekly outlook:</b> "Key events this week" now comes only from the calendar feed, not from web search.<br>
+      · <b>Sentiment:</b> the AI is given the measured strength of each currency. Under its read, a price check shows ✓ agrees or ⚠ disagrees for every currency. Refreshed every 6 hours (was all week), with the time it was written. CHF added.<br>
+      · <b>Indices "Today":</b> now measured from the 7am rollover like every other tab (it was a UTC daily bar), so Do they agree?, Plan's "moving alone" rule and Ask IQ all use the same "today".<br>
+      · <b>Correlation:</b> a day with a missing exchange rate is skipped. It used to be counted as a rate of 1.0, which bent the numbers that feed Plan step 06.<br>
+      · <b>Calculator / Plan money line:</b> no more built-in guesses such as "AUD/USD 0.71" when a price is missing. You get "—" or "no live rate" instead of a wrong $/pip, lot size or margin. Saved prices over 12 hours old are never used.<br>
+      · <b>Gaps:</b> each gap shows "already filled" or "still open" from the live session high/low, and filled gaps are no longer flagged as tradable. Spreads are labelled as typical figures.<br>
+      · <b>Event Outlook:</b> every first-order direction and mud-map arrow is checked against the scenario it sits under. A stronger currency must lift its own pairs. Contradictions are marked ⚠ and listed at the top.<br>
+      · <b>Trade-idea and past-trade reviews:</b> when the idea names a pair, the AI gets its live price, measured levels and calendar. PROCEED/WAIT/AVOID must rest on those, or default to WAIT. Any price in the reply that wasn't in the data given is listed as unverified. Both use Sonnet.
+    </div></div>
     <div class="ai"><div class="aq">What's new in v27 (15 Oct 2026) — every level is measured and checked</div><div class="aa">
       · <b>Why:</b> a full trust review after the 14 Oct CPI review found that every panel giving support, resistance, entry, stop or target had no price structure to work from. Those levels were invented, and the scanner could send them to the bots. The daily and 4H prompts even said "never say you lack live data" and "always give all five".<br>
       · <b>Measured levels:</b> a new worker service measures, from real price bars, the prior-day and prior-week high/low/close, this week's high/low, daily pivots, the 14-day ATR, and the nearest 4H and daily swing highs and lows. Daily, 4H, weekly, both scanners and Plan → Ask IQ are given these and must choose from them, naming which level each one is.<br>
@@ -2213,7 +2224,7 @@ function dismissBanner(){
 /* ══════════════════════════════════════
    HEADER DATE
 ══════════════════════════════════════ */
-var FH_BUILD='v27'; // 15 Oct 2026 — TRUST BATCH A+B: measured levels (/levels) behind every AI level, level + setup checks vs live price/ATR, no forced setups, feed send-time re-check + per-setup age, Plan 'not checked' instead of pass, honest 'Do they agree?' labels, generation stamps // 15 Oct 2026 — measured-moves table: latest shows hours after the release, clean prices, range never negative (worker 12.2) // 15 Oct 2026 — IQ Event review anchored to MEASURED price moves (worker /move), verdict check + auto-redo, Sonnet for screenshot reviews // Columns colour switch Chart/Currency // column tiles coloured like the chart // pair filters on their own line under the timeframes // 13 Oct 2026 — Amendments 20: system check light, indices 'Do they agree?', tree map currency filters + columns, closed-market gap wording // Plan: shortlist ranked by gap + money line + Print/Save; policy test 17 Sep // Plan news-risk looks back as well as forward, flag-not-drop option, honest card + IQ question, empty AI replies not saved // IQ picker shows impact + currency colour; briefing news rows: impact border + IQ button // Plan chips show the state after each step, not the final result // 16 Sep 2026 — ForexFlow: Classic / Flow navigation toggle, grouped tabs with colour families, Plan tab // 16 Sep 2026 — calendar six-day grid, correlation Ask IQ, labels, paste hint, mud-map link // 16 Sep 2026 — amendments 14.9.26: Ask IQ on the research tabs, print/save everywhere, calendar collapse + grid, paste screenshots // bump on every delivered change — shown in the header so it's always obvious which version is loaded
+var FH_BUILD='v28'; // 15 Oct 2026 — TRUST BATCH C+D: calendar source labelled everywhere + feed-only loads, sentiment checked against measured strength (6h), weekly events from the calendar feed, Indices 'today' from the 7am rollover, correlation drops incomplete days, no hard-coded pip rates, gap filled?, Outlook direction check, trade reviews grounded + figures verified // 15 Oct 2026 — TRUST BATCH A+B: measured levels (/levels) behind every AI level, level + setup checks vs live price/ATR, no forced setups, feed send-time re-check + per-setup age, Plan 'not checked' instead of pass, honest 'Do they agree?' labels, generation stamps // 15 Oct 2026 — measured-moves table: latest shows hours after the release, clean prices, range never negative (worker 12.2) // 15 Oct 2026 — IQ Event review anchored to MEASURED price moves (worker /move), verdict check + auto-redo, Sonnet for screenshot reviews // Columns colour switch Chart/Currency // column tiles coloured like the chart // pair filters on their own line under the timeframes // 13 Oct 2026 — Amendments 20: system check light, indices 'Do they agree?', tree map currency filters + columns, closed-market gap wording // Plan: shortlist ranked by gap + money line + Print/Save; policy test 17 Sep // Plan news-risk looks back as well as forward, flag-not-drop option, honest card + IQ question, empty AI replies not saved // IQ picker shows impact + currency colour; briefing news rows: impact border + IQ button // Plan chips show the state after each step, not the final result // 16 Sep 2026 — ForexFlow: Classic / Flow navigation toggle, grouped tabs with colour families, Plan tab // 16 Sep 2026 — calendar six-day grid, correlation Ask IQ, labels, paste hint, mud-map link // 16 Sep 2026 — amendments 14.9.26: Ask IQ on the research tabs, print/save everywhere, calendar collapse + grid, paste screenshots // bump on every delivered change — shown in the header so it's always obvious which version is loaded
 /* Stale-tab killer: every so often, check whether a newer build has been deployed.
    If so, show a can't-miss banner telling the user to reload — long-open tabs silently
    running old code caused repeated "the fix didn't work" confusion. */
@@ -2681,6 +2692,14 @@ function levelCheckNote(pair,L,chk){
   var h='<div class="meta" style="margin-top:6px">✓ Levels checked against the live price '+lvP(pair,L.price)+' and '+measuredLevels(pair,L).length+' measured levels · daily ATR '+L.atrPips+' pips</div>';
   if(chk.removed.length) h+='<div class="eb" style="margin-top:6px;border-color:rgba(251,191,36,0.5)">Removed '+chk.removed.length+' level'+(chk.removed.length>1?'s':'')+' that failed the check: '+chk.removed.map(function(r){return esc(r.line)+' — '+esc(r.why);}).join('; ')+'</div>';
   return h;
+}
+/* v28 — load the calendar FEED for an analysis panel (never the AI fallback). */
+async function ensureCal(){ if(_calAll&&_calAll.length) return; try{ var ev=await allCalEvents(true); if(ev&&ev.length) _calAll=ev; }catch(e){} }
+function calSourceLine(){
+  if(!(_calAll&&_calAll.length)) return 'calendar unavailable';
+  if(CAL_AI_SRC) return 'events from AI web search — the calendar feed is down, verify times';
+  if(_calStale&&_calStale.thisweek) return 'last saved copy of the calendar — new events may be missing';
+  return 'live calendar feed';
 }
 /* High-impact calendar rows for the next N hours — or an explicit "unknown". */
 function calRiskBlock(hrs,ccys){
@@ -3925,6 +3944,7 @@ async function loadD(pair,btn){
     // falling back to a web-search call (~20k+ input tokens each). Nothing is billed or cached.
     if(!pc) throw new Error('Live price feed unavailable right now — tap ↻ Refresh in a minute.');
     var dSearch=false;
+    await ensureCal();
     var LVd=(await fhLevels([pair]))[pair];
     if(!LVd) throw new Error('Measured price levels are unavailable right now, so no levels can be checked — tap ↻ Refresh in a minute.');
     var prompt=pc+levelsText(pair,LVd)+calRiskBlock(24,[pair.slice(0,3),pair.slice(3)])+'You are a professional forex analyst. Provide a concise DAILY analysis for '+p+' as of today '+new Date().toISOString().split('T')[0]+'. Format exactly:\nBIAS: [BULLISH/BEARISH/NEUTRAL]\n\nKEY LEVELS:\n- Resistance 1: [price]\n- Resistance 2: [price]\n- Entry zone: [price range]\n- Support 1: [price]\n- Support 2: [price]\n\nWATCH TODAY:\n[2-3 bullet points on what to watch, catalysts, and specific entry triggers. Use **bold** for key terms.]\n\nKeep it concise. In WATCH TODAY only cite events from the CALENDAR block.'+LEVEL_RULES+freshnessNote(dSearch);
@@ -3993,7 +4013,8 @@ async function loadW(pair,btn){
     var pc=await priceContext(pair);
     if(!pc) throw new Error('Live price feed unavailable right now — tap ↻ Refresh in a minute.');
     var LVw=(await fhLevels([pair]))[pair];
-    var prompt=pc+(LVw?levelsText(pair,LVw):'\nMEASURED LEVELS: unavailable — do not quote any price level.\n')+'You are a professional forex analyst. Provide a concise WEEKLY analysis for '+p+' for the week of '+new Date().toISOString().split('T')[0]+'. Format exactly:\nMACRO THEME:\n[2-3 sentences on the macro backdrop driving this pair. Use **bold** for key themes.]\n\nTREND AND STRUCTURE:\n[2-3 sentences on the weekly trend, structure, key levels. Use **bold** for level prices.]\n\nKEY EVENTS THIS WEEK:\n- [Event 1: day and what to watch]\n- [Event 2]\n- [Event 3]\n\nKeep each section tight and actionable. Any price you mention must come from the MEASURED LEVELS list (name it); never invent a level.'+freshnessNote(true);
+    await ensureCal();
+    var prompt=pc+(LVw?levelsText(pair,LVw):'\nMEASURED LEVELS: unavailable — do not quote any price level.\n')+calRiskBlock(24*7,[pair.slice(0,3),pair.slice(3)])+'You are a professional forex analyst. Provide a concise WEEKLY analysis for '+p+' for the week of '+new Date().toISOString().split('T')[0]+'. Format exactly:\nMACRO THEME:\n[2-3 sentences on the macro backdrop driving this pair. Use **bold** for key themes.]\n\nTREND AND STRUCTURE:\n[2-3 sentences on the weekly trend, structure, key levels. Use **bold** for level prices.]\n\nKEY EVENTS THIS WEEK:\n- [ONLY events listed in the CALENDAR block: day, time, event, what to watch. If the block says not available, write "Calendar unavailable — check the Calendar tab".]\n\nKeep each section tight and actionable. Any price you mention must come from the MEASURED LEVELS list (name it); never invent a level.'+freshnessNote(true);
     var wKey='w:v27:'+pair+':'+weekKey();
     var txt=await ai(prompt,wKey,{model:'claude-sonnet-5',maxTokens:1500,webSearch:true});
     if(aiRefused(txt)){delete cache[wKey];LS.del('fhai:'+wKey);throw new Error('The AI returned a no-data response (not cached) — tap ↻ Refresh to retry.');}
@@ -4016,7 +4037,7 @@ async function loadW(pair,btn){
       :'');
     var evHtml=sections.events.map(function(e){return '<div class="cb" style="padding:4px 0;border-bottom:1px solid var(--bd)">'+md(e.replace(/^-\s*/,''))+'</div>'}).join('');
     document.getElementById('we').innerHTML=colorizeCcy(evHtml||'');
-    document.getElementById('wm').textContent=aiStamp(wKey)+' · events from web search';
+    document.getElementById('wm').textContent=aiStamp(wKey)+' · events: '+calSourceLine();
     buildShareBar('w-share','Weekly outlook — '+p,'#analysis-weekly .card',pair);
   } catch(e){
     document.getElementById('wt').innerHTML=errBox(e);
@@ -4046,6 +4067,7 @@ async function load4hr(pair,btn){
     // Cost review 14.9.26: live feed down → stop, never fall back to a web-search call.
     if(!pc) throw new Error('Live price feed unavailable right now — tap ↻ Refresh in a minute.');
     var hSearch=false;
+    await ensureCal();
     var LV4=(await fhLevels([pair]))[pair];
     if(!LV4) throw new Error('Measured price levels are unavailable right now, so no levels can be checked — tap ↻ Refresh in a minute.');
     var prompt=pc+levelsText(pair,LV4)+calRiskBlock(12,[pair.slice(0,3),pair.slice(3)])+'You are a professional forex analyst. Provide a 4-HOUR intraday analysis for '+p+' right now '+new Date().toISOString().split('T')[0]+'. Format exactly:\n4H BIAS: [BULLISH/BEARISH/NEUTRAL]\n\n4H SETUP:\n[2-3 sentences on the 4H chart structure, pattern, and context. Use **bold** for key terms.]\n\nKEY 4H LEVELS:\n- Resistance 1: [price]\n- Resistance 2: [price]\n- Entry zone: [price range]\n- Support 1: [price]\n- Support 2: [price]\n\nENTRY TRIGGER:\n[1-2 sentences on the specific price action signal or candle pattern to watch for entry. Use **bold** for the trigger.]\n\nEvery level line must be one of the five labels above followed by a measured price or "none". Keep the prose tight and specific. Prefer 4H swing levels and the daily pivots for this timeframe.'+LEVEL_RULES+freshnessNote(hSearch);
@@ -4741,7 +4763,7 @@ async function aiCalEvents(){
   });
   return out.sort(function(a,b){return a.ts-b.ts;});
 }
-async function allCalEvents(){
+async function allCalEvents(noAi){
   var weeks=await Promise.all([fetchCalWeek('thisweek'),fetchCalWeek('nextweek')]);
   var out=[],seen={};
   weeks.forEach(function(w){
@@ -4755,6 +4777,7 @@ async function allCalEvents(){
   });
   CAL_AI_SRC=false;
   if(out.length) return out.sort(function(a,b){return a.ts-b.ts;});
+  if(noAi) return [];   // v28 — analysis panels never trigger the AI calendar lookup
   // No feed data at all — fall back to AI web search rather than showing nothing.
   try{
     var aiEv=await aiCalEvents();
@@ -5205,11 +5228,16 @@ async function revT(){
   btn.disabled=true;btn.innerHTML='<div class="sp"></div> Analysing…';
   out.innerHTML='<div class="ld"><div class="sp"></div>Reviewing your trade idea…</div>';
   try{
-    var basePrompt='You are a professional forex trading mentor. '+(ti?'A student has this trade idea:\n\n"'+ti+'"\n\n':'Analyse the chart image provided.\n\n')+'Give structured feedback:\n\n**SETUP QUALITY: [Strong/Moderate/Weak]**\n\n**What\'s good:**\n[2-3 bullet points]\n\n**Concerns:**\n[2-3 bullet points]\n\n**Risk/Reward assessment:**\n[1-2 sentences on the R:R and whether it meets minimum 1:2]\n\n**Recommendation:**\n[PROCEED / WAIT / AVOID] — brief explanation';
+    var tPair=pairInText(ti), tFacts='';
+    if(tPair){ var tpc=await priceContext(tPair); var tLV=(await fhLevels([tPair]))[tPair]; await ensureCal();
+      tFacts='\n\nFACTS (measured by ForexHub — the only market data you have):\n'+(tpc||'Live price: unavailable.\n')+(tLV?levelsText(tPair,tLV):'Measured levels: unavailable.\n')+calRiskBlock(48,[tPair.slice(0,3),tPair.slice(3)]); }
+    else tFacts='\n\nFACTS: no watchlist pair could be identified in the idea, so there is no live price, level or calendar data. Do not judge timing or levels against the market — say what is missing.';
+    var basePrompt='You are a professional forex trading mentor. '+(ti?'A student has this trade idea:\n\n"'+ti+'"\n\n':'Analyse the chart image provided.\n\n')+tFacts+'\n\n'+'Give structured feedback:\n\n**SETUP QUALITY: [Strong/Moderate/Weak]**\n\n**What\'s good:**\n[2-3 bullet points]\n\n**Concerns:**\n[2-3 bullet points]\n\n**Risk/Reward assessment:**\n[1-2 sentences on the R:R and whether it meets minimum 1:2]\n\n**Recommendation:**\n[PROCEED / WAIT / AVOID] — brief explanation';
     /* The rule only applies to the image path — with no picture there is nothing
        to misread, and the numbers can only have come from what John typed. */
-    if(tirImageB64) basePrompt+=NO_INVENT_RULE;
-    var txt=tirImageB64?await aiImage(basePrompt,tirImageB64,tirMimeType):await ai(basePrompt,null,{model:'claude-haiku-4-5',maxTokens:1200,webSearch:false});
+    basePrompt+=NO_INVENT_RULE+'\n· Base PROCEED / WAIT / AVOID on the FACTS: where price is now against the idea\'s levels, the measured levels, and the calendar. If the FACTS are missing, the recommendation must be WAIT and say why.';
+    var txt=tirImageB64?await aiImage(basePrompt,tirImageB64,tirMimeType,{model:'claude-sonnet-5',maxTokens:2000}):await ai(basePrompt,null,{model:'claude-sonnet-5',maxTokens:2000,webSearch:false});
+    var tUnv=unverifiedFigures(txt,basePrompt);
     /* Wrap everything that belongs in the record — the setup you typed, the chart you
        attached and the AI's feedback — inside one printable block, then attach the same
        Print / Share / Email / Save bar the Scanner and Analysis tabs use. */
@@ -5218,8 +5246,8 @@ async function revT(){
       +'<div class="cb" style="white-space:pre-wrap;margin-bottom:10px">'+esc(ti||'(no written setup — chart only)')+'</div>'
       +(tirImageB64?'<div class="meta" style="margin-bottom:4px">Chart screenshot attached:</div><img alt="Attached chart" style="display:block;width:100%;max-width:640px;border-radius:8px;margin:0 0 12px" src="data:'+(tirMimeType||'image/png')+';base64,'+tirImageB64+'">':'')
       +'<div class="cl" style="margin-bottom:6px">AI feedback</div>'
-      +'<div class="cb">'+md(txt)+'</div>'
-      +'<div class="meta" style="margin-top:10px">Reviewed '+stampAEST()+' · ForexHub '+FH_BUILD+' · educational only, not financial advice</div>'
+      +'<div class="cb">'+md(txt)+'</div>'+unverifiedNote(tUnv)
+      +'<div class="meta" style="margin-top:10px">Reviewed '+stampAEST()+' · '+(tPair?'checked against live '+slashPair(tPair)+' price, measured levels and the calendar':'no pair recognised — no market data used')+' · ForexHub '+FH_BUILD+' · educational only, not financial advice</div>'
       +'</div>'
       +'<div class="share-bar" id="rr-share" style="display:none"></div>';
     buildShareBar('rr-share','Trade idea review','#rr-doc','trade-idea-review');
@@ -5274,6 +5302,19 @@ function handlePtrDrop(event){
    the trade behaved after entry — and the model is told to describe those
    in words. If a number is needed and was not supplied, it must say so
    rather than estimate one. */
+/* v28 — trust audit #10: list any price-like figure in an AI reply that does not
+   appear in the data it was given (within 2 pips), so invented numbers are visible. */
+function unverifiedFigures(txt,source){
+  var src=String(source||''), have=(src.match(/\d+\.\d{2,5}/g)||[]).map(parseFloat);
+  var out=[]; (String(txt||'').match(/\d+\.\d{2,5}/g)||[]).forEach(function(x){
+    var v=parseFloat(x); if(src.indexOf(x)>-1) return;
+    var tol=v>20?0.02:0.0002; if(have.some(function(h){return Math.abs(h-v)<=tol;})) return;
+    if(out.indexOf(x)<0) out.push(x);
+  });
+  return out;
+}
+function unverifiedNote(list){ return list.length?'<div class="eb" style="margin-top:8px;border-color:rgba(251,191,36,0.5)">⚠ These figures in the reply were not in the data it was given: '+esc(list.slice(0,12).join(', '))+'. Treat them as unverified.</div>':''; }
+function pairInText(t){ var m=String(t||'').toUpperCase().match(/\b([A-Z]{3})\s*\/?\s*([A-Z]{3})\b/g)||[]; for(var i=0;i<m.length;i++){ var p=m[i].replace(/[^A-Z]/g,''); if(FH_PAIRS.indexOf(p)>-1) return p; } return null; }
 var NO_INVENT_RULE=
  '\n\nHARD RULE ON NUMBERS — this overrides every other instruction:\n'
 +'· You may ONLY state a number (price, level, pip count, R-multiple, percentage, profit, date or time) if it appears verbatim in the FACTS block or the trader\'s notes below.\n'
@@ -5304,7 +5345,8 @@ async function revPastTrade(){
       +NO_INVENT_RULE
       +'\n\nProvide structured feedback:\n\n**TRADE OUTCOME ASSESSMENT:**\n[Was this well executed or not, and why?]\n\n**WHAT WENT WELL:**\n[2-3 specific observations]\n\n**WHAT COULD BE IMPROVED:**\n[2-3 areas with actionable suggestions]\n\n**KEY LESSON:**\n[The single most important takeaway]\n\n**OVERALL GRADE: [A/B/C/D]**\n[Brief explanation]'
       +(facts.length?'':'\n\nNote: no levels were supplied, so open your reply by saying which numbers would have made this review sharper.');
-    var txt=await aiImage(prompt,ptrImageB64,ptrMimeType);
+    var txt=await aiImage(prompt,ptrImageB64,ptrMimeType,{model:'claude-sonnet-5',maxTokens:2000});
+    var pUnv=unverifiedFigures(txt,prompt);
     /* Same printable record as the trade-idea review: notes + chart + feedback in one block. */
     out.innerHTML='<div id="ptr-doc">'
       +(facts.length?'<div class="cl" style="margin-bottom:6px">The numbers you gave it</div><div class="cb" style="white-space:pre-wrap;margin-bottom:10px">'+esc(facts.join(' · '))+'</div>'
@@ -5314,8 +5356,8 @@ async function revPastTrade(){
       +'<div class="meta" style="margin-bottom:4px">Chart screenshot attached:</div>'
       +'<img alt="Trade chart" style="display:block;width:100%;max-width:640px;border-radius:8px;margin:0 0 12px" src="data:'+(ptrMimeType||'image/png')+';base64,'+ptrImageB64+'">'
       +'<div class="cl" style="margin-bottom:6px">AI feedback</div>'
-      +'<div class="cb">'+md(txt)+'</div>'
-      +'<div class="meta" style="margin-top:10px">Reviewed '+stampAEST()+' · ForexHub '+FH_BUILD+' · every figure above came from you, not from the image · educational only, not financial advice</div>'
+      +'<div class="cb">'+md(txt)+'</div>'+unverifiedNote(pUnv)
+      +'<div class="meta" style="margin-top:10px">Reviewed '+stampAEST()+' · ForexHub '+FH_BUILD+' · '+(pUnv.length?'some figures could not be traced to what you supplied — flagged above':'every figure above came from you, not from the image')+' · educational only, not financial advice</div>'
       +'</div>'
       +'<div class="share-bar" id="ptr-share" style="display:none"></div>';
     buildShareBar('ptr-share','Past trade review','#ptr-doc','past-trade-review');
@@ -5513,10 +5555,29 @@ async function loadSentiment(){
   sentLoaded=true;
   var out=document.getElementById('sent-body');
   try{
-    var prompt='You are a forex market analyst. Provide a brief AI market sentiment overview for the current week covering: USD, EUR, GBP, AUD, NZD, CAD, JPY. For each currency state: sentiment (Bullish/Bearish/Neutral), confidence (High/Med/Low), and a one-sentence driver. Format as:\n**USD** – Bullish (High) – [reason]\n**EUR** – etc.\n\nThen add a 2-sentence overall market theme at the end.'+freshnessNote(true);
-    var txt=await ai(prompt,'sent:'+weekKey(),{model:'claude-haiku-4-5',maxTokens:1200,webSearch:true});
-    if(aiRefused(txt)){delete cache['sent:'+weekKey()];LS.del('fhai:sent:'+weekKey());sentLoaded=false;throw new Error('The AI returned a no-data response (not cached) — reopen this tab to retry.');}
-    out.innerHTML='<div class="cb">'+colorizeCcy(md(txt))+'</div><div class="meta" style="margin-top:8px;line-height:1.5">Timeframe: the AI\'s read of <b>this week\'s news</b> — not a price measure. It can disagree with the Indices tech rating (daily trend over weeks–months) and the tree map\'s 4H view. See <b>Indices → Do they agree?</b> for all of them side by side.</div>';
+    /* v28 — trust audit #9: sentiment was an AI web-search opinion with a
+       "confidence" rating, no measured data, cached all week with no timestamp.
+       Now it is given the measured strength, re-read every 6 hours, stamped,
+       and every currency is checked against what price actually did. */
+    if(!_idx){ try{ await loadStrength(false); }catch(e){} }
+    var SC=['USD','EUR','GBP','AUD','NZD','CAD','JPY','CHF'];
+    var ev=_idx&&_idx.strength?SC.filter(function(c){return _idx.strength[c]&&_idx.strength[c].perf;}).map(function(c){var p=_idx.strength[c].perf;return c+' this week '+pct1(p.w1)+', today '+pct1(p.d1);}):[];
+    var sk=sentKey();
+    var prompt='You are a forex market analyst. Give a brief read of NEWS sentiment for the current week for: USD, EUR, GBP, AUD, NZD, CAD, JPY, CHF. For each currency: sentiment (Bullish/Bearish/Neutral), confidence (High/Med/Low), and a one-sentence driver naming the news behind it. Format as:\n**USD** – Bullish (High) – [reason]\n**EUR** – etc.\n\nThen a 2-sentence overall market theme.'
+      +(ev.length?'\n\nMEASURED PRICE STRENGTH (currency baskets, from real prices): '+ev.join('; ')+'. Where your news read disagrees with what price did, say so in that currency\'s driver — do not hide it.':'')+freshnessNote(true);
+    var txt=await ai(prompt,sk,{model:'claude-haiku-4-5',maxTokens:1300,webSearch:true});
+    if(aiRefused(txt)){delete cache[sk];LS.del('fhai:'+sk);sentLoaded=false;throw new Error('The AI returned a no-data response (not cached) — reopen this tab to retry.');}
+    var chk='';
+    if(_idx&&_idx.strength){
+      chk='<div class="card" style="margin-top:10px"><div class="cl">Price check — the AI\'s news read against measured strength this week</div><div class="cb">'+SC.map(function(c){
+        var se=sentFor(c), p=_idx.strength[c]&&_idx.strength[c].perf, w=p?p.w1:null;
+        if(!se||w==null) return '';
+        var pd=w>=0.1?1:w<=-0.1?-1:0, sd=se==='Bullish'?1:se==='Bearish'?-1:0;
+        var verdict=(pd===0||sd===0)?'<span class="hm-neu">– one side flat</span>':pd===sd?'<span class="hm-pos">✓ agrees</span>':'<span class="hm-neg">⚠ disagrees — price is '+(pd>0?'up':'down')+'</span>';
+        return '<div style="padding:3px 0">'+colorizeCcy('<b>'+c+'</b>')+' — AI news: '+esc(se)+' · price this week '+pct1(w)+' · '+verdict+'</div>';
+      }).join('')+'</div></div>';
+    }
+    out.innerHTML='<div class="cb">'+colorizeCcy(md(txt))+'</div>'+chk+'<div class="meta" style="margin-top:6px">'+esc(aiStamp(sk))+' · refreshed every 6 hours</div><div class="meta" style="margin-top:8px;line-height:1.5">Timeframe: the AI\'s read of <b>this week\'s news</b> — not a price measure. It can disagree with the Indices tech rating (daily trend over weeks–months) and the tree map\'s 4H view. See <b>Indices → Do they agree?</b> for all of them side by side.</div>';
     buildShareBar('sent-share','Market sentiment','#sent-body','sentiment');
   } catch(e){out.innerHTML=errBox(e);}
 }
@@ -5558,13 +5619,13 @@ function setCorrDisplay(m){_corrDisplay=m;renderCorr();}
 function renderCorr(){
   var out=document.getElementById('corr-body');
   if(!_corrData){out.innerHTML='<div class="ld"><div class="sp"></div>Loading correlations…</div>';return;}
-  var data=_corrData, dates=_corrDates;
+  var data=_corrData, dates=corrDates();
   function series(sym){
     return dates.map(function(d){
       var r=data.rates[d];
       var c1=sym.slice(0,3),c2=sym.slice(3);
-      var r1=c1==='EUR'?1:(r[c1]||1);
-      var r2=c2==='EUR'?1:(r[c2]||1);
+      var r1=c1==='EUR'?1:r[c1];
+      var r2=c2==='EUR'?1:r[c2];
       return r2/r1; // price of c1/c2 quoted with EUR bridge
     });
   }
@@ -5873,6 +5934,7 @@ async function runScanner(){
       q=await liveQuotes(majors);
       var lines=majors.map(function(mp){return q[mp]?(mp.slice(0,3)+'/'+mp.slice(3)+' = '+quoteLine(mp,q[mp])):null;}).filter(Boolean);
       var tnow=fhTime();
+      await ensureCal();
       scLV=await fhLevels(majors);
       var lvLines=majors.filter(function(mp){return scLV[mp];}).map(function(mp){return levelsLine(mp,scLV[mp]);});
       if(lines.length) priceBlock='CURRENT LIVE PRICES ('+fhClock()+', real-time). Each line: price (today\'s range, % move/momentum) | trend 4H/Day/Week/Month (▲ up ▼ down ▬ flat). "Today"/D are measured from the daily FX rollover at 17:00 New York — early in the day D is naturally small, so weight W/M more then:\n'+lines.join('\n')+'\n\n'+(lvLines.length?'MEASURED LEVELS per pair (from real price bars; nearest above and below the live price; ATR = 14-day average daily range in pips). Pairs not listed have no measured levels — do not trade them:\n'+lvLines.join('\n')+'\n':'MEASURED LEVELS: unavailable.\n')+calRiskBlock(24)+'\n';
@@ -5984,6 +6046,7 @@ async function runPullbackScanner(){
     if(!top.length){res.innerHTML='<div class="scan-empty"><div class="scan-icon">📊</div><div>No price data available — try again in a moment.</div></div>';btn.disabled=false;btn.innerHTML='↩ Pullback scan';return;}
     // 2. Build price block for context
     var tnow=fhTime();
+    await ensureCal();
     var pbLV=await fhLevels(top.map(function(m){return m.pair;}));
     var priceBlock='TODAY\'S TOP MOVERS — LIVE DATA ('+fhClock()+'):\n'+top.map(function(m){
       var p=m.pair.slice(0,3)+'/'+m.pair.slice(3);
@@ -6091,7 +6154,8 @@ function getPipValueAUD(pair,quotes){
     var v=quotes[p]; var n=v?(v.p||v):null;
     if(n) return n;
     // Cross-derive from any other watched pair before giving up
-    v=last&&last.q&&last.q[p]; n=v?(v.p||v):null;
+    /* v28 — last-known prices only within STALE_MAX (12h), never older */
+    v=(last&&last.q&&(Date.now()-last.t)<STALE_MAX)?last.q[p]:null; n=v?(v.p||v):null;
     return n||null;
   }
   /* Derive a rate from whatever we DO have, e.g. AUD/CAD from AUD/USD × USD/CAD.
@@ -6108,24 +6172,13 @@ function getPipValueAUD(pair,quotes){
     }
     return null;
   }
-  var audUsd=cross('AUD','USD')||0.71;
-  var audJpy=cross('AUD','JPY')||105;
-  var audCad=cross('AUD','CAD')||0.89;
-  var audNzd=cross('AUD','NZD')||1.08;
-  var usdChf=cross('USD','CHF')||0.80;
-  var gbpUsd=cross('GBP','USD')||1.34;
-  var eurUsd=cross('EUR','USD')||1.16;
-  var audPerQuote;
-  if(q==='AUD')      audPerQuote=1;
-  else if(q==='USD') audPerQuote=1/audUsd;
-  else if(q==='JPY') audPerQuote=1/audJpy;
-  else if(q==='CAD') audPerQuote=1/audCad;
-  else if(q==='NZD') audPerQuote=1/audNzd;
-  else if(q==='CHF') audPerQuote=1/(audUsd*usdChf);
-  else if(q==='GBP') audPerQuote=gbpUsd/audUsd;
-  else if(q==='EUR') audPerQuote=eurUsd/audUsd;
-  else               audPerQuote=1;
-  return pipInQuote*audPerQuote;
+  /* v28 — trust audit #11: the old hard-coded fallbacks (AUD/USD 0.71, AUD/JPY 105…)
+     produced plausible-looking but wrong $/pip, lot sizes and margin whenever a
+     quote was missing. Now: no live (or ≤12h-old) rate → no figure ("—"). */
+  if(q==='AUD') return pipInQuote;
+  var audQ=cross('AUD',q);
+  if(!(audQ>0)) return null;
+  return pipInQuote/audQ;
 }
 
 async function loadCalculator(){
@@ -6521,6 +6574,7 @@ function updatePlanner(){
     // Per-trade pair — row override wins, otherwise the main Pair dropdown (Amendment 12.8.26)
     var rowPair=row.pair||pair;
     var rowStdPip=getPipValueAUD(rowPair,plannerQuotes);
+    if(!(rowStdPip>0)){ if(pnlEl){pnlEl.textContent='no live rate';pnlEl.style.color='var(--mt)';} if(balEl){balEl.textContent='—';balEl.style.color='var(--mt)';} return; }
     // Per-trade size in LOTS/contracts (Amendment 12.8.26 pt2): the number entered multiplies
     // the selected Lot Size — 1 = one lot of that size, 10 = ten contracts. Blank = 1 lot.
     var rowLots=(row.size!=null&&row.size>0)?row.size:1;
@@ -6588,6 +6642,15 @@ var PEP_SPREAD={EURUSD:3,GBPUSD:6,USDJPY:3,USDCHF:7,USDCAD:6,AUDUSD:4,NZDUSD:7,
   AUDNZD:9,AUDCAD:9,AUDCHF:9,
   NZDCAD:11,NZDCHF:12,CADCHF:10};
 function pspread(p){return PEP_SPREAD[p]||8;}
+/* v28 — trust audit #17: has price already traded back to the pre-gap close
+   since the rollover? Uses the live session high/low; null = cannot tell. */
+function gapFilled(s){
+  var e=_quoteCache[s.pair], q=e&&e.q; if(!q||s.gapFrom==null||s.gapPips==null) return null;
+  if(q.spanSrc&&q.spanSrc!=='session') return null;
+  if(s.gapPips>0) return q.lo!=null?q.lo<=s.gapFrom:null;
+  if(s.gapPips<0) return q.hi!=null?q.hi>=s.gapFrom:null;
+  return null;
+}
 function briefDayKey(){return fhDayKey();}
 function slashPair(p){return p.slice(0,3)+'/'+p.slice(3);}
 function fmtPips(v){return v==null?'—':((v>0?'+':'')+v.toFixed(1));}
@@ -6730,7 +6793,8 @@ async function renderBriefing(force){
   }catch(e){ if(!e||!e.skip){ news=[]; newsFailed=true; } }
   // 6. Alerts (computed from the above)
   var alerts=[];
-  gaps.filter(function(s){return s.gapPips!=null&&s.gapMeasurable!==false&&Math.abs(s.gapPips)>pspread(s.pair)&&Math.abs(s.gapPips)>=10;}).slice(0,3).forEach(function(s){var edge=Math.abs(s.gapPips)-pspread(s.pair);alerts.push({t:'gap',x:slashPair(s.pair)+' gapped '+fmtPips(s.gapPips)+' pips at the ~7am rollover vs a ~'+pspread(s.pair).toFixed(1)+'-pip spread — tradable (edge +'+edge.toFixed(1)+' pips).'});});
+  try{ await liveQuotes(gaps.map(function(s){return s.pair;}),{}); }catch(e){}
+  gaps.filter(function(s){return s.gapPips!=null&&s.gapMeasurable!==false&&Math.abs(s.gapPips)>pspread(s.pair)&&Math.abs(s.gapPips)>=10&&gapFilled(s)!==true;}).slice(0,3).forEach(function(s){var edge=Math.abs(s.gapPips)-pspread(s.pair);alerts.push({t:'gap',x:slashPair(s.pair)+' gapped '+fmtPips(s.gapPips)+' pips at the ~7am rollover vs a ~'+pspread(s.pair).toFixed(1)+'-pip spread — tradable (edge +'+edge.toFixed(1)+' pips).'});});
   /* v24 / worker 11.7 — over the weekend the figures are the last completed session, say so up front */
   var closedRow=rows.filter(function(s){return s.marketClosed;})[0];
   if(closedRow) alerts.push({t:'news',x:'Market closed — the figures below are the last completed 7am→7am session'+(closedRow.prevFrom?' ('+closedRow.prevFrom+' → '+(closedRow.lastBarAt||closedRow.prevTo)+')':'')+'. Live moves and gaps resume when trading reopens (Monday ~08:00 AEST).'});
@@ -6874,7 +6938,7 @@ async function renderBriefing(force){
     return out;
   }
   var newsHtml=todayEvts.length?renderTodayEvents(todayEvts):renderNews(news);
-  var newsSrc=todayEvts.length?todayEvts.length+' scheduled events · live calendar feed'
+  var newsSrc=todayEvts.length?todayEvts.length+' scheduled events · '+calSourceLine()
     :(newsFailed?'calendar feed and news lookup both unavailable':'AI calendar lookup (live feed unavailable)');
   h+='<div class="brief-sec"><div class="brief-h">📰 Today\'s market-moving news <span class="muted">'+whenLong+' · '+newsSrc+'</span></div><div class="brief-news">'+newsHtml+'</div></div>';
   box.innerHTML=h;
@@ -6943,7 +7007,7 @@ function renderGapTable(){
   var naCount=all.filter(function(c){return c.na;}).length;
   var sub=document.getElementById('gap-sub');
   if(sub) sub.innerHTML=(mode==='all'?'all '+all.length+' watched pairs':worthCount+' of '+all.length+' watched pairs worth a look')
-    +' · '+rolloverLabel()+' rollover · tradable when gap &gt; spread'
+    +' · '+rolloverLabel()+' rollover · tradable when gap &gt; spread (spreads are typical Pepperstone figures — check your platform)'
     +(all.length&&all.every(function(c){return c.closed;})?' · <b>market closed — the next gap is measured at the Monday '+rolloverLabel()+' open</b>':(naCount?' · '+naCount+' not measurable from this feed':''));
   var h='';
   if(!list.length){
@@ -6964,7 +7028,7 @@ function renderGapTable(){
         +'<td class="bnum">'+gapCell+'</td>'
         +'<td class="bnum bmuted">'+c.sp.toFixed(1)+'</td>'
         +'<td class="bnum">'+edgeCell+'</td>'
-        +'<td><span class="'+c.cls+'"'+(c.na?' title="The free price feed stitches its hourly bars together, so a rollover gap cannot be measured from it for this pair."':'')+'>'+c.label+'</span></td></tr>';
+        +'<td><span class="'+c.cls+'"'+(c.na?' title="The free price feed stitches its hourly bars together, so a rollover gap cannot be measured from it for this pair."':'')+'>'+c.label+'</span>'+(function(){var f=gapFilled(s);return f===true?' <span class="bmuted" title="Price has already traded back to the pre-gap close since the rollover">· already filled</span>':f===false?' <span class="bmuted">· still open</span>':'';})()+'</td></tr>';
     });
     h+='</tbody></table>';
   }
@@ -7327,10 +7391,24 @@ async function loadStrength(force){
     var d=await r.json();
     if(!d||!d.strength||!Object.keys(d.strength).length) throw new Error(d&&d.error?d.error:'No strength data returned — try again in a moment.');
     _idx=d;_idxAt=Date.now();markSectionLoaded('indices');
+    try{ await idxRolloverD1(); }catch(e){}
     renderIdx();
     var m=document.getElementById('idx-meta'); if(m) m.textContent='Window '+(d.from||'')+' → '+(d.to||'')+' · '+d.pairsUsed+' pairs · as of '+fhClock()+(d.cached?' (shared cache)':'');
   }catch(e){ body.innerHTML='<div class="eb" style="padding:16px">'+friendlyError(e)+'</div>'; }
   _idxLoading=false;
+}
+/* v28 — trust audit #13: the worker's 1D came from Yahoo's UTC daily bar while
+   every other "today" figure starts at the 7am AEST rollover. Rebuild each
+   basket's 1D from the live quotes' since-rollover % (same 7 pairs). */
+async function idxRolloverD1(){
+  var q=await liveQuotes(FH_PAIRS,{});
+  Object.keys(_idx.strength).forEach(function(c){
+    if(c==='DXY') return;
+    var v=[]; FH_PAIRS.forEach(function(p){ if(p.indexOf(c)<0) return; var d=q[p]; if(!d||d.td==null||d.stale) return; v.push(p.slice(0,3)===c?d.td:-d.td); });
+    var pf=_idx.strength[c].perf||(_idx.strength[c].perf={});
+    if(v.length>=5){ pf.d1Day=pf.d1; pf.d1=Number((v.reduce(function(a,b){return a+b;},0)/v.length).toFixed(2)); pf.d1Src='rollover'; }
+    else pf.d1Src='dailybar';
+  });
 }
 function showIdxView(v,btn){_idxView=v;document.querySelectorAll('.idx-vtab').forEach(function(b){b.classList.remove('active');});if(btn)btn.classList.add('active');renderIdx();}
 function sortIdx(col){if(_idxSort.col===col){_idxSort.dir*=-1;}else{_idxSort.col=col;_idxSort.dir=col==='name'?1:-1;}renderIdx();}
@@ -7402,8 +7480,9 @@ function pctOf2(a,b){return (b==null||!b)?null:Number(((a-b)/b*100).toFixed(2));
    4H tree map, and read it as the site contradicting itself. The data was right: each
    measure looks at a different stretch of time. This view lines them up per currency,
    shortest window first, and says in words what the combination means. */
+function sentKey(){ return 'sent:v28:'+weekKey()+':'+Math.floor(Date.now()/(6*3600e3)); }
 function sentFor(ccy){
-  var t=null; try{ t=cache['sent:'+weekKey()]||LS.get('fhai:sent:'+weekKey()); }catch(e){}
+  var t=null; try{ t=cache[sentKey()]||LS.get('fhai:'+sentKey()); }catch(e){}
   if(!t) return null;
   var m=String(t).match(new RegExp('\\b'+ccy+'\\b[^A-Za-z\\n]{0,12}(Bullish|Bearish|Neutral)','i'));
   return m?m[1].charAt(0).toUpperCase()+m[1].slice(1).toLowerCase():null;
@@ -7615,8 +7694,9 @@ async function runIqOutlook(){
       if(attempt<2) out.innerHTML='<div class="ld" style="padding:16px"><div class="sp"></div>The first reply was cut off — asking for a tighter version…</div>';
     }
     if(!j||!j.scenarios) throw new Error('The analysis came back incomplete twice — tap Build the outlook to try again in a moment.');
+    var oIss=iqOutlookCheck(ev,j);
     _iqLast={type:'outlook',ev:ev,json:j};
-    out.innerHTML='<div id="iq-o-doc">'+renderIqOutlook(ev,j)+'</div>';
+    out.innerHTML='<div id="iq-o-doc">'+(oIss.length?'<div class="eb" style="margin-bottom:10px">⚠ ForexHub direction check: '+oIss.length+' direction'+(oIss.length>1?'s':'')+' contradict the scenario they sit under ('+esc(oIss.join('; '))+'). They are marked ⚠ below. The rule: a stronger '+esc(ev.ccy)+' lifts pairs where '+esc(ev.ccy)+' is the first currency and lowers pairs where it is second.</div>':'')+renderIqOutlook(ev,j)+'</div>';
     meta.textContent='Built '+fhClock()+' · cached 12h';
     buildShareBar('iq-o-share','Event outlook — '+ev.name,'#iq-o-doc','iq-outlook');
   }catch(e){ out.innerHTML='<div class="eb">'+friendlyError(e)+'</div>'; }
@@ -7627,6 +7707,25 @@ function iqArrowCell(v){v=String(v||'▬');var c=v.indexOf('▲')>-1?'iq-up':v.i
 function iqPairList(list){
   if(!list||!list.length) return '<div class="iq-flat" style="font-size:12px">—</div>';
   return '<div class="iq-pairs">'+list.map(function(p){return '<div class="iq-pair">'+iqDir(p.dir)+'<div>'+colorizeCcy('<b>'+esc(p.pair||'')+'</b>')+' <span style="color:var(--tx);opacity:0.9">'+esc(p.why||'')+'</span></div></div>';}).join('')+'</div>';
+}
+/* v28 — trust audit #12: the Outlook's first-order directions and mud map were
+   never checked. A stronger CCY must lift CCY/xxx and lower xxx/CCY. */
+function iqOutlookCheck(ev,j){
+  var C=ev.ccy, iss=[], sc=j.scenarios||[];
+  function sgn(s,i){ var t=String(s.ccyEffect||''); if(/bull|strong|hawk|support|positive/i.test(t)) return 1; if(/bear|weak|dovish|weigh|negative/i.test(t)) return -1; return i===0?1:i===2?-1:0; }
+  var g=sc.map(sgn);
+  sc.forEach(function(s,i){ if(!g[i]) return; (s.firstOrder||[]).forEach(function(p){
+    var pr=String(p.pair||'').replace(/[^A-Za-z]/g,'').toUpperCase(); if(pr.length!==6||pr.indexOf(C)<0) return;
+    var exp=g[i]*(pr.slice(0,3)===C?1:-1), d=/up/i.test(p.dir)?1:/down/i.test(p.dir)?-1:0;
+    if(d&&d!==exp){ iss.push(slashPair(pr)+' '+p.dir+' under "'+(s.outcome||'')+'"'); p.why='⚠ contradicts the scenario — '+(p.why||''); }
+  }); });
+  (j.mudMap||[]).forEach(function(m){
+    var pr=String(m.pair||'').replace(/[^A-Za-z]/g,'').toUpperCase(); if(pr.length!==6||pr.indexOf(C)<0) return;
+    var base=pr.slice(0,3)===C?1:-1;
+    [['stronger',g[0]],['weaker',g[2]]].forEach(function(cv){ var sg=cv[1]; if(!sg) return; var v=String(m[cv[0]]||''), d=v.indexOf('▲')>-1?1:v.indexOf('▼')>-1?-1:0, exp=sg*base;
+      if(d&&d!==exp){ iss.push('mud map '+slashPair(pr)+' ('+cv[0]+')'); m[cv[0]]='⚠ '+v; } });
+  });
+  return iss;
 }
 function renderIqOutlook(ev,j){
   var col=ccyCol(ev.ccy);
@@ -7932,9 +8031,12 @@ function planMarketClosed(){ var d=new Date(),wd=d.getUTCDay(),h=d.getUTCHours()
 function planW1(c){ var s=_idx&&_idx.strength&&_idx.strength[c]; return s&&s.perf&&s.perf.w1!=null?s.perf.w1:null; }
 function planD1(c){ var s=_idx&&_idx.strength&&_idx.strength[c]; return s&&s.perf&&s.perf.d1!=null?s.perf.d1:null; }
 /* 60-day correlation of daily returns from the Maps tab's ECB rates (same maths as renderCorr) */
+/* v28 — trust audit #14: a missing ECB rate used to become 1.0, producing a fake
+   jump that skewed the correlation. Days missing any currency are dropped. */
+function corrDates(){ var C=['USD','GBP','JPY','CHF','CAD','AUD','NZD']; return (_corrDates||[]).filter(function(d){ var r=_corrData.rates[d]||{}; return C.every(function(c){return r[c]>0;}); }); }
 function planCorr(a,b){
   if(!_corrData||!_corrDates) return null;
-  function series(sym){ return _corrDates.map(function(d){var r=_corrData.rates[d]||{};var c1=sym.slice(0,3),c2=sym.slice(3);var r1=c1==='EUR'?1:(r[c1]||1),r2=c2==='EUR'?1:(r[c2]||1);return r2/r1;}); }
+  function series(sym){ return corrDates().map(function(d){var r=_corrData.rates[d]||{};var c1=sym.slice(0,3),c2=sym.slice(3);var r1=c1==='EUR'?1:r[c1],r2=c2==='EUR'?1:r[c2];return r2/r1;}); }
   function rets(s){ return s.slice(1).map(function(v,i){return v/s[i]-1;}); }
   var x=rets(series(a)),y=rets(series(b)),n=Math.min(x.length,y.length); if(n<10) return null;
   var mx=0,my=0; for(var i=0;i<n;i++){mx+=x[i];my+=y[i];} mx/=n; my/=n;
@@ -8235,6 +8337,8 @@ function askCtxCommon(k){
     var bl={}; _trendData.forEach(function(r){var b=trBias(r.w,r.dd,r.h,r.age).t; (bl[b]=bl[b]||[]).push(r.sym);});
     parts.push('TREND SCANNER biases: '+Object.keys(bl).map(function(b){return b+': '+bl[b].join(' ');}).join(' | '));
   }
+  if(!(_calAll&&_calAll.length)) parts.push('CALENDAR: not available right now — do not cite any scheduled event.');
+  else if(CAL_AI_SRC||(_calStale&&_calStale.thisweek)) parts.push('CALENDAR SOURCE WARNING: '+calSourceLine()+'. Say so if you rely on an event time.');
   if(_calAll&&_calAll.length){
     var now=Date.now(), ev=_calAll.filter(function(e){return e.ts>now-6*3600e3&&e.ts<now+48*3600e3&&e.imp!=='low';}).slice(0,18);
     if(ev.length) parts.push('CALENDAR next 48h (high/medium): '+ev.map(function(e){return (e.ts<now?'[released] ':'')+e.ccy+' '+e.name+' '+fhDate(new Date(e.ts),{weekday:'short'})+' '+e.time+(e.forecast&&e.forecast!=='—'?' f '+e.forecast:'')+(e.prev&&e.prev!=='—'?' p '+e.prev:'');}).join('; '));
