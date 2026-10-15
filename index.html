@@ -1730,6 +1730,16 @@ body.light .chart-modal-overlay{background:rgba(0,0,0,0.55)}
     <button class="sb" id="syscheck-run" style="margin-top:10px;padding:7px 16px;font-size:12.5px" onclick="runSysCheckNow()">Run check now</button>
   </div>
   <div class="card">
+    <div class="ai"><div class="aq">What's new in v27 (15 Oct 2026) — every level is measured and checked</div><div class="aa">
+      · <b>Why:</b> a full trust review after the 14 Oct CPI review found that every panel giving support, resistance, entry, stop or target had no price structure to work from. Those levels were invented, and the scanner could send them to the bots. The daily and 4H prompts even said "never say you lack live data" and "always give all five".<br>
+      · <b>Measured levels:</b> a new worker service measures, from real price bars, the prior-day and prior-week high/low/close, this week's high/low, daily pivots, the 14-day ATR, and the nearest 4H and daily swing highs and lows. Daily, 4H, weekly, both scanners and Plan → Ask IQ are given these and must choose from them, naming which level each one is.<br>
+      · <b>Checked before you see it:</b> a resistance below price, a support above it, a level too far from price, or one that isn't a measured level is removed and named under the levels. A ✓ line shows what it was checked against.<br>
+      · <b>Scanner and pullback:</b> no longer forced to return two setups. "No setups meet the rules" is now a valid answer. Every setup is checked against the live price and ATR before it is shown: stop already hit, target passed, entry passed or too far away, R:R under 1:2 (1:1.5 for pullbacks), or a stop tighter than ¼ or wider than 2× the daily range. It is checked again with a fresh price when you press Chart or Trade.<br>
+      · <b>Bots:</b> each setup now carries the time it was sent, and the worker drops anything older than 12 hours (before, re-sending re-stamped old setups as new). Setups whose stop is hit or target passed are taken out of the feed.<br>
+      · <b>Plan:</b> a step that has no data no longer counts as a pass. Cards say "Not checked: …", and News says "not checked" instead of "none" when the calendar is unavailable.<br>
+      · <b>Do they agree?</b> "Strong on every timeframe" now appears only when all six columns agree. Otherwise it reads "mostly aligned" and names the columns against it or flat.<br>
+      · Daily, 4H and weekly panels show when the AI answer was <i>generated</i> (not when the page drew it), and use Sonnet. Replies cut off mid-answer are no longer cached.
+    </div></div>
     <div class="ai"><div class="aq">What's new in v26.5 (15 Oct 2026) — measured-moves table tidy-up</div><div class="aa">
       · The <b>Latest</b> column now says how many hours after the release it was measured, so a review run the next day doesn't blame the release for later moves. Prices show at normal precision, and the first-hour range always starts from the pre-release price (worker 12.2).
     </div></div>
@@ -2203,7 +2213,7 @@ function dismissBanner(){
 /* ══════════════════════════════════════
    HEADER DATE
 ══════════════════════════════════════ */
-var FH_BUILD='v26.5'; // 15 Oct 2026 — measured-moves table: latest shows hours after the release, clean prices, range never negative (worker 12.2) // 15 Oct 2026 — IQ Event review anchored to MEASURED price moves (worker /move), verdict check + auto-redo, Sonnet for screenshot reviews // Columns colour switch Chart/Currency // column tiles coloured like the chart // pair filters on their own line under the timeframes // 13 Oct 2026 — Amendments 20: system check light, indices 'Do they agree?', tree map currency filters + columns, closed-market gap wording // Plan: shortlist ranked by gap + money line + Print/Save; policy test 17 Sep // Plan news-risk looks back as well as forward, flag-not-drop option, honest card + IQ question, empty AI replies not saved // IQ picker shows impact + currency colour; briefing news rows: impact border + IQ button // Plan chips show the state after each step, not the final result // 16 Sep 2026 — ForexFlow: Classic / Flow navigation toggle, grouped tabs with colour families, Plan tab // 16 Sep 2026 — calendar six-day grid, correlation Ask IQ, labels, paste hint, mud-map link // 16 Sep 2026 — amendments 14.9.26: Ask IQ on the research tabs, print/save everywhere, calendar collapse + grid, paste screenshots // bump on every delivered change — shown in the header so it's always obvious which version is loaded
+var FH_BUILD='v27'; // 15 Oct 2026 — TRUST BATCH A+B: measured levels (/levels) behind every AI level, level + setup checks vs live price/ATR, no forced setups, feed send-time re-check + per-setup age, Plan 'not checked' instead of pass, honest 'Do they agree?' labels, generation stamps // 15 Oct 2026 — measured-moves table: latest shows hours after the release, clean prices, range never negative (worker 12.2) // 15 Oct 2026 — IQ Event review anchored to MEASURED price moves (worker /move), verdict check + auto-redo, Sonnet for screenshot reviews // Columns colour switch Chart/Currency // column tiles coloured like the chart // pair filters on their own line under the timeframes // 13 Oct 2026 — Amendments 20: system check light, indices 'Do they agree?', tree map currency filters + columns, closed-market gap wording // Plan: shortlist ranked by gap + money line + Print/Save; policy test 17 Sep // Plan news-risk looks back as well as forward, flag-not-drop option, honest card + IQ question, empty AI replies not saved // IQ picker shows impact + currency colour; briefing news rows: impact border + IQ button // Plan chips show the state after each step, not the final result // 16 Sep 2026 — ForexFlow: Classic / Flow navigation toggle, grouped tabs with colour families, Plan tab // 16 Sep 2026 — calendar six-day grid, correlation Ask IQ, labels, paste hint, mud-map link // 16 Sep 2026 — amendments 14.9.26: Ask IQ on the research tabs, print/save everywhere, calendar collapse + grid, paste screenshots // bump on every delivered change — shown in the header so it's always obvious which version is loaded
 /* Stale-tab killer: every so often, check whether a newer build has been deployed.
    If so, show a can't-miss banner telling the user to reload — long-open tabs silently
    running old code caused repeated "the fix didn't work" confusion. */
@@ -2452,13 +2462,24 @@ async function ai(prompt,cacheKey,opts){
   if(opts.expectJson){
     // D3: structured path. Never return an unparsable result as data.
     if(d&&d.json!=null){
-      if(cacheKey){ try{ var js=JSON.stringify(d.json); cache[cacheKey]=js; LS.set('fhai:'+cacheKey,js); }catch(e){} }
+      if(cacheKey){ try{ var js=JSON.stringify(d.json); cache[cacheKey]=js; LS.set('fhai:'+cacheKey,js); aiSaveMeta(cacheKey,d); }catch(e){} }
       return d.json;
     }
     throw new Error(d&&d.stop==='max_tokens'?'AI_JSON_TRUNCATED':'AI_JSON_FAILED');
   }
-  if(cacheKey){ cache[cacheKey]=txt; LS.set('fhai:'+cacheKey,txt); }
+  if(cacheKey&&!(d&&d.stop==='max_tokens')){ cache[cacheKey]=txt; LS.set('fhai:'+cacheKey,txt); aiSaveMeta(cacheKey,d); }
   return txt;
+}
+/* v27 — when an AI answer was GENERATED (not when it was displayed). The worker
+   sends the original time on a KV hit; a local-cache hit reads what was saved. */
+function aiSaveMeta(k,d){ try{ LS.set('fhat:'+k,JSON.stringify({at:(d&&d.at)||new Date().toISOString(),model:(d&&d.model)||'',cached:!!(d&&d.cached)})); }catch(e){} }
+function aiMeta(k){ try{ return JSON.parse(LS.get('fhat:'+k)||'null'); }catch(e){ return null; } }
+function aiGenDate(k){ var m=aiMeta(k),t=m&&Date.parse(m.at); return t?new Date(t):new Date(); }
+function aiStamp(k){
+  var m=aiMeta(k); if(!m) return 'Generated '+fhClock();
+  var t=Date.parse(m.at), age=t?Math.round((Date.now()-t)/60000):null;
+  var mdl=/sonnet/i.test(m.model)?'Sonnet':/haiku/i.test(m.model)?'Haiku':(m.model||'');
+  return 'AI analysis generated '+(t?fhClock(t):'?')+(age!=null&&age>=2?' ('+(age<90?age+' min':Math.round(age/60)+' h')+' ago)':'')+(mdl?' · '+mdl:'');
 }
 /* D10: one place that turns any thrown error into something a human can act on.
    The browser's own message for a dropped connection is the literal string
@@ -2590,6 +2611,106 @@ function freshnessNote(useSearch){
   var d=fhDate(null,{weekday:'long',day:'numeric',month:'long',year:'numeric'});
   if(useSearch) return '\n\nToday is '+d+'. Use web search to confirm current catalysts. Only call an event "upcoming" if it is genuinely in the future relative to today — never describe a past election, central-bank meeting or data release as if it is still ahead.';
   return '\n\nToday is '+d+'. Base your analysis on the live price above and well-established context. Do not present specific scheduled events as "upcoming" unless you are certain they are still in the future.';
+}
+
+
+/* ══ v27 — MEASURED LEVELS (worker /levels) ════════════════════════════
+   Trust audit 15 Oct 2026: every panel that gives support / resistance /
+   entry / stop / target got one quote line per pair and nothing else, so
+   the levels were invented and shown as fact (and the scanner could send them
+   to the bots). Now the AI is handed levels measured from real bars and must
+   pick from them, and ForexHub checks what comes back. */
+var LEVELS_URL=WU.replace(/\/api$/,'')+'/levels';
+var _lvCache={}, LV_TTL=15*60*1000;
+async function fhLevels(pairs){
+  var now=Date.now(), need=pairs.filter(function(p){var e=_lvCache[p];return !e||now-e.ts>LV_TTL;});
+  var chunks=[]; for(var i=0;i<need.length;i+=8) chunks.push(need.slice(i,i+8));
+  await Promise.all(chunks.map(function(ch){
+    return fetch(LEVELS_URL+'?pairs='+encodeURIComponent(ch.join(','))+'&_='+Math.floor(Date.now()/60000),{cache:'no-store'})
+      .then(function(r){return r.ok?r.json():null;})
+      .then(function(d){ var L=(d&&d.levels)||{}; Object.keys(L).forEach(function(k){ _lvCache[k]={ts:Date.now(),L:L[k]}; }); })
+      .catch(function(){});
+  }));
+  var out={}; pairs.forEach(function(p){ if(_lvCache[p]) out[p]=_lvCache[p].L; }); return out;
+}
+function fhPipOf(p){ return String(p).indexOf('JPY')>-1?0.01:0.0001; }
+function lvP(pair,v){ return v==null?'—':fmtPrice(pair,v); }
+function measuredLevels(pair,L){
+  var a=[]; function add(v,n){ if(v!=null&&isFinite(v)) a.push({p:v,n:n}); }
+  if(L.pd){ add(L.pd.h,'prior-day high'); add(L.pd.l,'prior-day low'); add(L.pd.c,'prior-day close'); }
+  if(L.pw){ add(L.pw.h,'prior-week high'); add(L.pw.l,'prior-week low'); add(L.pw.c,'prior-week close'); }
+  if(L.tw){ add(L.tw.h,'this-week high'); add(L.tw.l,'this-week low'); }
+  if(L.piv){ add(L.piv.p,'daily pivot'); add(L.piv.r1,'pivot R1'); add(L.piv.r2,'pivot R2'); add(L.piv.s1,'pivot S1'); add(L.piv.s2,'pivot S2'); }
+  ['sw4h','swD'].forEach(function(k){ var sw=L[k]; if(!sw) return; var tf=k==='sw4h'?'4H':'daily';
+    (sw.hi||[]).forEach(function(x){ add(x.p,tf+' swing high ('+String(x.at||'').replace(/,? \d\d:\d\d AEST/,'')+')'); });
+    (sw.lo||[]).forEach(function(x){ add(x.p,tf+' swing low ('+String(x.at||'').replace(/,? \d\d:\d\d AEST/,'')+')'); }); });
+  return a;
+}
+function levelsText(pair,L){
+  var ml=measuredLevels(pair,L).sort(function(x,y){return y.p-x.p;}), price=L.price, done=false, rows=[];
+  ml.forEach(function(m){ if(!done&&m.p<price){ rows.push('  >>> current price '+lvP(pair,price)+' <<<'); done=true; } rows.push('  '+lvP(pair,m.p)+' — '+m.n); });
+  if(!done) rows.push('  >>> current price '+lvP(pair,price)+' <<<');
+  return '\nMEASURED LEVELS for '+slashPair(pair)+' (from real price bars, highest first; daily ATR(14) = '+L.atrPips+' pips):\n'+rows.join('\n')+'\n';
+}
+function levelsLine(pair,L){
+  var ml=measuredLevels(pair,L), price=L.price;
+  var up=ml.filter(function(m){return m.p>price;}).sort(function(a,b){return a.p-b.p;}).slice(0,4);
+  var dn=ml.filter(function(m){return m.p<price;}).sort(function(a,b){return b.p-a.p;}).slice(0,4);
+  var f=function(m){return lvP(pair,m.p)+' '+m.n.replace(/ \(.*\)$/,'');};
+  return slashPair(pair)+' ATR '+L.atrPips+'p | above: '+(up.map(f).join(', ')||'none')+' | below: '+(dn.map(f).join(', ')||'none');
+}
+var LEVEL_RULES='\n\nLEVEL RULES: Use ONLY prices from the MEASURED LEVELS list (quote them exactly) and name which one in brackets, e.g. "Resistance 1: 1.12345 (prior-day high)". Resistances must be above the current price and supports below it. If no measured level fits a slot, write "none" for that slot — never invent a level. Do not quote Fibonacci, RSI, divergence or any indicator values — none are given to you.';
+/* Check each AI level line against the live price, the ATR and the measured list.
+   Lines that fail are removed from the display and the chart, and named. */
+function checkLevelLines(pair,L,lines,maxAtr){
+  var price=L.price, atr=L.atr, ml=measuredLevels(pair,L), tol=Math.max(fhPipOf(pair)*3,(atr||0)*0.05), keep=[], removed=[];
+  (lines||[]).forEach(function(line){
+    if(/:\s*none\b/i.test(line)){ keep.push(line); return; }
+    var isEntry=/entry/i.test(line), v=fhLevelPrice(line,isEntry);
+    if(v==null){ keep.push(line); return; }
+    var why=null;
+    if(/resist|\br[12]\b/i.test(line)&&!(v>price)) why='resistance is not above the current price';
+    else if(/support|\bs[12]\b/i.test(line)&&!(v<price)) why='support is not below the current price';
+    else if(atr&&Math.abs(v-price)>maxAtr*atr) why='more than '+maxAtr+'× the daily range from price';
+    else if(!isEntry&&!ml.some(function(m){return Math.abs(m.p-v)<=tol;})) why='not one of the measured levels';
+    if(why) removed.push({line:line,why:why}); else keep.push(line);
+  });
+  return {keep:keep,removed:removed};
+}
+function levelCheckNote(pair,L,chk){
+  var h='<div class="meta" style="margin-top:6px">✓ Levels checked against the live price '+lvP(pair,L.price)+' and '+measuredLevels(pair,L).length+' measured levels · daily ATR '+L.atrPips+' pips</div>';
+  if(chk.removed.length) h+='<div class="eb" style="margin-top:6px;border-color:rgba(251,191,36,0.5)">Removed '+chk.removed.length+' level'+(chk.removed.length>1?'s':'')+' that failed the check: '+chk.removed.map(function(r){return esc(r.line)+' — '+esc(r.why);}).join('; ')+'</div>';
+  return h;
+}
+/* High-impact calendar rows for the next N hours — or an explicit "unknown". */
+function calRiskBlock(hrs,ccys){
+  var ok=_calAll&&_calAll.length&&!CAL_AI_SRC&&!(_calStale&&_calStale.thisweek);
+  if(!ok) return '\nCALENDAR: not available right now — do not cite any scheduled event or catalyst.\n';
+  var now=Date.now(), until=now+hrs*3600e3;
+  var ev=_calAll.filter(function(e){return e.imp==='high'&&e.ts>=now-3600e3&&e.ts<=until&&(!ccys||ccys.indexOf(e.ccy)>-1);}).slice(0,25);
+  return '\nHIGH-IMPACT CALENDAR, last 1h and next '+hrs+'h (from the live calendar feed — the only events you may cite):\n'+(ev.length?ev.map(function(e){return '  '+e.ccy+' '+e.name+' — '+fhDate(new Date(e.ts),{weekday:'short'})+' '+fhClock(e.ts);}).join('\n'):'  none')+'\n';
+}
+/* A scanner / pullback setup checked against the live price and the pair's ATR.
+   Returns the reason it fails, or null. */
+function checkSetupLive(o,q,LV,kind){
+  var pr=String(o.pair).replace(/[^A-Za-z]/g,'').toUpperCase(), d=q&&q[pr];
+  if(!d||d.p==null||d.stale) return 'no live price to check it against';
+  var p=d.p, e=o._e, sl=o._sl, tp=o._tp, L=LV&&LV[pr], atr=L&&L.atr;
+  if(o._isLong?sl>=p:sl<=p) return 'stop already hit at the live price';
+  if(o._isLong?tp<=p:tp>=p) return 'target already passed at the live price';
+  if(kind==='pullback'){ if(o._isLong?e>=p:e<=p) return 'limit entry already reached'; }
+  else { var tolE=atr?0.15*atr:p*0.0008; if(o._isLong?e>p+tolE:e<p-tolE) return 'entry already passed'; }
+  var maxD=atr?(kind==='pullback'?1.5:1.0)*atr:p*(kind==='pullback'?0.012:0.006);
+  if(Math.abs(e-p)>maxD) return 'entry too far from the live price';
+  var minRR=kind==='pullback'?1.5:1.8;
+  if(o._rr<minRR) return 'risk/reward under 1:'+(kind==='pullback'?'1.5':'2');
+  if(atr){ var sd=Math.abs(e-sl); if(sd<0.25*atr) return 'stop tighter than a quarter of the daily range'; if(sd>2*atr) return 'stop wider than 2× the daily range'; }
+  o._chk={p:p,atr:atr,atrPips:L?L.atrPips:null,at:Date.now()};
+  return null;
+}
+function setupCheckLine(o){
+  var c=o._chk; if(!c) return '';
+  return '<div class="meta" style="margin:4px 0 0">✓ Checked against live '+lvP(String(o.pair).replace(/[^A-Za-z]/g,'').toUpperCase(),c.p)+' at '+fhClock(c.at)+(c.atrPips!=null?' · stop '+Math.round(Math.abs(o._e-o._sl)/fhPipOf(o.pair))+' pips vs daily ATR '+Math.round(c.atrPips):' · ATR unavailable — stop width not checked')+'</div>';
 }
 
 /* ══════════════════════════════════════
@@ -3429,13 +3550,33 @@ function feedMode(src,o){ var e=feedGet(src)[feedKey(o)]; return e?e.mode:null; 
 /* Every send re-posts the whole current basket for that source. The worker
    stores one record per source, so a partial post would silently retract
    everything sent before it. */
-function feedPush(src){
-  var b=feedGet(src), list=Object.keys(b).map(function(k){ return b[k].s; });
+async function feedPush(src){
+  /* v27 — each setup carries the time it was sent (the worker drops anything older
+     than 12h), and anything whose stop is hit or target passed at the live price
+     is taken out of the basket instead of being re-sent. */
+  var b=feedGet(src), keys=Object.keys(b);
+  var pairs=keys.map(function(k){return b[k].s.pair;}).filter(function(p,i,a){return a.indexOf(p)===i;});
+  var q={}; try{ pairs.forEach(function(p){ delete _quoteCache[p]; }); q=await liveQuotes(pairs); }catch(e){}
+  var gone=[];
+  keys.forEach(function(k){ var s=b[k].s, d=q[s.pair]; if(!d||d.p==null) return; var L=s.dir==='LONG';
+    if((L?s.sl>=d.p:s.sl<=d.p)||(L?s.tp<=d.p:s.tp>=d.p)){ gone.push(slashPair(s.pair)); delete b[k]; } });
+  if(gone.length){ var f=feedAll(); f[src]=b; feedSave(f); showToast('Removed from the feed — stop hit or target passed: '+gone.join(', ')); }
+  var list=Object.keys(b).map(function(k){ return Object.assign({},b[k].s,{at:new Date(b[k].at||Date.now()).toISOString()}); });
   return publishSetups(src,list);
 }
-function feedSend(id,mode){
+/* Re-check a card against a FRESH live price right before it is sent. */
+async function feedRecheck(o,src){
+  var pr=String(o.pair).replace(/[^A-Za-z]/g,'').toUpperCase();
+  delete _quoteCache[pr];
+  var q={}; try{ q=await liveQuotes([pr]); }catch(e){}
+  var LV={}; try{ LV=await fhLevels([pr]); }catch(e){}
+  return checkSetupLive(o,q,LV,src);
+}
+async function feedSend(id,mode){
   var o=_setupStore[id]; if(!o) return;
   var src=o.src==='pullback'?'pullback':'scanner';
+  var why=await feedRecheck(o,src);
+  if(why){ showToast('Not sent — '+why+'. Run the scanner again for a fresh setup.'); return; }
   if(mode==='trade'&&o._str&&o._str.verdict==='against'&&strMode()!=='off'&&strMode()!=='flag'){
     showToast('Held back: '+o._str.why); return;
   }
@@ -3451,11 +3592,14 @@ function feedSend(id,mode){
   showToast(mode==='trade'?'Sent to trade — the bot will place it':'Sent to chart — drawn only, no order');
   paintFeedButtons();
 }
-function feedSendAll(mode){
+async function feedSendAll(mode){
   var ids=Object.keys(_setupStore).filter(function(id){ return document.querySelector('.scan-chart[data-sid="'+id+'"]'); });
-  var src=null,n=0;
+  var src=null,n=0,skipped=[];
+  var fails={};
+  await Promise.all(ids.map(async function(id){ var o=_setupStore[id]; if(!o) return; var w=await feedRecheck(o,o.src==='pullback'?'pullback':'scanner'); if(w) fails[id]=w; }));
   ids.forEach(function(id){
     var o=_setupStore[id]; if(!o) return;
+    if(fails[id]){ skipped.push(slashPair(String(o.pair).replace(/[^A-Za-z]/g,'').toUpperCase())+' ('+fails[id]+')'); return; }
     src=o.src==='pullback'?'pullback':'scanner';
     if(mode==='trade'&&o._str&&o._str.verdict==='against'&&strMode()!=='off'&&strMode()!=='flag') return;
     var f=feedAll(), b=f[src]||{}, k=feedKey(o);
@@ -3466,7 +3610,8 @@ function feedSendAll(mode){
       strength:o._str?o._str.verdict:'',strengthWhy:o._str?o._str.why:''}};
     f[src]=b; feedSave(f); o._ref=ref; n++;
   });
-  if(!src||!n){ showToast('Nothing eligible to send'); return; }
+  if(skipped.length) setTimeout(function(){ showToast('Not sent: '+skipped.join(', ')); },1800);
+  if(!src||!n){ showToast('Nothing eligible to send'+(skipped.length?' — '+skipped.join(', '):'')); return; }
   feedPush(src).then(function(){ paintFeedButtons(); });
   showToast(n+' setup'+(n>1?'s':'')+' sent to '+(mode==='trade'?'trade':'chart'));
   paintFeedButtons();
@@ -3634,7 +3779,9 @@ function fhNums(s){
    An entry ZONE quoted as a range resolves to its midpoint — that is the line the
    chart draws. */
 function fhLevelPrice(line,isEntry){
-  var txt=String(line==null?'':line);
+  /* v27 — bracketed notes are not prices: "1.11750 (4H swing low)" read as 4,
+     and "(Wed, 14 Oct)" as 14. Levels now carry their source in brackets. */
+  var txt=String(line==null?'':line).replace(/\([^)]*\)/g,' ');
   var body=txt.indexOf(':')>-1?txt.slice(txt.indexOf(':')+1):txt;
   var n=fhNums(body);
   if(!n.length)n=fhNums(txt);
@@ -3778,9 +3925,11 @@ async function loadD(pair,btn){
     // falling back to a web-search call (~20k+ input tokens each). Nothing is billed or cached.
     if(!pc) throw new Error('Live price feed unavailable right now — tap ↻ Refresh in a minute.');
     var dSearch=false;
-    var prompt=pc+'You are a professional forex analyst. Provide a concise DAILY analysis for '+p+' as of today '+new Date().toISOString().split('T')[0]+'. Format exactly:\nBIAS: [BULLISH/BEARISH/NEUTRAL]\n\nKEY LEVELS:\n- Resistance 1: [price]\n- Resistance 2: [price]\n- Entry zone: [price range]\n- Support 1: [price]\n- Support 2: [price]\n\nWATCH TODAY:\n[2-3 bullet points on what to watch, catalysts, and specific entry triggers. Use **bold** for key terms.]\n\nBe specific with price levels — resistances above and supports below the current price. Keep it concise. Never say you lack access to live data — '+(dSearch?'use web search to find the current price first.':'the CURRENT LIVE MARKET price is provided above.')+freshnessNote(dSearch);
-    var dKey='d:'+pair+':'+new Date().toDateString();
-    var txt=await ai(prompt,dKey,{model:'claude-haiku-4-5',maxTokens:1000,webSearch:dSearch});
+    var LVd=(await fhLevels([pair]))[pair];
+    if(!LVd) throw new Error('Measured price levels are unavailable right now, so no levels can be checked — tap ↻ Refresh in a minute.');
+    var prompt=pc+levelsText(pair,LVd)+calRiskBlock(24,[pair.slice(0,3),pair.slice(3)])+'You are a professional forex analyst. Provide a concise DAILY analysis for '+p+' as of today '+new Date().toISOString().split('T')[0]+'. Format exactly:\nBIAS: [BULLISH/BEARISH/NEUTRAL]\n\nKEY LEVELS:\n- Resistance 1: [price]\n- Resistance 2: [price]\n- Entry zone: [price range]\n- Support 1: [price]\n- Support 2: [price]\n\nWATCH TODAY:\n[2-3 bullet points on what to watch, catalysts, and specific entry triggers. Use **bold** for key terms.]\n\nKeep it concise. In WATCH TODAY only cite events from the CALENDAR block.'+LEVEL_RULES+freshnessNote(dSearch);
+    var dKey='d:v27:'+pair+':'+new Date().toDateString();
+    var txt=await ai(prompt,dKey,{model:'claude-sonnet-5',maxTokens:1400,webSearch:dSearch});
     if(aiRefused(txt)){delete cache[dKey];LS.del('fhai:'+dKey);throw new Error('The AI returned a no-data response (not cached) — tap ↻ Refresh to retry.');}
     var lines=txt.split('\n');
     var stripMd=fhStripMd;
@@ -3792,6 +3941,7 @@ async function loadD(pair,btn){
        The old inline reader required a leading "-", which is why some pairs showed
        "KEY LEVELS: --" and nothing else. */
     var lvls=fhLevelLines(lines,/^KEY LEVELS/,/^WATCH TODAY/);
+    var dChk=checkLevelLines(pair,LVd,lvls,3); lvls=dChk.keep;
     var inWatch=false,wch=[];
     lines.forEach(function(l){
       var bare=stripMd(l).toUpperCase();
@@ -3802,9 +3952,9 @@ async function loadD(pair,btn){
       ? lvls.map(function(l){return '<div style="font-family:\'DM Mono\',monospace;font-size:12px;padding:5px 0;border-bottom:1px solid var(--bd);color:#d4d0ca;">'+esc(l)+'</div>'}).join('')
       /* Never render a bare "--" as the day's levels. Say what happened and offer the retry. */
       : '<div class="eb">No price levels came back for this pair — the model answered without them. Tap <b>↺ Refresh analysis</b> to ask again.</div>';
-    document.getElementById('dl').innerHTML=lvlHtml;
+    document.getElementById('dl').innerHTML=lvlHtml+levelCheckNote(pair,LVd,dChk);
     // Mini chart (click to enlarge — Amendment 7)
-    var stampedAt=new Date();
+    var stampedAt=aiGenDate(dKey);
     var chartDiv=document.getElementById('dl-chart');
     chartDiv.innerHTML='';
     chartDiv.appendChild(buildMiniChart(pair,bias,lvls,null,null,{tf:'DAILY',when:stampedAt}));
@@ -3813,13 +3963,13 @@ async function loadD(pair,btn){
     lastDaily={pair:pair,bias:bias,lvls:lvls,when:stampedAt,tf:'DAILY'};
     var wHtml=wch.length?wch.map(function(l){return '<div class="cb" style="padding:4px 0;border-bottom:1px solid var(--bd);last-child:border-none">'+md(l)+'</div>'}).join(''):'<div class="cb">'+md(lines.slice(-3).join(' '))+'</div>';
     document.getElementById('dw').innerHTML=colorizeCcy(wHtml);
-    document.getElementById('dm').textContent='Updated '+fhClock();
+    document.getElementById('dm').textContent=aiStamp(dKey)+' · levels checked '+fhClock();
     buildShareBar('d-share','Daily analysis — '+p,'#analysis-daily .card',pair);
   } catch(e){
     document.getElementById('db').innerHTML=errBox(e);
   }
 }
-function forceD(){var k='d:'+cD+':'+new Date().toDateString();delete cache[k];LS.del('fhai:'+k);loadD(cD,null);}
+function forceD(){var k='d:v27:'+cD+':'+new Date().toDateString();delete cache[k];LS.del('fhai:'+k);loadD(cD,null);}
 
 /* ══════════════════════════════════════
    WEEKLY ANALYSIS
@@ -3841,9 +3991,11 @@ async function loadW(pair,btn){
   var wt2=document.getElementById('w-title'); if(wt2) wt2.innerHTML='Weekly outlook &nbsp; '+pairChip(pair);
   try{
     var pc=await priceContext(pair);
-    var prompt=pc+'You are a professional forex analyst. Provide a concise WEEKLY analysis for '+p+' for the week of '+new Date().toISOString().split('T')[0]+'. Format exactly:\nMACRO THEME:\n[2-3 sentences on the macro backdrop driving this pair. Use **bold** for key themes.]\n\nTREND AND STRUCTURE:\n[2-3 sentences on the weekly trend, structure, key levels. Use **bold** for level prices.]\n\nKEY EVENTS THIS WEEK:\n- [Event 1: day and what to watch]\n- [Event 2]\n- [Event 3]\n\nKeep each section tight and actionable.'+freshnessNote(true);
-    var wKey='w:'+pair+':'+weekKey();
-    var txt=await ai(prompt,wKey,{model:'claude-haiku-4-5',maxTokens:1200,webSearch:true});
+    if(!pc) throw new Error('Live price feed unavailable right now — tap ↻ Refresh in a minute.');
+    var LVw=(await fhLevels([pair]))[pair];
+    var prompt=pc+(LVw?levelsText(pair,LVw):'\nMEASURED LEVELS: unavailable — do not quote any price level.\n')+'You are a professional forex analyst. Provide a concise WEEKLY analysis for '+p+' for the week of '+new Date().toISOString().split('T')[0]+'. Format exactly:\nMACRO THEME:\n[2-3 sentences on the macro backdrop driving this pair. Use **bold** for key themes.]\n\nTREND AND STRUCTURE:\n[2-3 sentences on the weekly trend, structure, key levels. Use **bold** for level prices.]\n\nKEY EVENTS THIS WEEK:\n- [Event 1: day and what to watch]\n- [Event 2]\n- [Event 3]\n\nKeep each section tight and actionable. Any price you mention must come from the MEASURED LEVELS list (name it); never invent a level.'+freshnessNote(true);
+    var wKey='w:v27:'+pair+':'+weekKey();
+    var txt=await ai(prompt,wKey,{model:'claude-sonnet-5',maxTokens:1500,webSearch:true});
     if(aiRefused(txt)){delete cache[wKey];LS.del('fhai:'+wKey);throw new Error('The AI returned a no-data response (not cached) — tap ↻ Refresh to retry.');}
     var lines=txt.split('\n');
     var sections={macro:[],trend:[],events:[]};
@@ -3864,13 +4016,13 @@ async function loadW(pair,btn){
       :'');
     var evHtml=sections.events.map(function(e){return '<div class="cb" style="padding:4px 0;border-bottom:1px solid var(--bd)">'+md(e.replace(/^-\s*/,''))+'</div>'}).join('');
     document.getElementById('we').innerHTML=colorizeCcy(evHtml||'');
-    document.getElementById('wm').textContent='Updated '+fhClock();
+    document.getElementById('wm').textContent=aiStamp(wKey)+' · events from web search';
     buildShareBar('w-share','Weekly outlook — '+p,'#analysis-weekly .card',pair);
   } catch(e){
     document.getElementById('wt').innerHTML=errBox(e);
   }
 }
-function forceW(){var k='w:'+cW+':'+weekKey();delete cache[k];LS.del('fhai:'+k);loadW(cW,null);}
+function forceW(){var k='w:v27:'+cW+':'+weekKey();delete cache[k];LS.del('fhai:'+k);loadW(cW,null);}
 function weekKey(){var d=new Date();d.setDate(d.getDate()-d.getDay());return d.toISOString().split('T')[0];}
 
 /* ══════════════════════════════════════
@@ -3894,9 +4046,11 @@ async function load4hr(pair,btn){
     // Cost review 14.9.26: live feed down → stop, never fall back to a web-search call.
     if(!pc) throw new Error('Live price feed unavailable right now — tap ↻ Refresh in a minute.');
     var hSearch=false;
-    var prompt=pc+'You are a professional forex analyst. Provide a 4-HOUR intraday analysis for '+p+' right now '+new Date().toISOString().split('T')[0]+'. Format exactly:\n4H BIAS: [BULLISH/BEARISH/NEUTRAL]\n\n4H SETUP:\n[2-3 sentences on the 4H chart structure, pattern, and context. Use **bold** for key terms.]\n\nKEY 4H LEVELS:\n- Resistance 1: [price]\n- Resistance 2: [price]\n- Entry zone: [price range]\n- Support 1: [price]\n- Support 2: [price]\n\nENTRY TRIGGER:\n[1-2 sentences on the specific price action signal or candle pattern to watch for entry. Use **bold** for the trigger.]\n\nEvery level line must be one of the five labels above followed by a price — always give all five, resistances above and supports below the current price. Keep the prose tight and specific. Never say you lack access to live data — '+(hSearch?'use web search to find the current price first.':'the CURRENT LIVE MARKET price is provided above.')+freshnessNote(hSearch);
-    var hKey='4h:'+pair+':'+hr4key;
-    var txt=await ai(prompt,hKey,{model:'claude-haiku-4-5',maxTokens:1000,webSearch:hSearch});
+    var LV4=(await fhLevels([pair]))[pair];
+    if(!LV4) throw new Error('Measured price levels are unavailable right now, so no levels can be checked — tap ↻ Refresh in a minute.');
+    var prompt=pc+levelsText(pair,LV4)+calRiskBlock(12,[pair.slice(0,3),pair.slice(3)])+'You are a professional forex analyst. Provide a 4-HOUR intraday analysis for '+p+' right now '+new Date().toISOString().split('T')[0]+'. Format exactly:\n4H BIAS: [BULLISH/BEARISH/NEUTRAL]\n\n4H SETUP:\n[2-3 sentences on the 4H chart structure, pattern, and context. Use **bold** for key terms.]\n\nKEY 4H LEVELS:\n- Resistance 1: [price]\n- Resistance 2: [price]\n- Entry zone: [price range]\n- Support 1: [price]\n- Support 2: [price]\n\nENTRY TRIGGER:\n[1-2 sentences on the specific price action signal or candle pattern to watch for entry. Use **bold** for the trigger.]\n\nEvery level line must be one of the five labels above followed by a measured price or "none". Keep the prose tight and specific. Prefer 4H swing levels and the daily pivots for this timeframe.'+LEVEL_RULES+freshnessNote(hSearch);
+    var hKey='4h:v27:'+pair+':'+hr4key;
+    var txt=await ai(prompt,hKey,{model:'claude-sonnet-5',maxTokens:1400,webSearch:hSearch});
     if(aiRefused(txt)){delete cache[hKey];LS.del('fhai:'+hKey);throw new Error('The AI returned a no-data response (not cached) — tap ↻ Refresh to retry.');}
     var lines=txt.split('\n');
     var strip4=fhStripMd;
@@ -3916,13 +4070,15 @@ async function load4hr(pair,btn){
     /* Same contract as Daily — a level is a named level with a number on it, not a
        line that happens to begin with a dash. */
     var lv4=fhLevelLines(lines,/^KEY 4H LEVEL/,/^ENTRY TRIGGER/);
+    var hChk=checkLevelLines(pair,LV4,lv4,1.5); lv4=hChk.keep;
     document.getElementById('h4s').innerHTML=colorizeCcy('<div class="cb">'+md(sections.setup.join(' '))+'</div>');
     document.getElementById('h4l').innerHTML=lv4.length
       ? colorizeCcy(lv4.map(function(l){return '<div style="font-family:\'DM Mono\',monospace;font-size:12px;padding:5px 0;border-bottom:1px solid var(--bd);color:#d4d0ca;">'+esc(l)+'</div>'}).join(''))
       : '<div class="eb">No 4H price levels came back for this pair — tap <b>↺ Refresh 4H analysis</b> to ask again.</div>';
+    document.getElementById('h4l').innerHTML+=levelCheckNote(pair,LV4,hChk);
     document.getElementById('h4t').innerHTML=colorizeCcy('<div class="cb">'+md(sections.trigger.join(' '))+'</div>');
     /* Amendment 19.8.26 — copyable 4H key-levels image, same as Daily */
-    var stamped4=new Date();
+    var stamped4=aiGenDate(hKey);
     var c4div=document.getElementById('h4-chart');
     if(c4div){
       c4div.innerHTML='';
@@ -3931,13 +4087,13 @@ async function load4hr(pair,btn){
       c4div.title='Click to enlarge';
     }
     last4hr={pair:pair,bias:bias,lvls:lv4,when:stamped4,tf:'4H'};
-    document.getElementById('h4m').textContent='Updated '+fhClock();
+    document.getElementById('h4m').textContent=aiStamp(hKey)+' · levels checked '+fhClock();
     buildShareBar('h4-share','4-Hour analysis — '+p,'#analysis-4hr .card',pair);
   } catch(e){
     document.getElementById('h4b').innerHTML=errBox(e);
   }
 }
-function force4hr(){var k='4h:'+c4+':'+Math.floor(new Date()/14400000);delete cache[k];LS.del('fhai:'+k);load4hr(c4,null);}
+function force4hr(){var k='4h:v27:'+c4+':'+Math.floor(new Date()/14400000);delete cache[k];LS.del('fhai:'+k);load4hr(c4,null);}
 
 /* ══════════════════════════════════════
    SESSIONS  (Amendments 4 & 5)
@@ -5709,29 +5865,35 @@ async function runScanner(){
   if(strMode()!=='off') await ensureStrength();   // v16 regime check; silent if unavailable
   try{
     // Live intraday prices to anchor entries to the real current market (fixes stale entries)
-    var priceBlock='';
+    var priceBlock='',q={},scLV={};
     try{
       // ALL 28 watched pairs — the old 12-pair list had no CHF/JPY, NZD or CAD crosses, which is
       // why big JPY-cross / USD-wide moves produced no setups (user amendment).
       var majors=TREND_PAIRS;
-      var q=await liveQuotes(majors);
+      q=await liveQuotes(majors);
       var lines=majors.map(function(mp){return q[mp]?(mp.slice(0,3)+'/'+mp.slice(3)+' = '+quoteLine(mp,q[mp])):null;}).filter(Boolean);
       var tnow=fhTime();
-      if(lines.length) priceBlock='CURRENT LIVE PRICES ('+fhClock()+', real-time). Each line: price (today\'s range, % move/momentum) | trend 4H/Day/Week/Month (▲ up ▼ down ▬ flat). "Today"/D are measured from the daily FX rollover at 17:00 New York — early in the day D is naturally small, so weight W/M more then:\n'+lines.join('\n')+'\n\n';
+      scLV=await fhLevels(majors);
+      var lvLines=majors.filter(function(mp){return scLV[mp];}).map(function(mp){return levelsLine(mp,scLV[mp]);});
+      if(lines.length) priceBlock='CURRENT LIVE PRICES ('+fhClock()+', real-time). Each line: price (today\'s range, % move/momentum) | trend 4H/Day/Week/Month (▲ up ▼ down ▬ flat). "Today"/D are measured from the daily FX rollover at 17:00 New York — early in the day D is naturally small, so weight W/M more then:\n'+lines.join('\n')+'\n\n'+(lvLines.length?'MEASURED LEVELS per pair (from real price bars; nearest above and below the live price; ATR = 14-day average daily range in pips). Pairs not listed have no measured levels — do not trade them:\n'+lvLines.join('\n')+'\n':'MEASURED LEVELS: unavailable.\n')+calRiskBlock(24)+'\n';
     }catch(e){}
-    var prompt=priceBlock+'You are a professional forex trading analyst. Analyse the current forex market and identify the 3-5 highest-probability trade setups right now across major pairs.\n\nFor each setup use this EXACT plain-text format with no markdown, no asterisks, no bold:\n\nSETUP:\nPAIR: e.g. GBP/USD\nDIRECTION: LONG or SHORT\nPROBABILITY: HIGH or MEDIUM\nENTRY: price level\nSTOP LOSS: price level\nTAKE PROFIT: price level\nREASON: 3-5 sentences explaining the setup covering weekly trend, daily structure, 4H trigger, and catalyst.\n\nCRITICAL LEVEL RULES — base every level on the CURRENT LIVE PRICES above:\n- ENTRY must be within roughly 0.5% of the current price (a realistic pending order that has NOT already been hit), never far away.\n- Never use a level that price has already traded through — the entry must still be reachable from the current live price.\n- Respect each pair\'s momentum AND its 4H/Day/Week/Month trend shown above: prefer setups that trade WITH the dominant higher-timeframe trend (weekly/monthly direction), triggered on the 4H. Do NOT recommend fading a strong UP or DOWN move (a pair near its daily high/low with a clear % move, or aligned trends across timeframes) unless you can state a specific reversal signal. Weight the setup\'s probability by how well the timeframes align.\n- For a SHORT: ENTRY at or slightly ABOVE current price, STOP LOSS above entry, TAKE PROFIT below entry.\n- For a LONG: ENTRY at or slightly BELOW current price, STOP LOSS below entry, TAKE PROFIT above entry.\n- Direction, entry, stop and target must be internally consistent and achieve at least 1:2 risk/reward.\n- Do not contradict yourself: if the reasoning is bearish the direction must be SHORT, and vice-versa.\n\nPrefer setups with clear multi-timeframe alignment and strong technical or fundamental backing. You MUST always return at least 2 setups — when nothing is A-grade, return the best available opportunities ranked MEDIUM probability with honest reasoning, never an empty answer. Pay particular attention to whichever pairs show the largest moves in the live data above (including JPY crosses and USD pairs). Start each setup with exactly "SETUP:" on its own line. Do not use any markdown.\n\nCOMPLETENESS RULES — a setup missing any of these is discarded before it reaches the screen, so it is wasted output:\n- Every setup MUST carry all seven fields: PAIR, DIRECTION, PROBABILITY, ENTRY, STOP LOSS, TAKE PROFIT, REASON.\n- For LONG, STOP LOSS must be BELOW entry and TAKE PROFIT ABOVE it. For SHORT, STOP LOSS ABOVE entry and TAKE PROFIT BELOW it. No exceptions.\n- Keep REASON to 3-4 sentences and at most 70 words so every setup finishes inside the reply. Prefer 3 complete setups over 5 truncated ones. Always finish the final setup completely — never cut off mid-sentence.'+freshnessNote(false);
+    var prompt=priceBlock+'You are a professional forex trading analyst. Analyse the current forex market and identify the 3-5 highest-probability trade setups right now across major pairs.\n\nFor each setup use this EXACT plain-text format with no markdown, no asterisks, no bold:\n\nSETUP:\nPAIR: e.g. GBP/USD\nDIRECTION: LONG or SHORT\nPROBABILITY: HIGH or MEDIUM\nENTRY: price level\nSTOP LOSS: price level\nTAKE PROFIT: price level\nREASON: 3-4 sentences: the trend from the data above, which MEASURED LEVELS the entry, stop and target sit at (name them), and any risk from the CALENDAR block.\n\nCRITICAL LEVEL RULES — base every level on the CURRENT LIVE PRICES above:\n- ENTRY must be within roughly 0.5% of the current price (a realistic pending order that has NOT already been hit), never far away.\n- Never use a level that price has already traded through — the entry must still be reachable from the current live price.\n- Respect each pair\'s momentum AND its 4H/Day/Week/Month trend shown above: prefer setups that trade WITH the dominant higher-timeframe trend (weekly/monthly direction), triggered on the 4H. Do NOT recommend fading a strong UP or DOWN move (a pair near its daily high/low with a clear % move, or aligned trends across timeframes) unless you can state a specific reversal signal. Weight the setup\'s probability by how well the timeframes align.\n- For a SHORT: ENTRY at or slightly ABOVE current price, STOP LOSS above entry, TAKE PROFIT below entry.\n- For a LONG: ENTRY at or slightly BELOW current price, STOP LOSS below entry, TAKE PROFIT above entry.\n- Direction, entry, stop and target must be internally consistent and achieve at least 1:2 risk/reward.\n- Do not contradict yourself: if the reasoning is bearish the direction must be SHORT, and vice-versa.\n\nPrefer setups with clear multi-timeframe alignment. ENTRY, STOP LOSS and TAKE PROFIT must each sit at, or a few pips beyond, a MEASURED LEVEL listed for that pair. The stop distance must be between 0.3x and 1.5x the pair\'s ATR. Only cite events listed in the CALENDAR block. Return 0 to 5 setups — only setups that meet every rule. If none do, reply with exactly one line: NO SETUPS: <short reason>. No setup is a valid answer; a forced weak trade is not. Pay particular attention to whichever pairs show the largest moves in the live data above (including JPY crosses and USD pairs). Start each setup with exactly "SETUP:" on its own line. Do not use any markdown.\n\nCOMPLETENESS RULES — a setup missing any of these is discarded before it reaches the screen, so it is wasted output:\n- Every setup MUST carry all seven fields: PAIR, DIRECTION, PROBABILITY, ENTRY, STOP LOSS, TAKE PROFIT, REASON.\n- For LONG, STOP LOSS must be BELOW entry and TAKE PROFIT ABOVE it. For SHORT, STOP LOSS ABOVE entry and TAKE PROFIT BELOW it. No exceptions.\n- Keep REASON to 3-4 sentences and at most 70 words so every setup finishes inside the reply. Prefer 3 complete setups over 5 truncated ones. Always finish the final setup completely — never cut off mid-sentence.'+freshnessNote(false);
     /* 30-minute bucket (was 15). The proxy caches scanner replies for 30 minutes, so a
        15-minute key generated a fresh paid Sonnet call that the server then had to serve
        from cache anyway — aligning the two halves the number of scanner calls. */
     var scanBucket=Math.floor(Date.now()/18e5);
-    var scanKey='scan:'+scanBucket;
+    var scanKey='scan:v27:'+scanBucket;
     var txt=await ai(prompt,scanKey,{model:'claude-sonnet-5',maxTokens:3200,webSearch:false});
     if(aiRefused(txt)){delete cache[scanKey];LS.del('fhai:'+scanKey);throw new Error('The AI returned a no-data response (not cached) — tap Scan again to retry.');}
     // Normalise: strip markdown so field detection works reliably
     var norm=txt.replace(/\*\*/g,'').replace(/\*/g,'').replace(/^#+\s*/gm,'').replace(/^-{3,}$/gm,'');
     // Split on SETUP: (handles variations like "SETUP 1:", "Setup:")
     var setups=norm.split(/\bSETUP\b[^:]*:/i).filter(function(s){return s.trim()&&/\bPAIR\b/i.test(s);});
-    if(!setups.length){
+    var noSet=norm.match(/NO SETUPS:?\s*([^\n]*)/i);
+    if(!setups.length&&noSet){
+      res.innerHTML='<div class="scan-empty"><div class="scan-icon">🧘</div><div><b>No setups meet the rules right now.</b> '+esc(noSet[1]||'')+'<br><span style="opacity:.7">That is a valid answer — every level must sit on a measured level with a sensible stop and at least 1:2.</span></div></div>';
+      meta.textContent='Analysis from '+fhTime(scanBucket*18e5)+' '+fhTzLabel()+' · '+aiStamp(scanKey);
+    } else if(!setups.length){
       // Don't cache an empty answer — otherwise every retry inside the cache window silently
       // replays the same "no setups" result (why the scanner kept showing nothing for days).
       delete cache[scanKey];LS.del('fhai:'+scanKey);
@@ -5746,6 +5908,7 @@ async function runScanner(){
                tp:scanField(s,'TAKE PROFIT')||scanField(s,'TARGET'),
                reason:scanReason(s)};
         var bad=validateSetup(o);
+        if(!bad) bad=checkSetupLive(o,q,scLV,'scanner');
         if(bad){dropped.push(bad);return;}
         /* v16 — regime check. Never blocks on a failed strength fetch. */
         var st=strMode()==='off'?null:setupStrength(o);
@@ -5765,7 +5928,7 @@ async function runScanner(){
           +'<div class="scan-level"><div class="scan-level-lbl">1 · Entry</div><div class="scan-level-val">'+esc(o.entry)+'</div></div>'
           +'<div class="scan-level"><div class="scan-level-lbl">2 · Take profit</div><div class="scan-level-val" style="color:#4ade80">'+esc(o.tp)+'</div></div>'
           +'<div class="scan-level"><div class="scan-level-lbl">3 · Stop loss</div><div class="scan-level-val" style="color:#f87171">'+esc(o.sl)+'</div></div>'
-          +'</div><div class="scan-rr">R:R = 1:'+o._rr.toFixed(1)+'</div>'+setupActions(_sid)+'</div>'
+          +'</div><div class="scan-rr">R:R = 1:'+o._rr.toFixed(1)+'</div>'+setupCheckLine(o)+setupActions(_sid)+'</div>'
           +'<div class="scan-side">'+setupThumb(_sid)+setupCopies(_sid)+'</div></div>';
         html+='</div>';
       });
@@ -5784,7 +5947,7 @@ async function runScanner(){
          "Analysis from 09:00". Same constant on both sides, and the caption
          states the real cadence. */
       var scanAt=fhTime(scanBucket*18e5);
-      meta.textContent='Analysis from '+scanAt+' '+fhTzLabel()+' (new analysis every 30 min) · Not financial advice';
+      meta.textContent='Analysis from '+scanAt+' '+fhTzLabel()+' (new analysis every 30 min) · '+aiStamp(scanKey)+' · setups re-checked against live prices '+fhClock()+' · Not financial advice';
       if(shown) buildShareBar('scan-share','Trade scanner','#scan-results','scanner');
       paintFeedButtons();   // v17 — nothing is published until you press Chart or Trade
     }
@@ -5821,20 +5984,25 @@ async function runPullbackScanner(){
     if(!top.length){res.innerHTML='<div class="scan-empty"><div class="scan-icon">📊</div><div>No price data available — try again in a moment.</div></div>';btn.disabled=false;btn.innerHTML='↩ Pullback scan';return;}
     // 2. Build price block for context
     var tnow=fhTime();
+    var pbLV=await fhLevels(top.map(function(m){return m.pair;}));
     var priceBlock='TODAY\'S TOP MOVERS — LIVE DATA ('+fhClock()+'):\n'+top.map(function(m){
       var p=m.pair.slice(0,3)+'/'+m.pair.slice(3);
       return p+': daily '+(m.td>=0?'+':'')+m.td+'% | weekly '+(m.tw>=0?'+':'')+m.tw+'% | '+quoteLine(m.pair,m.q);
-    }).join('\n')+'\n\n';
+    }).join('\n')+'\n\n'+(Object.keys(pbLV).length?'MEASURED LEVELS per pair (from real price bars; ATR = 14-day average daily range in pips). Pairs not listed have no measured levels — skip them:\n'+top.filter(function(m){return pbLV[m.pair];}).map(function(m){return levelsLine(m.pair,pbLV[m.pair]);}).join('\n')+'\n':'MEASURED LEVELS: unavailable.\n')+calRiskBlock(24)+'\n';
     // 3. AI prompt — explicitly frames entries as limit orders away from current price
-    var prompt=priceBlock+'You are a professional forex trader. The pairs above made today\'s biggest directional moves. Your job is to identify PENDING LIMIT ORDER setups for traders who missed the move — NOT market orders to enter right now.\n\nFor each valid setup, decide between two approaches:\n  A) DIP BUY / RALLY SELL (trend-continuation): The trend is strong. Wait for a normal retracement to support/resistance, then enter WITH the trend at a better price.\n  B) FADE (mean-reversion): The move is over-extended. Enter AGAINST the move expecting a significant reversal (must cite a specific reversal signal — overbought/divergence/key level rejection).\n\nUse this EXACT plain-text format (no markdown, no asterisks):\n\nSETUP:\nPAIR: e.g. AUD/JPY\nORDER TYPE: DIP BUY / RALLY SELL / FADE LONG / FADE SHORT\nDIRECTION: LONG or SHORT\nPROBABILITY: HIGH or MEDIUM\nENTRY TRIGGER: the specific price level to place a limit order (must be meaningfully away from current price — at least 0.2% for majors)\nSTOP LOSS: price level\nTAKE PROFIT: price level\nREASON: 3-5 sentences covering: (1) how far price has moved and why it needs to pause, (2) why the entry trigger level is significant (support/resistance, Fibonacci, key zone), (3) what confirms the setup and where it targets.\n\nCRITICAL: Entry trigger must be a LIMIT ORDER LEVEL the price has NOT yet reached — it must be away from the current live price shown above. Never place entry at the current market price. For a DIP BUY the entry is BELOW current price. For a RALLY SELL the entry is ABOVE current price. For FADE entries, current price is acceptable only if at a key rejection level. Aim for 2–4 setups. You MUST always return at least 2 setups: when a mover is still extended, that is exactly when a dip-buy/rally-sell limit level exists — pick the logical retracement level and rank it MEDIUM rather than returning nothing. "Movers still have momentum" is NOT a reason to return zero setups.\n\nCOMPLETENESS RULES — a setup missing any of these is discarded before it reaches the screen, so it is wasted output:\n- Every setup MUST carry all of: PAIR, ORDER TYPE, DIRECTION, PROBABILITY, ENTRY TRIGGER, STOP LOSS, TAKE PROFIT, REASON.\n- For LONG, STOP LOSS must be BELOW the entry trigger and TAKE PROFIT ABOVE it. For SHORT, STOP LOSS ABOVE and TAKE PROFIT BELOW. No exceptions.\n- Keep REASON to 3-4 sentences and at most 70 words. Prefer 2 complete setups over 4 truncated ones. Always complete every setup — never cut off mid-sentence.'+freshnessNote(false);
+    var prompt=priceBlock+'You are a professional forex trader. The pairs above made today\'s biggest directional moves. Your job is to identify PENDING LIMIT ORDER setups for traders who missed the move — NOT market orders to enter right now.\n\nFor each valid setup, decide between two approaches:\n  A) DIP BUY / RALLY SELL (trend-continuation): The trend is strong. Wait for a normal retracement to support/resistance, then enter WITH the trend at a better price.\n  B) FADE (mean-reversion): The move is over-extended into a major MEASURED LEVEL (prior-week high/low, daily swing). Enter AGAINST the move at that level. Do not cite RSI, divergence or Fibonacci — they are not given to you.\n\nUse this EXACT plain-text format (no markdown, no asterisks):\n\nSETUP:\nPAIR: e.g. AUD/JPY\nORDER TYPE: DIP BUY / RALLY SELL / FADE LONG / FADE SHORT\nDIRECTION: LONG or SHORT\nPROBABILITY: HIGH or MEDIUM\nENTRY TRIGGER: the specific price level to place a limit order (must be meaningfully away from current price — at least 0.2% for majors)\nSTOP LOSS: price level\nTAKE PROFIT: price level\nREASON: 3-4 sentences covering: (1) how far price has moved, (2) which MEASURED LEVEL the entry trigger sits at (name it), (3) where the stop and target sit (name the measured levels) and any CALENDAR risk.\n\nCRITICAL: Entry trigger must be a LIMIT ORDER LEVEL the price has NOT yet reached — it must be away from the current live price shown above. Never place entry at the current market price. For a DIP BUY the entry is BELOW current price. For a RALLY SELL the entry is ABOVE current price. For FADE entries, current price is acceptable only if at a key rejection level. Return 0 to 4 setups. The entry, stop and target must each sit at, or a few pips beyond, a MEASURED LEVEL for that pair; the entry no further than 1.5x ATR from price; the stop between 0.3x and 1.5x ATR; risk/reward at least 1:1.5. If no setup meets every rule, reply with exactly one line: NO SETUPS: <short reason>.\n\nCOMPLETENESS RULES — a setup missing any of these is discarded before it reaches the screen, so it is wasted output:\n- Every setup MUST carry all of: PAIR, ORDER TYPE, DIRECTION, PROBABILITY, ENTRY TRIGGER, STOP LOSS, TAKE PROFIT, REASON.\n- For LONG, STOP LOSS must be BELOW the entry trigger and TAKE PROFIT ABOVE it. For SHORT, STOP LOSS ABOVE and TAKE PROFIT BELOW. No exceptions.\n- Keep REASON to 3-4 sentences and at most 70 words. Prefer 2 complete setups over 4 truncated ones. Always complete every setup — never cut off mid-sentence.'+freshnessNote(false);
     var pbBucket=Math.floor(Date.now()/36e5);
-    var pbKey='pullback:'+pbBucket;
+    var pbKey='pullback:v27:'+pbBucket;
     var txt=await ai(prompt,pbKey,{model:'claude-sonnet-5',maxTokens:3200,webSearch:false});
     // Never cache or render a "I can't access live data" reply as analysis
     if(aiRefused(txt)){delete cache[pbKey];LS.del('fhai:'+pbKey);throw new Error('The AI returned a no-data response (not cached) — tap Pullback scan again to retry.');}
     var norm=txt.replace(/\*\*/g,'').replace(/\*/g,'').replace(/^#+\s*/gm,'').replace(/^-{3,}$/gm,'');
     var setups=norm.split(/\bSETUP\b[^:]*:/i).filter(function(s){return s.trim()&&/\bPAIR\b/i.test(s);});
-    if(!setups.length){
+    var pbNo=norm.match(/NO SETUPS:?\s*([^\n]*)/i);
+    if(!setups.length&&pbNo){
+      res.innerHTML='<div class="scan-empty"><div class="scan-icon">🧘</div><div><b>No pullback setups meet the rules right now.</b> '+esc(pbNo[1]||'')+'</div></div>';
+      meta.textContent='Pullback scan · '+aiStamp(pbKey);
+    } else if(!setups.length){
       // Never cache an empty answer — retries within the hour were replaying the same "nothing found"
       delete cache[pbKey];LS.del('fhai:'+pbKey);
       res.innerHTML='<div class="scan-empty"><div class="scan-icon">↩</div><div>The analysis came back in an unexpected shape and no pullback setups could be read from it. Tap Pullback scan to try again.</div></div>';
@@ -5852,6 +6020,7 @@ async function runPullbackScanner(){
         /* This is the guard that stops a truncated reply becoming the "ENTRY TRI"
            card: no complete levels or no reasoning ⇒ not a setup. */
         var bad=validateSetup(o);
+        if(!bad) bad=checkSetupLive(o,q,pbLV,'pullback');
         if(bad){dropped.push(bad);return;}
         /* v16 — regime check. Never blocks on a failed strength fetch. */
         var st=strMode()==='off'?null:setupStrength(o);
@@ -5877,7 +6046,7 @@ async function runPullbackScanner(){
           +'<div class="scan-level"><div class="scan-level-lbl">1 · Entry trigger (limit)'+nowPrice+'</div><div class="scan-level-val">'+esc(o.entry)+'</div></div>'
           +'<div class="scan-level"><div class="scan-level-lbl">2 · Take profit</div><div class="scan-level-val" style="color:#4ade80">'+esc(o.tp)+'</div></div>'
           +'<div class="scan-level"><div class="scan-level-lbl">3 · Stop loss</div><div class="scan-level-val" style="color:#f87171">'+esc(o.sl)+'</div></div>'
-          +'</div><div class="scan-rr">R:R = 1:'+o._rr.toFixed(1)+'</div>'+setupActions(_sid)+'</div>'
+          +'</div><div class="scan-rr">R:R = 1:'+o._rr.toFixed(1)+'</div>'+setupCheckLine(o)+setupActions(_sid)+'</div>'
           +'<div class="scan-side">'+setupThumb(_sid)+setupCopies(_sid)+'</div></div>';
         html+='</div>';
       });
@@ -5888,7 +6057,7 @@ async function runPullbackScanner(){
         res.innerHTML=html+droppedNote(dropped)+heldNote(held);
         fillSetupCharts(res);
       }
-      meta.textContent='Pullback scan · '+fhClock()+' · Not financial advice';
+      meta.textContent='Pullback scan · '+aiStamp(pbKey)+' · setups re-checked against live prices '+fhClock()+' · Not financial advice';
       if(shown) buildShareBar('scan-share','Pullback scanner','#scan-results','pullback_scanner');
       paintFeedButtons();   // v17 — nothing is published until you press Chart or Trade
     }
@@ -6979,11 +7148,7 @@ async function loadTreeMap(force){
   try{
     var q=await liveQuotes(TREND_PAIRS,{allowStale:true});
     var stats={};
-    try{
-      var chunks=[];for(var i=0;i<TREND_PAIRS.length;i+=10)chunks.push(TREND_PAIRS.slice(i,i+10));
-      var res=await Promise.all(chunks.map(function(ch){return fetch(BRIEF_URL+'?pairs='+encodeURIComponent(ch.join(','))+'&_='+Math.floor(Date.now()/300000),{cache:'no-store'}).then(function(r){return r.json();}).catch(function(){return null;});}));
-      res.forEach(function(d){if(d&&d.stats)Object.keys(d.stats).forEach(function(k){stats[k]=d.stats[k];});});
-    }catch(e){}
+    try{ stats=await briefStatsShared(); }catch(e){}
     _tmRows=TREND_PAIRS.map(function(p){
       var d=q[p]||{},s=stats[p]||{};
       return {sym:p,p:d.p,t4h:d.t4h,td:d.td,tw:d.tw,tm:d.tm,act:(s.activity!=null&&s.activity>0)?s.activity:null,rangePips:s.rangePips,atrPips:s.atrPips,t4hSpansBreak:d.t4hSpansBreak};
@@ -7258,7 +7423,13 @@ function idxAgreeRows(){
     var shorter=row.d1+row.w1;                                                  // today + this week
     var L=longer>=2?1:longer<=-2?-1:0, S=shorter>=1?1:shorter<=-1?-1:0;
     var v;
-    if(L&&S===L) v=[L,(L>0?'Strong':'Weak')+' on every timeframe','Aligned — trend and recent moves point the same way.'];
+    /* v27 — "every timeframe" only when every column agrees. Before, 2 of 3 longer
+       measures + today alone earned it: USD showed "Strong on every timeframe" with
+       a flat week, JPY with a flat month and momentum on Sell. */
+    var cols=[['today',row.d1],['this week',row.w1],['this month',row.m1],['trend',row.trend],['momentum',row.mom],['S.Trend',row.st]];
+    var flat=cols.filter(function(c){return c[1]===0;}).map(function(c){return c[0];}), against=cols.filter(function(c){return L&&c[1]===-L;}).map(function(c){return c[0];});
+    if(L&&S===L&&!flat.length&&!against.length) v=[L,(L>0?'Strong':'Weak')+' on every timeframe','All six columns point the same way.'];
+    else if(L&&S===L) v=[L,(L>0?'Strong':'Weak')+', mostly aligned',(against.length?'Against it: '+against.join(', ')+'. ':'')+(flat.length?'Flat: '+flat.join(', ')+'.':'')];
     else if(L&&S===-L) v=[0,(L>0?'Uptrend, pulling back':'Downtrend, bouncing'),'The weeks-to-months trend is '+(L>0?'up':'down')+' but today/this week moved against it. Short-term charts and the 4H tree map will disagree with the tech rating until one gives way.'];
     else if(L) v=[L,(L>0?'Uptrend, pausing':'Downtrend, pausing'),'Trend is '+(L>0?'up':'down')+'; the last few days are flat.'];
     else if(S) v=[S,(S>0?'Rising lately, no trend yet':'Falling lately, no trend yet'),'Recent moves only — the longer-term measures have not turned.'];
@@ -7770,11 +7941,24 @@ function planCorr(a,b){
   var top=0,sx=0,sy=0; for(i=0;i<n;i++){top+=(x[i]-mx)*(y[i]-my);sx+=(x[i]-mx)*(x[i]-mx);sy+=(y[i]-my)*(y[i]-my);}
   return sx&&sy?top/Math.sqrt(sx*sy):null;
 }
+/* v27 — one shared copy of the /briefing stats (5-minute life) for the tree map
+   and the Plan, instead of each fetching the same 28 pairs. */
+var _briefShared=null,_briefSharedAt=0,_briefSharedP=null;
+async function briefStatsShared(){
+  if(_briefShared&&Date.now()-_briefSharedAt<300000) return _briefShared;
+  if(_briefSharedP) return _briefSharedP;
+  _briefSharedP=(async function(){
+    var stats={},chunks=[]; for(var i=0;i<FH_PAIRS.length;i+=10) chunks.push(FH_PAIRS.slice(i,i+10));
+    var res=await Promise.all(chunks.map(function(ch){return fetch(BRIEF_URL+'?pairs='+encodeURIComponent(ch.join(','))+'&_='+Math.floor(Date.now()/300000),{cache:'no-store'}).then(function(r){return r.json();}).catch(function(){return null;});}));
+    res.forEach(function(d){ if(d&&d.stats) Object.keys(d.stats).forEach(function(k){stats[k]=d.stats[k];}); });
+    if(Object.keys(stats).length){ _briefShared=stats; _briefSharedAt=Date.now(); }
+    _briefSharedP=null; return stats;
+  })();
+  return _briefSharedP;
+}
 async function fetchPlanBrief(){
-  var stats={},chunks=[]; for(var i=0;i<FH_PAIRS.length;i+=10) chunks.push(FH_PAIRS.slice(i,i+10));
-  var res=await Promise.all(chunks.map(function(ch){return fetch(BRIEF_URL+'?pairs='+encodeURIComponent(ch.join(','))+'&_='+Math.floor(Date.now()/300000),{cache:'no-store'}).then(function(r){return r.json();}).catch(function(){return null;});}));
-  res.forEach(function(d){ if(d&&d.stats) Object.keys(d.stats).forEach(function(k){stats[k]=d.stats[k];}); });
-  _planBrief=stats; _planBriefAt=Date.now();
+  var stats=await briefStatsShared();
+  _planBrief=stats; _planBriefAt=Object.keys(stats).length?Date.now():0;
 }
 async function ensurePlanData(force){
   var jobs=[];
@@ -7857,7 +8041,20 @@ function runPlan(){
       } }
   }
   snap(before);
-  _planRes={pairs:pairs,alive:alive,why:why,dir:dir,trace:trace,notes:notes,bias:bias,tsc:tsc,news:news,now:now};
+  /* v27 — trust audit: a step whose data is missing used to PASS silently (empty
+     calendar → "News: none"; no ATR / technicals → kept). Now each survivor lists
+     what could NOT be checked, and the news line says so instead of "none". */
+  var calOk=!!(_calAll&&_calAll.length&&!CAL_AI_SRC&&!(_calStale&&_calStale.thisweek));
+  var calWhy=!(_calAll&&_calAll.length)?'calendar unavailable':CAL_AI_SRC?'calendar came from AI web search, not the feed':'calendar copy is out of date';
+  var unk={};
+  alive.forEach(function(p){ var u=[], b=_planBrief[p];
+    if(R.techAgree&&tsc[p]==null) u.push('daily technicals (no rating)');
+    if(R.atr&&(!b||b.atrPips==null)) u.push('ATR (no data)');
+    if(R.active&&(!b||b.activity==null)) u.push('last-session activity (no data)');
+    if(R.news&&!calOk) u.push('news ('+calWhy+')');
+    if(R.corr&&!_corrData) u.push('correlation (no data)');
+    if(u.length) unk[p]=u; });
+  _planRes={pairs:pairs,alive:alive,why:why,dir:dir,trace:trace,notes:notes,bias:bias,tsc:tsc,news:news,now:now,unk:unk,calOk:calOk,calWhy:calWhy};
   return _planRes;
 }
 async function loadPlan(force){
@@ -7866,7 +8063,8 @@ async function loadPlan(force){
   try{
     if(force||!_planAt||Date.now()-_planAt>REFRESH_AFTER){ if(meta) meta.textContent='Loading the data behind each step…'; await ensurePlanData(force); _planAt=Date.now(); }
     renderPlan();
-    if(meta) meta.textContent='As of '+fhClock()+' · strength, trends, daily technicals, calendar and correlations from their own tabs';
+    var miss=[]; if(!_planBriefAt) miss.push('briefing (ATR)'); if(!_idx) miss.push('strength'); if(!_trendData) miss.push('trends'); if(!_tech['1d']) miss.push('technicals'); if(!(_calAll&&_calAll.length)) miss.push('calendar'); if(!_corrData) miss.push('correlation');
+    if(meta) meta.textContent='Data loaded '+fhClock(_planAt)+' · strength, trends, daily technicals, calendar and correlations from their own tabs'+(miss.length?' · ⚠ missing: '+miss.join(', ')+' — those steps are marked "not checked"':'');
   }catch(e){ if(meta) meta.textContent=friendlyError(e); }
   _planLoading=false;
 }
@@ -7905,7 +8103,9 @@ function renderPlan(){
       +'<li>Strength this week: <b>'+a+' '+pct1(planW1(a))+'</b> vs <b>'+b+' '+pct1(planW1(b))+'</b> (1D '+pct1(planD1(a))+' / '+pct1(planD1(b))+') · gap <b>'+planGap(p).toFixed(2)+'</b>'+(shares?' · <span class="pl-share-note">shares '+shares+' with '+top.slice(0,3)+'/'+top.slice(3)+' — same bet, size accordingly</span>':'')+'</li>'
       +(money?'<li class="pl-money">'+money+'</li>':'')
       +'<li>Trend: <b>'+(bi?bi.t:'n/a')+'</b> on W / D / 4H · Daily technicals: <b>'+techLbl(tv)+'</b></li>'
+      +(r.unk&&r.unk[p]?'<li class="pl-newswarn">⚠ Not checked: <b>'+esc(r.unk[p].join(', '))+'</b> — treat this pair with caution</li>':'')
       +(r.news[p]?'<li class="pl-newswarn">⚠ News: <b>'+esc(r.news[p])+'</b> — kept because "flag instead of drop" is on</li>'
+        :!r.calOk?'<li class="pl-newswarn">⚠ News: <b>not checked</b> — '+esc(r.calWhy)+'</li>'
         :'<li>News: <b>none '+(R.newsMed?'high or medium':'high-impact')+'</b> on '+a+' or '+b+' in the next '+R.newsHrs+'h'+(R.newsBack?' or the last '+R.newsBackHrs+'h':'')+'</li>')
       +(_planBrief[p]&&_planBrief[p].atrPips!=null?'<li>Range: 14-day ATR <b>'+Math.round(_planBrief[p].atrPips)+' pips</b>'+(_planBrief[p].activity!=null?', last session <b>'+_planBrief[p].activity.toFixed(1)+'×</b> that':'')+'</li>':'')+'</ul>'
       +'<div class="act"><button class="share-btn" onclick="planToScanner()">Open Scanner</button><button class="share-btn" onclick="goToPair(\''+p+'\',\'daily\')">Daily analysis</button><button class="share-btn" onclick="planAskIq(\''+p+'\',\''+d+'\')">Ask IQ about this</button></div></div>';}).join('')+'</div>';
@@ -7928,13 +8128,15 @@ function planMoney(p){
   }catch(e){ return ''; }
 }
 function planToScanner(){ if(navMode()==='flow') flowGo('pairs','scan'); else showS('scanner',document.querySelector('.nb[onclick*="scanner"]')); }
-function planAskIq(p,d){
+async function planAskIq(p,d){
   if(navMode()==='flow') flowGo('research','tech'); else { showS('analysis',document.querySelector('.nb[onclick*="analysis"]')); showAnalysisSub('analysis-tech',document.querySelector('.asub-tech')); }
   setTechCcy(p.slice(0,3));
   var R=planRules(), nw=_planRes&&_planRes.news&&_planRes.news[p];
   var newsTxt=nw?'there IS high-impact news on it ('+nw+') and the plan kept it only because news-driven pairs are flagged rather than dropped'
     :'there is no high-impact news inside the next '+R.newsHrs+'h'+(R.newsBack?' or the last '+R.newsBackHrs+'h':'');
-  var q=document.getElementById('ia-q-tech'); if(q){ q.value='Today\'s plan has '+p.slice(0,3)+'/'+p.slice(3)+' as a '+d+' — strength, trend and daily technicals agree and '+newsTxt+'. What would make you NOT take it, and where is the sensible entry and stop?'; }
+  var LVp={}; try{ LVp=await fhLevels([p]); }catch(e){}
+  var lvTxt=LVp[p]?' Measured levels: '+levelsLine(p,LVp[p])+'. Use only these for any entry or stop; if none fits, say so.':' (Measured levels are unavailable right now — do not give an entry or stop price.)';
+  var q=document.getElementById('ia-q-tech'); if(q){ q.value='Today\'s plan has '+p.slice(0,3)+'/'+p.slice(3)+' as a '+d+' — strength, trend and daily technicals agree and '+newsTxt+'.'+lvTxt+' What would make you NOT take it, and where is the sensible entry and stop?'; }
   setTimeout(function(){ runAskIq('tech'); },600);
 }
 

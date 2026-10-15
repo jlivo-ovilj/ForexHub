@@ -41,8 +41,9 @@
        Cache API which is per-colo) and backs off when Forex Factory rate-limits.
    Bindings required: ANTHROPIC_API_KEY (secret), FH_APP_KEY (secret), FH_KV (KV).  */
 
-const WORKER_VERSION = "12.2";
+const WORKER_VERSION = "12.3";
 const SETUPS_CACHE_S = 60;
+const SETUP_MAX_H = 12;   // 12.3 — scanner / pullback setups older than this never reach the bots
 /* Edge-cache key for GET /setups — the app key is stripped so the secret never forms part of a cache key. */
 const setupsCacheKey = function (url) { return new Request(url.origin + "/setups?cache=1", { method: "GET" }); };
 const YF_HOSTS = ["https://query1.finance.yahoo.com", "https://query2.finance.yahoo.com"];
@@ -724,6 +725,74 @@ const WORKER_DEFAULT = {
       return J({ at: at, atAest: aestStamp(at), moves: out, missing: missing, src: "yahoo 5m", ts: new Date().toISOString() });
     }
 
+    /* ── 12.3 (15 Oct 2026) — MEASURED LEVELS: GET /levels?pairs=EURUSD,GBPJPY (≤8)
+       The AI panels that give support / resistance / entry / stop / target used to
+       get one quote line per pair and nothing else, so every level was invented.
+       This returns levels measured from real bars so the AI can only choose from
+       them, and the site can check what comes back:
+         prior day H/L/C, prior week H/L/C, this week H/L so far, classic pivots
+         from the prior day, 14-day ATR, and the nearest swing highs above / swing
+         lows below price on 4H and daily bars (2-bar fractals). */
+    if (url.pathname === "/levels" && req.method === "GET") {
+      const pairs = (url.searchParams.get("pairs") || "").split(",").map(function (p) { return p.replace(/[^A-Za-z]/g, "").toUpperCase(); })
+        .filter(function (p) { return p.length === 6; }).slice(0, 8);
+      if (!pairs.length) return J({ error: "pairs required" }, 400);
+      const out = {}, missing = [];
+      await Promise.all(pairs.map(async function (p) {
+        try {
+          const both = await Promise.all([yChart(p + "=X", "6mo", "1d", 1800), yChart(p + "=X", "1mo", "60m", 600)]);
+          const D = series(both[0]).bars, H1 = series(both[1]).bars;
+          if (D.length < 20 || H1.length < 40) { missing.push(p); return; }
+          const pip = pipOf(p), dp = p.indexOf("JPY") > -1 ? 3 : 5;
+          const rp = function (x) { return x == null ? null : Number(x.toFixed(dp)); };
+          const price = H1[H1.length - 1].c;
+          // the last daily bar is the day in progress when it started within the last 24h
+          const curDay = (Date.now() / 1000 - D[D.length - 1].t) < 86400;
+          const done = curDay ? D.slice(0, -1) : D.slice();
+          const pd = done[done.length - 1];
+          // ATR(14) on completed days
+          let trs = [];
+          for (let i = Math.max(1, done.length - 14); i < done.length; i++) { const b = done[i], pc = done[i - 1].c; trs.push(Math.max(b.h - b.l, Math.abs(b.h - pc), Math.abs(b.l - pc))); }
+          const atr = trs.length ? trs.reduce(function (a, b) { return a + b; }, 0) / trs.length : null;
+          // weeks (Monday 00:00 UTC buckets)
+          const wk = function (t) { const d = new Date(t * 1000); const day = (d.getUTCDay() + 6) % 7; return Math.floor(t / 86400) - day; };
+          const thisW = wk(D[D.length - 1].t);
+          const agg = function (list) { return list.length ? { h: Math.max.apply(null, list.map(function (b) { return b.h; })), l: Math.min.apply(null, list.map(function (b) { return b.l; })), c: list[list.length - 1].c } : null; };
+          const tw = agg(D.filter(function (b) { return wk(b.t) === thisW; }));
+          const prevWk = D.filter(function (b) { return wk(b.t) < thisW; });
+          const pwKey = prevWk.length ? wk(prevWk[prevWk.length - 1].t) : null;
+          const pw = agg(prevWk.filter(function (b) { return wk(b.t) === pwKey; }));
+          // classic pivots from the prior day
+          const P = (pd.h + pd.l + pd.c) / 3;
+          const piv = { p: rp(P), r1: rp(2 * P - pd.l), s1: rp(2 * P - pd.h), r2: rp(P + (pd.h - pd.l)), s2: rp(P - (pd.h - pd.l)) };
+          // 4H bars from 1H (UTC 0/4/8/12/16/20 buckets)
+          const H4 = []; let cur = null;
+          H1.forEach(function (b) { const k = Math.floor(b.t / 14400); if (!cur || cur.k !== k) { cur = { k: k, t: k * 14400, o: b.o, h: b.h, l: b.l, c: b.c }; H4.push(cur); } else { cur.h = Math.max(cur.h, b.h); cur.l = Math.min(cur.l, b.l); cur.c = b.c; } });
+          // 2-bar fractal swings; nearest 3 above / below current price
+          const swings = function (bars) {
+            const hi = [], lo = [];
+            for (let i = 2; i < bars.length - 2; i++) {
+              const b = bars[i];
+              if (b.h > bars[i - 1].h && b.h > bars[i - 2].h && b.h >= bars[i + 1].h && b.h >= bars[i + 2].h) hi.push({ p: rp(b.h), at: aestStamp(b.t) });
+              if (b.l < bars[i - 1].l && b.l < bars[i - 2].l && b.l <= bars[i + 1].l && b.l <= bars[i + 2].l) lo.push({ p: rp(b.l), at: aestStamp(b.t) });
+            }
+            const above = hi.filter(function (x) { return x.p > price; }).sort(function (a, b) { return a.p - b.p; }).slice(0, 3);
+            const below = lo.filter(function (x) { return x.p < price; }).sort(function (a, b) { return b.p - a.p; }).slice(0, 3);
+            return { hi: above, lo: below };
+          };
+          out[p] = {
+            price: rp(price), priceAt: aestStamp(H1[H1.length - 1].t + 3600),
+            pd: { h: rp(pd.h), l: rp(pd.l), c: rp(pd.c), at: aestStamp(pd.t) },
+            pw: pw ? { h: rp(pw.h), l: rp(pw.l), c: rp(pw.c) } : null,
+            tw: tw ? { h: rp(tw.h), l: rp(tw.l) } : null,
+            piv: piv, atr: rp(atr), atrPips: atr == null ? null : r1(atr / pip),
+            sw4h: swings(H4.slice(-150)), swD: swings(D.slice(-90))
+          };
+        } catch (e) { missing.push(p); }
+      }));
+      return J({ levels: out, missing: missing, src: "yahoo 1d + 60m (4H built from 1H, UTC buckets)", ts: new Date().toISOString() });
+    }
+
     /* ── Live FX quotes: GET /price?pairs=EURUSD,USDJPY ── */
     if (url.pathname === "/price" && req.method === "GET") {
       try {
@@ -1094,7 +1163,13 @@ const WORKER_DEFAULT = {
              Note how this whitelist drops anything it does not name, silently:
              that is exactly how strength went missing through all of 11.3. */
           const mode = String(s.mode || "").toLowerCase() === "chart" ? "chart" : "trade";
-          return { pair: pair, dir: /LONG|BUY/i.test(String(s.dir || "")) ? "LONG" : "SHORT", entry: n(s.entry), sl: n(s.sl), tp: n(s.tp), rr: n(s.rr), prob: String(s.prob || "").slice(0, 12), order: String(s.order || "").slice(0, 16), mode: mode, ref: String(s.ref || "").slice(0, 20), strength: String(s.strength || "").slice(0, 10), strengthWhy: String(s.strengthWhy || "").slice(0, 90) };
+          /* 12.3 (15 Oct 2026) — each setup keeps the time it was SENT. Before, the
+             whole basket was re-posted on every Send and stamped with the post time,
+             so a 23-hour-old setup reached the bots looking brand new. */
+          const nowMs = Date.now();
+          let at = Date.parse(String(s.at || ""));
+          if (!isFinite(at) || at > nowMs + 60000) at = nowMs;
+          return { pair: pair, dir: /LONG|BUY/i.test(String(s.dir || "")) ? "LONG" : "SHORT", entry: n(s.entry), sl: n(s.sl), tp: n(s.tp), rr: n(s.rr), prob: String(s.prob || "").slice(0, 12), order: String(s.order || "").slice(0, 16), mode: mode, ref: String(s.ref || "").slice(0, 20), strength: String(s.strength || "").slice(0, 10), strengthWhy: String(s.strengthWhy || "").slice(0, 90), at: new Date(at).toISOString() };
         }).filter(function (s) { return /^[A-Z]{6}$/.test(s.pair) && s.entry != null && s.sl != null && s.tp != null; }) : [];
         const rec = { src: src, ts: new Date().toISOString(), count: list.length, setups: list };
         await KV.put("setups:" + src, JSON.stringify(rec), { expirationTtl: 86400 });
@@ -1163,14 +1238,20 @@ const WORKER_DEFAULT = {
         const both = await Promise.all([KV.get("setups:scanner"), KV.get("setups:pullback"), KV.get("setups:tv")]);
         const sc = both[0] ? JSON.parse(both[0]) : null, pb = both[1] ? JSON.parse(both[1]) : null;
         const all = [];
-        if (sc) sc.setups.forEach(function (s) { s.src = "scanner"; s.at = sc.ts; all.push(s); });
-        if (pb) pb.setups.forEach(function (s) { s.src = "pullback"; s.at = pb.ts; all.push(s); });
+        /* 12.3 — a setup keeps its own send time and is dropped once it is older than
+           SETUP_MAX_H (the bots do not check age themselves). Records written by an
+           older site have no per-setup time and fall back to the record time. */
+        const maxMs = SETUP_MAX_H * 3600000, nowT = Date.now();
+        let staleDropped = 0;
+        const keep = function (s, rec, src) { s.src = src; s.at = s.at || rec.ts; if (nowT - Date.parse(s.at) > maxMs) { staleDropped++; return; } all.push(s); };
+        if (sc) sc.setups.forEach(function (s) { keep(s, sc, "scanner"); });
+        if (pb) pb.setups.forEach(function (s) { keep(s, pb, "pullback"); });
         /* 11.6 — TradingView setups live in their own record so the site's
            replace-the-basket POST above can never wipe them, and each one
            carries its own timestamp and expiry (see /tv-hook). */
         const tv = tvLive(both[2]);
         tv.forEach(function (s) { s.src = "tv"; all.push(s); });
-        const body = JSON.stringify({ ts: new Date().toISOString(), scannerAt: sc ? sc.ts : null, pullbackAt: pb ? pb.ts : null, tvCount: tv.length, setups: all });
+        const body = JSON.stringify({ ts: new Date().toISOString(), scannerAt: sc ? sc.ts : null, pullbackAt: pb ? pb.ts : null, tvCount: tv.length, maxAgeH: SETUP_MAX_H, staleDropped: staleDropped, setups: all });
         const hdr = { "Content-Type": "application/json", "Cache-Control": "public, max-age=" + SETUPS_CACHE_S, "Access-Control-Allow-Origin": "*", "X-FH-Cache": "miss" };
         if (cache) { try { await cache.put(cKey, new Response(body, { status: 200, headers: hdr })); } catch (e) { } }
         return new Response(body, { status: 200, headers: hdr });
@@ -1213,7 +1294,7 @@ const WORKER_DEFAULT = {
             if (hit && (hit.text || hit.json != null)) {
               return J({
                 text: hit.text || "", json: hit.json != null ? hit.json : null, jsonError: null,
-                usage: null, model: hit.model || model, searched: !!hit.searched, cached: true
+                usage: null, model: hit.model || model, searched: !!hit.searched, cached: true, at: hit.at || null
               });
             }
           } catch (e) { /* a cache miss must never block the call */ }
@@ -1314,17 +1395,19 @@ const WORKER_DEFAULT = {
 
         /* Only cache a usable reply — never a refusal or an unparsable one, or the
            cache would serve the failure for hours and hide the real answer. */
-        const usable = wantJson ? (parsed != null) : (text && text.replace(/\s/g, "").length > 40);
+        /* 12.3 — a reply cut off at max_tokens is never cached (it was, for text). */
+        const usable = (data && data.stop_reason === "max_tokens") ? false : (wantJson ? (parsed != null) : (text && text.replace(/\s/g, "").length > 40));
+        const genAt = new Date().toISOString();
         if (KV && cacheKey && usable) {
           try {
-            await KV.put(cacheKey, JSON.stringify({ text: text, json: parsed, model: model, searched: useSearch }),
+            await KV.put(cacheKey, JSON.stringify({ text: text, json: parsed, model: model, searched: useSearch, at: genAt }),
               { expirationTtl: ttlFor(ck) });
           } catch (e) { /* best effort */ }
         }
 
         return J({
           text: text, json: parsed, jsonError: jsonError, stop: data && data.stop_reason ? data.stop_reason : null,
-          usage: data.usage || null, model: model, searched: useSearch, cached: false
+          usage: data.usage || null, model: model, searched: useSearch, cached: false, at: genAt
         });
       } catch (e) {
         return J({ error: e.message }, 500);
