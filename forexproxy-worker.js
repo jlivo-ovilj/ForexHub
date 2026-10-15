@@ -41,7 +41,7 @@
        Cache API which is per-colo) and backs off when Forex Factory rate-limits.
    Bindings required: ANTHROPIC_API_KEY (secret), FH_APP_KEY (secret), FH_KV (KV).  */
 
-const WORKER_VERSION = "12.3";
+const WORKER_VERSION = "12.4";
 const SETUPS_CACHE_S = 60;
 const SETUP_MAX_H = 12;   // 12.3 — scanner / pullback setups older than this never reach the bots
 /* Edge-cache key for GET /setups — the app key is stripped so the secret never forms part of a cache key. */
@@ -50,6 +50,7 @@ const YF_HOSTS = ["https://query1.finance.yahoo.com", "https://query2.finance.ya
 const UA = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0 Safari/537.36";
 const NY_HOUR_FMT = new Intl.DateTimeFormat("en-US", { timeZone: "America/New_York", hour: "numeric", hourCycle: "h23" });
 const nyHour = function (t) { return Number(NY_HOUR_FMT.format(new Date(t * 1000))); };
+const NY_DATE_FMT = new Intl.DateTimeFormat("en-CA", { timeZone: "America/New_York", year: "numeric", month: "2-digit", day: "2-digit" });
 const sleep = function (ms) { return new Promise(function (r) { setTimeout(r, ms); }); };
 
 /* Only these origins may use the app. Anything else gets no CORS grant, so a
@@ -740,14 +741,21 @@ const WORKER_DEFAULT = {
       const out = {}, missing = [];
       await Promise.all(pairs.map(async function (p) {
         try {
-          const both = await Promise.all([yChart(p + "=X", "6mo", "1d", 1800), yChart(p + "=X", "1mo", "60m", 600)]);
-          const D = series(both[0]).bars, H1 = series(both[1]).bars;
-          if (D.length < 20 || H1.length < 40) { missing.push(p); return; }
+          /* 12.4 — daily bars are BUILT from 1H bars on the FX day (5pm New York →
+             5pm New York, the broker's day). Yahoo's own daily bars use a different
+             boundary and their close was 48 pips off MT5 for EUR/USD on 14 Oct,
+             which skewed the prior-day close and every pivot. */
+          const H1 = series(await yChart(p + "=X", "6mo", "60m", 600)).bars;
+          if (H1.length < 200) { missing.push(p); return; }
+          const fxDay = function (t) { return NY_DATE_FMT.format(new Date((t + 7 * 3600) * 1000)); };
+          const D = []; let dcur = null;
+          H1.forEach(function (b) { const k = fxDay(b.t); if (!dcur || dcur.k !== k) { dcur = { k: k, t: b.t, o: b.o, h: b.h, l: b.l, c: b.c }; D.push(dcur); } else { dcur.h = Math.max(dcur.h, b.h); dcur.l = Math.min(dcur.l, b.l); dcur.c = b.c; } });
+          if (D.length < 20) { missing.push(p); return; }
           const pip = pipOf(p), dp = p.indexOf("JPY") > -1 ? 3 : 5;
           const rp = function (x) { return x == null ? null : Number(x.toFixed(dp)); };
           const price = H1[H1.length - 1].c;
-          // the last daily bar is the day in progress when it started within the last 24h
-          const curDay = (Date.now() / 1000 - D[D.length - 1].t) < 86400;
+          // the last FX day is still in progress when it is today's FX day
+          const curDay = D[D.length - 1].k === fxDay(Math.floor(Date.now() / 1000));
           const done = curDay ? D.slice(0, -1) : D.slice();
           const pd = done[done.length - 1];
           // ATR(14) on completed days
@@ -755,13 +763,14 @@ const WORKER_DEFAULT = {
           for (let i = Math.max(1, done.length - 14); i < done.length; i++) { const b = done[i], pc = done[i - 1].c; trs.push(Math.max(b.h - b.l, Math.abs(b.h - pc), Math.abs(b.l - pc))); }
           const atr = trs.length ? trs.reduce(function (a, b) { return a + b; }, 0) / trs.length : null;
           // weeks (Monday 00:00 UTC buckets)
-          const wk = function (t) { const d = new Date(t * 1000); const day = (d.getUTCDay() + 6) % 7; return Math.floor(t / 86400) - day; };
-          const thisW = wk(D[D.length - 1].t);
+          // week of an FX day (its date key is YYYY-MM-DD); weeks start Monday
+          const wk = function (b) { const d = new Date(b.k + "T00:00:00Z"); const day = (d.getUTCDay() + 6) % 7; return Math.floor(d.getTime() / 86400000) - day; };
+          const thisW = wk(D[D.length - 1]);
           const agg = function (list) { return list.length ? { h: Math.max.apply(null, list.map(function (b) { return b.h; })), l: Math.min.apply(null, list.map(function (b) { return b.l; })), c: list[list.length - 1].c } : null; };
-          const tw = agg(D.filter(function (b) { return wk(b.t) === thisW; }));
-          const prevWk = D.filter(function (b) { return wk(b.t) < thisW; });
-          const pwKey = prevWk.length ? wk(prevWk[prevWk.length - 1].t) : null;
-          const pw = agg(prevWk.filter(function (b) { return wk(b.t) === pwKey; }));
+          const tw = agg(D.filter(function (b) { return wk(b) === thisW; }));
+          const prevWk = D.filter(function (b) { return wk(b) < thisW; });
+          const pwKey = prevWk.length ? wk(prevWk[prevWk.length - 1]) : null;
+          const pw = agg(prevWk.filter(function (b) { return wk(b) === pwKey; }));
           // classic pivots from the prior day
           const P = (pd.h + pd.l + pd.c) / 3;
           const piv = { p: rp(P), r1: rp(2 * P - pd.l), s1: rp(2 * P - pd.h), r2: rp(P + (pd.h - pd.l)), s2: rp(P - (pd.h - pd.l)) };
@@ -782,15 +791,15 @@ const WORKER_DEFAULT = {
           };
           out[p] = {
             price: rp(price), priceAt: aestStamp(H1[H1.length - 1].t + 3600),
-            pd: { h: rp(pd.h), l: rp(pd.l), c: rp(pd.c), at: aestStamp(pd.t) },
+            pd: { h: rp(pd.h), l: rp(pd.l), c: rp(pd.c), day: pd.k },
             pw: pw ? { h: rp(pw.h), l: rp(pw.l), c: rp(pw.c) } : null,
             tw: tw ? { h: rp(tw.h), l: rp(tw.l) } : null,
             piv: piv, atr: rp(atr), atrPips: atr == null ? null : r1(atr / pip),
-            sw4h: swings(H4.slice(-150)), swD: swings(D.slice(-90))
+            sw4h: swings(H4.slice(-150)), swD: swings(D.slice(-90)), dayBasis: "FX day 5pm New York"
           };
         } catch (e) { missing.push(p); }
       }));
-      return J({ levels: out, missing: missing, src: "yahoo 1d + 60m (4H built from 1H, UTC buckets)", ts: new Date().toISOString() });
+      return J({ levels: out, missing: missing, src: "yahoo 60m; daily bars built on the 5pm New York FX day; 4H in UTC buckets", ts: new Date().toISOString() });
     }
 
     /* ── Live FX quotes: GET /price?pairs=EURUSD,USDJPY ── */
