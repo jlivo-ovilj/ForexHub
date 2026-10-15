@@ -41,7 +41,7 @@
        Cache API which is per-colo) and backs off when Forex Factory rate-limits.
    Bindings required: ANTHROPIC_API_KEY (secret), FH_APP_KEY (secret), FH_KV (KV).  */
 
-const WORKER_VERSION = "12.1";
+const WORKER_VERSION = "12.2";
 const SETUPS_CACHE_S = 60;
 /* Edge-cache key for GET /setups — the app key is stripped so the secret never forms part of a cache key. */
 const setupsCacheKey = function (url) { return new Request(url.origin + "/setups?cache=1", { method: "GET" }); };
@@ -696,6 +696,8 @@ const WORKER_DEFAULT = {
           const b = s.bars;
           if (!b.length) { missing.push(p); return; }
           const pip = pipOf(p);
+          const dp = p.indexOf("JPY") > -1 ? 3 : 5;
+          const rp = function (x) { return x == null ? null : Number(x.toFixed(dp)); };
           // close of the last 5m bar that had fully finished by time T
           const closeBy = function (T) { let v = null, vt = null; for (let i = 0; i < b.length; i++) { if (b[i].t + 300 <= T) { v = b[i].c; vt = b[i].t + 300; } else break; } return v == null ? null : { p: v, t: vt }; };
           const pre = closeBy(at);
@@ -704,15 +706,15 @@ const WORKER_DEFAULT = {
           const leg = function (T) {
             if (nowS < T) return null;
             const c = closeBy(T); if (!c || c.t <= at) return null;
-            return { price: c.p, pips: r1((c.p - pre.p) / pip), pct: pctOf(c.p, pre.p), at: aestStamp(c.t) };
+            return { price: rp(c.p), pips: r1((c.p - pre.p) / pip), pct: pctOf(c.p, pre.p), at: aestStamp(c.t) };
           };
-          let hi = null, lo = null;
-          after.forEach(function (x) { if (x.t < at + 3600) { if (hi == null || x.h > hi) hi = x.h; if (lo == null || x.l < lo) lo = x.l; } });
+          let hi = pre.p, lo = pre.p; // 12.2: start the range at the pre-release price so "up" can never be negative
+          after.forEach(function (x) { if (x.t < at + 3600) { hi = Math.max(hi, x.h, x.o, x.c); lo = Math.min(lo, x.l, x.o, x.c); } });
           const last = b[b.length - 1];
           out[p] = {
-            pre: pre.p, preAt: aestStamp(pre.t),
+            pre: rp(pre.p), preAt: aestStamp(pre.t),
             m15: leg(at + 900), m60: leg(at + 3600),
-            latest: last.t >= at ? { price: last.c, pips: r1((last.c - pre.p) / pip), pct: pctOf(last.c, pre.p), at: aestStamp(last.t + 300) } : null,
+            latest: last.t >= at ? { price: rp(last.c), pips: r1((last.c - pre.p) / pip), pct: pctOf(last.c, pre.p), at: aestStamp(last.t + 300), hrs: Number(((last.t + 300 - at) / 3600).toFixed(1)) } : null,
             upPips: hi == null ? null : r1((hi - pre.p) / pip),
             downPips: lo == null ? null : r1((lo - pre.p) / pip),
             bars: after.length
