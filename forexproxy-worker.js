@@ -41,9 +41,9 @@
        Cache API which is per-colo) and backs off when Forex Factory rate-limits.
    Bindings required: ANTHROPIC_API_KEY (secret), FH_APP_KEY (secret), FH_KV (KV).  */
 
-const WORKER_VERSION = "12.4";
+const WORKER_VERSION = "12.5";
 const SETUPS_CACHE_S = 60;
-const SETUP_MAX_H = 12;   // 12.3 — scanner / pullback setups older than this never reach the bots
+const SETUP_MAX_H = 4;    // 12.5 (22 Oct 2026, was 12) — a morning setup must not fill in a different afternoon market
 /* Edge-cache key for GET /setups — the app key is stripped so the secret never forms part of a cache key. */
 const setupsCacheKey = function (url) { return new Request(url.origin + "/setups?cache=1", { method: "GET" }); };
 const YF_HOSTS = ["https://query1.finance.yahoo.com", "https://query2.finance.yahoo.com"];
