@@ -1585,7 +1585,7 @@ body.light .chart-modal-overlay{background:rgba(0,0,0,0.55)}
       </span>
       <span class="feed-ctl">
         <button class="sb sb-sm sb-feed f-chart" onclick="feedSendAll('chart')" title="Send every setup below to the terminals as drawings only — nothing is placed">📈 All to chart</button>
-        <button class="sb sb-sm sb-feed f-trade" onclick="feedSendAll('trade')" title="Send every eligible setup to be placed by the bot. Anything flagged against strength is skipped.">⚡ All to trade</button>
+        <button class="sb sb-sm sb-feed f-trade" onclick="feedSendAll('trade')" title="Send every eligible setup to be placed by the bot. Anything flagged against strength or carrying a timing warning is skipped.">⚡ All to trade</button>
         <button class="sb sb-sm sb-feed f-clr" onclick="feedClear('scanner');feedClear('pullback')" title="Retract everything — the terminals will have nothing armed">✕ Clear feed</button>
         <span id="feed-count" class="feed-count"></span>
       </span>
@@ -1735,6 +1735,16 @@ body.light .chart-modal-overlay{background:rgba(0,0,0,0.55)}
     <div class="meta" style="line-height:1.6">Every weekday at about 07:40 AEST the proxy tests everything the site depends on — live prices, the briefing, currency indices, technicals, the calendar, the bots' setups feed and one real AI question — and records the result here. The light in the header is green when the last check passed, red when something failed, amber when the last check is more than a day old.</div>
     <div id="syscheck-body" class="meta" style="margin-top:8px">Loading…</div>
     <button class="sb" id="syscheck-run" style="margin-top:10px;padding:7px 16px;font-size:12.5px" onclick="runSysCheckNow()">Run check now</button>
+  </div>
+  <div class="card">
+    <div class="ai"><div class="aq">What's new in v30 (27 Oct 2026) — scanner gates fix trades instead of binning them</div><div class="aa">
+      Why: after v29 the scanner was showing almost nothing. On 27 Oct at 18:08 four real setups came back and all four were rejected — two only because their stop was too tight, one because the market had moved 24 pips against it against a 20-pip limit. The idea behind each trade was never judged. Each setup still has to stand up on its own; what changed is <b>what happens when it doesn't quite</b>:<br>
+      · <b>Stops are repaired, not rejected.</b> A stop that is under half the daily range, or inside the last 4H swing, is moved to the safe spot. If that drops the R:R below the minimum, the target is moved out to the next measured level (within 2½× the daily range). The card shows a blue <b>🔧 Adjusted by the checker</b> line saying exactly what moved and why. Only a setup that can't be repaired sensibly is dropped.<br>
+      · <b>Timing checks are now warnings.</b> "Moving against it now" (limit raised from a quarter to <b>0.4× the daily range</b> in the last 4 hours) and "too extended" (entry within half a range of this week's high/low) no longer hide the trade. The card shows an amber <b>⚠ TIMING</b> chip; <b>All to trade skips it</b>, and its own button reads <b>Trade anyway</b> — your call.<br>
+      · <b>Still hard blocks:</b> stop or target already hit, entry already passed or too far away, stop that would need to be over 2× the daily range, and the yen intervention line.<br>
+      · <b>The AI gets the exact numbers.</b> Each pair now comes with its minimum stop, the furthest LONG/SHORT entry allowed, the nearest 4H swing low/high and the last-4h move, so it writes setups that pass first time.<br>
+      · <b>"no pair" fixed.</b> The AI's intro sentence was being read as a broken setup. When nothing passes, the message now lists why each one failed instead of saying "not complete and self-consistent".
+    </div></div>
   </div>
   <div class="card">
     <div class="ai"><div class="aq">What's new in v29 (22 Oct 2026) — scanner quality gates</div><div class="aa">
@@ -2240,7 +2250,7 @@ function dismissBanner(){
 /* ══════════════════════════════════════
    HEADER DATE
 ══════════════════════════════════════ */
-var FH_BUILD='v29'; // 22 Oct 2026 — SCANNER QUALITY GATES: stop ≥ half ATR and beyond the 4H swing, no entries within half an ATR of the week high/low, yen intervention zone holds JPY-sell trades, shared-theme tag, held-back setups named per pair // 15 Oct 2026 — TRUST BATCH C+D: calendar source labelled everywhere + feed-only loads, sentiment checked against measured strength (6h), weekly events from the calendar feed, Indices 'today' from the 7am rollover, correlation drops incomplete days, no hard-coded pip rates, gap filled?, Outlook direction check, trade reviews grounded + figures verified // 15 Oct 2026 — TRUST BATCH A+B: measured levels (/levels) behind every AI level, level + setup checks vs live price/ATR, no forced setups, feed send-time re-check + per-setup age, Plan 'not checked' instead of pass, honest 'Do they agree?' labels, generation stamps // 15 Oct 2026 — measured-moves table: latest shows hours after the release, clean prices, range never negative (worker 12.2) // 15 Oct 2026 — IQ Event review anchored to MEASURED price moves (worker /move), verdict check + auto-redo, Sonnet for screenshot reviews // Columns colour switch Chart/Currency // column tiles coloured like the chart // pair filters on their own line under the timeframes // 13 Oct 2026 — Amendments 20: system check light, indices 'Do they agree?', tree map currency filters + columns, closed-market gap wording // Plan: shortlist ranked by gap + money line + Print/Save; policy test 17 Sep // Plan news-risk looks back as well as forward, flag-not-drop option, honest card + IQ question, empty AI replies not saved // IQ picker shows impact + currency colour; briefing news rows: impact border + IQ button // Plan chips show the state after each step, not the final result // 16 Sep 2026 — ForexFlow: Classic / Flow navigation toggle, grouped tabs with colour families, Plan tab // 16 Sep 2026 — calendar six-day grid, correlation Ask IQ, labels, paste hint, mud-map link // 16 Sep 2026 — amendments 14.9.26: Ask IQ on the research tabs, print/save everywhere, calendar collapse + grid, paste screenshots // bump on every delivered change — shown in the header so it's always obvious which version is loaded
+var FH_BUILD='v30'; // 27 Oct 2026 — SCANNER GATES REWORKED: stops that are too tight are widened by the checker (beyond the 4H swing, ≥ half ATR) and the target stretched to the next measured level if R:R needs it; 'moving against it now' (0.4× ATR) and 'too extended' are amber warnings held back from All-to-trade instead of rejections; AI given each pair's exact stop / room / 4H-swing numbers; intro text no longer read as a 'no pair' setup // 22 Oct 2026 — SCANNER QUALITY GATES: stop ≥ half ATR and beyond the 4H swing, no entries within half an ATR of the week high/low, yen intervention zone holds JPY-sell trades, shared-theme tag, held-back setups named per pair // 15 Oct 2026 — TRUST BATCH C+D: calendar source labelled everywhere + feed-only loads, sentiment checked against measured strength (6h), weekly events from the calendar feed, Indices 'today' from the 7am rollover, correlation drops incomplete days, no hard-coded pip rates, gap filled?, Outlook direction check, trade reviews grounded + figures verified // 15 Oct 2026 — TRUST BATCH A+B: measured levels (/levels) behind every AI level, level + setup checks vs live price/ATR, no forced setups, feed send-time re-check + per-setup age, Plan 'not checked' instead of pass, honest 'Do they agree?' labels, generation stamps // 15 Oct 2026 — measured-moves table: latest shows hours after the release, clean prices, range never negative (worker 12.2) // 15 Oct 2026 — IQ Event review anchored to MEASURED price moves (worker /move), verdict check + auto-redo, Sonnet for screenshot reviews // Columns colour switch Chart/Currency // column tiles coloured like the chart // pair filters on their own line under the timeframes // 13 Oct 2026 — Amendments 20: system check light, indices 'Do they agree?', tree map currency filters + columns, closed-market gap wording // Plan: shortlist ranked by gap + money line + Print/Save; policy test 17 Sep // Plan news-risk looks back as well as forward, flag-not-drop option, honest card + IQ question, empty AI replies not saved // IQ picker shows impact + currency colour; briefing news rows: impact border + IQ button // Plan chips show the state after each step, not the final result // 16 Sep 2026 — ForexFlow: Classic / Flow navigation toggle, grouped tabs with colour families, Plan tab // 16 Sep 2026 — calendar six-day grid, correlation Ask IQ, labels, paste hint, mud-map link // 16 Sep 2026 — amendments 14.9.26: Ask IQ on the research tabs, print/save everywhere, calendar collapse + grid, paste screenshots // bump on every delivered change — shown in the header so it's always obvious which version is loaded
 /* Stale-tab killer: every so often, check whether a newer build has been deployed.
    If so, show a can't-miss banner telling the user to reload — long-open tabs silently
    running old code caused repeated "the fix didn't work" confusion. */
@@ -2738,9 +2748,15 @@ function checkSetupLive(o,q,LV,kind){
   var maxD=atr?(kind==='pullback'?1.5:1.0)*atr:p*(kind==='pullback'?0.012:0.006);
   if(Math.abs(e-p)>maxD) return 'entry too far from the live price';
   var minRR=kind==='pullback'?1.5:1.8;
+  /* v30 — repair before judging: a sound idea with a stop that is too tight gets
+     the stop moved to where it belongs (and the target stretched if R:R needs it)
+     instead of being thrown away. Only an unrepairable setup is rejected. */
+  if(pr.slice(3)==='JPY'&&o._isLong||pr.slice(0,3)==='JPY'&&!o._isLong){ var g0=qualityGates(o,q,null,pr,e,sl); if(g0) return g0; }   // intervention line first — no repair can fix it
+  if(atr){ var rp=repairSetup(o,L,pr,minRR); if(rp) return rp; sl=o._sl; tp=o._tp; }
   if(o._rr<minRR) return 'risk/reward under 1:'+(kind==='pullback'?'1.5':'2');
   if(atr){ var sd=Math.abs(e-sl); if(sd<MIN_STOP_ATR*atr-0.5*fhPipOf(pr)) return 'stop '+Math.round(sd/fhPipOf(pr))+'p is under half the daily range (ATR '+Math.round(atr/fhPipOf(pr))+'p) — normal noise would hit it'; if(sd>2*atr) return 'stop wider than 2× the daily range'; }
   var g=qualityGates(o,q,L,pr,e,sl); if(g) return g;
+  o._warn=softGates(o,q,L,pr,e);
   o._chk={p:p,atr:atr,atrPips:L?L.atrPips:null,at:Date.now()};
   return null;
 }
@@ -2753,7 +2769,7 @@ function checkSetupLive(o,q,LV,kind){
    USD/JPY fell 158.2 → 156.8 and all four were stopped out inside 3 hours.
    Each setup now has to pass these on its own; several setups on the same
    theme are allowed but tagged (themeMap) so they can be sized as one. */
-var MIN_STOP_ATR=0.5, EXT_ATR=0.5, MOM_ATR=0.25;
+var MIN_STOP_ATR=0.5, EXT_ATR=0.5, MOM_ATR=0.4;   // v30: momentum 0.25→0.4× ATR, and a warning not a rejection
 function fhJpyIntLevel(){ var v=parseFloat(LS.get('fh_jpy_int')); return isFinite(v)&&v>=100&&v<=250?v:157.5; }
 function setJpyIntLevel(v){ v=parseFloat(v); if(isFinite(v)&&v>=100&&v<=250) LS.set('fh_jpy_int',String(v)); else LS.del('fh_jpy_int'); }
 function jpyIntZone(q){ var d=q&&q.USDJPY; if(!d||d.p==null||d.stale) return null; return d.p>=fhJpyIntLevel()?d.p:null; }
@@ -2765,15 +2781,7 @@ function qualityGates(o,q,L,pr,e,sl){
   }
   if(!L||!L.atr) return null;
   var atr=L.atr, pip=fhPipOf(pr);
-  /* 0 · Right now — the last 4 hours must not be running against the trade. */
-  var d=q&&q[pr];
-  if(d&&d.t4h!=null&&d.p!=null){ var mv=d.t4h/100*d.p, against=o._isLong?-mv:mv;
-    if(against>MOM_ATR*atr) return 'market moving against it right now — '+Math.round(against/pip)+'p '+(o._isLong?'down':'up')+' in the last 4 hours (limit '+Math.round(MOM_ATR*atr/pip)+'p)'; }
-  /* 2 · Too extended — a trend trade needs room to run. */
-  if(L.tw){
-    var ext=o._isLong?(L.tw.h!=null?L.tw.h-e:null):(L.tw.l!=null?e-L.tw.l:null);
-    if(ext!=null&&ext<EXT_ATR*atr) return 'too extended — entry is '+(ext<0?Math.round(-ext/pip)+'p beyond':Math.round(ext/pip)+'p from')+' this week\'s '+(o._isLong?'high':'low')+' (needs at least '+Math.round(EXT_ATR*atr/pip)+'p of room); wait for a pullback';
-  }
+  /* v30 — 'moving against it now' and 'too extended' moved to softGates(): shown as warnings, held back from All to trade. */
   /* 3 · Stop beyond structure — not inside the last 4H swing. */
   var sw=L.sw4h&&(o._isLong?L.sw4h.lo:L.sw4h.hi);
   if(sw&&sw.length){
@@ -2784,6 +2792,77 @@ function qualityGates(o,q,L,pr,e,sl){
       if(o._isLong?sl>near-buf:sl<near+buf) return 'stop sits inside the last 4H swing '+(o._isLong?'low':'high')+' ('+lvP(pr,near)+') — where the market normally probes'; }
   }
   return null;
+}
+/* v30 — the 4H swing a stop must sit beyond (nearest one behind the entry, within 1.5× ATR). */
+function nearSwing(o,L,e){
+  var atr=L.atr, sw=L.sw4h&&(o._isLong?L.sw4h.lo:L.sw4h.hi), near=null;
+  (sw||[]).forEach(function(x){ var v=x&&x.p; if(v==null||!isFinite(v)) return;
+    if(o._isLong?(v<e&&e-v<=1.5*atr):(v>e&&v-e<=1.5*atr)){ if(near==null||(o._isLong?v>near:v<near)) near=v; } });
+  return near;
+}
+/* v30 — widen a too-tight stop to the safe spot; stretch the target to the next
+   measured level if R:R then needs it. Returns a rejection reason only when the
+   setup cannot be repaired sensibly. Records what it changed in o._fix. */
+function repairSetup(o,L,pr,minRR){
+  var atr=L.atr, pip=fhPipOf(pr), e=o._e, sl=o._sl, tp=o._tp, sgn=o._isLong?1:-1;
+  var need=e-sgn*MIN_STOP_ATR*atr;                       // at least half an ATR away
+  var near=nearSwing(o,L,e), bySwing=false;
+  if(near!=null){ var buf=Math.max(2*pip,0.05*atr), beyond=near-sgn*buf; if(sgn*(need-beyond)>0){ need=beyond; bySwing=true; } }
+  /* round AWAY from the entry, so rounding can never pull the stop back inside the swing */
+  var r=function(v){ var n=v/pip; return (sgn>0?Math.floor(n+1e-6):Math.ceil(n-1e-6))*pip; };
+  if(sgn*(sl-need)>0.5*pip){                              // stop is closer to entry than it should be
+    var nsl=r(need);
+    if(Math.abs(e-nsl)>2*atr) return 'the 4H swing is too far away for a sensible stop (over 2× the daily range)';
+    o._fix=o._fix||{}; o._fix.sl={from:sl,to:nsl,why:bySwing?'beyond the 4H swing '+(o._isLong?'low':'high')+' '+lvP(pr,near):'half the daily range ('+Math.round(MIN_STOP_ATR*atr/pip)+'p)'};
+    o._sl=sl=nsl; o.sl=lvP(pr,nsl);
+  }
+  var risk=Math.abs(e-sl), rr=Math.abs(tp-e)/risk;
+  if(rr<minRR){
+    var want=e+sgn*minRR*risk, best=null;
+    measuredLevels(pr,L).forEach(function(m){
+      if(sgn*(m.p-want)>=0&&Math.abs(m.p-e)<=2.5*atr&&(best==null||sgn*(m.p-best.p)<0)) best=m; });
+    if(!best) return 'risk/reward under 1:'+minRR+' with a safe stop — no measured level far enough for the target';
+    o._fix=o._fix||{}; o._fix.tp={from:tp,to:best.p,why:best.n.replace(/ \(.*\)$/,'')};
+    o._tp=tp=best.p; o.tp=lvP(pr,best.p);
+  }
+  o._rr=Math.abs(tp-e)/Math.abs(e-sl);
+  return null;
+}
+/* v30 — timing warnings. The setup is still shown (you decide), but All to trade
+   skips it and its Trade button reads "Trade anyway". */
+function softGates(o,q,L,pr,e){
+  var w=[]; if(!L||!L.atr) return w;
+  var atr=L.atr, pip=fhPipOf(pr), d=q&&q[pr];
+  if(d&&d.t4h!=null&&d.p!=null){ var mv=d.t4h/100*d.p, against=o._isLong?-mv:mv;
+    if(against>MOM_ATR*atr) w.push('moving against it now — '+Math.round(against/pip)+'p '+(o._isLong?'down':'up')+' in the last 4 hours (warning above '+Math.round(MOM_ATR*atr/pip)+'p)'); }
+  if(L.tw){
+    var ext=o._isLong?(L.tw.h!=null?L.tw.h-e:null):(L.tw.l!=null?e-L.tw.l:null);
+    if(ext!=null&&ext<EXT_ATR*atr) w.push('extended — entry '+(ext<0?Math.round(-ext/pip)+'p beyond':Math.round(ext/pip)+'p from')+' this week\'s '+(o._isLong?'high':'low')+' (less than '+Math.round(EXT_ATR*atr/pip)+'p of room)');
+  }
+  return w;
+}
+function warnChip(o){
+  if(!o._warn||!o._warn.length) return '';
+  return '<span class="scan-str warn" style="background:rgba(251,191,36,0.12);color:#fbbf24;border:1px solid rgba(251,191,36,0.4)" title="'+esc(o._warn.join(' · '))+'. Shown so you can judge it; All to trade skips it.">⚠ TIMING · '+esc(o._warn.map(function(x){return x.split(' — ')[0];}).join(' · '))+'</span>';
+}
+/* v30 — one rule for "should the bots get this automatically". */
+function feedHoldReason(o){
+  if(o._str&&o._str.verdict==='against'&&strMode()!=='off'&&strMode()!=='flag') return 'against strength — '+o._str.why;
+  if(o._warn&&o._warn.length) return 'timing warning — '+o._warn.join('; ');
+  return null;
+}
+/* v30 — the scanner's per-pair numbers, so the AI can meet the rules first time. */
+function scanRuleLine(pair,L,qd){
+  if(!L||!L.atr) return '';
+  var atr=L.atr, pip=fhPipOf(pair), f=function(v){return lvP(pair,v);};
+  var lo=L.sw4h&&L.sw4h.lo&&L.sw4h.lo.length?L.sw4h.lo.map(function(x){return x.p;}).filter(function(v){return v<L.price;}).sort(function(a,b){return b-a;})[0]:null;
+  var hi=L.sw4h&&L.sw4h.hi&&L.sw4h.hi.length?L.sw4h.hi.map(function(x){return x.p;}).filter(function(v){return v>L.price;}).sort(function(a,b){return a-b;})[0]:null;
+  var mv=qd&&qd.t4h!=null&&qd.p!=null?Math.round(qd.t4h/100*qd.p/pip):null;
+  return slashPair(pair)+': min stop '+Math.round(MIN_STOP_ATR*atr/pip)+'p'
+    +(L.tw&&L.tw.h!=null?' | LONG entry at or below '+f(L.tw.h-EXT_ATR*atr):'')
+    +(L.tw&&L.tw.l!=null?' | SHORT entry at or above '+f(L.tw.l+EXT_ATR*atr):'')
+    +' | 4H swing low '+(lo!=null?f(lo):'none')+' / high '+(hi!=null?f(hi):'none')
+    +(mv!=null?' | last 4h '+(mv>=0?'+':'')+mv+'p':'');
 }
 /* Shared theme: two or more shown setups buying or selling the same currency. */
 function themeMap(list){
@@ -2811,7 +2890,12 @@ function themeBanner(m){
 }
 function setupCheckLine(o){
   var c=o._chk; if(!c) return '';
-  return '<div class="meta" style="margin:4px 0 0">✓ Checked against live '+lvP(String(o.pair).replace(/[^A-Za-z]/g,'').toUpperCase(),c.p)+' at '+fhClock(c.at)+(c.atrPips!=null?' · stop '+Math.round(Math.abs(o._e-o._sl)/fhPipOf(o.pair))+' pips vs daily ATR '+Math.round(c.atrPips):' · ATR unavailable — stop width not checked')+'</div>';
+  var pr=String(o.pair).replace(/[^A-Za-z]/g,'').toUpperCase(), fx='';
+  if(o._fix&&(o._fix.sl||o._fix.tp)) fx='<div class="meta" style="margin:4px 0 0;color:#60a5fa">🔧 Adjusted by the checker: '
+    +[o._fix.sl?'stop moved '+lvP(pr,o._fix.sl.from)+' → '+lvP(pr,o._fix.sl.to)+' ('+esc(o._fix.sl.why)+')':'',
+      o._fix.tp?'target moved '+lvP(pr,o._fix.tp.from)+' → '+lvP(pr,o._fix.tp.to)+' ('+esc(o._fix.tp.why)+') to keep the R:R':''].filter(Boolean).join('; ')+'</div>';
+  if(o._warn&&o._warn.length) fx+='<div class="meta" style="margin:4px 0 0;color:#fbbf24">⚠ '+esc(o._warn.join(' · '))+' — your call; All to trade skips it</div>';
+  return fx+'<div class="meta" style="margin:4px 0 0">✓ Checked against live '+lvP(String(o.pair).replace(/[^A-Za-z]/g,'').toUpperCase(),c.p)+' at '+fhClock(c.at)+(c.atrPips!=null?' · stop '+Math.round(Math.abs(o._e-o._sl)/fhPipOf(o.pair))+' pips vs daily ATR '+Math.round(c.atrPips):' · ATR unavailable — stop width not checked')+'</div>';
 }
 
 /* ══════════════════════════════════════
@@ -3681,6 +3765,7 @@ async function feedSend(id,mode){
   if(mode==='trade'&&o._str&&o._str.verdict==='against'&&strMode()!=='off'&&strMode()!=='flag'){
     showToast('Held back: '+o._str.why); return;
   }
+  /* v30 — a timing warning does not stop a deliberate single press: that is the "you decide" path. */
   var f=feedAll(), b=f[src]||{}, k=feedKey(o);
   var ref=(b[k]&&b[k].s&&b[k].s.ref)?b[k].s.ref:makeRef(o);   // keep the ref a setup already has
   b[k]={mode:mode,at:Date.now(),s:{
@@ -3702,7 +3787,7 @@ async function feedSendAll(mode){
     var o=_setupStore[id]; if(!o) return;
     if(fails[id]){ skipped.push(slashPair(String(o.pair).replace(/[^A-Za-z]/g,'').toUpperCase())+' ('+fails[id]+')'); return; }
     src=o.src==='pullback'?'pullback':'scanner';
-    if(mode==='trade'&&o._str&&o._str.verdict==='against'&&strMode()!=='off'&&strMode()!=='flag') return;
+    if(mode==='trade'&&feedHoldReason(o)){ skipped.push(slashPair(String(o.pair).replace(/[^A-Za-z]/g,'').toUpperCase())+' ('+feedHoldReason(o).split(' — ')[0]+')'); return; }
     var f=feedAll(), b=f[src]||{}, k=feedKey(o);
     var ref=(b[k]&&b[k].s&&b[k].s.ref)?b[k].s.ref:makeRef(o);
     b[k]={mode:mode,at:Date.now(),s:{
@@ -3736,8 +3821,10 @@ function paintFeedButtons(){
       var blocked=o._str&&o._str.verdict==='against'&&strMode()!=='off'&&strMode()!=='flag';
       bt.classList.toggle('on',m==='trade');
       bt.classList.toggle('blocked',!!blocked);
-      bt.textContent=m==='trade'?'⚡ Trading ✓':'⚡ Trade';
+      var warned=!blocked&&o._warn&&o._warn.length;
+      bt.textContent=m==='trade'?'⚡ Trading ✓':(warned?'⚡ Trade anyway':'⚡ Trade');
       bt.title=blocked?('Against strength — '+o._str.why+'. Send it to the chart instead, or change Against strength in the header.')
+        :warned&&m!=='trade'?('Timing warning — '+o._warn.join('; ')+'. All to trade skips this one; press to send it yourself.')
         :(m==='trade'?'Armed — the bot will place this one. Press Chart to stand it down.':'Send to MT5 / cTrader and let the bot place it');
     }
   });
@@ -5856,8 +5943,10 @@ function dropLabel(o,bad){
   var pr=String(o.pair||'').replace(/[^A-Za-z]/g,'').toUpperCase();
   return (pr.length>=6&&o._isLong!=null?slashPair(pr)+' '+(o._isLong?'long':'short')+' — ':'')+bad;
 }
-function droppedNote(dropped){
+function droppedNote(dropped,none){
   if(!dropped.length) return '';
+  if(none){ var w2={};dropped.forEach(function(d){w2[d]=(w2[d]||0)+1;});
+    return '<div class="ss held-note">Why each one failed:<br>• '+Object.keys(w2).map(function(k){return (w2[k]>1?w2[k]+' × ':'')+esc(k);}).join('<br>• ')+'</div>'; }
   var why={};dropped.forEach(function(d){why[d]=(why[d]||0)+1;});
   var parts=Object.keys(why).map(function(k){return (why[k]>1?why[k]+' × ':'')+esc(k);});
   return '<div class="ss held-note">'+dropped.length+' further candidate'+(dropped.length>1?'s were':' was')
@@ -6024,20 +6113,21 @@ async function runScanner(){
       await ensureCal();
       scLV=await fhLevels(majors);
       var lvLines=majors.filter(function(mp){return scLV[mp];}).map(function(mp){return levelsLine(mp,scLV[mp]);});
-      if(lines.length) priceBlock='CURRENT LIVE PRICES ('+fhClock()+', real-time). Each line: price (today\'s range, % move/momentum) | trend 4H/Day/Week/Month (▲ up ▼ down ▬ flat). "Today"/D are measured from the daily FX rollover at 17:00 New York — Week/Month set the DIRECTION; the 4H and today set the TIMING — never propose a setup that the 4H move or today\'s move is currently running against (setups moving the wrong way in the last 4 hours are discarded):\n'+lines.join('\n')+'\n\n'+(lvLines.length?'MEASURED LEVELS per pair (from real price bars; nearest above and below the live price; ATR = 14-day average daily range in pips). Pairs not listed have no measured levels — do not trade them:\n'+lvLines.join('\n')+'\n':'MEASURED LEVELS: unavailable.\n')+calRiskBlock(24)+'\n'+(jpyIntZone(q)!=null?'\nYEN INTERVENTION ZONE: USD/JPY is '+q.USDJPY.p.toFixed(2)+', at or above '+fhJpyIntLevel()+' where Japan\'s Ministry of Finance has been warning. Do NOT propose any trade that sells JPY (no longs on XXX/JPY) — they are discarded.\n':'');
+      var ruleLines=majors.filter(function(mp){return scLV[mp]&&scLV[mp].atr;}).map(function(mp){return scanRuleLine(mp,scLV[mp],q[mp]);}).filter(Boolean);
+      if(lines.length) priceBlock='CURRENT LIVE PRICES ('+fhClock()+', real-time). Each line: price (today\'s range, % move/momentum) | trend 4H/Day/Week/Month (▲ up ▼ down ▬ flat). "Today"/D are measured from the daily FX rollover at 17:00 New York — Week/Month set the DIRECTION; the 4H and today set the TIMING — never propose a setup that the 4H move or today\'s move is currently running against (setups moving the wrong way in the last 4 hours are flagged and kept off the bots):\n'+lines.join('\n')+'\n\n'+(lvLines.length?'MEASURED LEVELS per pair (from real price bars; nearest above and below the live price; ATR = 14-day average daily range in pips). Pairs not listed have no measured levels — do not trade them:\n'+lvLines.join('\n')+'\n':'MEASURED LEVELS: unavailable.\n')+(ruleLines.length?'\nSCANNER RULES per pair (exact numbers the checker applies — meet them and the setup is shown as you wrote it): stop at least the min stop AND beyond the 4H swing (LONG: below the swing low; SHORT: above the swing high); LONG only with entry at or below the LONG limit, SHORT only with entry at or above the SHORT limit; avoid a pair whose last-4h move runs against the trade by more than '+Math.round(MOM_ATR*100)+'% of its ATR:\n'+ruleLines.join('\n')+'\n':'')+calRiskBlock(24)+'\n'+(jpyIntZone(q)!=null?'\nYEN INTERVENTION ZONE: USD/JPY is '+q.USDJPY.p.toFixed(2)+', at or above '+fhJpyIntLevel()+' where Japan\'s Ministry of Finance has been warning. Do NOT propose any trade that sells JPY (no longs on XXX/JPY) — they are discarded.\n':'');
     }catch(e){}
-    var prompt=priceBlock+'You are a professional forex trading analyst. Analyse the current forex market and identify the 3-5 highest-probability trade setups right now across major pairs.\n\nFor each setup use this EXACT plain-text format with no markdown, no asterisks, no bold:\n\nSETUP:\nPAIR: e.g. GBP/USD\nDIRECTION: LONG or SHORT\nPROBABILITY: HIGH or MEDIUM\nENTRY: price level\nSTOP LOSS: price level\nTAKE PROFIT: price level\nREASON: 3-4 sentences: the trend from the data above, which MEASURED LEVELS the entry, stop and target sit at (name them), and any risk from the CALENDAR block.\n\nCRITICAL LEVEL RULES — base every level on the CURRENT LIVE PRICES above:\n- ENTRY must be within roughly 0.5% of the current price (a realistic pending order that has NOT already been hit), never far away.\n- Never use a level that price has already traded through — the entry must still be reachable from the current live price.\n- Respect each pair\'s momentum AND its 4H/Day/Week/Month trend shown above: prefer setups that trade WITH the dominant higher-timeframe trend (weekly/monthly direction), triggered on the 4H. Do NOT recommend fading a strong UP or DOWN move (a pair near its daily high/low with a clear % move, or aligned trends across timeframes) unless you can state a specific reversal signal. Weight the setup\'s probability by how well the timeframes align.\n- For a SHORT: ENTRY at or slightly ABOVE current price, STOP LOSS above entry, TAKE PROFIT below entry.\n- For a LONG: ENTRY at or slightly BELOW current price, STOP LOSS below entry, TAKE PROFIT above entry.\n- Direction, entry, stop and target must be internally consistent and achieve at least 1:2 risk/reward.\n- Do not contradict yourself: if the reasoning is bearish the direction must be SHORT, and vice-versa.\n\nPrefer setups with clear multi-timeframe alignment. ENTRY, STOP LOSS and TAKE PROFIT must each sit at, or a few pips beyond, a MEASURED LEVEL listed for that pair. The stop distance must be between 0.5x and 1.5x the pair\'s ATR AND sit beyond the nearest 4H swing low (LONG) or 4H swing high (SHORT) — never on a daily pivot itself, where everyone\'s stops sit. Do NOT go LONG with an entry within 0.5x ATR of this-week high, or SHORT within 0.5x ATR of this-week low — a trend trade needs room; skip it (the pullback scanner handles dips). Only cite events listed in the CALENDAR block. Return 0 to 5 setups — only setups that meet every rule. If none do, reply with exactly one line: NO SETUPS: <short reason>. No setup is a valid answer; a forced weak trade is not. Pay particular attention to whichever pairs show the largest moves in the live data above (including JPY crosses and USD pairs). Start each setup with exactly "SETUP:" on its own line. Do not use any markdown.\n\nCOMPLETENESS RULES — a setup missing any of these is discarded before it reaches the screen, so it is wasted output:\n- Every setup MUST carry all seven fields: PAIR, DIRECTION, PROBABILITY, ENTRY, STOP LOSS, TAKE PROFIT, REASON.\n- For LONG, STOP LOSS must be BELOW entry and TAKE PROFIT ABOVE it. For SHORT, STOP LOSS ABOVE entry and TAKE PROFIT BELOW it. No exceptions.\n- Keep REASON to 3-4 sentences and at most 70 words so every setup finishes inside the reply. Prefer 3 complete setups over 5 truncated ones. Always finish the final setup completely — never cut off mid-sentence.'+freshnessNote(false);
+    var prompt=priceBlock+'You are a professional forex trading analyst. Analyse the current forex market and identify the 3-5 highest-probability trade setups right now across major pairs.\n\nFor each setup use this EXACT plain-text format with no markdown, no asterisks, no bold:\n\nSETUP:\nPAIR: e.g. GBP/USD\nDIRECTION: LONG or SHORT\nPROBABILITY: HIGH or MEDIUM\nENTRY: price level\nSTOP LOSS: price level\nTAKE PROFIT: price level\nREASON: 3-4 sentences: the trend from the data above, which MEASURED LEVELS the entry, stop and target sit at (name them), and any risk from the CALENDAR block.\n\nCRITICAL LEVEL RULES — base every level on the CURRENT LIVE PRICES above:\n- ENTRY must be within roughly 0.5% of the current price (a realistic pending order that has NOT already been hit), never far away.\n- Never use a level that price has already traded through — the entry must still be reachable from the current live price.\n- Respect each pair\'s momentum AND its 4H/Day/Week/Month trend shown above: prefer setups that trade WITH the dominant higher-timeframe trend (weekly/monthly direction), triggered on the 4H. Do NOT recommend fading a strong UP or DOWN move (a pair near its daily high/low with a clear % move, or aligned trends across timeframes) unless you can state a specific reversal signal. Weight the setup\'s probability by how well the timeframes align.\n- For a SHORT: ENTRY at or slightly ABOVE current price, STOP LOSS above entry, TAKE PROFIT below entry.\n- For a LONG: ENTRY at or slightly BELOW current price, STOP LOSS below entry, TAKE PROFIT above entry.\n- Direction, entry, stop and target must be internally consistent and achieve at least 1:2 risk/reward.\n- Do not contradict yourself: if the reasoning is bearish the direction must be SHORT, and vice-versa.\n\nPrefer setups with clear multi-timeframe alignment. ENTRY, STOP LOSS and TAKE PROFIT must each sit at, or a few pips beyond, a MEASURED LEVEL listed for that pair. The stop distance must be between 0.5x and 1.5x the pair\'s ATR AND sit beyond the nearest 4H swing low (LONG) or 4H swing high (SHORT) — never on a daily pivot itself, where everyone\'s stops sit. Do NOT go LONG with an entry within 0.5x ATR of this-week high, or SHORT within 0.5x ATR of this-week low — a trend trade needs room; skip it (the pullback scanner handles dips). Only cite events listed in the CALENDAR block. Check each setup against its SCANNER RULES line before writing it. Return 0 to 5 setups — only setups that meet every rule. If none do, reply with exactly one line: NO SETUPS: <short reason>. No setup is a valid answer; a forced weak trade is not. Pay particular attention to whichever pairs show the largest moves in the live data above (including JPY crosses and USD pairs). Start each setup with exactly "SETUP:" on its own line. Do not use any markdown.\n\nCOMPLETENESS RULES — a setup missing any of these is discarded before it reaches the screen, so it is wasted output:\n- Every setup MUST carry all seven fields: PAIR, DIRECTION, PROBABILITY, ENTRY, STOP LOSS, TAKE PROFIT, REASON.\n- For LONG, STOP LOSS must be BELOW entry and TAKE PROFIT ABOVE it. For SHORT, STOP LOSS ABOVE entry and TAKE PROFIT BELOW it. No exceptions.\n- Keep REASON to 3-4 sentences and at most 70 words so every setup finishes inside the reply. Prefer 3 complete setups over 5 truncated ones. Always finish the final setup completely — never cut off mid-sentence.'+freshnessNote(false);
     /* 30-minute bucket (was 15). The proxy caches scanner replies for 30 minutes, so a
        15-minute key generated a fresh paid Sonnet call that the server then had to serve
        from cache anyway — aligning the two halves the number of scanner calls. */
     var scanBucket=Math.floor(Date.now()/18e5);
-    var scanKey='scan:v29:'+scanBucket;
+    var scanKey='scan:v30:'+scanBucket;
     var txt=await ai(prompt,scanKey,{model:'claude-sonnet-5',maxTokens:3200,webSearch:false});
     if(aiRefused(txt)){delete cache[scanKey];LS.del('fhai:'+scanKey);throw new Error('The AI returned a no-data response (not cached) — tap Scan again to retry.');}
     // Normalise: strip markdown so field detection works reliably
     var norm=txt.replace(/\*\*/g,'').replace(/\*/g,'').replace(/^#+\s*/gm,'').replace(/^-{3,}$/gm,'');
     // Split on SETUP: (handles variations like "SETUP 1:", "Setup:")
-    var setups=norm.split(/\bSETUP\b[^:]*:/i).filter(function(s){return s.trim()&&/\bPAIR\b/i.test(s);});
+    var setups=norm.split(/\bSETUP\b[^:]*:/i).filter(function(s){return s.trim()&&/^\s*PAIR\s*:/im.test(s);});
     var noSet=norm.match(/NO SETUPS:?\s*([^\n]*)/i);
     if(!setups.length&&noSet){
       res.innerHTML='<div class="scan-empty"><div class="scan-icon">🧘</div><div><b>No setups meet the rules right now.</b> '+esc(noSet[1]||'')+'<br><span style="opacity:.7">That is a valid answer — every level must sit on a measured level with a sensible stop and at least 1:2.</span></div></div>';
@@ -6069,7 +6159,7 @@ async function runScanner(){
         shown++;
         var isHigh=o.prob.toUpperCase().indexOf('HIGH')>-1;
         var cardClass=isHigh?'prob-high':'prob-med';
-        html+='<div class="scan-card '+cardClass+'"><div class="scan-hdr">'+pairChip(o.pair,true)+'<span class="scan-dir '+(o._isLong?'long':'short')+'">'+esc(o.dir)+'</span><span class="scan-prob '+(isHigh?'high':'med')+'">'+esc(o.prob||'MEDIUM')+' PROB</span>'+strChip(st)+'<!--THEME'+shownList.length+'--></div>';
+        html+='<div class="scan-card '+cardClass+'"><div class="scan-hdr">'+pairChip(o.pair,true)+'<span class="scan-dir '+(o._isLong?'long':'short')+'">'+esc(o.dir)+'</span><span class="scan-prob '+(isHigh?'high':'med')+'">'+esc(o.prob||'MEDIUM')+' PROB</span>'+strChip(st)+warnChip(o)+'<!--THEME'+shownList.length+'--></div>';
         shownList.push(o);
         html+='<div class="scan-reason">'+colorizeCcy(md(o.reason))+'</div>';
         /* 8.9.26 #9.1 — Entry · Take profit · Stop loss, the TradingView position-tool order. */
@@ -6086,7 +6176,7 @@ async function runScanner(){
         /* A reply that parsed but produced nothing usable is a different fault from
            an empty market, and must not be cached as an answer. */
         delete cache[scanKey];LS.del('fhai:'+scanKey);
-        res.innerHTML='<div class="scan-empty"><div class="scan-icon">⚠️</div><div>'+setups.length+' candidate setup'+(setups.length>1?'s came':' came')+' back but none were complete and self-consistent, so none are shown. Tap Run scanner to try again.</div></div>'+droppedNote(dropped);
+        res.innerHTML='<div class="scan-empty"><div class="scan-icon">⚠️</div><div>'+setups.length+' candidate setup'+(setups.length>1?'s came':' came')+' back and none survived the live checks (stops are widened and targets stretched where that is safe; only setups that still fail are dropped). Tap Run scanner to try again.</div></div>'+droppedNote(dropped,true);
       } else {
         html=applyThemes(html,shownList);
         res.innerHTML=html+droppedNote(dropped)+heldNote(held);
@@ -6149,7 +6239,7 @@ async function runPullbackScanner(){
     // Never cache or render a "I can't access live data" reply as analysis
     if(aiRefused(txt)){delete cache[pbKey];LS.del('fhai:'+pbKey);throw new Error('The AI returned a no-data response (not cached) — tap Pullback scan again to retry.');}
     var norm=txt.replace(/\*\*/g,'').replace(/\*/g,'').replace(/^#+\s*/gm,'').replace(/^-{3,}$/gm,'');
-    var setups=norm.split(/\bSETUP\b[^:]*:/i).filter(function(s){return s.trim()&&/\bPAIR\b/i.test(s);});
+    var setups=norm.split(/\bSETUP\b[^:]*:/i).filter(function(s){return s.trim()&&/^\s*PAIR\s*:/im.test(s);});
     var pbNo=norm.match(/NO SETUPS:?\s*([^\n]*)/i);
     if(!setups.length&&pbNo){
       res.innerHTML='<div class="scan-empty"><div class="scan-icon">🧘</div><div><b>No pullback setups meet the rules right now.</b> '+esc(pbNo[1]||'')+'</div></div>';
@@ -6191,7 +6281,7 @@ async function runPullbackScanner(){
         var nowPrice='';
         var pd=q[o.pair.replace(/[^A-Za-z]/g,'').toUpperCase()];
         if(pd&&pd.p!=null) nowPrice=' <span style="font-size:11px;color:rgba(240,237,232,0.45);font-weight:400">now '+fmtPrice(o.pair.replace('/',''),pd.p)+'</span>';
-        html+='<div class="scan-card '+cardClass+'"><div class="scan-hdr">'+pairChip(o.pair,true)+'<span class="scan-dir '+(o._isLong?'long':'short')+'">'+esc(o.dir)+'</span><span class="scan-prob '+(isHigh?'high':'med')+'">'+esc(o.prob||'MEDIUM')+' PROB</span><span style="font-size:11px;padding:2px 8px;border-radius:100px;background:rgba(255,255,255,0.06);color:'+orderCol+';margin-left:4px;border:1px solid '+orderCol+'40">'+esc(orderLabel)+'</span>'+strChip(st)+'<!--THEME'+shownList.length+'--></div>';
+        html+='<div class="scan-card '+cardClass+'"><div class="scan-hdr">'+pairChip(o.pair,true)+'<span class="scan-dir '+(o._isLong?'long':'short')+'">'+esc(o.dir)+'</span><span class="scan-prob '+(isHigh?'high':'med')+'">'+esc(o.prob||'MEDIUM')+' PROB</span><span style="font-size:11px;padding:2px 8px;border-radius:100px;background:rgba(255,255,255,0.06);color:'+orderCol+';margin-left:4px;border:1px solid '+orderCol+'40">'+esc(orderLabel)+'</span>'+strChip(st)+warnChip(o)+'<!--THEME'+shownList.length+'--></div>';
         shownList.push(o);
         html+='<div class="scan-reason">'+colorizeCcy(md(o.reason))+'</div>';
         var _sid=setupRegister(o,'pullback');
@@ -6205,7 +6295,7 @@ async function runPullbackScanner(){
       });
       if(!shown){
         delete cache[pbKey];LS.del('fhai:'+pbKey);
-        res.innerHTML='<div class="scan-empty"><div class="scan-icon">⚠️</div><div>'+setups.length+' candidate setup'+(setups.length>1?'s came':' came')+' back but none were complete and self-consistent, so none are shown. Tap Pullback scan to try again.</div></div>'+droppedNote(dropped);
+        res.innerHTML='<div class="scan-empty"><div class="scan-icon">⚠️</div><div>'+setups.length+' candidate setup'+(setups.length>1?'s came':' came')+' back and none survived the live checks (stops are widened and targets stretched where that is safe; only setups that still fail are dropped). Tap Pullback scan to try again.</div></div>'+droppedNote(dropped,true);
       } else {
         html=applyThemes(html,shownList);
         res.innerHTML=html+droppedNote(dropped)+heldNote(held);
