@@ -825,6 +825,126 @@ body.light .chart-modal-overlay{background:rgba(0,0,0,0.55)}
   .sec{display:none!important}.sec.active{display:block!important}
   .card{border:1px solid #ccc;break-inside:avoid}
 }
+
+/* ══ v32 (4 Nov 2026) — presentation batch. Guidelines: 1 Appealing · 2 Ease of use · 3 Results ══ */
+:root{--imp-hi:#f87171;--imp-hibg:rgba(248,113,113,.10);--imp-md:#fbbf24;--imp-mdbg:rgba(251,191,36,.05);--imp-lo:#57534e;--flip:#c4b5fd}
+body.light{--imp-hi:#dc2626;--imp-hibg:rgba(220,38,38,.07);--imp-md:#d97706;--imp-mdbg:rgba(217,119,6,.06);--imp-lo:#a8a29e;--flip:#6d28d9;--mt:#3f3b37}
+/* calendar rows by impact */
+.cal-event.imp-high,.cal-event.imp-med,.cal-event.imp-low{border-width:2px;border-left-width:6px;align-items:center}
+.cal-event.imp-high{border-color:var(--imp-hi);background:linear-gradient(var(--imp-hibg),var(--imp-hibg)),var(--sf)}
+.cal-event.imp-med{border-color:var(--imp-md);background:linear-gradient(var(--imp-mdbg),var(--imp-mdbg)),var(--sf)}
+.cal-event.imp-low{border-color:var(--imp-lo)}
+.cal-event.imp-high:hover,.cal-event.imp-med:hover,.cal-event.imp-low:hover{filter:brightness(1.06)}
+.cal-past{opacity:.78}
+.cal-past .cal-title,.cal-past .cal-val{color:var(--mt)}
+body.light .cal-imp-badge.high{background:transparent;color:#b91c1c;border-color:#b91c1c}
+body.light .cal-imp-badge.med{background:transparent;color:#a16207;border-color:#a16207}
+body.light .cal-imp-badge.low{background:transparent;color:#57534e;border-color:#a8a29e}
+body.light .eco-term{color:#9f1239;border-bottom-color:#9f1239}
+body.light .cal-iq{background:#fff;border-color:#c2410c;color:#c2410c;font-weight:600}
+body.light .cal-detail,body.light .meta,body.light .map-src{font-weight:500}
+/* light theme: unselected pill buttons get a real outline, darker text and a white surface */
+body.light .asub:not(.active):not(.on),body.light .pp:not(.active):not(.on),body.light .rsub:not(.active):not(.on),
+body.light .map-tb:not(.active),body.light .hm-vtab:not(.active),body.light .pip-fccy:not(.active):not(.on),
+body.light .corr-vtab:not(.active):not(.on),body.light .idx-vtab:not(.active):not(.on),body.light .gapf:not(.active),
+body.light .fsb:not(.on),body.light .rb:not(.active){background:#fff;border-color:rgba(0,0,0,.24);color:#1c1b19;font-weight:600}
+body.light .map-tb.mt-heat.active,body.light .hm-vtab.active{background:#c2410c;border-color:#c2410c;color:#fff}
+body.light .map-tb.mt-sent.active{background:#0e7490;border-color:#0e7490;color:#fff}
+body.light .map-tb.mt-corr.active{background:#6d28d9;border-color:#6d28d9;color:#fff}
+/* tree map — flipped pairs in Currency colours */
+.tm-ct.tm-flip{outline:3px dashed rgba(255,255,255,.95);outline-offset:-5px}
+.tm-ct.tm-flip b{font-style:italic}
+.tm-ct.tm-flip b::before{content:"↺ ";font-style:normal}
+.tm-legend{font-family:'DM Mono',monospace;font-size:11.5px;color:var(--mt);line-height:1.5;margin:0 0 8px;padding:8px 10px;border-radius:8px;background:var(--sf);border:1px solid var(--bd)}
+.tm-legend{display:block}.tm-legend b{display:inline;color:var(--flip);font-weight:600}
+/* planner — Max lots + room at max */
+.pl-mx{display:inline-flex;align-items:center;gap:5px;justify-self:start;padding:3px 10px;border-radius:100px;border:1px solid #22d3ee;color:#22d3ee;background:transparent;font-family:'DM Mono',monospace;font-size:12px;cursor:pointer}
+body.light .pl-mx{border-color:#0e7490;color:#0e7490;font-weight:600}
+.pl-mx:hover{filter:brightness(1.15)}.pl-mx[disabled]{opacity:.5;cursor:default}
+.pl-room{display:flex;flex-direction:column;gap:3px;min-width:0}
+.pl-room .bar{height:6px;border-radius:3px;background:var(--sf2);overflow:hidden;position:relative}
+.pl-room .bar i{position:absolute;top:0;bottom:0;left:0;border-radius:3px}
+.pl-room .bar::after{content:"";position:absolute;top:0;bottom:0;left:50%;width:1px;background:var(--bd2)}
+.pl-room .txt{font-size:10px;color:var(--mt);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.pl-room.rr .bar i{background:var(--sel)}.pl-room.rr .txt b{color:var(--sel)}
+.pl-room.ra .bar i{background:var(--wt)}.pl-room.ra .txt b{color:var(--wt)}
+.pl-room.rg .bar i{background:var(--buy)}.pl-room.rg .txt b{color:var(--buy)}
+.pl-key{display:flex;gap:14px;flex-wrap:wrap;margin-top:8px;font-size:10.5px;color:var(--mt)}
+.pl-key span::before{content:"";display:inline-block;width:10px;height:6px;border-radius:2px;margin-right:6px;vertical-align:middle}
+.pl-key .k1::before{background:var(--sel)}.pl-key .k2::before{background:var(--wt)}.pl-key .k3::before{background:var(--buy)}
+.planner-hdr,.planner-row{min-width:980px}
+/* routes */
+.rt-wrap{max-width:1200px;margin:8px auto 0;padding:0 16px}
+.rt-bar{display:flex;flex-direction:column;gap:10px;padding:10px 14px;border-radius:12px;background:var(--sf);border:1px solid var(--bd)}
+.rt-top{display:flex;gap:7px;flex-wrap:wrap;align-items:center}
+.rt-top .k{font-family:'DM Mono',monospace;font-size:10.5px;letter-spacing:.08em;text-transform:uppercase;color:var(--mt);margin-right:4px}
+.rt-chip{font-family:'Syne',sans-serif;font-weight:600;font-size:12.5px;padding:5px 13px;border-radius:100px;border:1px solid var(--bd2);background:transparent;color:var(--tx);cursor:pointer}
+body.light .rt-chip{background:#fff;border-color:rgba(0,0,0,.24)}
+.rt-chip.on{background:#f97316;border-color:#f97316;color:#111}
+body.light .rt-chip.on{background:#c2410c;border-color:#c2410c;color:#fff}
+.rt-chip .st{color:var(--wt);font-family:'DM Mono',ui-monospace,monospace;font-size:11px;font-variant-emoji:text}.rt-chip.on .st{color:inherit}
+.rt-chip.add{border-style:dashed;color:var(--mt)}
+.rt-chip.x{margin-left:auto;border:0;color:var(--mt);padding:5px 8px}
+.rt-steps{display:flex;align-items:center;flex-wrap:wrap;row-gap:8px}
+.rt-stp{display:flex;align-items:center;gap:7px;font-family:'Syne',sans-serif;font-weight:600;font-size:13px;color:var(--mt);background:none;border:0;cursor:pointer;padding:0}
+.rt-stp i{font-style:normal;display:grid;place-items:center;width:24px;height:24px;border-radius:50%;border:1px solid var(--bd2);font-family:'DM Mono',monospace;font-size:11px}
+.rt-stp.done i{background:var(--bd2);color:var(--tx)}
+.rt-stp.now{color:var(--tx)}
+.rt-stp.now i{background:#f97316;border-color:#f97316;color:#111}
+body.light .rt-stp.now i{background:#c2410c;border-color:#c2410c;color:#fff}
+.rt-sep{width:20px;height:1px;background:var(--bd2);margin:0 8px}
+.rt-note{display:flex;gap:12px;align-items:center;justify-content:space-between;flex-wrap:wrap;padding-top:9px;border-top:1px solid var(--bd)}
+.rt-note p{margin:0;color:var(--mt);font-family:'DM Mono',monospace;font-size:12px;line-height:1.5;max-width:70ch}
+.rt-note p b{color:var(--tx);font-weight:500}
+.rt-btn{font-family:'Syne',sans-serif;font-weight:700;font-size:13px;padding:7px 16px;border-radius:100px;border:0;background:#f97316;color:#111;cursor:pointer}
+body.light .rt-btn{background:#c2410c;color:#fff}
+.rt-btn.ghost{background:transparent;border:1px solid var(--bd2);color:var(--tx)}
+.rt-bld{padding:14px;border-radius:12px;border:1px dashed var(--bd2);display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-top:2px}
+@media (max-width:620px){.rt-bld{grid-template-columns:1fr}}
+.rt-bld h4{margin:0 0 8px;font-family:'Syne',sans-serif;font-size:13px;font-weight:700}
+.rt-opts{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:2px 10px;max-height:260px;overflow:auto}
+.rt-opt{display:flex;align-items:center;gap:8px;padding:5px 6px;border-radius:7px;font-family:'DM Mono',monospace;font-size:12px;cursor:pointer}
+.rt-opt input{accent-color:#f97316}
+.rt-ord{display:flex;align-items:center;gap:8px;padding:6px 10px;border-radius:8px;background:var(--sf);border:1px solid var(--bd);margin-bottom:5px;font-family:'DM Mono',monospace;font-size:12px;cursor:grab}
+body.light .rt-ord{background:#fff}
+.rt-ord.drag{opacity:.4}
+.rt-ord .h{color:var(--mt);letter-spacing:-1px}
+.rt-ord .no{color:#f97316;font-weight:600;width:16px}
+body.light .rt-ord .no{color:#c2410c}
+.rt-ord .mv{margin-left:auto;display:flex;gap:2px}
+.rt-ord .mv button{background:none;border:1px solid var(--bd2);color:var(--mt);border-radius:5px;width:22px;height:20px;cursor:pointer;font-size:10px;line-height:1}
+.rt-nm{display:flex;gap:8px;margin-top:8px;flex-wrap:wrap;align-items:center}
+.rt-nm input[type=text]{flex:1;min-width:150px;padding:7px 10px;border-radius:8px;border:1px solid var(--bd2);background:var(--sf);color:var(--tx);font-family:'DM Mono',monospace;font-size:12px}
+.rt-nm label{font-family:'DM Mono',monospace;font-size:11.5px;color:var(--mt);display:flex;gap:6px;align-items:center}
+/* plan — start from a currency */
+.pl-th{display:flex;flex-direction:column;gap:9px}
+.pl-thc{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+.pl-thc select{padding:6px 10px;border-radius:8px;border:1px solid var(--bd2);background:var(--sf);color:var(--tx);font-family:'Syne',sans-serif;font-weight:600;font-size:13px}
+.pl-prt{display:grid;grid-template-columns:22px 100px 1fr auto;gap:10px;align-items:center;padding:9px 12px;border-radius:10px;background:var(--sf);border:1px solid var(--bd);border-left:4px solid var(--bd2);cursor:pointer}
+.pl-prt.good{border-left-color:var(--buy)}.pl-prt.ok{border-left-color:var(--wt)}.pl-prt.clash{border-left-color:var(--sel)}
+.pl-prt input{accent-color:#f97316;width:15px;height:15px}
+.pl-prt .pp2{font-family:'Syne',sans-serif;font-weight:700;font-size:14px}
+.pl-prt .dr{font-family:'DM Mono',monospace;font-size:10.5px;color:var(--mt)}
+.pl-prt .why{font-family:'DM Mono',monospace;font-size:11.5px;color:var(--mt);line-height:1.45;min-width:0}
+.pl-prt .why b{color:var(--tx);font-weight:500}
+.pl-fit{font-family:'DM Mono',monospace;font-size:10.5px;font-weight:600;padding:3px 8px;border-radius:100px;border:1px solid currentColor;white-space:nowrap}
+.pl-fit.good{color:var(--buy)}.pl-fit.ok{color:var(--wt)}.pl-fit.clash{color:var(--sel)}
+@media (max-width:560px){.pl-prt{grid-template-columns:22px 1fr auto}.pl-prt .why{grid-column:2/4}}
+.pl-theme-on{font-family:'DM Mono',monospace;font-size:11.5px;color:var(--tx);padding:7px 10px;border-radius:8px;border:1px solid #f97316;background:rgba(249,115,22,.08);display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+body.light .pl-theme-on{border-color:#c2410c;background:rgba(194,65,12,.06)}
+.pl-why0{font-family:'DM Mono',monospace;font-size:11.5px;color:var(--mt);margin-top:8px;line-height:1.5}
+.pl-why0 b{color:var(--tx);font-weight:500}
+
+/* v32 — foldable watchlist groups */
+.pgl{display:flex;align-items:center;justify-content:space-between;gap:6px}
+.pgl-t{background:none;border:0;color:inherit;font:inherit;letter-spacing:inherit;text-transform:inherit;cursor:pointer;display:flex;align-items:center;gap:6px;padding:2px 0}
+.pgl-t .cv{display:inline-block;transition:transform .15s;font-size:10px}
+.pg.fold .pgl-t .cv{transform:rotate(-90deg)}
+.pg.fold .pp{display:none}
+.pg.fold{margin-bottom:4px}
+.pgl-i{background:none;border:1px solid transparent;color:var(--mt);cursor:pointer;font-size:11px;border-radius:5px;padding:0 5px;line-height:16px}
+.pgl-i:hover,.pgl-i:focus-visible{border-color:var(--bd2);color:var(--tx)}
+body.light .pgl{opacity:1;font-weight:700}
 </style>
 </head>
 <body data-sect="analysis">
@@ -875,6 +995,8 @@ body.light .chart-modal-overlay{background:rgba(0,0,0,0.55)}
 <!-- v25 — ForexFlow grouped navigation (built by renderFlowNav) -->
 <div class="flow-wrap" id="flow-wrap"><div class="flow-nav" id="flow-nav"></div><div class="flow-sub" id="flow-sub"></div></div>
 </div>
+<!-- v32 — Routes: saved step-by-step paths through the tabs (built by renderRoutes) -->
+<div class="rt-wrap" id="rt-wrap"></div>
 
 <!-- ══ PRICE TICKER (built by initTicker) ══ -->
 <div class="ticker-wrap" id="tickerWrap">
@@ -1529,6 +1651,7 @@ body.light .chart-modal-overlay{background:rgba(0,0,0,0.55)}
     <button class="sb" onclick="loadPlan(true)">↺ Refresh</button>
     <span class="meta" id="plan-meta" style="margin-top:0">Loading the data behind each step…</span>
   </div>
+  <div class="card" id="pl-theme" style="margin-bottom:12px"></div>
   <div class="pl-steps" id="pl-steps"></div>
   <div class="card" id="pl-stepcard"><div class="ld" style="padding:16px"><div class="sp"></div>Loading strength, trends, technicals, calendar and correlations…</div></div>
   <div class="card" style="margin-top:12px"><div class="cl" style="display:flex;align-items:center;gap:10px;flex-wrap:wrap">Shortlist <span class="meta" style="font-weight:400;text-transform:none;letter-spacing:0">ranked by strength gap · money line at <input type="number" id="pl-lot" step="0.01" min="0.01" style="width:64px" onchange="planLotChange(this.value)"> lots</span></div><div id="pl-short"><div class="meta">Waiting for the steps above.</div></div></div>
@@ -1686,11 +1809,13 @@ body.light .chart-modal-overlay{background:rgba(0,0,0,0.55)}
     </div>
 
     <!-- Trade rows table -->
-    <div style="border:1px solid var(--bd);border-radius:var(--rs);overflow:hidden">
-      <div class="planner-hdr" id="planner-hdr" style="grid-template-columns:22px 1fr 96px 84px 64px 1fr 1fr 60px 60px 24px">
+    <div style="border:1px solid var(--bd);border-radius:var(--rs);overflow-x:auto">
+      <div class="planner-hdr" id="planner-hdr" style="grid-template-columns:22px 1fr 96px 62px 210px 70px 64px 1fr 1fr 60px 60px 24px">
         <span>#</span>
         <span>Open Bal</span>
         <span title="Currency pair for THIS trade — defaults to the Pair selected above; change it per row when you traded several pairs in one session.">Pair</span>
+        <span title="Most lots of the selected Lot Size this row's opening balance can open, at the site's leverage setting (Calculator → leverage). Click it to put it into Lots.">Max lots</span>
+        <span title="How far price can move against a full max-lots position before the balance is gone, against the pair's normal daily range (14-day ATR). The tick is one day's range.">Room at max</span>
         <span style="text-align:right" title="Number of LOTS (contracts) for this trade — 1 = one lot of the selected Lot Size, 10 = ten contracts. Blank = 1 lot.">Lots</span>
         <span style="text-align:right">Pips</span>
         <span style="text-align:right">P&amp;L (A$)</span>
@@ -1700,9 +1825,11 @@ body.light .chart-modal-overlay{background:rgba(0,0,0,0.55)}
         <span></span>
       </div>
       <div id="planner-rows"></div>
-      <div class="planner-row total-row" id="planner-total" style="grid-template-columns:22px 1fr 96px 84px 64px 1fr 1fr 60px 60px 24px">
+      <div class="planner-row total-row" id="planner-total" style="grid-template-columns:22px 1fr 96px 62px 210px 70px 64px 1fr 1fr 60px 60px 24px">
         <span style="color:var(--mt)">∑</span>
         <span style="color:var(--mt)">Session</span>
+        <span></span>
+        <span></span>
         <span></span>
         <span></span>
         <span></span>
@@ -1735,6 +1862,19 @@ body.light .chart-modal-overlay{background:rgba(0,0,0,0.55)}
     <div class="meta" style="line-height:1.6">Every weekday at about 07:40 AEST the proxy tests everything the site depends on — live prices, the briefing, currency indices, technicals, the calendar, the bots' setups feed and one real AI question — and records the result here. The light in the header is green when the last check passed, red when something failed, amber when the last check is more than a day old.</div>
     <div id="syscheck-body" class="meta" style="margin-top:8px">Loading…</div>
     <button class="sb" id="syscheck-run" style="margin-top:10px;padding:7px 16px;font-size:12.5px" onclick="runSysCheckNow()">Run check now</button>
+  </div>
+  <div class="card">
+    <div class="ai"><div class="aq">What's new in v32 (4 Nov 2026) — easier to read, easier to move around</div><div class="aa">
+      This batch was judged on three things, in this order: <b>appealing, easy to use, gets results</b>.<br>
+      · <b>Routes.</b> A bar under the navigation walks you through the tabs in order: Step 1 → 2 → 3 with a <b>Next</b> button and a one-line note on what to look for. Three come ready-made (Find a trade · Scanner first · Session start). <b>+ New route</b> builds your own: tick the tabs, drag them into order (or use ▲▼), name it, save. <b>★</b> marks the default that is ready when the site opens. Hide ▴ folds the bar away. Routes are saved in this browser.<br>
+      · <b>Plan · Start from a currency.</b> At the top of Plan, choose a currency, an event (e.g. the RBA decision) and whether you think it goes weaker or stronger. Every pair of that currency is ranked by how well the <i>other</i> currency suits the trade — its strength this week and today, and its own high-impact events in the next 24h–7 days: <b>Good fit / Check / Clash</b>. Tick the ones to keep, add your own, then the six steps run on just those pairs, with the direction set by your view.<br>
+      · <b>Plan Trend step explains itself.</b> On 3 Nov at 23:36 Trend showed "0 of 28 left". Checked on live data: after the RBA move every survivor's daily and 4H disagreed, so it was a real answer — but an empty trend feed would also have dropped everything. Now an empty feed marks the step <b>not checked</b> instead, the card counts what was dropped (mixed / against / not strong) and each red chip shows its W / D / 4H figures.<br>
+      · <b>Calculator → Session Trade Planner: Max lots + Room at max.</b> Max lots = the row's opening balance ÷ the margin for one lot at your leverage setting; click it to fill Lots. Room = how many pips against a full position would lose the whole balance, shown as a bar against the pair's normal daily range (14-day ATR): red under half a day, amber under a day, green more.<br>
+      · <b>Calendar rows coloured by impact</b> — a solid border in the impact colour with a thick left edge; High also gets a faint tint. Released events are dimmed.<br>
+      · <b>Tree map · Currency colours.</b> A pair quoted the other way round is turned to read from its column's currency (AUD/USD under USD becomes <b>↺ USD/AUD</b>, italic, dashed outline) with the % flipped to match its colour and "broker: AUD/USD" underneath. Clicking still opens the real pair.<br>
+      · <b>Watchlist groups fold.</b> Click a currency heading (AUD, CAD…) to hide or show its pairs — remembered across Weekly, Daily and 4H; the group with the selected pair always stays open. The small ↗ beside it opens Indices for that currency's strength. Pair buttons are coloured per currency.<br>
+      · <b>Light theme readable.</b> Unselected buttons have a real outline and dark text, impact badges and calendar terms are darker, and grey helper text is darker throughout.
+    </div></div>
   </div>
   <div class="card">
     <div class="ai"><div class="aq">What's new in v31 (3 Nov 2026) — Trade idea review knows what happened today</div><div class="aa">
@@ -2018,6 +2158,7 @@ function activatePairPill(sel,pair){
   var fmt=pair.slice(0,3)+'/'+pair.slice(3);
   document.querySelectorAll(sel+' .pp').forEach(function(b){
     b.classList.toggle('active', b.textContent.trim()===fmt);
+    if(b.textContent.trim()===fmt){ var g=b.closest('.pg'); if(g) g.classList.remove('fold'); }   // v32 — never hide the selected pair
   });
 }
 
@@ -2260,7 +2401,7 @@ function dismissBanner(){
 /* ══════════════════════════════════════
    HEADER DATE
 ══════════════════════════════════════ */
-var FH_BUILD='v31'; // 3 Nov 2026 — TRADE IDEA REVIEW SEES TODAY'S EVENTS: calendar look-back 24h (was 1h), measured before/after table for each high-impact event on the pair, 'why did…' questions answered (what happened / why / what it means) instead of graded as a setup, direction checked against measured prices, Open in IQ Event Review button // 27 Oct 2026 — SCANNER GATES REWORKED: stops that are too tight are widened by the checker (beyond the 4H swing, ≥ half ATR) and the target stretched to the next measured level if R:R needs it; 'moving against it now' (0.4× ATR) and 'too extended' are amber warnings held back from All-to-trade instead of rejections; AI given each pair's exact stop / room / 4H-swing numbers; intro text no longer read as a 'no pair' setup // 22 Oct 2026 — SCANNER QUALITY GATES: stop ≥ half ATR and beyond the 4H swing, no entries within half an ATR of the week high/low, yen intervention zone holds JPY-sell trades, shared-theme tag, held-back setups named per pair // 15 Oct 2026 — TRUST BATCH C+D: calendar source labelled everywhere + feed-only loads, sentiment checked against measured strength (6h), weekly events from the calendar feed, Indices 'today' from the 7am rollover, correlation drops incomplete days, no hard-coded pip rates, gap filled?, Outlook direction check, trade reviews grounded + figures verified // 15 Oct 2026 — TRUST BATCH A+B: measured levels (/levels) behind every AI level, level + setup checks vs live price/ATR, no forced setups, feed send-time re-check + per-setup age, Plan 'not checked' instead of pass, honest 'Do they agree?' labels, generation stamps // 15 Oct 2026 — measured-moves table: latest shows hours after the release, clean prices, range never negative (worker 12.2) // 15 Oct 2026 — IQ Event review anchored to MEASURED price moves (worker /move), verdict check + auto-redo, Sonnet for screenshot reviews // Columns colour switch Chart/Currency // column tiles coloured like the chart // pair filters on their own line under the timeframes // 13 Oct 2026 — Amendments 20: system check light, indices 'Do they agree?', tree map currency filters + columns, closed-market gap wording // Plan: shortlist ranked by gap + money line + Print/Save; policy test 17 Sep // Plan news-risk looks back as well as forward, flag-not-drop option, honest card + IQ question, empty AI replies not saved // IQ picker shows impact + currency colour; briefing news rows: impact border + IQ button // Plan chips show the state after each step, not the final result // 16 Sep 2026 — ForexFlow: Classic / Flow navigation toggle, grouped tabs with colour families, Plan tab // 16 Sep 2026 — calendar six-day grid, correlation Ask IQ, labels, paste hint, mud-map link // 16 Sep 2026 — amendments 14.9.26: Ask IQ on the research tabs, print/save everywhere, calendar collapse + grid, paste screenshots // bump on every delivered change — shown in the header so it's always obvious which version is loaded
+var FH_BUILD='v32'; // 4 Nov 2026 — PRESENTATION BATCH (Appealing · Ease of use · Results): calendar rows bordered by impact, light-theme buttons/badges/text readable, tree map Currency colours turn pairs round to read from the column (↺ dashed, broker name under), planner Max lots + room-at-max bar vs ATR, Routes bar (presets + build your own, ★ default), Plan 'Start from a currency', Plan trend step explains itself and never drops on an empty feed // 3 Nov 2026 — TRADE IDEA REVIEW SEES TODAY'S EVENTS: calendar look-back 24h (was 1h), measured before/after table for each high-impact event on the pair, 'why did…' questions answered (what happened / why / what it means) instead of graded as a setup, direction checked against measured prices, Open in IQ Event Review button // 27 Oct 2026 — SCANNER GATES REWORKED: stops that are too tight are widened by the checker (beyond the 4H swing, ≥ half ATR) and the target stretched to the next measured level if R:R needs it; 'moving against it now' (0.4× ATR) and 'too extended' are amber warnings held back from All-to-trade instead of rejections; AI given each pair's exact stop / room / 4H-swing numbers; intro text no longer read as a 'no pair' setup // 22 Oct 2026 — SCANNER QUALITY GATES: stop ≥ half ATR and beyond the 4H swing, no entries within half an ATR of the week high/low, yen intervention zone holds JPY-sell trades, shared-theme tag, held-back setups named per pair // 15 Oct 2026 — TRUST BATCH C+D: calendar source labelled everywhere + feed-only loads, sentiment checked against measured strength (6h), weekly events from the calendar feed, Indices 'today' from the 7am rollover, correlation drops incomplete days, no hard-coded pip rates, gap filled?, Outlook direction check, trade reviews grounded + figures verified // 15 Oct 2026 — TRUST BATCH A+B: measured levels (/levels) behind every AI level, level + setup checks vs live price/ATR, no forced setups, feed send-time re-check + per-setup age, Plan 'not checked' instead of pass, honest 'Do they agree?' labels, generation stamps // 15 Oct 2026 — measured-moves table: latest shows hours after the release, clean prices, range never negative (worker 12.2) // 15 Oct 2026 — IQ Event review anchored to MEASURED price moves (worker /move), verdict check + auto-redo, Sonnet for screenshot reviews // Columns colour switch Chart/Currency // column tiles coloured like the chart // pair filters on their own line under the timeframes // 13 Oct 2026 — Amendments 20: system check light, indices 'Do they agree?', tree map currency filters + columns, closed-market gap wording // Plan: shortlist ranked by gap + money line + Print/Save; policy test 17 Sep // Plan news-risk looks back as well as forward, flag-not-drop option, honest card + IQ question, empty AI replies not saved // IQ picker shows impact + currency colour; briefing news rows: impact border + IQ button // Plan chips show the state after each step, not the final result // 16 Sep 2026 — ForexFlow: Classic / Flow navigation toggle, grouped tabs with colour families, Plan tab // 16 Sep 2026 — calendar six-day grid, correlation Ask IQ, labels, paste hint, mud-map link // 16 Sep 2026 — amendments 14.9.26: Ask IQ on the research tabs, print/save everywhere, calendar collapse + grid, paste screenshots // bump on every delivered change — shown in the header so it's always obvious which version is loaded
 /* Stale-tab killer: every so often, check whether a newer build has been deployed.
    If so, show a can't-miss banner telling the user to reload — long-open tabs silently
    running old code caused repeated "the fix didn't work" confusion. */
@@ -3286,7 +3427,133 @@ function flowSync(){
   if(!found) FLOW_TABS.forEach(function(t){t.subs.forEach(function(sb){ if(!found&&sb.sec===sec) found={m:t.id,s:sb.id}; });});
   if(found){ _flowMain=found.m; _flowSub=found.s; renderFlowNav(); }
 }
-function initNavMode(){ applyNavMode(navMode()); }
+function initNavMode(){ applyNavMode(navMode()); try{ initRoutes(); }catch(e){} try{ initPairGroups(); }catch(e){} }
+/* v32 — watchlist groups (John, 4 Nov): click the currency to fold / unfold its pairs
+   (remembered, shared across Weekly / Daily / 4H lists); ↗ opens Indices for that
+   currency's strength. The group holding the selected pair always stays open. Pair
+   buttons are coloured per currency like everywhere else. */
+function pgFoldState(){ try{ return JSON.parse(LS.get('fh_pg_fold')||'{}')||{}; }catch(e){ return {}; } }
+function initPairGroups(){
+  var fold=pgFoldState();
+  document.querySelectorAll('.pg').forEach(function(g){
+    var l=g.querySelector('.pgl'), c=g.getAttribute('data-ccy'); if(!l||l.getAttribute('data-v32')) return; l.setAttribute('data-v32','1');
+    l.innerHTML='<button class="pgl-t" onclick="pgToggle(\''+c+'\')" title="Show or hide the '+c+' pairs"><span class="cv">▾</span>'+c+'</button><button class="pgl-i" onclick="pgIdx(\''+c+'\')" title="Open Indices — '+c+' strength against the other currencies">↗</button>';
+    if(fold[c]&&!g.querySelector('.pp.active')) g.classList.add('fold');
+    g.querySelectorAll('.pp').forEach(function(b){ if(!b.getAttribute('data-cc')){ b.setAttribute('data-cc','1'); b.innerHTML=colorizeCcy(esc(b.textContent.trim())); } });
+  });
+}
+function pgToggle(c){ var f=pgFoldState(), on=!f[c]; f[c]=on; try{ LS.set('fh_pg_fold',JSON.stringify(f)); }catch(e){}
+  document.querySelectorAll('.pg[data-ccy="'+c+'"]').forEach(function(g){ g.classList.toggle('fold',on&&!g.querySelector('.pp.active')); }); }
+function pgIdx(c){ if(navMode()==='flow') flowGo('research','indices'); else { var nb=null; document.querySelectorAll('.nb').forEach(function(b){ if(!nb&&(b.getAttribute('onclick')||'').indexOf("'indices'")>-1) nb=b; }); showS('indices',nb); }
+  showToast(c+' — strength against the other currencies is in the Indices table'); }
+
+/* ══ v32 — ROUTES (John, 3–4 Nov) ══
+   A route is an ordered list of tabs. Ready-made ones ship with the site; "+ New route"
+   builds your own (tick, drag into order, name, save). ★ marks the default, which is
+   ready on the bar when the site opens. Next opens the next tab with a one-line note.
+   Stored in this browser (fh_routes / fh_route_def / fh_route_on).
+   PUBLIC VERSION: routes are per-user data — move these three keys to the user's
+   account storage with watchlists and alerts when accounts exist. */
+var ROUTE_STEPS={};   // 'main:sub' → {name, note}
+var ROUTE_NOTES={
+  'plan:plan':'let the six rules cut the watchlist down; open the shortlist cards.',
+  'today:brief':'what moved overnight and why — note the currencies doing the moving.',
+  'today:sessions':'which sessions are open now and what is next — liquidity sets the timing.',
+  'today:calendar':'high-impact events in the next 24h on the currencies you care about.',
+  'research:trends':'look for pairs where the weekly and daily trend agree. Note two or three to check in Watchlist.',
+  'research:indices':'which currency is strongest and weakest this week — pair strong against weak.',
+  'research:heat':'which pairs are actually moving today, and in which direction.',
+  'research:sent':'is the news mood behind your currencies, or against them?',
+  'research:corr':'drop the trades that are the same bet as one you already have.',
+  'research:tech':'top-down check — weekly, daily and 4H ratings should line up with your idea.',
+  'pairs:scan':'setups from the scanner, already checked against live price and the calendar.',
+  'pairs:weekly':'the big picture for your pair: trend and key weekly levels.',
+  'pairs:daily':'daily bias and the measured levels for entry, stop and target.',
+  'pairs:h4':'the 4H trigger — wait for it before entering.',
+  'iq:outlook':'what an upcoming event could do to your pairs.',
+  'iq:evrev':'what an event that already landed actually did — measured moves.',
+  'iq:idea':'paste your idea for a final check against live price, levels and news.',
+  'iq:past':'review a closed trade so the next one is better.',
+  'iq:lib':'past reviews you saved.',
+  'journal:journal':'log the trade and the reason you took it.',
+  'journal:check':'run the pre-trade checklist before you press buy or sell.',
+  'journal:calc':'size the trade: pip value, lots and room before the balance is at risk.',
+  'about:about':'how each panel works.'
+};
+var ROUTE_PRESETS=[
+  {id:'p-find',name:'Find a trade',steps:['today:brief','research:trends','research:tech','pairs:daily','iq:idea']},
+  {id:'p-scan',name:'Scanner first',steps:['today:brief','pairs:scan','research:tech','research:heat','iq:idea']},
+  {id:'p-sess',name:'Session start',steps:['today:sessions','today:calendar','research:tech','research:heat']}
+];
+function routeStepList(){ var L=[]; FLOW_TABS.forEach(function(t){ t.subs.forEach(function(sb){ var k=t.id+':'+sb.id; ROUTE_STEPS[k]={name:sb.name==="Today's plan"?'Plan':sb.name==='Technicals'?'Technicals':sb.name}; L.push(k); }); }); return L; }
+function routesAll(){ var mine=[]; try{ mine=JSON.parse(LS.get('fh_routes')||'[]')||[]; }catch(e){} return ROUTE_PRESETS.concat(mine); }
+function routesMine(){ try{ return JSON.parse(LS.get('fh_routes')||'[]')||[]; }catch(e){ return []; } }
+function routesSaveMine(a){ try{ LS.set('fh_routes',JSON.stringify(a)); }catch(e){} }
+function routeDef(){ try{ return LS.get('fh_route_def')||'p-find'; }catch(e){ return 'p-find'; } }
+var _rt={on:null,step:0,build:null,dragI:null,hidden:false};
+function initRoutes(){
+  routeStepList();
+  try{ var st=JSON.parse(LS.get('fh_route_on')||'null'); if(st&&st.id){ _rt.on=st.id; _rt.step=st.step||0; } }catch(e){}
+  try{ _rt.hidden=LS.get('fh_route_hide')==='1'; }catch(e){}
+  if(!_rt.on) _rt.on=routeDef();
+  if(!routesAll().some(function(r){return r.id===_rt.on;})) _rt.on=routesAll()[0].id;
+  renderRoutes();
+}
+function routeSaveState(){ try{ LS.set('fh_route_on',JSON.stringify({id:_rt.on,step:_rt.step})); }catch(e){} }
+function routeById(id){ return routesAll().filter(function(r){return r.id===id;})[0]; }
+function renderRoutes(){
+  var w=document.getElementById('rt-wrap'); if(!w) return;
+  if(_rt.hidden){ w.innerHTML='<div style="display:flex;justify-content:flex-end"><button class="rt-chip" onclick="routeShow(true)" title="Show the Routes bar">Routes ▾</button></div>'; return; }
+  var all=routesAll(), def=routeDef(), r=routeById(_rt.on);
+  var h='<div class="rt-bar"><div class="rt-top"><span class="k">Routes</span>'
+    +all.map(function(x){return '<button class="rt-chip'+(x.id===_rt.on?' on':'')+'" onclick="routePick(\''+x.id+'\')" title="'+esc(x.steps.map(function(k){return (ROUTE_STEPS[k]||{}).name||k;}).join(' → '))+'">'+(x.id===def?'<span class="st">★</span> ':'')+esc(x.name)+'</button>';}).join('')
+    +'<button class="rt-chip add" onclick="routeBuild()">+ New route</button><button class="rt-chip x" onclick="routeShow(false)" title="Hide the Routes bar">Hide ▴</button></div>';
+  if(r){
+    h+='<div class="rt-steps">'+r.steps.map(function(k,i){ var cls=i<_rt.step?'done':i===_rt.step?'now':''; return (i?'<span class="rt-sep"></span>':'')+'<button class="rt-stp '+cls+'" onclick="routeGo('+i+')"><i>'+(i<_rt.step?'✓':i+1)+'</i>'+esc((ROUTE_STEPS[k]||{}).name||k)+'</button>'; }).join('')+'</div>';
+    var k=r.steps[_rt.step], last=_rt.step>=r.steps.length-1;
+    h+='<div class="rt-note"><p><b>Step '+(_rt.step+1)+' · '+esc((ROUTE_STEPS[k]||{}).name||k)+':</b> '+esc(ROUTE_NOTES[k]||'')+'</p><div style="display:flex;gap:8px;flex-wrap:wrap">'
+      +(r.id!==def?'<button class="rt-btn ghost" onclick="routeSetDef(\''+r.id+'\')" title="Ready on the bar when the site opens">★ Make default</button>':'')
+      +(r.id.indexOf('p-')!==0?'<button class="rt-btn ghost" onclick="routeBuild(\''+r.id+'\')">Edit</button>':'')
+      +'<button class="rt-btn" onclick="routeNext()">'+(last?'Finish ✓':'Next: '+esc((ROUTE_STEPS[r.steps[_rt.step+1]]||{}).name||'')+' →')+'</button></div></div>';
+  }
+  if(_rt.build) h+=routeBuilderHtml();
+  w.innerHTML=h+'</div>';
+}
+function routeShow(on){ _rt.hidden=!on; try{ LS.set('fh_route_hide',on?'0':'1'); }catch(e){} renderRoutes(); }
+function routePick(id){ _rt.on=id; _rt.step=0; _rt.build=null; routeSaveState(); routeGo(0); }
+function routeGo(i){ var r=routeById(_rt.on); if(!r) return; _rt.step=Math.max(0,Math.min(i,r.steps.length-1)); routeSaveState();
+  var k=r.steps[_rt.step].split(':');
+  if(navMode()==='flow') flowGo(k[0],k[1]);
+  else { /* Classic: open the panel directly (flowGo would repaint the Flow accent) */
+    var t=FLOW_TABS.filter(function(x){return x.id===k[0];})[0], sb=t&&t.subs.filter(function(x){return x.id===k[1];})[0];
+    if(sb){ var nb=null; document.querySelectorAll('.nb').forEach(function(b){ if(!nb&&(b.getAttribute('onclick')||'').indexOf("'"+sb.sec+"'")>-1) nb=b; }); showS(sb.sec,nb); if(sb.go) sb.go(); var mainEl=document.querySelector('.main'); if(mainEl) mainEl.scrollTo({top:0,behavior:'smooth'}); } }
+  renderRoutes(); }
+function routeNext(){ var r=routeById(_rt.on); if(!r) return; if(_rt.step>=r.steps.length-1){ _rt.step=0; routeSaveState(); renderRoutes(); showToast('Route finished — "'+r.name+'" is ready for next time'); return; } routeGo(_rt.step+1); }
+function routeSetDef(id){ try{ LS.set('fh_route_def',id); }catch(e){} renderRoutes(); showToast('★ '+(routeById(id)||{}).name+' is now your default route'); }
+function routeBuild(editId){ var e=editId?routeById(editId):null; _rt.build={id:e?e.id:null,name:e?e.name:'',steps:e?e.steps.slice():[],def:e?routeDef()===e.id:false}; renderRoutes(); var n=document.getElementById('rt-name'); if(n) n.focus(); }
+function routeBuilderHtml(){
+  var B=_rt.build, L=routeStepList();
+  var h='<div class="rt-bld"><div><h4>Tick the tabs</h4><div class="rt-opts">'+L.map(function(k){ return '<label class="rt-opt"><input type="checkbox" id="rtc-'+k.replace(':','-')+'" '+(B.steps.indexOf(k)>-1?'checked':'')+' onchange="routeTick(\''+k+'\',this.checked)">'+esc(ROUTE_STEPS[k].name)+'</label>'; }).join('')+'</div></div>';
+  h+='<div><h4>Drag into order</h4><div id="rt-order">'+(B.steps.length?B.steps.map(function(k,i){ return '<div class="rt-ord" draggable="true" ondragstart="routeDrag('+i+',event)" ondragover="event.preventDefault()" ondrop="routeDrop('+i+',event)" ondragend="this.classList.remove(\'drag\')"><span class="h">⋮⋮</span><span class="no">'+(i+1)+'</span>'+esc(ROUTE_STEPS[k].name)+'<span class="mv"><button onclick="routeMove('+i+',-1)" title="Move up">▲</button><button onclick="routeMove('+i+',1)" title="Move down">▼</button></span></div>'; }).join(''):'<div class="meta">Tick at least two tabs on the left.</div>')+'</div>';
+  h+='<div class="rt-nm"><input type="text" id="rt-name" placeholder="Name it, e.g. My London prep" value="'+esc(B.name)+'" oninput="_rt.build.name=this.value"><label><input type="checkbox" id="rt-def" '+(B.def?'checked':'')+' onchange="_rt.build.def=this.checked">★ default</label></div>'
+    +'<div class="rt-nm"><button class="rt-btn" onclick="routeSaveBuild()">Save route</button><button class="rt-btn ghost" onclick="_rt.build=null;renderRoutes()">Cancel</button>'+(B.id?'<button class="rt-btn ghost" onclick="routeDelete(\''+B.id+'\')">Delete</button>':'')+'</div></div></div>';
+  return h;
+}
+function routeTick(k,on){ var S=_rt.build.steps, i=S.indexOf(k); if(on&&i<0) S.push(k); if(!on&&i>-1) S.splice(i,1); renderRoutes(); }
+function routeMove(i,d){ var S=_rt.build.steps, j=i+d; if(j<0||j>=S.length) return; var t=S[i]; S[i]=S[j]; S[j]=t; renderRoutes(); }
+function routeDrag(i,ev){ _rt.dragI=i; try{ ev.dataTransfer.effectAllowed='move'; ev.dataTransfer.setData('text/plain',String(i)); }catch(e){} ev.currentTarget.classList.add('drag'); }
+function routeDrop(i,ev){ ev.preventDefault(); var S=_rt.build.steps, f=_rt.dragI; if(f==null||f===i) return; var x=S.splice(f,1)[0]; S.splice(i,0,x); _rt.dragI=null; renderRoutes(); }
+function routeSaveBuild(){
+  var B=_rt.build, nm=String(B.name||'').trim();
+  if(B.steps.length<2){ showToast('Tick at least two tabs for a route'); return; }
+  if(!nm){ showToast('Give the route a name'); var n=document.getElementById('rt-name'); if(n) n.focus(); return; }
+  var mine=routesMine(), id=B.id||('u-'+Date.now().toString(36));
+  var rec={id:id,name:nm.slice(0,40),steps:B.steps.slice()};
+  var at=mine.findIndex(function(r){return r.id===id;}); if(at>-1) mine[at]=rec; else mine.push(rec);
+  routesSaveMine(mine); if(B.def){ try{ LS.set('fh_route_def',id); }catch(e){} }
+  _rt.build=null; _rt.on=id; _rt.step=0; routeSaveState(); renderRoutes(); showToast('Route "'+rec.name+'" saved');
+}
+function routeDelete(id){ routesSaveMine(routesMine().filter(function(r){return r.id!==id;})); if(routeDef()===id){ try{ LS.set('fh_route_def','p-find'); }catch(e){} } _rt.build=null; _rt.on=routeDef(); _rt.step=0; routeSaveState(); renderRoutes(); showToast('Route deleted'); }
 
 function toggleTheme(){
   var t=document.body.classList.contains('light')?'dark':'light';
@@ -5141,7 +5408,7 @@ function renderCalendarView(){
         foldOpened=true;
       }
       if(foldOpened&&!past){ html+='</details>'; foldOpened=false; }
-      html+='<div class="cal-event'+(past?' cal-past':'')+'" onclick="openCalPopup('+i+')">';
+      html+='<div class="cal-event imp-'+ev.imp+(past?' cal-past':'')+'" onclick="openCalPopup('+i+')">';
       html+='<span class="cal-imp-badge '+ev.imp+'">'+(ev.imp==='high'?'HIGH':ev.imp==='med'?'MED':'LOW')+'</span>';
       html+='<div class="cal-text">';
       html+='<div class="cal-title"><span class="cal-ccy-tag" style="color:'+col+';background:'+col+'22;border:1px solid '+col+'44">'+ev.ccy+'</span>'+highlightEcoTerms(ev.name)+(past?' <span style="color:var(--mt);font-size:10px">· released</span>':'')+'</div>';
@@ -5223,7 +5490,7 @@ function renderCalendar(events){
     byDay[day].forEach(function(ev,i){
       var col=getCcyColor(ev.ccy);
       var idx=events.indexOf(ev);
-      html+='<div class="cal-event" onclick="openCalPopup('+idx+')">';
+      html+='<div class="cal-event imp-'+ev.imp+(ev.ts<Date.now()?' cal-past':'')+'" onclick="openCalPopup('+idx+')">';
       html+='<span class="cal-imp-badge '+ev.imp+'">'+(ev.imp==='high'?'HIGH':ev.imp==='med'?'MED':'LOW')+'</span>';
       html+='<div class="cal-text">';
       html+='<div class="cal-title"><span class="cal-ccy-tag" style="color:'+col+';background:'+col+'22;border:1px solid '+col+'44">'+ev.ccy+'</span>'+highlightEcoTerms(ev.name)+'</div>';
@@ -6445,7 +6712,7 @@ async function loadCalculator(){
   if(tableDiv) tableDiv.style.display='none';
   try{
     var quotes=await liveQuotes(calcAllPairs);
-    plannerQuotes=quotes;
+    plannerQuotes=quotes||{};
     var CCY_GROUPS=fhGroups();   // every watchlist pair, derived from FH_PAIRS
     // Build flat data array for sorting/filtering
     _calcPipData=[];
@@ -6670,7 +6937,7 @@ function buildPairControls(){
 function renderPlannerRows(){
   var tbody=document.getElementById('planner-rows');
   if(!tbody) return;
-  var cols='grid-template-columns:22px 1fr 96px 84px 64px 1fr 1fr 60px 60px 24px';
+  var cols='grid-template-columns:22px 1fr 96px 62px 210px 70px 64px 1fr 1fr 60px 60px 24px';
   var defLot=parseInt((document.getElementById('planner-lot')||{}).value||100000);
   var mainPair=(document.getElementById('planner-pair')||{}).value||'AUDUSD';
   var html='';
@@ -6679,6 +6946,8 @@ function renderPlannerRows(){
     html+='<span style="color:var(--mt);font-size:11px">'+(i+1)+'</span>';
     html+='<input class="pip-inp" id="pr-ob-'+i+'" type="number" value="'+(plannerData[i].ob!=null?plannerData[i].ob:'')+'" placeholder="auto" oninput="plannerObChange('+i+',this.value)" style="font-size:11px;color:var(--mt);text-align:right" title="Override opening balance for this trade">';
     html+='<select class="pip-inp" id="pr-pair-'+i+'" onchange="plannerRowPairChange('+i+',this.value)" style="font-size:11px;padding:2px 3px;'+(row.pair?'font-weight:600;color:'+((ccyCol(String(row.pair).slice(0,3)))):'color:var(--mt)')+'" title="Pair for THIS trade — defaults to the Pair selected above">'+plannerPairOptions(row.pair||mainPair)+'</select>';
+    html+='<button class="pl-mx" id="pr-mx-'+i+'" onclick="plannerUseMax('+i+')" title="Put this into Lots">—</button>';
+    html+='<div class="pl-room" id="pr-room-'+i+'"><div class="bar"><i style="width:0"></i></div><div class="txt">—</div></div>';
     html+='<input class="pip-inp" id="pr-sz-'+i+'" type="number" value="'+(row.size!=null?row.size:'')+'" placeholder="1" step="1" min="0" oninput="plannerSizeChange('+i+',this.value)" style="text-align:right" title="Number of LOTS (contracts) for THIS trade — 1 = one lot of the Lot Size selected above, 10 = ten contracts. Halves like 0.5 work too. Blank = 1 lot.">';
     html+='<input class="pip-inp" id="pip-in-'+i+'" type="number" value="'+(row.pips||'')+'" placeholder="0" oninput="plannerPipsChange('+i+',this.value)" style="text-align:right">';
     html+='<span id="pr-pnl-'+i+'" style="text-align:right;color:var(--mt)">—</span>';
@@ -6690,7 +6959,33 @@ function renderPlannerRows(){
   });
   tbody.innerHTML=html;
   updatePlanner();
+  plannerLoadAtr();
 }
+
+/* v32 — Max lots + room at max (John, 3 Nov). Margin for one lot = notional in A$ ÷
+   leverage (pipLeverageFor: 500:1 his account, or ASIC retail). Room = balance ÷
+   (A$ per pip × max lots), judged against the pair's own 14-day ATR. */
+var _plMax={};
+function plannerMaxFill(i,p,bal,lot){
+  var bt=document.getElementById('pr-mx-'+i), rm=document.getElementById('pr-room-'+i); if(!bt||!rm) return;
+  var std=getPipValueAUD(p,plannerQuotes), pipIn=p.slice(3)==='JPY'?1000:10;
+  var qd=plannerQuotes[p]||(lastGoodQuotes()&&lastGoodQuotes().q?lastGoodQuotes().q[p]:null), price=qd?(qd.p||qd):null;
+  var lev=pipLeverageFor(p);
+  if(!(std>0)||!(price>0)||!(bal>0)){ bt.textContent='—'; bt.disabled=true; rm.className='pl-room'; rm.querySelector('.txt').textContent=bal>0?'no live rate':'set a balance'; _plMax[i]=null; return; }
+  var q2aud=std/pipIn, margin=lot*price*q2aud/lev, mx=Math.floor(bal/margin+1e-9);
+  _plMax[i]=mx; bt.disabled=mx<1; bt.innerHTML=mx+' <span style="font-size:10px">▸</span>';
+  bt.title=mx<1?'A$'+bal.toFixed(0)+' is under the A$'+margin.toFixed(0)+' margin one lot needs at '+lev+':1':'Margin A$'+margin.toFixed(0)+' per lot at '+lev+':1 — click to put '+mx+' into Lots';
+  var atr=_planBrief&&_planBrief[p]&&_planBrief[p].atrPips!=null?Math.round(_planBrief[p].atrPips):null;
+  var txt=rm.querySelector('.txt'), bar=rm.querySelector('.bar i');
+  if(mx<1){ rm.className='pl-room rr'; bar.style.width='0'; txt.innerHTML='<b>can\'t open 1 lot</b> · margin A$'+margin.toFixed(0); return; }
+  var room=Math.round(bal/(std*(lot/100000)*mx));
+  if(atr){ var f=room/atr; rm.className='pl-room '+(f<0.5?'rr':f<1?'ra':'rg'); bar.style.width=Math.min(100,Math.round(f*50))+'%'; txt.innerHTML='<b>'+room+' pips</b> of room · daily range ~'+atr; }
+  else { rm.className='pl-room'; bar.style.width='0'; txt.innerHTML='<b>'+room+' pips</b> of room · daily range loading'; }
+  rm.title=room+' pips against you at '+mx+' lots would lose the whole A$'+bal.toFixed(0)+(atr?' — the pair\'s normal day is about '+atr+' pips':'');
+}
+function plannerUseMax(i){ var mx=_plMax[i]; if(!(mx>=1)) return; plannerData[i].size=mx; var el=document.getElementById('pr-sz-'+i); if(el) el.value=mx; updatePlanner(); showToast('Lots set to '+mx+' — check the room bar before you trade it'); }
+/* ATR comes from the shared briefing stats (the same numbers the Plan uses). */
+function plannerLoadAtr(){ if(_planBriefAt&&Date.now()-_planBriefAt<3600e3) return; fetchPlanBrief().then(function(){ try{updatePlanner();}catch(e){} }).catch(function(){}); }
 
 function plannerPipsChange(i,val){
   plannerData[i].pips=val===''?'':parseFloat(val)||0;
@@ -6817,6 +7112,7 @@ function updatePlanner(){
         obEl.style.color='var(--mt)';
       }
     }
+    plannerMaxFill(i,row.pair||pair,running,lot);
     if(pips===null||isNaN(pips)||pips===0){
       if(pnlEl){pnlEl.textContent='—';pnlEl.style.color='var(--mt)';}
       if(balEl){balEl.textContent='—';balEl.style.color='var(--mt)';}
@@ -7589,7 +7885,7 @@ function renderTreeCols(body){
   var cols=TM_CCYS.map(function(k){
     var items=_tmRows.filter(function(r){return r.sym.indexOf(k)>-1;}).map(function(r){
       var v=r[tf], base=r.sym.slice(0,3)===k;
-      return {r:r,v:v==null?null:(base?v:-v),other:base?r.sym.slice(3):r.sym.slice(0,3)};
+      return {r:r,v:v==null?null:(base?v:-v),other:base?r.sym.slice(3):r.sym.slice(0,3),base:base};
     });
     var have=items.filter(function(x){return x.v!=null;});
     var avg=have.length?have.reduce(function(a,b){return a+b.v;},0)/have.length:null;
@@ -7601,17 +7897,22 @@ function renderTreeCols(body){
   vals.sort(function(a,b){return a-b;});
   var maxAbs=vals.length?Math.max(0.05,vals[Math.floor(vals.length*0.9)]):1;
   var avgs=cols.map(function(c){return Math.abs(c.avg||0);}), maxAvg=Math.max(0.03,Math.max.apply(null,avgs));
-  var h='<div class="tm-cols">';
+  var h=(ccyMode?'<div class="tm-legend"><b>↺ = turned around</b> so it reads from the column\'s currency: under USD, ↺ USD/AUD +0.09% means USD rose 0.09% against AUD. Your broker lists it as AUD/USD (−0.09%). Click any tile to open the real pair.</div>':'')+'<div class="tm-cols">';
   cols.forEach(function(c){
     h+='<div class="tm-col"><div class="tm-colh" style="background:'+tmColor(c.avg,maxAvg)+';border-bottom:3px solid '+ccyCol(c.k)+'" title="'+c.k+' average move against its 7 pairs, '+tfLbl.toLowerCase()+'">'+c.k+'<small>'+(c.avg==null?'—':(c.avg>=0?'+':'')+c.avg.toFixed(2)+'% avg')+'</small></div>';
     c.items.forEach(function(x){
       var r=x.r, w=Math.max(0.35,r.act!=null?r.act:0.6);
       var tip=slashPair(r.sym)+' · '+c.k+(x.v==null?' no data':' '+(x.v>=0?'rose ':'fell ')+Math.abs(x.v).toFixed(2)+'% against '+x.other)+' ('+tfLbl.toLowerCase()+') · pair itself '+(r[tf]==null?'—':(r[tf]>=0?'+':'')+r[tf].toFixed(2)+'%')+' · activity '+(r.act!=null?r.act.toFixed(2)+'×':'n/a');
       var pv=r[tf];
-      h+='<div class="tm-ct" style="flex-grow:'+w.toFixed(2)+';background:'+tmColor(ccyMode?x.v:pv,maxAbs)+'" title="'+esc(tip)+'" onclick="goToPair(\''+r.sym+'\')">'
-        +'<b>'+slashPair(r.sym)+'</b>'
+      /* v32 — in Currency colours a pair quoted the other way round is turned to read
+         from the column's currency (AUD/USD under USD → ↺ USD/AUD) so the name, the %
+         and the colour all say the same thing. The broker's name sits underneath and a
+         click still opens the real pair. */
+      var flip=ccyMode&&!x.base;
+      h+='<div class="tm-ct'+(flip?' tm-flip':'')+'" style="flex-grow:'+w.toFixed(2)+';background:'+tmColor(ccyMode?x.v:pv,maxAbs)+'" title="'+esc(tip)+(flip?' · shown turned around as '+c.k+'/'+x.other+' — your broker lists it as '+slashPair(r.sym):'')+'" onclick="goToPair(\''+r.sym+'\')">'
+        +'<b>'+(flip?c.k+'/'+x.other:slashPair(r.sym))+'</b>'
         +(ccyMode
-          ? '<span>'+(x.v==null?'—':c.k+' '+(x.v>=0?'▲':'▼')+Math.abs(x.v).toFixed(2)+'%')+'</span><i>'+(pv==null?'':'chart '+(pv>=0?'+':'')+pv.toFixed(2)+'%')+'</i>'
+          ? '<span>'+(x.v==null?'—':(x.v>=0?'+':'')+x.v.toFixed(2)+'%')+'</span><i>'+(flip?'broker: '+slashPair(r.sym):(pv==null?'':'chart '+(pv>=0?'+':'')+pv.toFixed(2)+'%'))+'</i>'
           : '<span>'+(pv==null?'—':(pv>=0?'+':'')+pv.toFixed(2)+'%')+'</span><i>'+(x.v==null?'':c.k+(x.v>=0?' ▲':' ▼'))+(r.act!=null?' · '+r.act.toFixed(1)+'× act.':'')+'</i>')
         +'</div>';
     });
@@ -8330,6 +8631,9 @@ async function ensurePlanData(force){
 function runPlan(){
   var R=planRules(),now=Date.now();
   var pairs=FH_PAIRS.filter(function(p){return planW1(p.slice(0,3))!=null&&planW1(p.slice(3))!=null;});
+  /* v32 — "Start from a currency": only the pairs the trader kept are planned */
+  var TH=_planTheme&&_planTheme.pairs&&_planTheme.pairs.length?_planTheme:null;
+  if(TH) pairs=pairs.filter(function(p){return TH.pairs.indexOf(p)>-1;});
   var alive=pairs.slice(),why={},dir={},trace=[],notes=[];
   function drop(list,reason){ list.forEach(function(p){var i=alive.indexOf(p); if(i>-1){alive.splice(i,1); why[p]=typeof reason==='function'?reason(p):reason;}}); }
   function snap(before){ trace.push({kept:alive.slice(),dropped:before.filter(function(p){return alive.indexOf(p)<0;})}); }
@@ -8344,13 +8648,26 @@ function runPlan(){
   // 02 strength + direction
   before=alive.slice();
   alive.forEach(function(p){var a=planW1(p.slice(0,3)),b=planW1(p.slice(3)); dir[p]=a>=b?'BUY':'SELL';});
+  if(TH){ /* the trader's view sets the direction; strength must agree with it */
+    alive.forEach(function(p){ var want=(p.slice(0,3)===TH.ccy)===(TH.dir>0)?'BUY':'SELL'; if(dir[p]!==want) why['_thdis_'+p]=1; dir[p]=want; });
+    drop(alive.filter(function(p){return why['_thdis_'+p];}),function(p){return 'weekly strength points the other way to your '+TH.ccy+' '+(TH.dir>0?'stronger':'weaker')+' view';});
+  }
   if(R.gap) drop(alive.filter(function(p){return Math.abs(planW1(p.slice(0,3))-planW1(p.slice(3)))<R.gapPct;}),'strength gap under '+R.gapPct+'%');
   snap(before);
   // 03 trend
   before=alive.slice();
+  /* v32 — 3 Nov 23:36 John saw "0 of 28 left" here. On live data that evening every
+     survivor's daily and 4H moves genuinely disagreed (post-RBA), but two real holes
+     were found: an EMPTY trend feed dropped every pair as "mixed", and a step that
+     empties the list did not say why. Missing rows are now "not checked" (kept, with a
+     warning) and the reason counts are shown on the step card. */
   var bias={}; (_trendData||[]).forEach(function(r){bias[r.sym]=trBias(r.w,r.dd,r.h,r.age);});
-  if(R.mixed) drop(alive.filter(function(p){var b=bias[p]; return !b||b.r===0||(dir[p]==='BUY'?b.r<0:b.r>0);}),'trend bias mixed or against the strength direction');
-  if(R.strongOnly) drop(alive.filter(function(p){var b=bias[p]; return !b||Math.abs(b.r)<2;}),'trend bias not STRONG');
+  var trendOk=!!(_trendData&&_trendData.length), trendCnt={mixed:0,against:0,notStrong:0};
+  function trWhy(p){ var b=bias[p], w=(_trendData||[]).filter(function(r){return r.sym===p;})[0];
+    var f=function(v){return v==null?'—':(v>0?'+':'')+Number(v).toFixed(2)+'%';};
+    return w?' (W '+f(w.w)+' · D '+f(w.dd)+' · 4H '+f(w.h)+')':''; }
+  if(R.mixed&&trendOk) drop(alive.filter(function(p){var b=bias[p]; if(!b) return false; var bad=b.r===0||(dir[p]==='BUY'?b.r<0:b.r>0); if(bad){ if(b.r===0) trendCnt.mixed++; else trendCnt.against++; } return bad;}),function(p){var b=bias[p]; return (b.r===0?'trend mixed — daily and 4H do not agree':'trend points against the '+dir[p]+' direction')+trWhy(p);});
+  if(R.strongOnly&&trendOk) drop(alive.filter(function(p){var b=bias[p]; var bad=b&&Math.abs(b.r)<2; if(bad) trendCnt.notStrong++; return bad;}),'trend bias not STRONG');
   snap(before);
   // 04 timing
   before=alive.slice();
@@ -8410,8 +8727,9 @@ function runPlan(){
     if(R.active&&(!b||b.activity==null)) u.push('last-session activity (no data)');
     if(R.news&&!calOk) u.push('news ('+calWhy+')');
     if(R.corr&&!_corrData) u.push('correlation (no data)');
+    if((R.mixed||R.strongOnly)&&(!trendOk||!bias[p])) u.push('trend (no data)');
     if(u.length) unk[p]=u; });
-  _planRes={pairs:pairs,alive:alive,why:why,dir:dir,trace:trace,notes:notes,bias:bias,tsc:tsc,news:news,now:now,unk:unk,calOk:calOk,calWhy:calWhy};
+  _planRes={theme:TH,trendCnt:trendCnt,trendOk:trendOk,pairs:pairs,alive:alive,why:why,dir:dir,trace:trace,notes:notes,bias:bias,tsc:tsc,news:news,now:now,unk:unk,calOk:calOk,calWhy:calWhy};
   return _planRes;
 }
 async function loadPlan(force){
@@ -8421,6 +8739,7 @@ async function loadPlan(force){
     if(force||!_planAt||Date.now()-_planAt>REFRESH_AFTER){ if(meta) meta.textContent='Loading the data behind each step…'; await ensurePlanData(force); _planAt=Date.now(); }
     renderPlan();
     var miss=[]; if(!_planBriefAt) miss.push('briefing (ATR)'); if(!_idx) miss.push('strength'); if(!_trendData) miss.push('trends'); if(!_tech['1d']) miss.push('technicals'); if(!(_calAll&&_calAll.length)) miss.push('calendar'); if(!_corrData) miss.push('correlation');
+    if(_trendData&&!_trendData.length) miss.push('trends (feed returned no prices)');
     if(meta) meta.textContent='Data loaded '+fhClock(_planAt)+' · strength, trends, daily technicals, calendar and correlations from their own tabs'+(miss.length?' · ⚠ missing: '+miss.join(', ')+' — those steps are marked "not checked"':'');
   }catch(e){ if(meta) meta.textContent=friendlyError(e); }
   _planLoading=false;
@@ -8433,6 +8752,7 @@ function planRuleChange(){
 function planOpen(i){ _planOpen=i; renderPlan(); }
 function renderPlan(){
   var r=runPlan(),R=planRules();
+  try{ planThemeRender(); }catch(e){}
   var st=document.getElementById('pl-steps'); if(!st) return;
   var total=r.pairs.length||28;
   st.innerHTML=PLAN_STEPS.map(function(s,i){var k=r.trace[i]?r.trace[i].kept.length:0;return '<div class="pl-stp'+(i===_planOpen?' on':'')+'" onclick="planOpen('+i+')"><div class="n">STEP '+s.n+'</div><div class="t">'+s.t+'</div><div class="k">'+k+'<small>of '+total+' left</small></div><div class="bar"><i style="width:'+(total?k/total*100:0)+'%"></i></div></div>';}).join('');
@@ -8442,6 +8762,11 @@ function renderPlan(){
     +(ru.num?'<input type="number" id="plr-'+ru.num+'" value="'+R[ru.num]+'" step="'+ru.step+'" onchange="planRuleChange()"><span class="unit">'+ru.unit+'</span>':'')
     +'<span class="src">from '+ru.src+'</span></div>';}).join('');
   if(_planOpen===0&&r.notes.length) h+='<div class="meta" style="margin-top:8px">'+r.notes.map(esc).join(' ')+'</div>';
+  if(_planOpen===2){
+    var tc=r.trendCnt||{};
+    if(!r.trendOk) h+='<div class="pl-why0">⚠ <b>Trend not checked</b> — the trend feed returned no prices, so no pair was dropped here. Press Refresh in a minute.</div>';
+    else if(tr.dropped.length) h+='<div class="pl-why0">Dropped here: <b>'+(tc.mixed||0)+' mixed</b> (daily and 4H disagree)'+(tc.against?' · <b>'+tc.against+' against</b> the strength direction':'')+(tc.notStrong?' · <b>'+tc.notStrong+' not STRONG</b>':'')+'. Hover a red chip for its W / D / 4H figures.'+(tr.kept.length===0?' <b>Nothing passed</b> — that happens when the market is pulling back after a move (often after a big release). It is a real answer: wait for the 4H to turn, or untick the rule to see the candidates.':'')+'</div>';
+  }
   /* v25.1 — chips show the state AFTER THIS STEP: plain = still in, red = dropped here,
      faded = dropped at an earlier step. Pairs that go later are still plain here. */
   h+='<div class="pl-pairs">'+r.pairs.map(function(p){var cls=tr.dropped.indexOf(p)>-1?'new':(tr.kept.indexOf(p)>-1?'in':'out');return '<span class="pl-pc '+cls+'" title="'+esc(cls==='in'?'still in after this step'+(r.dir[p]?' · '+r.dir[p]:''):(r.why[p]||''))+'">'+p.slice(0,3)+'/'+p.slice(3)+'</span>';}).join('')+'</div>';
@@ -8468,6 +8793,70 @@ function renderPlan(){
       +'<div class="act"><button class="share-btn" onclick="planToScanner()">Open Scanner</button><button class="share-btn" onclick="goToPair(\''+p+'\',\'daily\')">Daily analysis</button><button class="share-btn" onclick="planAskIq(\''+p+'\',\''+d+'\')">Ask IQ about this</button></div></div>';}).join('')+'</div>';
   buildShareBar('plan-share',"Today's plan — shortlist "+fhClock().slice(0,16),'#plan','todays-plan');
 }
+/* ══ v32 — PLAN · START FROM A CURRENCY (John, 3 Nov, after the RBA hike) ══
+   Pick a currency, an event and a view; every pair of that currency is ranked by how
+   well the OTHER currency suits the trade (its own weekly + today's strength, and its
+   own high-impact events in the next 24h–7 days). Tick the ones to keep, add your own,
+   then the six steps run on just those pairs. Measured data only — no AI here. */
+var _planTheme=null;   // {ccy, dir:+1 stronger / -1 weaker, ev, pairs:[…]}
+var _thDraft=null;
+function planThemeOpts(){ return ['AUD','CAD','CHF','EUR','GBP','JPY','NZD','USD']; }
+function planThemeEvents(c){ var now=Date.now(); return (_calAll||[]).filter(function(e){return e.ccy===c&&(e.imp==='high'||e.imp==='med')&&e.ts>=now-48*3600e3&&e.ts<=now+7*86400e3;}).sort(function(a,b){return a.ts-b.ts;}); }
+function planThemeRank(c,d){
+  var now=Date.now();
+  return FH_PAIRS.filter(function(p){return p.indexOf(c)>-1;}).map(function(p){
+    var o=p.slice(0,3)===c?p.slice(3):p.slice(0,3);
+    var wo=planW1(o),wc=planW1(c),dO=planD1(o),dC=planD1(c);
+    var gW=wo!=null&&wc!=null?wo-wc:null, gD=dO!=null&&dC!=null?dO-dC:null;   // >0 = other currency stronger than c
+    var want=-d;   // c weaker (d=-1) → we want the other currency stronger (+1)
+    var aW=gW==null?0:(gW*want>0.05?1:gW*want<-0.05?-1:0), aD=gD==null?0:(gD*want>0.03?1:gD*want<-0.03?-1:0);
+    var evs=(_calAll||[]).filter(function(e){return e.ccy===o&&e.imp==='high'&&e.ts>now&&e.ts<=now+7*86400e3;}).sort(function(a,b){return a.ts-b.ts;});
+    var soon=evs.filter(function(e){return e.ts<=now+24*3600e3;});
+    var fit=aW>0&&aD>0?'good':(aW<0&&aD<0)||(aD<0&&aW<=0)?'clash':'ok';
+    if(fit==='good'&&soon.length) fit='ok';
+    var dir=(p.slice(0,3)===c)===(d>0)?'Buy':'Sell';
+    var bits=[];
+    bits.push('<b>'+o+' '+(wo==null?'n/a':(wo>=0?'+':'')+wo.toFixed(2)+'%')+'</b> this week vs '+c+' '+(wc==null?'n/a':(wc>=0?'+':'')+wc.toFixed(2)+'%'));
+    bits.push('today '+o+' '+(dO==null?'n/a':(dO>=0?'+':'')+dO.toFixed(2)+'%')+' vs '+c+' '+(dC==null?'n/a':(dC>=0?'+':'')+dC.toFixed(2)+'%'));
+    if(fit==='clash') bits.push('<b>'+o+' is moving '+(want>0?'weaker':'stronger')+' than '+c+'</b> — the pair may not follow your '+c+' view');
+    if(evs.length) bits.push('<b>'+o+' events:</b> '+evs.slice(0,2).map(function(e){return e.name+' '+fhDate(new Date(e.ts),{weekday:'short'})+' '+fhTime(new Date(e.ts));}).join(', ')+(soon.length?' — inside 24h, could override the '+c+' move':''));
+    else if(_calAll&&_calAll.length) bits.push('no '+o+' high-impact event in the next 7 days');
+    var score=(gW==null?0:gW*want)+(gD==null?0:gD*want)*2-(soon.length?0.3:0);
+    return {p:p,o:o,dir:dir,fit:fit,why:bits.join(' · '),score:score};
+  }).sort(function(a,b){return b.score-a.score;});
+}
+function planThemeRender(){
+  var el=document.getElementById('pl-theme'); if(!el) return;
+  if(_planTheme&&!_thDraft){
+    el.innerHTML='<div class="pl-theme-on">Planning <b>'+_planTheme.ccy+' '+(_planTheme.dir>0?'stronger':'weaker')+'</b>'+(_planTheme.evName?' after '+esc(_planTheme.evName):'')+' · '+_planTheme.pairs.length+' pair'+(_planTheme.pairs.length>1?'s':'')+': '+_planTheme.pairs.map(slashPair).join(', ')+' <button class="rt-chip" onclick="planThemeEdit()">Change</button><button class="rt-chip" onclick="planThemeClear()">Back to all 28 pairs</button></div>';
+    return;
+  }
+  if(!_thDraft){ el.innerHTML='<div class="pl-thc"><span class="meta" style="margin:0">Start from:</span><button class="rt-chip on" onclick="">All 28 pairs</button><button class="rt-chip" onclick="planThemeEdit()">A currency or event…</button></div>'; return; }
+  var D=_thDraft, evs=planThemeEvents(D.ccy), rk=planThemeRank(D.ccy,D.dir);
+  if(!D.auto&&_idx){ D.auto=1; D.picked={}; rk.forEach(function(x){ if(x.fit!=='clash'&&x.fit) D.picked[x.p]=x.fit==='good'||Object.keys(D.picked).length<3; }); }
+  var h='<div class="pl-th"><div class="cl" style="margin:0">Start from a currency</div><div class="pl-thc">'
+    +'<select id="th-ccy" onchange="planThemeSet(\'ccy\',this.value)">'+planThemeOpts().map(function(c){return '<option'+(c===D.ccy?' selected':'')+'>'+c+'</option>';}).join('')+'</select>'
+    +'<select id="th-ev" onchange="planThemeSet(\'ev\',this.value)"><option value="">No event — just research</option>'+evs.map(function(e){return '<option value="'+e.ts+'|'+esc(e.name)+'"'+(D.ev===e.ts+'|'+e.name?' selected':'')+'>'+esc(e.name)+' · '+fhDate(new Date(e.ts),{weekday:'short'})+' '+fhTime(new Date(e.ts))+(e.ts<Date.now()?' (released)':'')+'</option>';}).join('')+'</select>'
+    +'<select id="th-dir" onchange="planThemeSet(\'dir\',this.value)"><option value="-1"'+(D.dir<0?' selected':'')+'>'+D.ccy+' weaker</option><option value="1"'+(D.dir>0?' selected':'')+'>'+D.ccy+' stronger</option></select></div>';
+  if(!_idx) h+='<div class="pl-why0">⚠ Currency strength is still loading — ranking appears when it arrives.</div>';
+  h+=rk.map(function(x){ return '<label class="pl-prt '+x.fit+'"><input type="checkbox" '+(D.picked[x.p]?'checked':'')+' onchange="planThemePick(\''+x.p+'\',this.checked)"><div><div class="pp2">'+colorizeCcy(slashPair(x.p))+'</div><div class="dr">'+x.dir+'</div></div><div class="why">'+x.why+'</div><span class="pl-fit '+x.fit+'">'+(x.fit==='good'?'Good fit':x.fit==='ok'?'Check':'Clash')+'</span></label>'; }).join('');
+  if(!D.picked) D.picked={};
+  var extra=Object.keys(D.picked).filter(function(p){return D.picked[p]&&p.indexOf(D.ccy)<0;});
+  extra.forEach(function(p){ h+='<label class="pl-prt ok"><input type="checkbox" checked onchange="planThemePick(\''+p+'\',this.checked)"><div><div class="pp2">'+colorizeCcy(slashPair(p))+'</div><div class="dr">your pick</div></div><div class="why">added by you — direction comes from its strength gap</div><span class="pl-fit ok">Yours</span></label>'; });
+  var n=Object.keys(D.picked).filter(function(p){return D.picked[p];}).length;
+  h+='<div class="pl-thc"><select id="th-add" onchange="planThemePick(this.value,true)"><option value="">+ Add your own pair</option>'+FH_PAIRS.filter(function(p){return !D.picked[p];}).map(function(p){return '<option value="'+p+'">'+slashPair(p)+'</option>';}).join('')+'</select>'
+    +'<button class="rt-btn" onclick="planThemeRun()"'+(n?'':' disabled')+'>Run Plan on '+n+' pair'+(n===1?'':'s')+' →</button><button class="rt-btn ghost" onclick="planThemeCancel()">Cancel</button></div>'
+    +'<div class="pl-why0">Good fit = the other currency is moving the way your view needs, this week and today, with no high-impact event of its own inside 24h. Check = only partly, or it has its own news soon. Clash = it is moving the same way as '+D.ccy+', so the pair may not follow. Figures from Indices (strength) and the calendar feed.</div></div>';
+  el.innerHTML=h;
+}
+function planThemeEdit(){ var c=_planTheme?_planTheme.ccy:'AUD'; _thDraft={ccy:c,dir:_planTheme?_planTheme.dir:-1,ev:_planTheme?_planTheme.ev:'',picked:_planTheme?(function(){var o={};_planTheme.pairs.forEach(function(p){o[p]=true;});return o;})():null,auto:_planTheme?1:0}; planThemeRender(); }
+function planThemeSet(k,v){ if(!_thDraft) return; if(k==='ccy'){_thDraft.ccy=v;_thDraft.ev='';_thDraft.picked=null;_thDraft.auto=0;} else if(k==='dir'){_thDraft.dir=Number(v);_thDraft.picked=null;_thDraft.auto=0;} else _thDraft.ev=v; planThemeRender(); }
+function planThemePick(p,on){ if(!_thDraft||!p) return; _thDraft.picked[p]=!!on; planThemeRender(); }
+function planThemeRun(){ var D=_thDraft; if(!D) return; var ps=Object.keys(D.picked).filter(function(p){return D.picked[p];}); if(!ps.length) return;
+  _planTheme={ccy:D.ccy,dir:D.dir,ev:D.ev,evName:D.ev?D.ev.split('|').slice(1).join('|'):'',pairs:ps}; _thDraft=null; _planOpen=1; planThemeRender(); renderPlan(); }
+function planThemeCancel(){ _thDraft=null; planThemeRender(); }
+function planThemeClear(){ _planTheme=null; _thDraft=null; planThemeRender(); renderPlan(); }
+
 function planGap(p){ return Math.abs((planW1(p.slice(0,3))||0)-(planW1(p.slice(3))||0)); }
 function planLotChange(v){ var R=planRules(); var n=parseFloat(v); if(n>0){ R.lot=n; savePlanRules(); renderPlan(); } }
 /* v25.4 — the money line: what one full-ATR day and the margin look like at the chosen lot.
