@@ -1737,6 +1737,16 @@ body.light .chart-modal-overlay{background:rgba(0,0,0,0.55)}
     <button class="sb" id="syscheck-run" style="margin-top:10px;padding:7px 16px;font-size:12.5px" onclick="runSysCheckNow()">Run check now</button>
   </div>
   <div class="card">
+    <div class="ai"><div class="aq">What's new in v31 (3 Nov 2026) — Trade idea review knows what happened today</div><div class="aa">
+      Why: on 3 Nov John asked the review "why did AUD/USD go down after interest rates were increased" at 6pm. The RBA had hiked at 1:30pm, and the decision was in the calendar feed — but the review only looked back <b>1 hour</b>, so it told him there was no rate decision. Now:<br>
+      · <b>Looks back 24 hours.</b> The review is given every high-impact event on the pair's two currencies from the last 24h and the next 48h. Past events are marked "already released" with what the market expected and the previous figure.<br>
+      · <b>Before &amp; after table.</b> For each of those events that has already landed, ForexHub measures the pair from 5-minute prices — price just before, +15 min, +60 min, latest, and the first-hour range — and shows it above the answer. Events released together (e.g. Cash Rate + Rate Statement) share one row. The AI may only describe the move from this table.<br>
+      · <b>"Why did…" questions get an answer, not a grade.</b> Start with "why", "what happened", "how come" or "explain" and the reply is <b>What happened / Why / What it means now</b> instead of "SETUP QUALITY: Weak". Naming just a currency ("why did the AUD fall") uses its US-dollar pair.<br>
+      · <b>Checked.</b> If the answer says the pair rose when the table says it fell (or the other way), a red warning says so. A button opens the same event in IQ → Event review for the full multi-pair picture.<br>
+      Cost: one extra small price call per event time (at most 3), only when an event landed in the last 24h. No change to the worker.
+    </div></div>
+  </div>
+  <div class="card">
     <div class="ai"><div class="aq">What's new in v30 (27 Oct 2026) — scanner gates fix trades instead of binning them</div><div class="aa">
       Why: after v29 the scanner was showing almost nothing. On 27 Oct at 18:08 four real setups came back and all four were rejected — two only because their stop was too tight, one because the market had moved 24 pips against it against a 20-pip limit. The idea behind each trade was never judged. Each setup still has to stand up on its own; what changed is <b>what happens when it doesn't quite</b>:<br>
       · <b>Stops are repaired, not rejected.</b> A stop that is under half the daily range, or inside the last 4H swing, is moved to the safe spot. If that drops the R:R below the minimum, the target is moved out to the next measured level (within 2½× the daily range). The card shows a blue <b>🔧 Adjusted by the checker</b> line saying exactly what moved and why. Only a setup that can't be repaired sensibly is dropped.<br>
@@ -2250,7 +2260,7 @@ function dismissBanner(){
 /* ══════════════════════════════════════
    HEADER DATE
 ══════════════════════════════════════ */
-var FH_BUILD='v30'; // 27 Oct 2026 — SCANNER GATES REWORKED: stops that are too tight are widened by the checker (beyond the 4H swing, ≥ half ATR) and the target stretched to the next measured level if R:R needs it; 'moving against it now' (0.4× ATR) and 'too extended' are amber warnings held back from All-to-trade instead of rejections; AI given each pair's exact stop / room / 4H-swing numbers; intro text no longer read as a 'no pair' setup // 22 Oct 2026 — SCANNER QUALITY GATES: stop ≥ half ATR and beyond the 4H swing, no entries within half an ATR of the week high/low, yen intervention zone holds JPY-sell trades, shared-theme tag, held-back setups named per pair // 15 Oct 2026 — TRUST BATCH C+D: calendar source labelled everywhere + feed-only loads, sentiment checked against measured strength (6h), weekly events from the calendar feed, Indices 'today' from the 7am rollover, correlation drops incomplete days, no hard-coded pip rates, gap filled?, Outlook direction check, trade reviews grounded + figures verified // 15 Oct 2026 — TRUST BATCH A+B: measured levels (/levels) behind every AI level, level + setup checks vs live price/ATR, no forced setups, feed send-time re-check + per-setup age, Plan 'not checked' instead of pass, honest 'Do they agree?' labels, generation stamps // 15 Oct 2026 — measured-moves table: latest shows hours after the release, clean prices, range never negative (worker 12.2) // 15 Oct 2026 — IQ Event review anchored to MEASURED price moves (worker /move), verdict check + auto-redo, Sonnet for screenshot reviews // Columns colour switch Chart/Currency // column tiles coloured like the chart // pair filters on their own line under the timeframes // 13 Oct 2026 — Amendments 20: system check light, indices 'Do they agree?', tree map currency filters + columns, closed-market gap wording // Plan: shortlist ranked by gap + money line + Print/Save; policy test 17 Sep // Plan news-risk looks back as well as forward, flag-not-drop option, honest card + IQ question, empty AI replies not saved // IQ picker shows impact + currency colour; briefing news rows: impact border + IQ button // Plan chips show the state after each step, not the final result // 16 Sep 2026 — ForexFlow: Classic / Flow navigation toggle, grouped tabs with colour families, Plan tab // 16 Sep 2026 — calendar six-day grid, correlation Ask IQ, labels, paste hint, mud-map link // 16 Sep 2026 — amendments 14.9.26: Ask IQ on the research tabs, print/save everywhere, calendar collapse + grid, paste screenshots // bump on every delivered change — shown in the header so it's always obvious which version is loaded
+var FH_BUILD='v31'; // 3 Nov 2026 — TRADE IDEA REVIEW SEES TODAY'S EVENTS: calendar look-back 24h (was 1h), measured before/after table for each high-impact event on the pair, 'why did…' questions answered (what happened / why / what it means) instead of graded as a setup, direction checked against measured prices, Open in IQ Event Review button // 27 Oct 2026 — SCANNER GATES REWORKED: stops that are too tight are widened by the checker (beyond the 4H swing, ≥ half ATR) and the target stretched to the next measured level if R:R needs it; 'moving against it now' (0.4× ATR) and 'too extended' are amber warnings held back from All-to-trade instead of rejections; AI given each pair's exact stop / room / 4H-swing numbers; intro text no longer read as a 'no pair' setup // 22 Oct 2026 — SCANNER QUALITY GATES: stop ≥ half ATR and beyond the 4H swing, no entries within half an ATR of the week high/low, yen intervention zone holds JPY-sell trades, shared-theme tag, held-back setups named per pair // 15 Oct 2026 — TRUST BATCH C+D: calendar source labelled everywhere + feed-only loads, sentiment checked against measured strength (6h), weekly events from the calendar feed, Indices 'today' from the 7am rollover, correlation drops incomplete days, no hard-coded pip rates, gap filled?, Outlook direction check, trade reviews grounded + figures verified // 15 Oct 2026 — TRUST BATCH A+B: measured levels (/levels) behind every AI level, level + setup checks vs live price/ATR, no forced setups, feed send-time re-check + per-setup age, Plan 'not checked' instead of pass, honest 'Do they agree?' labels, generation stamps // 15 Oct 2026 — measured-moves table: latest shows hours after the release, clean prices, range never negative (worker 12.2) // 15 Oct 2026 — IQ Event review anchored to MEASURED price moves (worker /move), verdict check + auto-redo, Sonnet for screenshot reviews // Columns colour switch Chart/Currency // column tiles coloured like the chart // pair filters on their own line under the timeframes // 13 Oct 2026 — Amendments 20: system check light, indices 'Do they agree?', tree map currency filters + columns, closed-market gap wording // Plan: shortlist ranked by gap + money line + Print/Save; policy test 17 Sep // Plan news-risk looks back as well as forward, flag-not-drop option, honest card + IQ question, empty AI replies not saved // IQ picker shows impact + currency colour; briefing news rows: impact border + IQ button // Plan chips show the state after each step, not the final result // 16 Sep 2026 — ForexFlow: Classic / Flow navigation toggle, grouped tabs with colour families, Plan tab // 16 Sep 2026 — calendar six-day grid, correlation Ask IQ, labels, paste hint, mud-map link // 16 Sep 2026 — amendments 14.9.26: Ask IQ on the research tabs, print/save everywhere, calendar collapse + grid, paste screenshots // bump on every delivered change — shown in the header so it's always obvious which version is loaded
 /* Stale-tab killer: every so often, check whether a newer build has been deployed.
    If so, show a can't-miss banner telling the user to reload — long-open tabs silently
    running old code caused repeated "the fix didn't work" confusion. */
@@ -2728,13 +2738,68 @@ function calSourceLine(){
   return 'live calendar feed';
 }
 /* High-impact calendar rows for the next N hours — or an explicit "unknown". */
-function calRiskBlock(hrs,ccys){
+function calRiskBlock(hrs,ccys,backH){
   var ok=_calAll&&_calAll.length&&!CAL_AI_SRC&&!(_calStale&&_calStale.thisweek);
   if(!ok) return '\nCALENDAR: not available right now — do not cite any scheduled event or catalyst.\n';
+  backH=backH||1;   // v31 — trade reviews look back 24h so a decision earlier today is not invisible
   var now=Date.now(), until=now+hrs*3600e3;
-  var ev=_calAll.filter(function(e){return e.imp==='high'&&e.ts>=now-3600e3&&e.ts<=until&&(!ccys||ccys.indexOf(e.ccy)>-1);}).slice(0,25);
-  return '\nHIGH-IMPACT CALENDAR, last 1h and next '+hrs+'h (from the live calendar feed — the only events you may cite):\n'+(ev.length?ev.map(function(e){return '  '+e.ccy+' '+e.name+' — '+fhDate(new Date(e.ts),{weekday:'short'})+' '+fhClock(e.ts);}).join('\n'):'  none')+'\n';
+  var ev=_calAll.filter(function(e){return e.imp==='high'&&e.ts>=now-backH*3600e3&&e.ts<=until&&(!ccys||ccys.indexOf(e.ccy)>-1);}).slice(0,25);
+  return '\nHIGH-IMPACT CALENDAR, last '+backH+'h and next '+hrs+'h (from the live calendar feed — the only events you may cite):\n'+(ev.length?ev.map(function(e){
+    var past=e.ts<=now, ago=past?(now-e.ts)/3600e3:0;
+    return '  '+e.ccy+' '+e.name+' — '+fhDate(new Date(e.ts),{weekday:'short'})+' '+fhClock(e.ts)+(past?' — ALREADY RELEASED '+(ago<1?Math.round(ago*60)+' min':ago.toFixed(1)+'h')+' ago'+((e.forecast&&e.forecast!=='—')||(e.prev&&e.prev!=='—')?' (market expected '+(e.forecast||'—')+', previous '+(e.prev||'—')+')':''):'');
+  }).join('\n'):'  none')+'\n';
 }
+/* v31 — measured before/after moves for the pair around each high-impact event
+   on either of its currencies in the last 24h. One /move call per distinct
+   release time (events released together share a call), at most 3. */
+async function revEventMoves(pair){
+  if(!(_calAll&&_calAll.length)||CAL_AI_SRC) return [];
+  var now=Date.now(), ccys=[pair.slice(0,3),pair.slice(3)], byTs={};
+  _calAll.forEach(function(e){
+    if(e.imp!=='high'||ccys.indexOf(e.ccy)<0||e.ts>now-5*60e3||e.ts<now-24*3600e3) return;
+    (byTs[e.ts]=byTs[e.ts]||[]).push(e);
+  });
+  var times=Object.keys(byTs).map(Number).sort(function(a,b){return a-b;}).slice(-3);
+  var out=[];
+  for(var i=0;i<times.length;i++){
+    var evs=byTs[times[i]], mv=null, err=null;
+    try{
+      var r=await fetch(MOVE_URL+'?at='+Math.floor(times[i]/1000)+'&pairs='+pair,{cache:'no-store'});
+      var j=await r.json();
+      if(!r.ok||j.error) err=j.error||('price service HTTP '+r.status);
+      else if(!j.moves||!j.moves[pair]) err='no price data around that time';
+      else mv=j.moves[pair];
+    }catch(e){ err='the price service could not be reached'; }
+    out.push({ts:times[i],ccy:evs[0].ccy,name:evs.map(function(e){return e.name;}).join(' / '),main:evs[0],forecast:evs[0].forecast,prev:evs[0].prev,m:mv,err:err});
+  }
+  return out;
+}
+function revMovesText(pair,list){
+  if(!list.length) return '';
+  return '\nMEASURED MOVES around high-impact events in the last 24h (ForexHub 5-minute prices; pips in '+slashPair(pair)+' chart direction, + = pair up). This table is the ONLY evidence of what the market did:\n'
+   +'EVENT | released | price before | +15m | +60m | latest | furthest up / down in first hour\n'
+   +list.map(function(x){
+     var head=x.ccy+' '+x.name+' | '+fhClock(x.ts);
+     if(!x.m) return head+' | no measured prices ('+x.err+')';
+     var m=x.m; return head+' | '+m.pre+' | '+iqFmtLeg(m.m15)+' | '+iqFmtLeg(m.m60)+' | '+iqFmtLeg(m.latest)+(m.latest&&m.latest.hrs!=null?' ('+m.latest.hrs+'h after)':'')+' | +'+m.upPips+' / '+m.downPips+' pips';
+   }).join('\n')+'\n';
+}
+function revMovesHtml(pair,list){
+  if(!list.length) return '';
+  var cell=function(l){ if(!l) return '<td class="iq-flat">—</td>'; var c=l.pips>=3?'iq-up':l.pips<=-3?'iq-dn':'iq-flat'; return '<td class="'+c+'" style="font-weight:700;white-space:nowrap">'+(l.pips>0?'+':'')+l.pips+'p</td>'; };
+  var h='<div class="cl" style="margin-bottom:6px">Before &amp; after · '+esc(slashPair(pair))+' around today\'s high-impact events</div><div class="scroller-x" style="margin-bottom:6px"><table class="iq-mud"><thead><tr><th>Event</th><th>Released</th><th>Before</th><th>+15m</th><th>+60m</th><th>Latest</th><th>1st hour</th></tr></thead><tbody>';
+  list.forEach(function(x){
+    h+='<tr><td>'+colorizeCcy('<b>'+esc(x.ccy)+'</b>')+' '+esc(x.name)+(x.forecast&&x.forecast!=='—'?'<div style="font-size:10px;opacity:.7">expected '+esc(x.forecast)+' · prev '+esc(x.prev||'—')+'</div>':'')+'</td><td style="white-space:nowrap">'+esc(fhClock(x.ts))+'</td>';
+    if(!x.m){ h+='<td colspan="5" class="iq-flat">no measured prices — '+esc(x.err||'')+'</td></tr>'; return; }
+    var m=x.m; h+='<td>'+esc(String(m.pre))+'</td>'+cell(m.m15)+cell(m.m60)+cell(m.latest).replace('</td>',(m.latest&&m.latest.hrs!=null?'<div style="font-size:10px;opacity:.7;font-weight:400">'+m.latest.hrs+'h after</div>':'')+'</td>')+'<td style="white-space:nowrap">+'+m.upPips+' / '+m.downPips+'</td></tr>';
+  });
+  return h+'</tbody></table></div><div class="meta" style="margin-bottom:12px">Measured by ForexHub from 5-minute prices; broker prices differ by a pip or two. Green = '+esc(slashPair(pair))+' up.</div>';
+}
+/* v31 — "why did…" / "what happened…" is a question about the market, not a trade idea. */
+function revIsQuestion(t){ return /^\s*(why|what\s+(happened|caused|made|moved|drove)|how\s+come|explain)\b/i.test(t||'')||/\bwhy\s+(did|has|is|was|does)\b/i.test(t||''); }
+var _revIq=null;
+function revOpenIq(){ if(_revIq) openIqFor(_revIq.ts,_revIq.ccy,_revIq.main.name); }
+function ccyInText(t){ var m=String(t||'').toUpperCase().match(/\b(USD|EUR|GBP|JPY|AUD|NZD|CAD|CHF)\b/); return m?m[1]:null; }
 /* A scanner / pullback setup checked against the live price and the pair's ATR.
    Returns the reason it fails, or null. */
 function checkSetupLive(o,q,LV,kind){
@@ -5397,16 +5462,22 @@ async function revT(){
   btn.disabled=true;btn.innerHTML='<div class="sp"></div> Analysing…';
   out.innerHTML='<div class="ld"><div class="sp"></div>Reviewing your trade idea…</div>';
   try{
-    var tPair=pairInText(ti), tFacts='';
+    var tPair=pairInText(ti), tFacts='', tQ=revIsQuestion(ti), tMoves=[];
+    if(!tPair&&tQ){ var tc=ccyInText(ti); if(tc&&tc!=='USD') tPair=iqPairOf(tc,'USD'); }   // "why did the aud fall" → AUD/USD
     if(tPair){ var tpc=await priceContext(tPair); var tLV=(await fhLevels([tPair]))[tPair]; await ensureCal();
-      tFacts='\n\nFACTS (measured by ForexHub — the only market data you have):\n'+(tpc||'Live price: unavailable.\n')+(tLV?levelsText(tPair,tLV):'Measured levels: unavailable.\n')+calRiskBlock(48,[tPair.slice(0,3),tPair.slice(3)]); }
+      try{ tMoves=await revEventMoves(tPair); }catch(e){ tMoves=[]; }
+      tFacts='\n\nFACTS (measured by ForexHub — the only market data you have):\n'+(tpc||'Live price: unavailable.\n')+(tLV?levelsText(tPair,tLV):'Measured levels: unavailable.\n')+calRiskBlock(48,[tPair.slice(0,3),tPair.slice(3)],24)+revMovesText(tPair,tMoves); }
     else tFacts='\n\nFACTS: no watchlist pair could be identified in the idea, so there is no live price, level or calendar data. Do not judge timing or levels against the market — say what is missing.';
-    var basePrompt='You are a professional forex trading mentor. '+(ti?'A student has this trade idea:\n\n"'+ti+'"\n\n':'Analyse the chart image provided.\n\n')+tFacts+'\n\n'+'Give structured feedback:\n\n**SETUP QUALITY: [Strong/Moderate/Weak]**\n\n**What\'s good:**\n[2-3 bullet points]\n\n**Concerns:**\n[2-3 bullet points]\n\n**Risk/Reward assessment:**\n[1-2 sentences on the R:R and whether it meets minimum 1:2]\n\n**Recommendation:**\n[PROCEED / WAIT / AVOID] — brief explanation';
+    var basePrompt=tQ&&tPair?('You are a professional forex trading mentor. A student asks:\n\n"'+ti+'"\n\n'+tFacts+'\n\nThis is a question about what the market did, NOT a trade idea — do not grade a setup. Answer in this exact structure:\n\n**WHAT HAPPENED**\n[2-3 sentences. Quote the measured before/after figures from the MEASURED MOVES table: price before, +15m, +60m, latest, and the first-hour range. If there is no measured table, say the move could not be measured.]\n\n**WHY**\n[3-4 bullets. Tie the move to the event(s) in the calendar block. Compare what was released with what the market expected (forecast). Explain the usual mechanics: priced-in decisions, the vote split or guidance mattering more than the headline, buy-the-rumour-sell-the-fact, the other currency of the pair. Anything that is not in the FACTS (vote split, guidance, quotes) must be labelled "if reports are right" — never state it as fact.]\n\n**WHAT IT MEANS NOW**\n[2 sentences: where price sits against the measured levels, and what would change the picture.]\n\nIf no event in the calendar block explains the move, say so plainly instead of inventing a cause.'):'You are a professional forex trading mentor. '+(ti?'A student has this trade idea:\n\n"'+ti+'"\n\n':'Analyse the chart image provided.\n\n')+tFacts+'\n\n'+'Give structured feedback:\n\n**SETUP QUALITY: [Strong/Moderate/Weak]**\n\n**What\'s good:**\n[2-3 bullet points]\n\n**Concerns:**\n[2-3 bullet points]\n\n**Risk/Reward assessment:**\n[1-2 sentences on the R:R and whether it meets minimum 1:2]\n\n**Recommendation:**\n[PROCEED / WAIT / AVOID] — brief explanation';
     /* The rule only applies to the image path — with no picture there is nothing
        to misread, and the numbers can only have come from what John typed. */
-    basePrompt+=NO_INVENT_RULE+'\n· Base PROCEED / WAIT / AVOID on the FACTS: where price is now against the idea\'s levels, the measured levels, and the calendar. If the FACTS are missing, the recommendation must be WAIT and say why.';
+    basePrompt+=NO_INVENT_RULE+(tQ&&tPair?'':'\n· Base PROCEED / WAIT / AVOID on the FACTS: where price is now against the idea\'s levels, the measured levels, and the calendar. If the FACTS are missing, the recommendation must be WAIT and say why.')+(tMoves.length?'\n· If the idea or question touches one of the events in the MEASURED MOVES table, use those figures for what the market did — never the chart image.':'');
     var txt=tirImageB64?await aiImage(basePrompt,tirImageB64,tirMimeType,{model:'claude-sonnet-5',maxTokens:2000}):await ai(basePrompt,null,{model:'claude-sonnet-5',maxTokens:2000,webSearch:false});
     var tUnv=unverifiedFigures(txt,basePrompt);
+    /* v31 — direction check against the measured moves (same checker as IQ Event review) */
+    var tChk=[]; tMoves.forEach(function(x){ if(x.m){ var o={}; o[tPair]=x.m; tChk=tChk.concat(iqCheck(txt,x.ccy,o,null)); } });
+    tChk=tChk.filter(function(x,i,a){return a.indexOf(x)===i;});
+    var tIq=tMoves.filter(function(x){return x.m;})[0]||tMoves[0]; _revIq=tIq||null;
     /* Wrap everything that belongs in the record — the setup you typed, the chart you
        attached and the AI's feedback — inside one printable block, then attach the same
        Print / Share / Email / Save bar the Scanner and Analysis tabs use. */
@@ -5414,9 +5485,12 @@ async function revT(){
       +'<div class="cl" style="margin-bottom:6px">Your trade idea</div>'
       +'<div class="cb" style="white-space:pre-wrap;margin-bottom:10px">'+esc(ti||'(no written setup — chart only)')+'</div>'
       +(tirImageB64?'<div class="meta" style="margin-bottom:4px">Chart screenshot attached:</div><img alt="Attached chart" style="display:block;width:100%;max-width:640px;border-radius:8px;margin:0 0 12px" src="data:'+(tirMimeType||'image/png')+';base64,'+tirImageB64+'">':'')
-      +'<div class="cl" style="margin-bottom:6px">AI feedback</div>'
+      +revMovesHtml(tPair,tMoves)
+      +'<div class="cl" style="margin-bottom:6px">'+(tQ&&tPair?'AI answer':'AI feedback')+'</div>'
       +'<div class="cb">'+md(txt)+'</div>'+unverifiedNote(tUnv)
-      +'<div class="meta" style="margin-top:10px">Reviewed '+stampAEST()+' · '+(tPair?'checked against live '+slashPair(tPair)+' price, measured levels and the calendar':'no pair recognised — no market data used')+' · ForexHub '+FH_BUILD+' · educational only, not financial advice</div>'
+      +(tChk.length?'<div class="eb" style="margin-top:8px">⚠ This answer disagrees with the measured prices: '+esc(tChk.join('; '))+'. Trust the table above.</div>':'')
+      +(tIq?'<div style="margin-top:10px"><button class="btn" onclick="revOpenIq()">Open '+esc(tIq.ccy+' '+tIq.main.name)+' in IQ Event Review →</button></div>':'')
+      +'<div class="meta" style="margin-top:10px">Reviewed '+stampAEST()+' · '+(tPair?'checked against live '+slashPair(tPair)+' price, measured levels, the calendar (last 24h + next 48h)'+(tMoves.length?' and measured moves around '+tMoves.length+' event'+(tMoves.length>1?'s':''):''):'no pair recognised — no market data used')+' · ForexHub '+FH_BUILD+' · educational only, not financial advice</div>'
       +'</div>'
       +'<div class="share-bar" id="rr-share" style="display:none"></div>';
     buildShareBar('rr-share','Trade idea review','#rr-doc','trade-idea-review');
