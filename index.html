@@ -35,6 +35,7 @@ body[data-sect="calculator"]{--ac:#06b6d4;--adm:rgba(6,182,212,0.12)}
 body[data-sect="indices"]   {--ac:#f472b6;--adm:rgba(244,114,182,0.12)}
 body[data-sect="iq"]        {--ac:#fb923c;--adm:rgba(251,146,60,0.12)}
 body[data-sect="plan"]      {--ac:#f97316;--adm:rgba(249,115,22,0.12)}
+body[data-sect="routes"]    {--ac:#f97316;--adm:rgba(249,115,22,0.12)}
 *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
 body{font-family:'Syne',sans-serif;background:var(--bg);color:var(--tx);min-height:100vh;overflow-x:hidden}
 
@@ -945,6 +946,20 @@ body.light .pl-theme-on{border-color:#c2410c;background:rgba(194,65,12,.06)}
 .pgl-i{background:none;border:1px solid transparent;color:var(--mt);cursor:pointer;font-size:11px;border-radius:5px;padding:0 5px;line-height:16px}
 .pgl-i:hover,.pgl-i:focus-visible{border-color:var(--bd2);color:var(--tx)}
 body.light .pgl{opacity:1;font-weight:700}
+
+/* v32.1 — Routes strip (only while a route is running) */
+.rt-strip{display:flex;align-items:center;gap:10px;flex-wrap:wrap;padding:7px 12px;border-radius:10px;background:var(--sf);border:1px solid #f97316}
+body.light .rt-strip{border-color:#c2410c}
+.rt-sn{font-family:'Syne',sans-serif;font-weight:700;font-size:13px}
+.rt-dots{display:flex;gap:4px}
+.rt-dot{width:22px;height:22px;border-radius:50%;border:1px solid var(--bd2);background:transparent;color:var(--mt);font-family:'DM Mono',monospace;font-size:10.5px;cursor:pointer;padding:0}
+.rt-dot.done{background:var(--bd2);color:var(--tx)}
+.rt-dot.now{background:#f97316;border-color:#f97316;color:#111}
+body.light .rt-dot.now{background:#c2410c;border-color:#c2410c;color:#fff}
+.rt-sm{flex:1;min-width:200px;font-family:'DM Mono',monospace;font-size:11.5px;color:var(--mt);line-height:1.4}
+.rt-sm b{color:var(--tx);font-weight:500}
+.rt-strip .rt-btn{padding:5px 14px;font-size:12.5px}
+#rt-page .rt-bar{margin-top:4px}
 </style>
 </head>
 <body data-sect="analysis">
@@ -990,6 +1005,7 @@ body.light .pgl{opacity:1;font-weight:700}
   <button class="nb" onclick="showS('review',this)">Review</button>
   <button class="nb" onclick="showS('journal',this)">Journal</button>
   <button class="nb" onclick="showS('calculator',this)">Calculator</button>
+  <button class="nb" onclick="showS('routes',this)">Routes</button>
   <button class="nb" onclick="showS('about',this)">About</button>
 </div>
 <!-- v25 — ForexFlow grouped navigation (built by renderFlowNav) -->
@@ -1659,6 +1675,13 @@ body.light .pgl{opacity:1;font-weight:700}
   <div class="map-src" style="text-align:left">Each step is a rule you set once; the site applies it to live data every time you open this tab. Green = buy, red = sell. The buttons on each card jump into the existing panels with that pair selected. Rules are remembered in this browser. Educational only — not financial advice.</div>
 </div>
 
+<!-- ══ v32.1 ROUTES (own tab) ══ -->
+<div id="routes" class="sec">
+  <div class="st">Routes</div>
+  <div class="ss">Saved paths through the site — pick one, press Start, and Next takes you tab to tab in your order. The rest of the site stays open as normal.</div>
+  <div id="rt-page"></div>
+</div>
+
 <!-- ══ TRENDS (top-down scanner) ══ -->
 <div id="trends" class="sec">
   <div class="st">Top-down trend scanner</div>
@@ -1866,6 +1889,7 @@ body.light .pgl{opacity:1;font-weight:700}
   <div class="card">
     <div class="ai"><div class="aq">What's new in v32 (4 Nov 2026) — easier to read, easier to move around</div><div class="aa">
       This batch was judged on three things, in this order: <b>appealing, easy to use, gets results</b>.<br>
+      · <b>v32.1 — Routes has its own tab</b> (Classic: Routes button; Flow: Routes). Pick a route there and press <b>Start route</b>; while it runs, a slim strip under the navigation shows "Step 2 of 5" with <b>Next →</b> and ✕ to stop. Nothing shows when no route is running.<br>
       · <b>Routes.</b> A bar under the navigation walks you through the tabs in order: Step 1 → 2 → 3 with a <b>Next</b> button and a one-line note on what to look for. Three come ready-made (Find a trade · Scanner first · Session start). <b>+ New route</b> builds your own: tick the tabs, drag them into order (or use ▲▼), name it, save. <b>★</b> marks the default that is ready when the site opens. Hide ▴ folds the bar away. Routes are saved in this browser.<br>
       · <b>Plan · Start from a currency.</b> At the top of Plan, choose a currency, an event (e.g. the RBA decision) and whether you think it goes weaker or stronger. Every pair of that currency is ranked by how well the <i>other</i> currency suits the trade — its strength this week and today, and its own high-impact events in the next 24h–7 days: <b>Good fit / Check / Clash</b>. Tick the ones to keep, add your own, then the six steps run on just those pairs, with the direction set by your view.<br>
       · <b>Plan Trend step explains itself.</b> On 3 Nov at 23:36 Trend showed "0 of 28 left". Checked on live data: after the RBA move every survivor's daily and 4H disagreed, so it was a real answer — but an empty trend feed would also have dropped everything. Now an empty feed marks the step <b>not checked</b> instead, the card counts what was dropped (mixed / against / not strong) and each red chip shows its W / D / 4H figures.<br>
@@ -2401,7 +2425,7 @@ function dismissBanner(){
 /* ══════════════════════════════════════
    HEADER DATE
 ══════════════════════════════════════ */
-var FH_BUILD='v32'; // 4 Nov 2026 — PRESENTATION BATCH (Appealing · Ease of use · Results): calendar rows bordered by impact, light-theme buttons/badges/text readable, tree map Currency colours turn pairs round to read from the column (↺ dashed, broker name under), planner Max lots + room-at-max bar vs ATR, Routes bar (presets + build your own, ★ default), Plan 'Start from a currency', Plan trend step explains itself and never drops on an empty feed // 3 Nov 2026 — TRADE IDEA REVIEW SEES TODAY'S EVENTS: calendar look-back 24h (was 1h), measured before/after table for each high-impact event on the pair, 'why did…' questions answered (what happened / why / what it means) instead of graded as a setup, direction checked against measured prices, Open in IQ Event Review button // 27 Oct 2026 — SCANNER GATES REWORKED: stops that are too tight are widened by the checker (beyond the 4H swing, ≥ half ATR) and the target stretched to the next measured level if R:R needs it; 'moving against it now' (0.4× ATR) and 'too extended' are amber warnings held back from All-to-trade instead of rejections; AI given each pair's exact stop / room / 4H-swing numbers; intro text no longer read as a 'no pair' setup // 22 Oct 2026 — SCANNER QUALITY GATES: stop ≥ half ATR and beyond the 4H swing, no entries within half an ATR of the week high/low, yen intervention zone holds JPY-sell trades, shared-theme tag, held-back setups named per pair // 15 Oct 2026 — TRUST BATCH C+D: calendar source labelled everywhere + feed-only loads, sentiment checked against measured strength (6h), weekly events from the calendar feed, Indices 'today' from the 7am rollover, correlation drops incomplete days, no hard-coded pip rates, gap filled?, Outlook direction check, trade reviews grounded + figures verified // 15 Oct 2026 — TRUST BATCH A+B: measured levels (/levels) behind every AI level, level + setup checks vs live price/ATR, no forced setups, feed send-time re-check + per-setup age, Plan 'not checked' instead of pass, honest 'Do they agree?' labels, generation stamps // 15 Oct 2026 — measured-moves table: latest shows hours after the release, clean prices, range never negative (worker 12.2) // 15 Oct 2026 — IQ Event review anchored to MEASURED price moves (worker /move), verdict check + auto-redo, Sonnet for screenshot reviews // Columns colour switch Chart/Currency // column tiles coloured like the chart // pair filters on their own line under the timeframes // 13 Oct 2026 — Amendments 20: system check light, indices 'Do they agree?', tree map currency filters + columns, closed-market gap wording // Plan: shortlist ranked by gap + money line + Print/Save; policy test 17 Sep // Plan news-risk looks back as well as forward, flag-not-drop option, honest card + IQ question, empty AI replies not saved // IQ picker shows impact + currency colour; briefing news rows: impact border + IQ button // Plan chips show the state after each step, not the final result // 16 Sep 2026 — ForexFlow: Classic / Flow navigation toggle, grouped tabs with colour families, Plan tab // 16 Sep 2026 — calendar six-day grid, correlation Ask IQ, labels, paste hint, mud-map link // 16 Sep 2026 — amendments 14.9.26: Ask IQ on the research tabs, print/save everywhere, calendar collapse + grid, paste screenshots // bump on every delivered change — shown in the header so it's always obvious which version is loaded
+var FH_BUILD='v32.1'; // 4 Nov 2026 — Routes moved to its own tab; a slim strip shows only while a route is running // 4 Nov 2026 — PRESENTATION BATCH (Appealing · Ease of use · Results): calendar rows bordered by impact, light-theme buttons/badges/text readable, tree map Currency colours turn pairs round to read from the column (↺ dashed, broker name under), planner Max lots + room-at-max bar vs ATR, Routes bar (presets + build your own, ★ default), Plan 'Start from a currency', Plan trend step explains itself and never drops on an empty feed // 3 Nov 2026 — TRADE IDEA REVIEW SEES TODAY'S EVENTS: calendar look-back 24h (was 1h), measured before/after table for each high-impact event on the pair, 'why did…' questions answered (what happened / why / what it means) instead of graded as a setup, direction checked against measured prices, Open in IQ Event Review button // 27 Oct 2026 — SCANNER GATES REWORKED: stops that are too tight are widened by the checker (beyond the 4H swing, ≥ half ATR) and the target stretched to the next measured level if R:R needs it; 'moving against it now' (0.4× ATR) and 'too extended' are amber warnings held back from All-to-trade instead of rejections; AI given each pair's exact stop / room / 4H-swing numbers; intro text no longer read as a 'no pair' setup // 22 Oct 2026 — SCANNER QUALITY GATES: stop ≥ half ATR and beyond the 4H swing, no entries within half an ATR of the week high/low, yen intervention zone holds JPY-sell trades, shared-theme tag, held-back setups named per pair // 15 Oct 2026 — TRUST BATCH C+D: calendar source labelled everywhere + feed-only loads, sentiment checked against measured strength (6h), weekly events from the calendar feed, Indices 'today' from the 7am rollover, correlation drops incomplete days, no hard-coded pip rates, gap filled?, Outlook direction check, trade reviews grounded + figures verified // 15 Oct 2026 — TRUST BATCH A+B: measured levels (/levels) behind every AI level, level + setup checks vs live price/ATR, no forced setups, feed send-time re-check + per-setup age, Plan 'not checked' instead of pass, honest 'Do they agree?' labels, generation stamps // 15 Oct 2026 — measured-moves table: latest shows hours after the release, clean prices, range never negative (worker 12.2) // 15 Oct 2026 — IQ Event review anchored to MEASURED price moves (worker /move), verdict check + auto-redo, Sonnet for screenshot reviews // Columns colour switch Chart/Currency // column tiles coloured like the chart // pair filters on their own line under the timeframes // 13 Oct 2026 — Amendments 20: system check light, indices 'Do they agree?', tree map currency filters + columns, closed-market gap wording // Plan: shortlist ranked by gap + money line + Print/Save; policy test 17 Sep // Plan news-risk looks back as well as forward, flag-not-drop option, honest card + IQ question, empty AI replies not saved // IQ picker shows impact + currency colour; briefing news rows: impact border + IQ button // Plan chips show the state after each step, not the final result // 16 Sep 2026 — ForexFlow: Classic / Flow navigation toggle, grouped tabs with colour families, Plan tab // 16 Sep 2026 — calendar six-day grid, correlation Ask IQ, labels, paste hint, mud-map link // 16 Sep 2026 — amendments 14.9.26: Ask IQ on the research tabs, print/save everywhere, calendar collapse + grid, paste screenshots // bump on every delivered change — shown in the header so it's always obvious which version is loaded
 /* Stale-tab killer: every so often, check whether a newer build has been deployed.
    If so, show a can't-miss banner telling the user to reload — long-open tabs silently
    running old code caused repeated "the fix didn't work" confusion. */
@@ -2443,6 +2467,7 @@ function showS(id,btn){
      price-driven is now re-fetched when its data is older than REFRESH_AFTER. */
   if(id==='briefing') renderBriefing(sectionStale('briefing',REFRESH_AFTER));
   if(id==='sessions') renderSessions();
+  if(id==='routes'){ try{ renderRoutes(); }catch(e){} }
   if(id==='calendar'){
     if(!calLoaded||sectionStale('calendar',REFRESH_AFTER)) loadCalendar();
     else renderCalendarView();
@@ -3376,6 +3401,7 @@ var FLOW_TABS=[
    {id:'past',name:'Past trade review',sec:'review',go:function(){showReviewSub('review-past',document.querySelectorAll('#review .rsub')[1]);},is:function(){return document.getElementById('review-past').classList.contains('active');}},
    {id:'lib',name:'Library',sec:'iq',go:function(){showIqSub('iq-library',document.querySelectorAll('#iq .rsub')[2]);},is:function(){return document.getElementById('iq-library').classList.contains('active');}}]},
  {id:'journal',name:'Journal',dark:'#60a5fa',light:'#1d4ed8',subs:[{id:'journal',name:'Journal',sec:'journal'},{id:'check',name:'Checklist',sec:'checklist'},{id:'calc',name:'Calculator',sec:'calculator'}]},
+ {id:'routes',name:'Routes',dark:'#fb923c',light:'#c2410c',subs:[{id:'routes',name:'Routes',sec:'routes'}]},
  {id:'about',name:'About',dark:'#a8a29e',light:'#57534e',subs:[{id:'about',name:'About',sec:'about'}]}
 ];
 var _flowMain='plan',_flowSub='plan';
@@ -3485,50 +3511,59 @@ var ROUTE_PRESETS=[
   {id:'p-scan',name:'Scanner first',steps:['today:brief','pairs:scan','research:tech','research:heat','iq:idea']},
   {id:'p-sess',name:'Session start',steps:['today:sessions','today:calendar','research:tech','research:heat']}
 ];
-function routeStepList(){ var L=[]; FLOW_TABS.forEach(function(t){ t.subs.forEach(function(sb){ var k=t.id+':'+sb.id; ROUTE_STEPS[k]={name:sb.name==="Today's plan"?'Plan':sb.name==='Technicals'?'Technicals':sb.name}; L.push(k); }); }); return L; }
+function routeStepList(){ var L=[]; FLOW_TABS.forEach(function(t){ if(t.id==='routes') return; t.subs.forEach(function(sb){ var k=t.id+':'+sb.id; ROUTE_STEPS[k]={name:sb.name==="Today's plan"?'Plan':sb.name==='Technicals'?'Technicals':sb.name}; L.push(k); }); }); return L; }
 function routesAll(){ var mine=[]; try{ mine=JSON.parse(LS.get('fh_routes')||'[]')||[]; }catch(e){} return ROUTE_PRESETS.concat(mine); }
 function routesMine(){ try{ return JSON.parse(LS.get('fh_routes')||'[]')||[]; }catch(e){ return []; } }
 function routesSaveMine(a){ try{ LS.set('fh_routes',JSON.stringify(a)); }catch(e){} }
 function routeDef(){ try{ return LS.get('fh_route_def')||'p-find'; }catch(e){ return 'p-find'; } }
-var _rt={on:null,step:0,build:null,dragI:null,hidden:false};
+var _rt={on:null,step:0,build:null,dragI:null,running:false};
 function initRoutes(){
   routeStepList();
-  try{ var st=JSON.parse(LS.get('fh_route_on')||'null'); if(st&&st.id){ _rt.on=st.id; _rt.step=st.step||0; } }catch(e){}
-  try{ _rt.hidden=LS.get('fh_route_hide')==='1'; }catch(e){}
+  try{ var st=JSON.parse(LS.get('fh_route_on')||'null'); if(st&&st.id){ _rt.on=st.id; _rt.step=st.step||0; _rt.running=!!st.run; } }catch(e){}
   if(!_rt.on) _rt.on=routeDef();
   if(!routesAll().some(function(r){return r.id===_rt.on;})) _rt.on=routesAll()[0].id;
   renderRoutes();
 }
-function routeSaveState(){ try{ LS.set('fh_route_on',JSON.stringify({id:_rt.on,step:_rt.step})); }catch(e){} }
+function routeSaveState(){ try{ LS.set('fh_route_on',JSON.stringify({id:_rt.on,step:_rt.step,run:_rt.running})); }catch(e){} }
 function routeById(id){ return routesAll().filter(function(r){return r.id===id;})[0]; }
 function renderRoutes(){
-  var w=document.getElementById('rt-wrap'); if(!w) return;
-  if(_rt.hidden){ w.innerHTML='<div style="display:flex;justify-content:flex-end"><button class="rt-chip" onclick="routeShow(true)" title="Show the Routes bar">Routes ▾</button></div>'; return; }
+  renderRouteStrip();
+  var w=document.getElementById('rt-page'); if(!w) return;
   var all=routesAll(), def=routeDef(), r=routeById(_rt.on);
   var h='<div class="rt-bar"><div class="rt-top"><span class="k">Routes</span>'
     +all.map(function(x){return '<button class="rt-chip'+(x.id===_rt.on?' on':'')+'" onclick="routePick(\''+x.id+'\')" title="'+esc(x.steps.map(function(k){return (ROUTE_STEPS[k]||{}).name||k;}).join(' → '))+'">'+(x.id===def?'<span class="st">★</span> ':'')+esc(x.name)+'</button>';}).join('')
-    +'<button class="rt-chip add" onclick="routeBuild()">+ New route</button><button class="rt-chip x" onclick="routeShow(false)" title="Hide the Routes bar">Hide ▴</button></div>';
+    +'<button class="rt-chip add" onclick="routeBuild()">+ New route</button></div>';
   if(r){
     h+='<div class="rt-steps">'+r.steps.map(function(k,i){ var cls=i<_rt.step?'done':i===_rt.step?'now':''; return (i?'<span class="rt-sep"></span>':'')+'<button class="rt-stp '+cls+'" onclick="routeGo('+i+')"><i>'+(i<_rt.step?'✓':i+1)+'</i>'+esc((ROUTE_STEPS[k]||{}).name||k)+'</button>'; }).join('')+'</div>';
     var k=r.steps[_rt.step], last=_rt.step>=r.steps.length-1;
     h+='<div class="rt-note"><p><b>Step '+(_rt.step+1)+' · '+esc((ROUTE_STEPS[k]||{}).name||k)+':</b> '+esc(ROUTE_NOTES[k]||'')+'</p><div style="display:flex;gap:8px;flex-wrap:wrap">'
       +(r.id!==def?'<button class="rt-btn ghost" onclick="routeSetDef(\''+r.id+'\')" title="Ready on the bar when the site opens">★ Make default</button>':'')
       +(r.id.indexOf('p-')!==0?'<button class="rt-btn ghost" onclick="routeBuild(\''+r.id+'\')">Edit</button>':'')
-      +'<button class="rt-btn" onclick="routeNext()">'+(last?'Finish ✓':'Next: '+esc((ROUTE_STEPS[r.steps[_rt.step+1]]||{}).name||'')+' →')+'</button></div></div>';
+      +(_rt.running?'<button class="rt-btn" onclick="routeNext()">'+(last?'Finish ✓':'Next: '+esc((ROUTE_STEPS[r.steps[_rt.step+1]]||{}).name||'')+' →')+'</button>':'<button class="rt-btn" onclick="routeStart()">Start route →</button>')+'</div></div>';
   }
   if(_rt.build) h+=routeBuilderHtml();
   w.innerHTML=h+'</div>';
 }
-function routeShow(on){ _rt.hidden=!on; try{ LS.set('fh_route_hide',on?'0':'1'); }catch(e){} renderRoutes(); }
-function routePick(id){ _rt.on=id; _rt.step=0; _rt.build=null; routeSaveState(); routeGo(0); }
-function routeGo(i){ var r=routeById(_rt.on); if(!r) return; _rt.step=Math.max(0,Math.min(i,r.steps.length-1)); routeSaveState();
+/* v32.1 — the slim strip that follows you only while a route is running */
+function renderRouteStrip(){
+  var w=document.getElementById('rt-wrap'); if(!w) return;
+  var r=_rt.running&&routeById(_rt.on); if(!r){ w.innerHTML=''; return; }
+  var k=r.steps[_rt.step], last=_rt.step>=r.steps.length-1;
+  w.innerHTML='<div class="rt-strip"><span class="rt-sn">'+esc(r.name)+'</span><span class="rt-dots">'+r.steps.map(function(x,i){return '<button class="rt-dot'+(i<_rt.step?' done':i===_rt.step?' now':'')+'" onclick="routeGo('+i+')" title="'+esc((ROUTE_STEPS[x]||{}).name||x)+'">'+(i+1)+'</button>';}).join('')+'</span>'
+    +'<span class="rt-sm"><b>Step '+(_rt.step+1)+' of '+r.steps.length+' · '+esc((ROUTE_STEPS[k]||{}).name||k)+':</b> '+esc(ROUTE_NOTES[k]||'')+'</span>'
+    +'<button class="rt-btn" onclick="routeNext()">'+(last?'Finish ✓':'Next →')+'</button><button class="rt-chip x" onclick="routeStop()" title="Stop this route">✕</button></div>';
+}
+function routeStart(){ _rt.running=true; _rt.step=0; routeSaveState(); routeGo(0); }
+function routeStop(){ _rt.running=false; routeSaveState(); renderRoutes(); }
+function routePick(id){ _rt.on=id; _rt.step=0; _rt.build=null; _rt.running=false; routeSaveState(); renderRoutes(); }
+function routeGo(i){ var r=routeById(_rt.on); if(!r) return; _rt.step=Math.max(0,Math.min(i,r.steps.length-1)); _rt.running=true; routeSaveState();
   var k=r.steps[_rt.step].split(':');
   if(navMode()==='flow') flowGo(k[0],k[1]);
   else { /* Classic: open the panel directly (flowGo would repaint the Flow accent) */
     var t=FLOW_TABS.filter(function(x){return x.id===k[0];})[0], sb=t&&t.subs.filter(function(x){return x.id===k[1];})[0];
     if(sb){ var nb=null; document.querySelectorAll('.nb').forEach(function(b){ if(!nb&&(b.getAttribute('onclick')||'').indexOf("'"+sb.sec+"'")>-1) nb=b; }); showS(sb.sec,nb); if(sb.go) sb.go(); var mainEl=document.querySelector('.main'); if(mainEl) mainEl.scrollTo({top:0,behavior:'smooth'}); } }
   renderRoutes(); }
-function routeNext(){ var r=routeById(_rt.on); if(!r) return; if(_rt.step>=r.steps.length-1){ _rt.step=0; routeSaveState(); renderRoutes(); showToast('Route finished — "'+r.name+'" is ready for next time'); return; } routeGo(_rt.step+1); }
+function routeNext(){ var r=routeById(_rt.on); if(!r) return; if(_rt.step>=r.steps.length-1){ _rt.step=0; _rt.running=false; routeSaveState(); renderRoutes(); showToast('Route finished — "'+r.name+'" is ready for next time'); return; } routeGo(_rt.step+1); }
 function routeSetDef(id){ try{ LS.set('fh_route_def',id); }catch(e){} renderRoutes(); showToast('★ '+(routeById(id)||{}).name+' is now your default route'); }
 function routeBuild(editId){ var e=editId?routeById(editId):null; _rt.build={id:e?e.id:null,name:e?e.name:'',steps:e?e.steps.slice():[],def:e?routeDef()===e.id:false}; renderRoutes(); var n=document.getElementById('rt-name'); if(n) n.focus(); }
 function routeBuilderHtml(){
@@ -3551,7 +3586,7 @@ function routeSaveBuild(){
   var rec={id:id,name:nm.slice(0,40),steps:B.steps.slice()};
   var at=mine.findIndex(function(r){return r.id===id;}); if(at>-1) mine[at]=rec; else mine.push(rec);
   routesSaveMine(mine); if(B.def){ try{ LS.set('fh_route_def',id); }catch(e){} }
-  _rt.build=null; _rt.on=id; _rt.step=0; routeSaveState(); renderRoutes(); showToast('Route "'+rec.name+'" saved');
+  _rt.build=null; _rt.on=id; _rt.step=0; _rt.running=false; routeSaveState(); renderRoutes(); showToast('Route "'+rec.name+'" saved — press Start to run it');
 }
 function routeDelete(id){ routesSaveMine(routesMine().filter(function(r){return r.id!==id;})); if(routeDef()===id){ try{ LS.set('fh_route_def','p-find'); }catch(e){} } _rt.build=null; _rt.on=routeDef(); _rt.step=0; routeSaveState(); renderRoutes(); showToast('Route deleted'); }
 
