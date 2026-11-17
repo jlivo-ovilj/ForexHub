@@ -41,7 +41,7 @@
        Cache API which is per-colo) and backs off when Forex Factory rate-limits.
    Bindings required: ANTHROPIC_API_KEY (secret), FH_APP_KEY (secret), FH_KV (KV).  */
 
-const WORKER_VERSION = "12.5";
+const WORKER_VERSION = "12.6";   // 18 Nov 2026 — /price adds t24 (rolling last-24h move) for the top-down scanner; same Yahoo calls, no extra cost
 const SETUPS_CACHE_S = 60;
 const SETUP_MAX_H = 4;    // 12.5 (22 Oct 2026, was 12) — a morning setup must not fill in a different afternoon market
 /* Edge-cache key for GET /setups — the app key is stripped so the secret never forms part of a cache key. */
@@ -854,6 +854,11 @@ const WORKER_DEFAULT = {
             const t4h = b4 ? pctOf(price, b4.bar.c) : null;
             const t4hSpanMin = b4 ? b4.spanMin : null;
             const t4hSpansBreak = b4 ? b4.spansBreak : false;
+            /* 12.6 — 10 Nov item 2: a rolling 24h "Daily" (now vs the price 24h ago by
+               the clock) so early in the session the Daily column isn't a 3h sliver.
+               Uses the same 2-day 5-minute bars already fetched — no extra calls. */
+            const b24 = barBack(ib, 1440);
+            const t24 = b24 ? pctOf(price, b24.bar.c) : null;
             /* Minutes of trading elapsed since the 7am AEST rollover, so the UI can
                say "Daily covers 1h 56m" rather than implying a full day. */
             const sessionAgeMin = roIdx > 0 && ib.length
@@ -874,6 +879,9 @@ const WORKER_DEFAULT = {
               /* Amendment 19.8.26 — evidence travelling with the figures */
               t4hSpanMin: t4hSpanMin,       // minutes the "4H" column really covers
               t4hSpansBreak: t4hSpansBreak, // true ⇒ that window jumped a market break
+              t24: t24,                                  // % move vs 24h ago (rolling)
+              t24SpanMin: b24 ? b24.spanMin : null,      // minutes it really covers
+              t24SpansBreak: b24 ? b24.spansBreak : false,
               sessionAgeMin: sessionAgeMin, // minutes since the 7am AEST rollover
               refPrice: ref,
               refAt: roIdx > 0 ? aestStamp(ib[roIdx - 1].t) : null

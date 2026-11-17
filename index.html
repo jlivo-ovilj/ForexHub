@@ -1887,6 +1887,11 @@ body.light .rt-dot.now{background:#c2410c;border-color:#c2410c;color:#fff}
     <button class="sb" id="syscheck-run" style="margin-top:10px;padding:7px 16px;font-size:12.5px" onclick="runSysCheckNow()">Run check now</button>
   </div>
   <div class="card">
+    <div class="ai"><div class="aq">What's new in v34 (18 Nov 2026) — clean scanner cards, a full-day Daily, and pattern filters</div><div class="aa">
+      · <b>Scanner cards never show the AI's working-out.</b> Now and then the AI corrected itself mid-reply ("Wait, that entry direction is wrong… let me redo") and that text landed on a trade card. Any setup carrying second thoughts, or with a field written twice, is now thrown out and named in the held-back note — it never reaches a card or the MT5 / cTrader feed. If the AI wrote a corrected version, that one is checked on its own. Only the first paragraph of the reasoning is ever shown.<br>
+      · <b>Top-down scanner — Daily is now the last 24 hours.</b> Early in the day the old Daily (since the 7am rollover) was only a few hours old and read like the 1H or 4H. Daily now compares with the price 24 hours ago, so it's a full day at any hour, and STRONG no longer waits 3 hours. The original method is one tap away: <b>Daily: Last 24h / Since 7am</b> above the table. Weekly is unchanged (last 5 trading days). Running cost is unchanged — the 24h figure comes from price data the site was already downloading (worker 12.6).<br>
+      · <b>Watchlist → Technicals pattern key.</b> ▲ All positive (most timeframes buying at the top, down to all selling), ▼ All negative (the reverse), ↗ Ascending (buy) — Daily and Weekly buying while 15m or 1H is selling, a dip to buy with the bigger trend — and ↘ Ascending (sell), its mirror. Pairs that fit are tagged and listed first; the rest follow, closest first. Tap the button again or ✕ Clear for the normal order.
+    </div></div>
     <div class="ai"><div class="aq">What's new in v33 (16 Nov 2026) — Market IQ opens straight from any calendar event</div><div class="aa">
       · <b>IQ button on Low-impact events fixed.</b> Low-impact events aren't in the Market IQ pickers, so the IQ button on one opens Outlook (or Event review) with the event filled into <b>✎ Something not on the calendar</b>. If the event list refreshed a moment later, the picker went back to blank and <b>Build the outlook</b> answered "Pick an event first". Now the picker keeps what you chose when the list refreshes, and an open "not on the calendar" row is always used.<br>
       · <b>Your pick stays put.</b> The same refresh could quietly clear a normal calendar pick while you were reading the chip — that's fixed too. If the event you picked is genuinely gone from the list, the picker goes blank rather than guessing.
@@ -2431,7 +2436,7 @@ function dismissBanner(){
 /* ══════════════════════════════════════
    HEADER DATE
 ══════════════════════════════════════ */
-var FH_BUILD='v33'; // 16 Nov 2026 — MARKET IQ HAND-OFF FIX: opening IQ from a Low-impact (or any not-listed) calendar event no longer says 'Pick an event first' — the pickers keep their selection when the event list refreshes, and the open 'something not on the calendar' row is trusted // 4 Nov 2026 — Routes moved to its own tab; a slim strip shows only while a route is running // 4 Nov 2026 — PRESENTATION BATCH (Appealing · Ease of use · Results): calendar rows bordered by impact, light-theme buttons/badges/text readable, tree map Currency colours turn pairs round to read from the column (↺ dashed, broker name under), planner Max lots + room-at-max bar vs ATR, Routes bar (presets + build your own, ★ default), Plan 'Start from a currency', Plan trend step explains itself and never drops on an empty feed // 3 Nov 2026 — TRADE IDEA REVIEW SEES TODAY'S EVENTS: calendar look-back 24h (was 1h), measured before/after table for each high-impact event on the pair, 'why did…' questions answered (what happened / why / what it means) instead of graded as a setup, direction checked against measured prices, Open in IQ Event Review button // 27 Oct 2026 — SCANNER GATES REWORKED: stops that are too tight are widened by the checker (beyond the 4H swing, ≥ half ATR) and the target stretched to the next measured level if R:R needs it; 'moving against it now' (0.4× ATR) and 'too extended' are amber warnings held back from All-to-trade instead of rejections; AI given each pair's exact stop / room / 4H-swing numbers; intro text no longer read as a 'no pair' setup // 22 Oct 2026 — SCANNER QUALITY GATES: stop ≥ half ATR and beyond the 4H swing, no entries within half an ATR of the week high/low, yen intervention zone holds JPY-sell trades, shared-theme tag, held-back setups named per pair // 15 Oct 2026 — TRUST BATCH C+D: calendar source labelled everywhere + feed-only loads, sentiment checked against measured strength (6h), weekly events from the calendar feed, Indices 'today' from the 7am rollover, correlation drops incomplete days, no hard-coded pip rates, gap filled?, Outlook direction check, trade reviews grounded + figures verified // 15 Oct 2026 — TRUST BATCH A+B: measured levels (/levels) behind every AI level, level + setup checks vs live price/ATR, no forced setups, feed send-time re-check + per-setup age, Plan 'not checked' instead of pass, honest 'Do they agree?' labels, generation stamps // 15 Oct 2026 — measured-moves table: latest shows hours after the release, clean prices, range never negative (worker 12.2) // 15 Oct 2026 — IQ Event review anchored to MEASURED price moves (worker /move), verdict check + auto-redo, Sonnet for screenshot reviews // Columns colour switch Chart/Currency // column tiles coloured like the chart // pair filters on their own line under the timeframes // 13 Oct 2026 — Amendments 20: system check light, indices 'Do they agree?', tree map currency filters + columns, closed-market gap wording // Plan: shortlist ranked by gap + money line + Print/Save; policy test 17 Sep // Plan news-risk looks back as well as forward, flag-not-drop option, honest card + IQ question, empty AI replies not saved // IQ picker shows impact + currency colour; briefing news rows: impact border + IQ button // Plan chips show the state after each step, not the final result // 16 Sep 2026 — ForexFlow: Classic / Flow navigation toggle, grouped tabs with colour families, Plan tab // 16 Sep 2026 — calendar six-day grid, correlation Ask IQ, labels, paste hint, mud-map link // 16 Sep 2026 — amendments 14.9.26: Ask IQ on the research tabs, print/save everywhere, calendar collapse + grid, paste screenshots // bump on every delivered change — shown in the header so it's always obvious which version is loaded
+var FH_BUILD='v34'; // 18 Nov 2026 — 10 Nov AMENDMENTS: scanner setups carrying the AI's working-out (or a field written twice) are discarded, never shown or fed to the bots; top-down Daily = rolling last 24h (worker 12.6 t24) with 'Since 7am' toggle kept; Watchlist Technicals pattern key (All positive / All negative / Ascending buy / sell) // 16 Nov 2026 — MARKET IQ HAND-OFF FIX: opening IQ from a Low-impact (or any not-listed) calendar event no longer says 'Pick an event first' — the pickers keep their selection when the event list refreshes, and the open 'something not on the calendar' row is trusted // 4 Nov 2026 — Routes moved to its own tab; a slim strip shows only while a route is running // 4 Nov 2026 — PRESENTATION BATCH (Appealing · Ease of use · Results): calendar rows bordered by impact, light-theme buttons/badges/text readable, tree map Currency colours turn pairs round to read from the column (↺ dashed, broker name under), planner Max lots + room-at-max bar vs ATR, Routes bar (presets + build your own, ★ default), Plan 'Start from a currency', Plan trend step explains itself and never drops on an empty feed // 3 Nov 2026 — TRADE IDEA REVIEW SEES TODAY'S EVENTS: calendar look-back 24h (was 1h), measured before/after table for each high-impact event on the pair, 'why did…' questions answered (what happened / why / what it means) instead of graded as a setup, direction checked against measured prices, Open in IQ Event Review button // 27 Oct 2026 — SCANNER GATES REWORKED: stops that are too tight are widened by the checker (beyond the 4H swing, ≥ half ATR) and the target stretched to the next measured level if R:R needs it; 'moving against it now' (0.4× ATR) and 'too extended' are amber warnings held back from All-to-trade instead of rejections; AI given each pair's exact stop / room / 4H-swing numbers; intro text no longer read as a 'no pair' setup // 22 Oct 2026 — SCANNER QUALITY GATES: stop ≥ half ATR and beyond the 4H swing, no entries within half an ATR of the week high/low, yen intervention zone holds JPY-sell trades, shared-theme tag, held-back setups named per pair // 15 Oct 2026 — TRUST BATCH C+D: calendar source labelled everywhere + feed-only loads, sentiment checked against measured strength (6h), weekly events from the calendar feed, Indices 'today' from the 7am rollover, correlation drops incomplete days, no hard-coded pip rates, gap filled?, Outlook direction check, trade reviews grounded + figures verified // 15 Oct 2026 — TRUST BATCH A+B: measured levels (/levels) behind every AI level, level + setup checks vs live price/ATR, no forced setups, feed send-time re-check + per-setup age, Plan 'not checked' instead of pass, honest 'Do they agree?' labels, generation stamps // 15 Oct 2026 — measured-moves table: latest shows hours after the release, clean prices, range never negative (worker 12.2) // 15 Oct 2026 — IQ Event review anchored to MEASURED price moves (worker /move), verdict check + auto-redo, Sonnet for screenshot reviews // Columns colour switch Chart/Currency // column tiles coloured like the chart // pair filters on their own line under the timeframes // 13 Oct 2026 — Amendments 20: system check light, indices 'Do they agree?', tree map currency filters + columns, closed-market gap wording // Plan: shortlist ranked by gap + money line + Print/Save; policy test 17 Sep // Plan news-risk looks back as well as forward, flag-not-drop option, honest card + IQ question, empty AI replies not saved // IQ picker shows impact + currency colour; briefing news rows: impact border + IQ button // Plan chips show the state after each step, not the final result // 16 Sep 2026 — ForexFlow: Classic / Flow navigation toggle, grouped tabs with colour families, Plan tab // 16 Sep 2026 — calendar six-day grid, correlation Ask IQ, labels, paste hint, mud-map link // 16 Sep 2026 — amendments 14.9.26: Ask IQ on the research tabs, print/save everywhere, calendar collapse + grid, paste screenshots // bump on every delivered change — shown in the header so it's always obvious which version is loaded
 /* Stale-tab killer: every so often, check whether a newer build has been deployed.
    If so, show a can't-miss banner telling the user to reload — long-open tabs silently
    running old code caused repeated "the fix didn't work" confusion. */
@@ -3141,6 +3146,12 @@ function setupCheckLine(o){
 var TREND_PAIRS=FH_PAIRS;   // canonical watchlist
 /* 8.9.26 #7 — Buy/Sell only by default; Mixed is opt-in via the button. */
 var _trendData=null,_trendSort={col:'bias',dir:-1},_trendCcy='',_trendHideMix=true;
+/* v34 — 10 Nov item 2: Daily window switch. 'r24' = rolling last 24h by the clock
+   (new default — a full day's move at any hour); 'ro' = since the 7am rollover
+   (the original method, kept so it can be switched back). Weekly is unchanged
+   (last 5 trading days). Same price call either way — no cost difference. */
+function trendDailyMode(){ var v=LS.get('fh_trend_daily'); return v==='ro'?'ro':'r24'; }
+function setTrendDaily(v){ LS.set('fh_trend_daily',v); renderTrends(); }
 async function loadTrendScan(){
   trendLoaded=true;markSectionLoaded('trends');
   var out=document.getElementById('trend-body');
@@ -3154,7 +3165,7 @@ async function loadTrendScan(){
       var q=await liveQuotes(TREND_PAIRS);
       rows=[];
       TREND_PAIRS.forEach(function(p){var d=q[p];if(!d)return;
-        rows.push({sym:p,w:d.tw,dd:d.td,h:d.t4h,m:d.tm,
+        rows.push({sym:p,w:d.tw,dd:d.td,ro:d.td,r24:(d.t24!==undefined?d.t24:null),r24Span:d.t24SpanMin,r24Break:d.t24SpansBreak===true,h:d.t4h,m:d.tm,
                    /* Amendment 19.8.26 #7 — evidence carried alongside each figure */
                    hSpan:d.t4hSpanMin,hBreak:d.t4hSpansBreak===true,age:d.sessionAgeMin});});
     }
@@ -3200,7 +3211,16 @@ function toggleTrendMix(){_trendHideMix=!_trendHideMix;renderTrends();}
 function renderTrends(){
   if(!_trendData)return;
   var rows=_trendData.slice();
-  rows.forEach(function(r){var b=trBias(r.w,r.dd,r.h,r.age);r._bt=b.t;r._br=b.r;});
+  var dm=trendDailyMode();
+  /* Rolling mode: Daily = t24, and the 'early session' brake no longer applies
+     because the window is a full day. If the worker hasn't sent t24 (older worker
+     or a thin feed) that pair falls back to the rollover figure and is flagged. */
+  rows.forEach(function(r){
+    r._dFallback=false;
+    if(dm==='r24'){ if(r.r24!=null){ r.dd=r.r24; } else { r.dd=r.ro; r._dFallback=true; } }
+    else r.dd=r.ro;
+    var useAge=(dm==='ro'||r._dFallback)?r.age:null;
+    var b=trBias(r.w,r.dd,r.h,useAge);r._bt=b.t;r._br=b.r;});
   if(_trendCcy)rows=rows.filter(function(r){return r.sym.indexOf(_trendCcy)>-1;});
   if(_trendHideMix)rows=rows.filter(function(r){return r._bt!=='Mixed';});
   var sc=_trendSort.col,sd=_trendSort.dir;
@@ -3216,7 +3236,10 @@ function renderTrends(){
   f+='<button class="pip-fccy'+(!_trendCcy?' all-active':'')+'" onclick="setTrendCcy(\'\')">All</button>';
   CCYS.forEach(function(c){var col=ccyCol(c),a=_trendCcy===c;
     f+='<button class="pip-fccy" onclick="setTrendCcy(\''+c+'\')" style="color:'+col+';border-color:'+(a?col:'var(--bd2)')+';background:'+(a?col+'22':'transparent')+'">'+c+'</button>';});
-  f+='<button class="pip-fccy'+(_trendHideMix?' all-active':'')+'" style="margin-left:auto" onclick="toggleTrendMix()">'+(_trendHideMix?'Show mixed':'Hide mixed')+'</button>';
+  f+='<span style="margin-left:auto;display:inline-flex;gap:4px;align-items:center"><span class="muted" style="font-size:11px">Daily:</span>'
+    +'<button class="pip-fccy'+(dm==='r24'?' all-active':'')+'" onclick="setTrendDaily(\'r24\')" title="Now vs the price 24 hours ago — a full day at any hour">Last 24h</button>'
+    +'<button class="pip-fccy'+(dm==='ro'?' all-active':'')+'" onclick="setTrendDaily(\'ro\')" title="The original method: now vs the '+rolloverLabel()+' rollover">Since '+rolloverLabel()+'</button></span>';
+  f+='<button class="pip-fccy'+(_trendHideMix?' all-active':'')+'" onclick="toggleTrendMix()">'+(_trendHideMix?'Show mixed':'Hide mixed')+'</button>';
   f+='</div>';
   function arr(col){if(_trendSort.col!==col)return '<span style="opacity:0.3;font-size:9px"> ⇅</span>';return '<span style="font-size:9px"> '+(_trendSort.dir===1?'▲':'▼')+'</span>';}
   function cell(v,tf,warn){
@@ -3241,7 +3264,10 @@ function renderTrends(){
     var bg=r._br===2?'rgba(74,222,128,0.25)':r._br===1?'rgba(74,222,128,0.1)':r._br===-2?'rgba(248,113,113,0.25)':r._br===-1?'rgba(248,113,113,0.1)':'transparent';
     var clr=r._br>0?'#4ade80':r._br<0?'#f87171':'var(--mt)';
     h+='<tr class="hm-row row-link" onclick="goToPair(\''+r.sym+'\')" title="Open '+r.sym+' in Analysis"><td class="hm-pair">'+pairSpan(r.sym)+'</td>';
-    var dWarn=(r.age!=null&&r.age<180)?('Daily covers only '+fhDur(r.age)+' since the '+rolloverLabel()+' rollover — a small number here is expected, not a flat market.'):'';
+    var dWarn=(dm==='r24'&&!r._dFallback)
+      ? (r.r24Break?('This 24h window reaches across a market break: the reference price is '+fhDur(r.r24Span)+' back.'):'')
+      : (r._dFallback?'Rolling 24h not available for this pair right now — showing the since-rollover figure instead. ':'')
+        +((r.age!=null&&r.age<180)?('Daily covers only '+fhDur(r.age)+' since the '+rolloverLabel()+' rollover — a small number here is expected, not a flat market.'):'');
     var hWarn=r.hBreak?('This window spans a market break: the reference price is '+fhDur(r.hSpan)+' back, not 4 hours. Monday mornings reach across the weekend.'):'';
     h+=cell(r.w,'w','')+cell(r.dd,'d',dWarn)+cell(r.h,'h',hWarn);
     h+='<td style="background:'+bg+';color:'+clr+';font-weight:600">'+r._bt+'</td></tr>';
@@ -3252,11 +3278,14 @@ function renderTrends(){
   var ages=_trendData.map(function(r){return r.age;}).filter(function(v){return v!=null;});
   var age=ages.length?ages.sort(function(a,b){return a-b;})[Math.floor(ages.length/2)]:null;
   var brk=_trendData.filter(function(r){return r.hBreak;}).length;
-  h+='<div class="ss" style="margin:10px 12px 0">Windows: <b>Weekly</b> = now vs the close 5 trading days ago · <b>Daily</b> = now vs the '+rolloverLabel()+' rollover'
-    +(age!=null?' (<b>'+fhDur(age)+'</b> of trading so far today)':'')
+  var fb=rows.filter(function(r){return r._dFallback;}).length;
+  h+='<div class="ss" style="margin:10px 12px 0">Windows: <b>Weekly</b> = now vs the close 5 trading days ago · '
+    +(dm==='r24'
+      ? '<b>Daily</b> = now vs the price <b>24 hours ago</b> (rolling — a full day at any hour)'+(fb?' · '+fb+' pair'+(fb>1?'s':'')+' fell back to the rollover figure ⚠':'')
+      : '<b>Daily</b> = now vs the '+rolloverLabel()+' rollover'+(age!=null?' (<b>'+fhDur(age)+'</b> of trading so far today)':''))
     +' · <b>4H</b> = now vs the price 4 hours back by the clock.'
     +(brk?' <span class="tr-warn">⚠</span> '+brk+' pair'+(brk>1?'s have':' has')+' a 4H window that reaches across a market break — hover the flag.':'')
-    +' Bias needs Weekly ≥'+TR_MIN.w+'%, Daily ≥'+TR_MIN.d+'% and 4H ≥'+TR_MIN.h+'% in the same direction; STRONG is withheld until the session is 3 hours old.</div>';
+    +' Bias needs Weekly ≥'+TR_MIN.w+'%, Daily ≥'+TR_MIN.d+'% and 4H ≥'+TR_MIN.h+'% in the same direction'+(dm==='ro'?'; STRONG is withheld until the session is 3 hours old':'')+'. Switch the Daily window with the buttons above.</div>';
   document.getElementById('trend-body').innerHTML=h;
 }
 async function aiImage(prompt,imageB64,mimeType,opts){
@@ -6288,10 +6317,45 @@ function scanField(block,key){
   var m=block.match(new RegExp('^\\s*'+key+'\\s*:([^\\n]*)$','im'));
   return m?m[1].trim():'';
 }
-/* Everything after REASON: up to the next field label. */
-function scanReason(block){
+/* v34 — 10 Nov item 4: the AI's own working-out leaking onto a trade card
+   ("Wait, that entry direction is wrong… Let me discard this one… let me redo").
+   The model sometimes thinks aloud mid-reply and corrects itself. Everything
+   after REASON: used to be taken as the commentary, so the narration — and the
+   setup the model itself had disowned — reached the card whenever its levels
+   happened to look valid. Same class as D3: free text from the model is never
+   trusted as data. A setup carrying working-out, or writing a field twice, is
+   discarded and named in the held-back note; it never reaches a card or the
+   MT5 / cTrader feed. A corrected version, if the model wrote one, is its own
+   SETUP: block and is checked on its own merits. */
+var SCAN_WORKING_RE=[
+  /(^|[.!?…:;]\s+|\n)\s*(wait|hmm+|actually|hold on|oops|no|ok(?:ay)?)\s*(?:[,!…—–]|\.{2,}|-\s)/i,
+  /\b(scratch that|on second thought|re-?checking|double-?checking)\b/i,
+  /\blet me\b/i,
+  /\bI(?:'ll|’ll| will| need to| should| must| have to)\s+(?:re-?do|redo|discard|drop|scrap|recalculate|re-?check|recheck|fix|correct|reconsider|start over|revise|re-?think|swap|flip)\b/i,
+  /\b(?:discard|scrap|ignore|disregard|skip)\s+(?:this|that|the above|it)\b/i,
+  /\b(?:that|this)\s+(?:entry|direction|stop|target|setup|level|trade)s?\s+(?:is|was|are|were)\s+(?:wrong|incorrect|invalid|backwards|reversed)\b/i,
+  /\b(?:re-?do|redo)\s+(?:this|it|that|the setup)\b/i,
+  /\bdoesn['’]t (?:work|satisfy|meet the (?:rule|rules|criteria))\b/i
+];
+var SCAN_NO_THINKING='\n\nOUTPUT DISCIPLINE: do all checking before you write. The reply is read by a program and shown to a trader — never write your working, corrections or second thoughts ("wait", "let me", "redo", "discard"). If a setup fails a rule, simply leave it out. Each setup is written once, every field once.';
+function scanWorkingOut(block){
+  var dupF=['PAIR','DIRECTION','ENTRY TRIGGER','ENTRY','STOP LOSS','TAKE PROFIT','REASON'];
+  for(var i=0;i<dupF.length;i++){
+    var n=(block.match(new RegExp('^\\s*'+dupF[i]+'\\s*:','gim'))||[]).length;
+    if(n>1) return 'the AI rewrote its own '+dupF[i].toLowerCase()+' mid-setup — discarded';
+  }
+  var raw=block;   /* the whole setup block: narration can sit on any line */
+  for(var j=0;j<SCAN_WORKING_RE.length;j++) if(SCAN_WORKING_RE[j].test(raw)) return 'the AI changed its mind mid-setup — discarded';
+  return null;
+}
+function scanReasonRaw(block){
   var rm=block.match(new RegExp('\\bREASON\\s*:([\\s\\S]*?)(?=\\n\\s*(?:'+SCAN_FIELDS+')\\s*:|$)','i'));
-  var r=rm?rm[1].trim():'';
+  return rm?rm[1]:'';
+}
+/* Everything after REASON: up to the next field label — first paragraph only.
+   Anything after a blank line is outside the format and is never shown. */
+function scanReason(block){
+  var r=scanReasonRaw(block).trim().split(/\n\s*\n/)[0].trim();
   if(r) return r;
   /* Fallback: any line that is not a field line. ENTRY TRIGGER and ORDER TYPE were
      missing from the old exclusion list, which is how "ENTRY TRI" ended up being
@@ -6498,12 +6562,12 @@ async function runScanner(){
       var ruleLines=majors.filter(function(mp){return scLV[mp]&&scLV[mp].atr;}).map(function(mp){return scanRuleLine(mp,scLV[mp],q[mp]);}).filter(Boolean);
       if(lines.length) priceBlock='CURRENT LIVE PRICES ('+fhClock()+', real-time). Each line: price (today\'s range, % move/momentum) | trend 4H/Day/Week/Month (▲ up ▼ down ▬ flat). "Today"/D are measured from the daily FX rollover at 17:00 New York — Week/Month set the DIRECTION; the 4H and today set the TIMING — never propose a setup that the 4H move or today\'s move is currently running against (setups moving the wrong way in the last 4 hours are flagged and kept off the bots):\n'+lines.join('\n')+'\n\n'+(lvLines.length?'MEASURED LEVELS per pair (from real price bars; nearest above and below the live price; ATR = 14-day average daily range in pips). Pairs not listed have no measured levels — do not trade them:\n'+lvLines.join('\n')+'\n':'MEASURED LEVELS: unavailable.\n')+(ruleLines.length?'\nSCANNER RULES per pair (exact numbers the checker applies — meet them and the setup is shown as you wrote it): stop at least the min stop AND beyond the 4H swing (LONG: below the swing low; SHORT: above the swing high); LONG only with entry at or below the LONG limit, SHORT only with entry at or above the SHORT limit; avoid a pair whose last-4h move runs against the trade by more than '+Math.round(MOM_ATR*100)+'% of its ATR:\n'+ruleLines.join('\n')+'\n':'')+calRiskBlock(24)+'\n'+(jpyIntZone(q)!=null?'\nYEN INTERVENTION ZONE: USD/JPY is '+q.USDJPY.p.toFixed(2)+', at or above '+fhJpyIntLevel()+' where Japan\'s Ministry of Finance has been warning. Do NOT propose any trade that sells JPY (no longs on XXX/JPY) — they are discarded.\n':'');
     }catch(e){}
-    var prompt=priceBlock+'You are a professional forex trading analyst. Analyse the current forex market and identify the 3-5 highest-probability trade setups right now across major pairs.\n\nFor each setup use this EXACT plain-text format with no markdown, no asterisks, no bold:\n\nSETUP:\nPAIR: e.g. GBP/USD\nDIRECTION: LONG or SHORT\nPROBABILITY: HIGH or MEDIUM\nENTRY: price level\nSTOP LOSS: price level\nTAKE PROFIT: price level\nREASON: 3-4 sentences: the trend from the data above, which MEASURED LEVELS the entry, stop and target sit at (name them), and any risk from the CALENDAR block.\n\nCRITICAL LEVEL RULES — base every level on the CURRENT LIVE PRICES above:\n- ENTRY must be within roughly 0.5% of the current price (a realistic pending order that has NOT already been hit), never far away.\n- Never use a level that price has already traded through — the entry must still be reachable from the current live price.\n- Respect each pair\'s momentum AND its 4H/Day/Week/Month trend shown above: prefer setups that trade WITH the dominant higher-timeframe trend (weekly/monthly direction), triggered on the 4H. Do NOT recommend fading a strong UP or DOWN move (a pair near its daily high/low with a clear % move, or aligned trends across timeframes) unless you can state a specific reversal signal. Weight the setup\'s probability by how well the timeframes align.\n- For a SHORT: ENTRY at or slightly ABOVE current price, STOP LOSS above entry, TAKE PROFIT below entry.\n- For a LONG: ENTRY at or slightly BELOW current price, STOP LOSS below entry, TAKE PROFIT above entry.\n- Direction, entry, stop and target must be internally consistent and achieve at least 1:2 risk/reward.\n- Do not contradict yourself: if the reasoning is bearish the direction must be SHORT, and vice-versa.\n\nPrefer setups with clear multi-timeframe alignment. ENTRY, STOP LOSS and TAKE PROFIT must each sit at, or a few pips beyond, a MEASURED LEVEL listed for that pair. The stop distance must be between 0.5x and 1.5x the pair\'s ATR AND sit beyond the nearest 4H swing low (LONG) or 4H swing high (SHORT) — never on a daily pivot itself, where everyone\'s stops sit. Do NOT go LONG with an entry within 0.5x ATR of this-week high, or SHORT within 0.5x ATR of this-week low — a trend trade needs room; skip it (the pullback scanner handles dips). Only cite events listed in the CALENDAR block. Check each setup against its SCANNER RULES line before writing it. Return 0 to 5 setups — only setups that meet every rule. If none do, reply with exactly one line: NO SETUPS: <short reason>. No setup is a valid answer; a forced weak trade is not. Pay particular attention to whichever pairs show the largest moves in the live data above (including JPY crosses and USD pairs). Start each setup with exactly "SETUP:" on its own line. Do not use any markdown.\n\nCOMPLETENESS RULES — a setup missing any of these is discarded before it reaches the screen, so it is wasted output:\n- Every setup MUST carry all seven fields: PAIR, DIRECTION, PROBABILITY, ENTRY, STOP LOSS, TAKE PROFIT, REASON.\n- For LONG, STOP LOSS must be BELOW entry and TAKE PROFIT ABOVE it. For SHORT, STOP LOSS ABOVE entry and TAKE PROFIT BELOW it. No exceptions.\n- Keep REASON to 3-4 sentences and at most 70 words so every setup finishes inside the reply. Prefer 3 complete setups over 5 truncated ones. Always finish the final setup completely — never cut off mid-sentence.'+freshnessNote(false);
+    var prompt=priceBlock+'You are a professional forex trading analyst. Analyse the current forex market and identify the 3-5 highest-probability trade setups right now across major pairs.\n\nFor each setup use this EXACT plain-text format with no markdown, no asterisks, no bold:\n\nSETUP:\nPAIR: e.g. GBP/USD\nDIRECTION: LONG or SHORT\nPROBABILITY: HIGH or MEDIUM\nENTRY: price level\nSTOP LOSS: price level\nTAKE PROFIT: price level\nREASON: 3-4 sentences: the trend from the data above, which MEASURED LEVELS the entry, stop and target sit at (name them), and any risk from the CALENDAR block.\n\nCRITICAL LEVEL RULES — base every level on the CURRENT LIVE PRICES above:\n- ENTRY must be within roughly 0.5% of the current price (a realistic pending order that has NOT already been hit), never far away.\n- Never use a level that price has already traded through — the entry must still be reachable from the current live price.\n- Respect each pair\'s momentum AND its 4H/Day/Week/Month trend shown above: prefer setups that trade WITH the dominant higher-timeframe trend (weekly/monthly direction), triggered on the 4H. Do NOT recommend fading a strong UP or DOWN move (a pair near its daily high/low with a clear % move, or aligned trends across timeframes) unless you can state a specific reversal signal. Weight the setup\'s probability by how well the timeframes align.\n- For a SHORT: ENTRY at or slightly ABOVE current price, STOP LOSS above entry, TAKE PROFIT below entry.\n- For a LONG: ENTRY at or slightly BELOW current price, STOP LOSS below entry, TAKE PROFIT above entry.\n- Direction, entry, stop and target must be internally consistent and achieve at least 1:2 risk/reward.\n- Do not contradict yourself: if the reasoning is bearish the direction must be SHORT, and vice-versa.\n\nPrefer setups with clear multi-timeframe alignment. ENTRY, STOP LOSS and TAKE PROFIT must each sit at, or a few pips beyond, a MEASURED LEVEL listed for that pair. The stop distance must be between 0.5x and 1.5x the pair\'s ATR AND sit beyond the nearest 4H swing low (LONG) or 4H swing high (SHORT) — never on a daily pivot itself, where everyone\'s stops sit. Do NOT go LONG with an entry within 0.5x ATR of this-week high, or SHORT within 0.5x ATR of this-week low — a trend trade needs room; skip it (the pullback scanner handles dips). Only cite events listed in the CALENDAR block. Check each setup against its SCANNER RULES line before writing it. Return 0 to 5 setups — only setups that meet every rule. If none do, reply with exactly one line: NO SETUPS: <short reason>. No setup is a valid answer; a forced weak trade is not. Pay particular attention to whichever pairs show the largest moves in the live data above (including JPY crosses and USD pairs). Start each setup with exactly "SETUP:" on its own line. Do not use any markdown.\n\nCOMPLETENESS RULES — a setup missing any of these is discarded before it reaches the screen, so it is wasted output:\n- Every setup MUST carry all seven fields: PAIR, DIRECTION, PROBABILITY, ENTRY, STOP LOSS, TAKE PROFIT, REASON.\n- For LONG, STOP LOSS must be BELOW entry and TAKE PROFIT ABOVE it. For SHORT, STOP LOSS ABOVE entry and TAKE PROFIT BELOW it. No exceptions.\n- Keep REASON to 3-4 sentences and at most 70 words so every setup finishes inside the reply. Prefer 3 complete setups over 5 truncated ones. Always finish the final setup completely — never cut off mid-sentence.'+SCAN_NO_THINKING+freshnessNote(false);
     /* 30-minute bucket (was 15). The proxy caches scanner replies for 30 minutes, so a
        15-minute key generated a fresh paid Sonnet call that the server then had to serve
        from cache anyway — aligning the two halves the number of scanner calls. */
     var scanBucket=Math.floor(Date.now()/18e5);
-    var scanKey='scan:v30:'+scanBucket;
+    var scanKey='scan:v34:'+scanBucket;
     var txt=await ai(prompt,scanKey,{model:'claude-sonnet-5',maxTokens:3200,webSearch:false});
     if(aiRefused(txt)){delete cache[scanKey];LS.del('fhai:'+scanKey);throw new Error('The AI returned a no-data response (not cached) — tap Scan again to retry.');}
     // Normalise: strip markdown so field detection works reliably
@@ -6528,7 +6592,7 @@ async function runScanner(){
                sl:scanField(s,'STOP LOSS')||scanField(s,'STOP'),
                tp:scanField(s,'TAKE PROFIT')||scanField(s,'TARGET'),
                reason:scanReason(s)};
-        var bad=validateSetup(o);
+        var bad=scanWorkingOut(s)||validateSetup(o);
         if(!bad) bad=checkSetupLive(o,q,scLV,'scanner');
         if(bad){dropped.push(dropLabel(o,bad));return;}
         /* v16 — regime check. Never blocks on a failed strength fetch. */
@@ -6614,9 +6678,9 @@ async function runPullbackScanner(){
       return p+': daily '+(m.td>=0?'+':'')+m.td+'% | weekly '+(m.tw>=0?'+':'')+m.tw+'% | '+quoteLine(m.pair,m.q);
     }).join('\n')+'\n\n'+(Object.keys(pbLV).length?'MEASURED LEVELS per pair (from real price bars; ATR = 14-day average daily range in pips). Pairs not listed have no measured levels — skip them:\n'+top.filter(function(m){return pbLV[m.pair];}).map(function(m){return levelsLine(m.pair,pbLV[m.pair]);}).join('\n')+'\n':'MEASURED LEVELS: unavailable.\n')+calRiskBlock(24)+'\n'+(jpyIntZone(q)!=null?'\nYEN INTERVENTION ZONE: USD/JPY is '+q.USDJPY.p.toFixed(2)+', at or above '+fhJpyIntLevel()+' where Japan\'s Ministry of Finance has been warning. Do NOT propose any trade that sells JPY (no longs on XXX/JPY) — they are discarded.\n':'');
     // 3. AI prompt — explicitly frames entries as limit orders away from current price
-    var prompt=priceBlock+'You are a professional forex trader. The pairs above made today\'s biggest directional moves. Your job is to identify PENDING LIMIT ORDER setups for traders who missed the move — NOT market orders to enter right now.\n\nFor each valid setup, decide between two approaches:\n  A) DIP BUY / RALLY SELL (trend-continuation): The trend is strong. Wait for a normal retracement to support/resistance, then enter WITH the trend at a better price.\n  B) FADE (mean-reversion): The move is over-extended into a major MEASURED LEVEL (prior-week high/low, daily swing). Enter AGAINST the move at that level. Do not cite RSI, divergence or Fibonacci — they are not given to you.\n\nUse this EXACT plain-text format (no markdown, no asterisks):\n\nSETUP:\nPAIR: e.g. AUD/JPY\nORDER TYPE: DIP BUY / RALLY SELL / FADE LONG / FADE SHORT\nDIRECTION: LONG or SHORT\nPROBABILITY: HIGH or MEDIUM\nENTRY TRIGGER: the specific price level to place a limit order (must be meaningfully away from current price — at least 0.2% for majors)\nSTOP LOSS: price level\nTAKE PROFIT: price level\nREASON: 3-4 sentences covering: (1) how far price has moved, (2) which MEASURED LEVEL the entry trigger sits at (name it), (3) where the stop and target sit (name the measured levels) and any CALENDAR risk.\n\nCRITICAL: Entry trigger must be a LIMIT ORDER LEVEL the price has NOT yet reached — it must be away from the current live price shown above. Never place entry at the current market price. For a DIP BUY the entry is BELOW current price. For a RALLY SELL the entry is ABOVE current price. For FADE entries, current price is acceptable only if at a key rejection level. Return 0 to 4 setups. The entry, stop and target must each sit at, or a few pips beyond, a MEASURED LEVEL for that pair; the entry no further than 1.5x ATR from price; the stop between 0.5x and 1.5x ATR and beyond the nearest 4H swing low (LONG) / 4H swing high (SHORT), never on a daily pivot itself; no LONG entry within 0.5x ATR of this-week high and no SHORT entry within 0.5x ATR of this-week low; risk/reward at least 1:1.5. If no setup meets every rule, reply with exactly one line: NO SETUPS: <short reason>.\n\nCOMPLETENESS RULES — a setup missing any of these is discarded before it reaches the screen, so it is wasted output:\n- Every setup MUST carry all of: PAIR, ORDER TYPE, DIRECTION, PROBABILITY, ENTRY TRIGGER, STOP LOSS, TAKE PROFIT, REASON.\n- For LONG, STOP LOSS must be BELOW the entry trigger and TAKE PROFIT ABOVE it. For SHORT, STOP LOSS ABOVE and TAKE PROFIT BELOW. No exceptions.\n- Keep REASON to 3-4 sentences and at most 70 words. Prefer 2 complete setups over 4 truncated ones. Always complete every setup — never cut off mid-sentence.'+freshnessNote(false);
+    var prompt=priceBlock+'You are a professional forex trader. The pairs above made today\'s biggest directional moves. Your job is to identify PENDING LIMIT ORDER setups for traders who missed the move — NOT market orders to enter right now.\n\nFor each valid setup, decide between two approaches:\n  A) DIP BUY / RALLY SELL (trend-continuation): The trend is strong. Wait for a normal retracement to support/resistance, then enter WITH the trend at a better price.\n  B) FADE (mean-reversion): The move is over-extended into a major MEASURED LEVEL (prior-week high/low, daily swing). Enter AGAINST the move at that level. Do not cite RSI, divergence or Fibonacci — they are not given to you.\n\nUse this EXACT plain-text format (no markdown, no asterisks):\n\nSETUP:\nPAIR: e.g. AUD/JPY\nORDER TYPE: DIP BUY / RALLY SELL / FADE LONG / FADE SHORT\nDIRECTION: LONG or SHORT\nPROBABILITY: HIGH or MEDIUM\nENTRY TRIGGER: the specific price level to place a limit order (must be meaningfully away from current price — at least 0.2% for majors)\nSTOP LOSS: price level\nTAKE PROFIT: price level\nREASON: 3-4 sentences covering: (1) how far price has moved, (2) which MEASURED LEVEL the entry trigger sits at (name it), (3) where the stop and target sit (name the measured levels) and any CALENDAR risk.\n\nCRITICAL: Entry trigger must be a LIMIT ORDER LEVEL the price has NOT yet reached — it must be away from the current live price shown above. Never place entry at the current market price. For a DIP BUY the entry is BELOW current price. For a RALLY SELL the entry is ABOVE current price. For FADE entries, current price is acceptable only if at a key rejection level. Return 0 to 4 setups. The entry, stop and target must each sit at, or a few pips beyond, a MEASURED LEVEL for that pair; the entry no further than 1.5x ATR from price; the stop between 0.5x and 1.5x ATR and beyond the nearest 4H swing low (LONG) / 4H swing high (SHORT), never on a daily pivot itself; no LONG entry within 0.5x ATR of this-week high and no SHORT entry within 0.5x ATR of this-week low; risk/reward at least 1:1.5. If no setup meets every rule, reply with exactly one line: NO SETUPS: <short reason>.\n\nCOMPLETENESS RULES — a setup missing any of these is discarded before it reaches the screen, so it is wasted output:\n- Every setup MUST carry all of: PAIR, ORDER TYPE, DIRECTION, PROBABILITY, ENTRY TRIGGER, STOP LOSS, TAKE PROFIT, REASON.\n- For LONG, STOP LOSS must be BELOW the entry trigger and TAKE PROFIT ABOVE it. For SHORT, STOP LOSS ABOVE and TAKE PROFIT BELOW. No exceptions.\n- Keep REASON to 3-4 sentences and at most 70 words. Prefer 2 complete setups over 4 truncated ones. Always complete every setup — never cut off mid-sentence.'+SCAN_NO_THINKING+freshnessNote(false);
     var pbBucket=Math.floor(Date.now()/36e5);
-    var pbKey='pullback:v29:'+pbBucket;
+    var pbKey='pullback:v34:'+pbBucket;
     var txt=await ai(prompt,pbKey,{model:'claude-sonnet-5',maxTokens:3200,webSearch:false});
     // Never cache or render a "I can't access live data" reply as analysis
     if(aiRefused(txt)){delete cache[pbKey];LS.del('fhai:'+pbKey);throw new Error('The AI returned a no-data response (not cached) — tap Pullback scan again to retry.');}
@@ -6643,7 +6707,7 @@ async function runPullbackScanner(){
                reason:scanReason(s)};
         /* This is the guard that stops a truncated reply becoming the "ENTRY TRI"
            card: no complete levels or no reasoning ⇒ not a setup. */
-        var bad=validateSetup(o);
+        var bad=scanWorkingOut(s)||validateSetup(o);
         if(!bad) bad=checkSetupLive(o,q,pbLV,'pullback');
         if(bad){dropped.push(dropLabel(o,bad));return;}
         /* v16 — regime check. Never blocks on a failed strength fetch. */
@@ -7696,8 +7760,39 @@ async function loadTech(force){
   _techLoading=false;
 }
 function setTechCcy(c){_techCcy=c;renderTech();}
+/* v34 — 10 Nov item 1: pattern key. Ranks the table by how the timeframes line up.
+   pos  = All positive: most timeframes buying at the top → all selling at the bottom
+   neg  = All negative: the reverse
+   ascb = Ascending (buy): Daily + Weekly buying while 15m or 1H is selling — a dip
+          on the small timeframes inside an uptrend (an entry WITH the bigger trend)
+   ascs = Ascending (sell): Daily + Weekly selling while 15m or 1H is buying
+   Pairs that fit are tagged and listed first; the rest follow under a divider. */
+var _techPat='';
+var TECH_PATS={pos:['All positive','Most timeframes buying at the top, down to all selling at the bottom. Tagged rows are buying on all five.'],
+  neg:['All negative','Most timeframes selling at the top, down to all buying at the bottom. Tagged rows are selling on all five.'],
+  ascb:['Ascending (buy)','Daily and Weekly buying while 15m or 1H is selling — a dip on the small timeframes inside an uptrend. Possible buy entry with the bigger trend; wait for the small timeframes to turn back up.'],
+  ascs:['Ascending (sell)','Daily and Weekly selling while 15m or 1H is buying — a bounce on the small timeframes inside a downtrend. Possible sell entry with the bigger trend; wait for the small timeframes to turn back down.']};
+function setTechPat(v){_techPat=(_techPat===v?'':v);renderTech();}
+function techPatFit(r,pat){
+  var T=0.1,lo=[r['15m'],r['1h']],hi=[r['1d'],r['1w']];
+  var all=TECH_TFS.map(function(tf){return r[tf[0]];});
+  if(pat==='pos') return all.every(function(v){return v!=null&&v>=T;});
+  if(pat==='neg') return all.every(function(v){return v!=null&&v<=-T;});
+  if(pat==='ascb') return hi.every(function(v){return v!=null&&v>=T;})&&lo.some(function(v){return v!=null&&v<=-T;});
+  if(pat==='ascs') return hi.every(function(v){return v!=null&&v<=-T;})&&lo.some(function(v){return v!=null&&v>=T;});
+  return false;
+}
+function techPatScore(r,pat){
+  var mean=function(a){a=a.filter(function(v){return v!=null;});return a.length?a.reduce(function(x,y){return x+y;},0)/a.length:0;};
+  var all=TECH_TFS.map(function(tf){return r[tf[0]];});
+  var npos=all.filter(function(v){return v!=null&&v>=0.1;}).length, nneg=all.filter(function(v){return v!=null&&v<=-0.1;}).length;
+  if(pat==='pos') return (npos-nneg)*10+mean(all);
+  if(pat==='neg') return (nneg-npos)*10-mean(all);
+  var gap=mean([r['4h'],r['1d'],r['1w']])-mean([r['15m'],r['1h']]);
+  return pat==='ascb'?gap:-gap;
+}
 function toggleTechMajors(){_techMajors=!_techMajors;renderTech();}
-function sortTech(col){if(_techSort.col===col){_techSort.dir*=-1;}else{_techSort.col=col;_techSort.dir=col==='sym'?1:-1;}renderTech();}
+function sortTech(col){_techPat='';if(_techSort.col===col){_techSort.dir*=-1;}else{_techSort.col=col;_techSort.dir=col==='sym'?1:-1;}renderTech();}
 function toggleTechRow(p){_techOpen[p]=!_techOpen[p];renderTech();}
 function renderTech(){
   var body=document.getElementById('tech-body'); if(!body) return;
@@ -7707,6 +7802,14 @@ function renderTech(){
     var f='<button class="pip-fccy'+(_techCcy===''?' all-active':'')+'" onclick="setTechCcy(\'\')">All</button>';
     ['AUD','CAD','CHF','EUR','GBP','JPY','NZD','USD','XAU'].forEach(function(c){f+='<button class="pip-fccy'+(_techCcy===c?' all-active':'')+'" style="color:'+ccyCol(c)+'" onclick="setTechCcy(\''+c+'\')">'+c+'</button>';});
     f+='<button class="pip-fccy'+(_techMajors?' all-active':'')+'" style="margin-left:auto" onclick="toggleTechMajors()">'+(_techMajors?'Majors only ✓':'Majors only')+'</button>';
+    f+='<div style="flex-basis:100%;display:flex;flex-wrap:wrap;gap:5px;align-items:center;margin-top:6px"><span class="muted" style="font-size:11px;margin-right:2px">Pattern:</span>';
+    [['pos','▲ All positive','#4ade80'],['neg','▼ All negative','#f87171'],['ascb','↗ Ascending (buy)','#4ade80'],['ascs','↘ Ascending (sell)','#f87171']].forEach(function(b){
+      var a=_techPat===b[0];
+      f+='<button class="pip-fccy" onclick="setTechPat(\''+b[0]+'\')" style="color:'+b[2]+';border-color:'+(a?b[2]:'var(--bd2)')+';background:'+(a?b[2]+'22':'transparent')+'">'+b[1]+'</button>';
+    });
+    if(_techPat) f+='<button class="pip-fccy" onclick="setTechPat(\''+_techPat+'\')" title="Back to the normal order">✕ Clear</button>';
+    f+='</div>';
+    if(_techPat) f+='<div class="ss" style="flex-basis:100%;margin:6px 0 0">'+esc(TECH_PATS[_techPat][1])+'</div>';
     filt.innerHTML=f;
   }
   var pairs=FH_PAIRS.filter(function(p){
@@ -7722,18 +7825,26 @@ function renderTech(){
     return r;
   });
   var sc=_techSort.col,sd=_techSort.dir;
-  rows.sort(function(a,b){
+  if(_techPat){
+    rows.forEach(function(r){r._fit=techPatFit(r,_techPat);r._ps=techPatScore(r,_techPat);});
+    rows.sort(function(a,b){ if(a._fit!==b._fit) return a._fit?-1:1; return b._ps-a._ps; });
+  } else rows.sort(function(a,b){
     if(sc==='sym') return sd*a.sym.localeCompare(b.sym);
     var av=a[sc],bv=b[sc]; if(av==null&&bv==null)return 0; if(av==null)return 1; if(bv==null)return -1;
     return sd*(av-bv);
   });
+  var nFit=_techPat?rows.filter(function(r){return r._fit;}).length:0, divDone=false;
   function arr(col){if(_techSort.col!==col)return '<span style="opacity:0.3;font-size:9px"> ⇅</span>';return '<span style="font-size:9px"> '+(_techSort.dir===1?'▲':'▼')+'</span>';}
   var h='<table class="tech-table"><thead><tr><th onclick="sortTech(\'sym\')">Pair'+arr('sym')+'</th>';
   TECH_TFS.forEach(function(tf){h+='<th onclick="sortTech(\''+tf[0]+'\')">'+tf[1]+arr(tf[0])+'</th>';});
   h+='<th onclick="sortTech(\'avg\')">All TFs'+arr('avg')+'</th></tr></thead><tbody>';
   if(!rows.length) h+='<tr><td colspan="7" style="text-align:center;padding:18px;color:var(--mt)">No pairs match this filter.</td></tr>';
+  if(_techPat&&rows.length&&!nFit) h+='<tr><td colspan="7" style="text-align:center;padding:12px;color:var(--mt);font-size:12px">No pair fits <b>'+esc(TECH_PATS[_techPat][0])+'</b> right now — closest first below.</td></tr>';
   rows.forEach(function(r){
-    h+='<tr class="tech-row" onclick="toggleTechRow(\''+r.sym+'\')" title="Tap for the full indicator grid"><td><span onclick="event.stopPropagation();goToPair(\''+r.sym+'\')" title="Open '+r.sym+' in Analysis" style="cursor:pointer">'+pairSpan(r.sym)+'</span> <span style="color:var(--mt);font-size:10px">'+(_techOpen[r.sym]?'▾':'▸')+'</span></td>';
+    if(_techPat&&nFit&&!r._fit&&!divDone){divDone=true;h+='<tr><td colspan="7" style="padding:8px 12px;font-size:11px;color:var(--mt);border-top:2px solid var(--bd2)">'+nFit+' pair'+(nFit>1?'s fit':' fits')+' '+esc(TECH_PATS[_techPat][0])+' ↑ · other pairs, closest first ↓</td></tr>';}
+    var patCol=(_techPat==='pos'||_techPat==='ascb')?'#4ade80':'#f87171';
+    var fitTag=(_techPat&&r._fit)?' <span style="font-size:9.5px;font-weight:700;color:'+patCol+';border:1px solid '+patCol+';border-radius:8px;padding:0 5px;margin-left:3px">'+esc(TECH_PATS[_techPat][0])+'</span>':'';
+    h+='<tr class="tech-row" onclick="toggleTechRow(\''+r.sym+'\')" title="Tap for the full indicator grid"'+((_techPat&&r._fit)?' style="box-shadow:inset 3px 0 0 '+patCol+'"':((_techPat&&!r._fit)?' style="opacity:.6"':''))+'><td><span onclick="event.stopPropagation();goToPair(\''+r.sym+'\')" title="Open '+r.sym+' in Analysis" style="cursor:pointer">'+pairSpan(r.sym)+'</span>'+fitTag+' <span style="color:var(--mt);font-size:10px">'+(_techOpen[r.sym]?'▾':'▸')+'</span></td>';
     TECH_TFS.forEach(function(tf){
       var t=_tech[tf[0]]&&_tech[tf[0]][r.sym], s=techScore(t);
       var loaded=!!_tech[tf[0]];
