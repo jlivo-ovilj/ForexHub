@@ -1887,6 +1887,10 @@ body.light .rt-dot.now{background:#c2410c;border-color:#c2410c;color:#fff}
     <button class="sb" id="syscheck-run" style="margin-top:10px;padding:7px 16px;font-size:12.5px" onclick="runSysCheckNow()">Run check now</button>
   </div>
   <div class="card">
+    <div class="ai"><div class="aq">What's new in v35 (19 Nov 2026) — the news check catches the big releases again, and PDFs get their name back</div><div class="aa">
+      · <b>Big releases count as high-impact again.</b> Forex Factory blocks the site's server most of the time, so the calendar comes from a backup feed (TradingView). That feed rates some market-movers only <i>Medium</i> — on 19 Nov the Australian jobs figures landed at 10:30 as Medium, the Plan said "no high-impact news in the last 2h" and Ask IQ was told the same, while AUD pairs jumped about 60 pips in a second. Jobs (employment change, unemployment rate, NFP), inflation/CPI, GDP growth, retail sales, wages, ISM PMIs and rate decisions are now treated as <b>High</b> whenever the feed rates them Medium — in the calendar, the Plan's news step and every IQ question. Euro-area jobs and retail sales stay Medium, as on Forex Factory.<br>
+      · <b>Print / PDF suggests a file name again.</b> When the report title held a pair like AUD/JPY (a "/" can't go in a Windows file name), Chrome left the File name box empty. The suggested name is now short and safe, e.g. <i>ForexHub — Ask IQ — Watchlist technicals — Today's plan has AUDJPY as a SELL… — 2026-11-19 1213</i>. The report's own header still shows the full title.
+    </div></div>
     <div class="ai"><div class="aq">What's new in v34 (18 Nov 2026) — clean scanner cards, a full-day Daily, and pattern filters</div><div class="aa">
       · <b>Scanner cards never show the AI's working-out.</b> Now and then the AI corrected itself mid-reply ("Wait, that entry direction is wrong… let me redo") and that text landed on a trade card. Any setup carrying second thoughts, or with a field written twice, is now thrown out and named in the held-back note — it never reaches a card or the MT5 / cTrader feed. If the AI wrote a corrected version, that one is checked on its own. Only the first paragraph of the reasoning is ever shown.<br>
       · <b>Top-down scanner — Daily is now the last 24 hours.</b> Early in the day the old Daily (since the 7am rollover) was only a few hours old and read like the 1H or 4H. Daily now compares with the price 24 hours ago, so it's a full day at any hour, and STRONG no longer waits 3 hours. The original method is one tap away: <b>Daily: Last 24h / Since 7am</b> above the table. Weekly is unchanged (last 5 trading days). Running cost is unchanged — the 24h figure comes from price data the site was already downloading (worker 12.6).<br>
@@ -2436,7 +2440,7 @@ function dismissBanner(){
 /* ══════════════════════════════════════
    HEADER DATE
 ══════════════════════════════════════ */
-var FH_BUILD='v34'; // 18 Nov 2026 — 10 Nov AMENDMENTS: scanner setups carrying the AI's working-out (or a field written twice) are discarded, never shown or fed to the bots; top-down Daily = rolling last 24h (worker 12.6 t24) with 'Since 7am' toggle kept; Watchlist Technicals pattern key (All positive / All negative / Ascending buy / sell) // 16 Nov 2026 — MARKET IQ HAND-OFF FIX: opening IQ from a Low-impact (or any not-listed) calendar event no longer says 'Pick an event first' — the pickers keep their selection when the event list refreshes, and the open 'something not on the calendar' row is trusted // 4 Nov 2026 — Routes moved to its own tab; a slim strip shows only while a route is running // 4 Nov 2026 — PRESENTATION BATCH (Appealing · Ease of use · Results): calendar rows bordered by impact, light-theme buttons/badges/text readable, tree map Currency colours turn pairs round to read from the column (↺ dashed, broker name under), planner Max lots + room-at-max bar vs ATR, Routes bar (presets + build your own, ★ default), Plan 'Start from a currency', Plan trend step explains itself and never drops on an empty feed // 3 Nov 2026 — TRADE IDEA REVIEW SEES TODAY'S EVENTS: calendar look-back 24h (was 1h), measured before/after table for each high-impact event on the pair, 'why did…' questions answered (what happened / why / what it means) instead of graded as a setup, direction checked against measured prices, Open in IQ Event Review button // 27 Oct 2026 — SCANNER GATES REWORKED: stops that are too tight are widened by the checker (beyond the 4H swing, ≥ half ATR) and the target stretched to the next measured level if R:R needs it; 'moving against it now' (0.4× ATR) and 'too extended' are amber warnings held back from All-to-trade instead of rejections; AI given each pair's exact stop / room / 4H-swing numbers; intro text no longer read as a 'no pair' setup // 22 Oct 2026 — SCANNER QUALITY GATES: stop ≥ half ATR and beyond the 4H swing, no entries within half an ATR of the week high/low, yen intervention zone holds JPY-sell trades, shared-theme tag, held-back setups named per pair // 15 Oct 2026 — TRUST BATCH C+D: calendar source labelled everywhere + feed-only loads, sentiment checked against measured strength (6h), weekly events from the calendar feed, Indices 'today' from the 7am rollover, correlation drops incomplete days, no hard-coded pip rates, gap filled?, Outlook direction check, trade reviews grounded + figures verified // 15 Oct 2026 — TRUST BATCH A+B: measured levels (/levels) behind every AI level, level + setup checks vs live price/ATR, no forced setups, feed send-time re-check + per-setup age, Plan 'not checked' instead of pass, honest 'Do they agree?' labels, generation stamps // 15 Oct 2026 — measured-moves table: latest shows hours after the release, clean prices, range never negative (worker 12.2) // 15 Oct 2026 — IQ Event review anchored to MEASURED price moves (worker /move), verdict check + auto-redo, Sonnet for screenshot reviews // Columns colour switch Chart/Currency // column tiles coloured like the chart // pair filters on their own line under the timeframes // 13 Oct 2026 — Amendments 20: system check light, indices 'Do they agree?', tree map currency filters + columns, closed-market gap wording // Plan: shortlist ranked by gap + money line + Print/Save; policy test 17 Sep // Plan news-risk looks back as well as forward, flag-not-drop option, honest card + IQ question, empty AI replies not saved // IQ picker shows impact + currency colour; briefing news rows: impact border + IQ button // Plan chips show the state after each step, not the final result // 16 Sep 2026 — ForexFlow: Classic / Flow navigation toggle, grouped tabs with colour families, Plan tab // 16 Sep 2026 — calendar six-day grid, correlation Ask IQ, labels, paste hint, mud-map link // 16 Sep 2026 — amendments 14.9.26: Ask IQ on the research tabs, print/save everywhere, calendar collapse + grid, paste screenshots // bump on every delivered change — shown in the header so it's always obvious which version is loaded
+var FH_BUILD='v35'; // 19 Nov 2026 — key releases (jobs, CPI, GDP, rate decisions, retail sales) the backup calendar feed rates Medium now count as High everywhere, so Plan/IQ no longer say 'no high-impact news' straight after AU jobs; Print/PDF file name is short and Windows-safe again // 18 Nov 2026 — 10 Nov AMENDMENTS: scanner setups carrying the AI's working-out (or a field written twice) are discarded, never shown or fed to the bots; top-down Daily = rolling last 24h (worker 12.6 t24) with 'Since 7am' toggle kept; Watchlist Technicals pattern key (All positive / All negative / Ascending buy / sell) // 16 Nov 2026 — MARKET IQ HAND-OFF FIX: opening IQ from a Low-impact (or any not-listed) calendar event no longer says 'Pick an event first' — the pickers keep their selection when the event list refreshes, and the open 'something not on the calendar' row is trusted // 4 Nov 2026 — Routes moved to its own tab; a slim strip shows only while a route is running // 4 Nov 2026 — PRESENTATION BATCH (Appealing · Ease of use · Results): calendar rows bordered by impact, light-theme buttons/badges/text readable, tree map Currency colours turn pairs round to read from the column (↺ dashed, broker name under), planner Max lots + room-at-max bar vs ATR, Routes bar (presets + build your own, ★ default), Plan 'Start from a currency', Plan trend step explains itself and never drops on an empty feed // 3 Nov 2026 — TRADE IDEA REVIEW SEES TODAY'S EVENTS: calendar look-back 24h (was 1h), measured before/after table for each high-impact event on the pair, 'why did…' questions answered (what happened / why / what it means) instead of graded as a setup, direction checked against measured prices, Open in IQ Event Review button // 27 Oct 2026 — SCANNER GATES REWORKED: stops that are too tight are widened by the checker (beyond the 4H swing, ≥ half ATR) and the target stretched to the next measured level if R:R needs it; 'moving against it now' (0.4× ATR) and 'too extended' are amber warnings held back from All-to-trade instead of rejections; AI given each pair's exact stop / room / 4H-swing numbers; intro text no longer read as a 'no pair' setup // 22 Oct 2026 — SCANNER QUALITY GATES: stop ≥ half ATR and beyond the 4H swing, no entries within half an ATR of the week high/low, yen intervention zone holds JPY-sell trades, shared-theme tag, held-back setups named per pair // 15 Oct 2026 — TRUST BATCH C+D: calendar source labelled everywhere + feed-only loads, sentiment checked against measured strength (6h), weekly events from the calendar feed, Indices 'today' from the 7am rollover, correlation drops incomplete days, no hard-coded pip rates, gap filled?, Outlook direction check, trade reviews grounded + figures verified // 15 Oct 2026 — TRUST BATCH A+B: measured levels (/levels) behind every AI level, level + setup checks vs live price/ATR, no forced setups, feed send-time re-check + per-setup age, Plan 'not checked' instead of pass, honest 'Do they agree?' labels, generation stamps // 15 Oct 2026 — measured-moves table: latest shows hours after the release, clean prices, range never negative (worker 12.2) // 15 Oct 2026 — IQ Event review anchored to MEASURED price moves (worker /move), verdict check + auto-redo, Sonnet for screenshot reviews // Columns colour switch Chart/Currency // column tiles coloured like the chart // pair filters on their own line under the timeframes // 13 Oct 2026 — Amendments 20: system check light, indices 'Do they agree?', tree map currency filters + columns, closed-market gap wording // Plan: shortlist ranked by gap + money line + Print/Save; policy test 17 Sep // Plan news-risk looks back as well as forward, flag-not-drop option, honest card + IQ question, empty AI replies not saved // IQ picker shows impact + currency colour; briefing news rows: impact border + IQ button // Plan chips show the state after each step, not the final result // 16 Sep 2026 — ForexFlow: Classic / Flow navigation toggle, grouped tabs with colour families, Plan tab // 16 Sep 2026 — calendar six-day grid, correlation Ask IQ, labels, paste hint, mud-map link // 16 Sep 2026 — amendments 14.9.26: Ask IQ on the research tabs, print/save everywhere, calendar collapse + grid, paste screenshots // bump on every delivered change — shown in the header so it's always obvious which version is loaded
 /* Stale-tab killer: every so often, check whether a newer build has been deployed.
    If so, show a can't-miss banner telling the user to reload — long-open tabs silently
    running old code caused repeated "the fix didn't work" confusion. */
@@ -3671,6 +3675,16 @@ function buildShareBar(containerId,title,bodySel,nameBase){
     +'<button class="share-btn" onclick="doEmail(\''+containerId+'\')">✉ Email</button>'
     +'<button class="share-btn" onclick="doSave(\''+containerId+'\')">💾 Save</button>';
 }
+/* v35 — the page <title> is what Chrome offers as the Save-as-PDF file name. A title holding
+   characters Windows can't use in a file name (the "/" in AUD/JPY, ":" etc.) or running very
+   long left the File name box EMPTY (19 Nov 2026, Ask IQ "Today's plan has AUD/JPY…").
+   Build a short, safe name; the full title still shows in the report's own header. */
+function reportFileTitle(title){
+  var t=('ForexHub — '+(title||'report')).replace(/([A-Z]{3})\/([A-Z]{3})/g,'$1$2').replace(/[\\\/:*?"<>|\u0000-\u001f]+/g,' ').replace(/\s+/g,' ').trim();
+  if(t.length>90){ t=t.slice(0,90); var sp=t.lastIndexOf(' '); if(sp>60) t=t.slice(0,sp); t=t.replace(/[\s,;—–-]+$/,'')+'…'; }
+  var d=new Date(), stamp=fhDayKey(d)+' '+fhTime(d).replace(':','');
+  return t+' — '+stamp;
+}
 /* Build a styled, self-contained report that mirrors the on-screen cards (used by Print/PDF + Save) */
 function reportDocHTML(id){
   var c=document.getElementById(id);
@@ -3723,7 +3737,7 @@ function reportDocHTML(id){
    +'@media print{@page{margin:12mm}body{-webkit-print-color-adjust:exact;print-color-adjust:exact}.scan-card{break-inside:avoid}}';
   return '<!DOCTYPE html><html lang="en"><head><meta charset="utf-8">'
    +'<meta name="viewport" content="width=device-width,initial-scale=1">'
-   +'<title>ForexHub — '+title+' — '+stampAEST()+'</title>'
+   +'<title>'+esc(reportFileTitle(title))+'</title>'
    +'<link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Syne:wght@400;500;600;700&display=swap" rel="stylesheet">'
    +'<style>'+css+'\n'+extra+'</style></head>'
    +'<body class="light" data-sect="'+sect+'" style="background:#ffffff;color:#141414">'
@@ -5261,11 +5275,35 @@ function retimeEvents(list){
   return list||[];
 }
 /* Feed row → the event shape the calendar UI already understands */
+/* v35 — 19 Nov 2026: Forex Factory blocks the worker most of the time, so the calendar
+   comes from TradingView's feed, which rates some market-moving releases only Medium
+   (AUD Employment Change / Unemployment Rate landed at 10:30 as "Medium", the Plan said
+   "no high-impact news" and Ask IQ was told the same, while GBP/AUD and AUD/JPY jumped
+   ~60 pips in a second). These releases are High on Forex Factory, so a Medium rating
+   for them is lifted to High everywhere (calendar, Plan news step, IQ). Only Medium is
+   lifted — Low rows (regional or minor versions) are left alone. */
+var CAL_KEY_HIGH=[
+  /interest rate decision|cash rate|rate statement|monetary policy statement/i,
+  /\b(core )?(inflation rate|cpi)\b|monthly cpi indicator|trimmed mean|consumer price index/i,
+  /gdp growth rate|gross domestic product/i,
+  /non[- ]?farm|employment change|unemployment rate|claimant count/i,
+  /retail sales/i,
+  /wage price index|average (hourly )?earnings/i,
+  /ism (manufacturing|services|non-manufacturing) pmi/i
+];
+var CAL_KEY_SKIP_EUR=/employment change|unemployment rate|claimant count|retail sales|average (hourly )?earnings/i; // euro-area versions stay Medium (as on Forex Factory)
+function calKeyHigh(ccy,title){
+  if(ccy==='CNY'||/weekly|ex tobacco/i.test(title)) return false;   // China and minor weekly / sub-series rows stay as rated
+  if(ccy==='EUR'&&CAL_KEY_SKIP_EUR.test(title)) return false;
+  return CAL_KEY_HIGH.some(function(r){return r.test(title);});
+}
 function ffEvent(e){
   if(!e||!e.date||!e.title) return null;
   var d=new Date(e.date);
   if(isNaN(d.getTime())) return null;
   var imp=CAL_IMP[String(e.impact||'').toLowerCase()]||'low';
+  var up=false;
+  if(imp==='med'&&calKeyHigh(String(e.country||'').toUpperCase(),String(e.title))){ imp='high'; up=true; }
   return {
     day:aestDayLabel(d),
     dayKey:aestKey(d),
@@ -5274,6 +5312,7 @@ function ffEvent(e){
     ccy:String(e.country||'').toUpperCase(),
     imp:imp,
     rawImp:e.impact||'',
+    up:up,
     name:e.title,
     forecast:(e.forecast===''||e.forecast==null)?'—':e.forecast,
     prev:(e.previous===''||e.previous==null)?'—':e.previous,
@@ -9164,7 +9203,7 @@ async function runAskIq(k){
     var en={id:id,at:Date.now(),type:'ask',name:q,ccy:'IQ',ctx:k,ctxTitle:c.title,text:String(text),build:FH_BUILD};
     var list=loadIq(); list.unshift(en); saveIq(list); updateIqCount();
     out.innerHTML='<div id="ia-doc-'+k+'"><div class="card" style="margin-top:4px"><div class="cl">Ask IQ · '+esc(c.title)+'</div><div class="meta" style="margin:0 0 8px">Q: '+esc(q)+'</div><div class="cb">'+colorizeCcy(mdTable(String(text)))+'</div><div class="ia-ctx">Answered '+esc(fhClock())+' from the '+esc(c.title.toLowerCase())+' on screen'+(common?' + strength, technicals, trends and the next 48h of the calendar':'')+' · saved to the IQ library · educational only</div></div></div>';
-    buildShareBar('ia-share-'+k,'Ask IQ — '+c.title+' — '+q.slice(0,60),'#ia-doc-'+k,'ask-iq-'+k);
+    buildShareBar('ia-share-'+k,'Ask IQ — '+c.title+' — '+(q.length>60?q.slice(0,60).replace(/\s+\S*$/,'')+'…':q),'#ia-doc-'+k,'ask-iq-'+k);
   }catch(e){ out.innerHTML='<div class="eb">'+friendlyError(e)+'</div>'; }
   btn.disabled=false; btn.textContent='Ask';
 }
